@@ -1,28 +1,24 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { Session, Project } from '@/types';
+import React from 'react'
+import { Session, Project } from '@/types'
 
 interface SessionStatsProps {
-  session: Session;
-  project: Project;
-  className?: string;
+  session: Session
+  project: Project
+  className?: string
 }
 
-export const SessionStats: React.FC<SessionStatsProps> = ({
-  session,
-  project,
-  className = '',
-}) => {
+export const SessionStats: React.FC<SessionStatsProps> = ({ session, project, className = '' }) => {
   const formatDuration = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
 
     if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}h ${minutes}m`
     }
-    return `${minutes}m`;
-  };
+    return `${minutes}m`
+  }
 
   return (
     <div
@@ -77,7 +73,7 @@ export const SessionStats: React.FC<SessionStatsProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default SessionStats;
+export default SessionStats

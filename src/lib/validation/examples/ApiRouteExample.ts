@@ -12,7 +12,7 @@
  * - HTTP status codes
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server'
 import {
   validate,
   validateOrThrow,
@@ -25,7 +25,7 @@ import {
   type CreateSessionData,
   type CreateCommentData,
   type UpdateProfileData,
-} from '@/lib/validation';
+} from '@/lib/validation'
 
 /**
  * Example 1: POST /api/sessions
@@ -34,10 +34,10 @@ import {
 export async function createSessionRoute(request: NextRequest) {
   try {
     // Parse request body
-    const body = await request.json();
+    const body = await request.json()
 
     // Validate with schema
-    const result = validate(CreateSessionSchema, body);
+    const result = validate(CreateSessionSchema, body)
 
     if (!result.success) {
       return NextResponse.json(
@@ -46,11 +46,11 @@ export async function createSessionRoute(request: NextRequest) {
           details: result.errors,
         },
         { status: 400 }
-      );
+      )
     }
 
     // Type-safe validated data
-    const validatedData: CreateSessionData = result.data;
+    const validatedData: CreateSessionData = result.data
 
     // Prepare for Firestore (removes undefined values)
 
@@ -58,7 +58,7 @@ export async function createSessionRoute(request: NextRequest) {
       ...validatedData,
       userId: 'current-user-id', // Add from auth
       createdAt: new Date(),
-    });
+    })
 
     // Save to database
     // const sessionId = await db.collection('sessions').add(_firestoreData);
@@ -70,9 +70,9 @@ export async function createSessionRoute(request: NextRequest) {
         data: validatedData,
       },
       { status: 201 }
-    );
+    )
   } catch (error) {
-    console.error('Session creation error:', error);
+    console.error('Session creation error:', error)
 
     if (isValidationError(error)) {
       return NextResponse.json(
@@ -82,7 +82,7 @@ export async function createSessionRoute(request: NextRequest) {
           details: error.issues,
         },
         { status: 400 }
-      );
+      )
     }
 
     return NextResponse.json(
@@ -91,7 +91,7 @@ export async function createSessionRoute(request: NextRequest) {
         message: 'Failed to create session',
       },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -101,13 +101,10 @@ export async function createSessionRoute(request: NextRequest) {
  */
 export async function createCommentRoute(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json()
 
     // Validate and throw on error (cleaner for simple cases)
-    const validatedData: CreateCommentData = validateOrThrow(
-      CreateCommentSchema,
-      body
-    );
+    const validatedData: CreateCommentData = validateOrThrow(CreateCommentSchema, body)
 
     // Add metadata
 
@@ -117,7 +114,7 @@ export async function createCommentRoute(request: NextRequest) {
       createdAt: new Date(),
       likeCount: 0,
       replyCount: 0,
-    });
+    })
 
     // Save to database
     // const commentId = await db.collection('comments').add(_commentData);
@@ -128,9 +125,9 @@ export async function createCommentRoute(request: NextRequest) {
         commentId: 'comment-id',
       },
       { status: 201 }
-    );
+    )
   } catch (error) {
-    console.error('Comment creation error:', error);
+    console.error('Comment creation error:', error)
 
     // ValidationError is automatically caught here
     if (isValidationError(error)) {
@@ -140,7 +137,7 @@ export async function createCommentRoute(request: NextRequest) {
           message: formatValidationError(error),
         },
         { status: 400 }
-      );
+      )
     }
 
     return NextResponse.json(
@@ -148,7 +145,7 @@ export async function createCommentRoute(request: NextRequest) {
         error: 'Internal server error',
       },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -158,20 +155,17 @@ export async function createCommentRoute(request: NextRequest) {
  */
 export async function updateProfileRoute(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json()
 
     // Validate partial update data
-    const validatedData: UpdateProfileData = validateOrThrow(
-      UpdateProfileSchema,
-      body
-    );
+    const validatedData: UpdateProfileData = validateOrThrow(UpdateProfileSchema, body)
 
     // Prepare for Firestore
 
     const _updateData = prepareForFirestore({
       ...validatedData,
       updatedAt: new Date(),
-    });
+    })
 
     // Update in database
     // await db.collection('users').doc(userId).update(_updateData);
@@ -179,7 +173,7 @@ export async function updateProfileRoute(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: validatedData,
-    });
+    })
   } catch (error) {
     if (isValidationError(error)) {
       return NextResponse.json(
@@ -189,7 +183,7 @@ export async function updateProfileRoute(request: NextRequest) {
           details: error.issues,
         },
         { status: 400 }
-      );
+      )
     }
 
     return NextResponse.json(
@@ -197,7 +191,7 @@ export async function updateProfileRoute(request: NextRequest) {
         error: 'Failed to update profile',
       },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -207,7 +201,7 @@ export async function updateProfileRoute(request: NextRequest) {
  */
 export async function getSessionsRoute(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
+    const searchParams = request.nextUrl.searchParams
 
     // Extract query parameters
 
@@ -218,7 +212,7 @@ export async function getSessionsRoute(request: NextRequest) {
       isArchived: searchParams.get('isArchived')
         ? searchParams.get('isArchived') === 'true'
         : undefined,
-    };
+    }
 
     // You can validate query params too
     // const validatedQuery = validateOrThrow(SessionFiltersSchema, _queryData);
@@ -229,7 +223,7 @@ export async function getSessionsRoute(request: NextRequest) {
     return NextResponse.json({
       sessions: [],
       count: 0,
-    });
+    })
   } catch (error) {
     if (isValidationError(error)) {
       return NextResponse.json(
@@ -238,7 +232,7 @@ export async function getSessionsRoute(request: NextRequest) {
           message: formatValidationError(error),
         },
         { status: 400 }
-      );
+      )
     }
 
     return NextResponse.json(
@@ -246,35 +240,31 @@ export async function getSessionsRoute(request: NextRequest) {
         error: 'Failed to fetch sessions',
       },
       { status: 500 }
-    );
+    )
   }
 }
 
 /**
  * Example 5: Middleware pattern for authentication + validation
  */
-async function withAuth(
-  handler: (request: NextRequest, userId: string) => Promise<NextResponse>
-) {
+async function withAuth(handler: (request: NextRequest, userId: string) => Promise<NextResponse>) {
   return async (request: NextRequest) => {
     try {
       // Extract auth token
-      const token = request.headers
-        .get('authorization')
-        ?.replace('Bearer ', '');
+      const token = request.headers.get('authorization')?.replace('Bearer ', '')
 
       if (!token) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
       }
 
       // Verify token and get user ID
       // const userId = await verifyToken(token);
 
-      return handler(request, 'user-id');
+      return handler(request, 'user-id')
     } catch (_error) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-  };
+  }
 }
 
 /**
@@ -282,8 +272,8 @@ async function withAuth(
  */
 export const POST = withAuth(async (request: NextRequest, userId: string) => {
   try {
-    const body = await request.json();
-    const validatedData = validateOrThrow(CreateSessionSchema, body);
+    const body = await request.json()
+    const validatedData = validateOrThrow(CreateSessionSchema, body)
 
     // userId is available from middleware
 
@@ -291,32 +281,23 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
       ...validatedData,
       userId,
       createdAt: new Date(),
-    });
+    })
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true })
   } catch (error) {
     if (isValidationError(error)) {
-      return NextResponse.json(
-        { error: formatValidationError(error) },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: formatValidationError(error) }, { status: 400 })
     }
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
-});
+})
 
 /**
  * Helper function to create consistent error responses
  */
-function createErrorResponse(
-  error: unknown,
-  defaultMessage: string = 'An error occurred'
-) {
-  console.error('API Error:', error);
+function createErrorResponse(error: unknown, defaultMessage: string = 'An error occurred') {
+  console.error('API Error:', error)
 
   if (isValidationError(error)) {
     return NextResponse.json(
@@ -326,7 +307,7 @@ function createErrorResponse(
         details: error.issues,
       },
       { status: 400 }
-    );
+    )
   }
 
   if (error instanceof Error) {
@@ -336,7 +317,7 @@ function createErrorResponse(
         message: error.message,
       },
       { status: 500 }
-    );
+    )
   }
 
   return NextResponse.json(
@@ -345,7 +326,7 @@ function createErrorResponse(
       message: defaultMessage,
     },
     { status: 500 }
-  );
+  )
 }
 
 /**
@@ -353,16 +334,16 @@ function createErrorResponse(
  */
 export async function exampleWithErrorHelper(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json()
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const validatedData = validateOrThrow(CreateCommentSchema, body);
+    const validatedData = validateOrThrow(CreateCommentSchema, body)
 
     // Process data...
     // validatedData available for use
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true })
   } catch (error) {
-    return createErrorResponse(error, 'Failed to create comment');
+    return createErrorResponse(error, 'Failed to create comment')
   }
 }
 
@@ -370,22 +351,19 @@ export async function exampleWithErrorHelper(request: NextRequest) {
  * Type-safe API response helpers
  */
 type ApiSuccessResponse<T> = {
-  success: true;
-  data: T;
-};
+  success: true
+  data: T
+}
 
 type ApiErrorResponse = {
-  success: false;
-  error: string;
-  message?: string;
-  details?: Array<{ path?: string; message: string }>;
-};
+  success: false
+  error: string
+  message?: string
+  details?: Array<{ path?: string; message: string }>
+}
 
-function successResponse<T>(
-  data: T,
-  status: number = 200
-): NextResponse<ApiSuccessResponse<T>> {
-  return NextResponse.json({ success: true, data }, { status });
+function successResponse<T>(data: T, status: number = 200): NextResponse<ApiSuccessResponse<T>> {
+  return NextResponse.json({ success: true, data }, { status })
 }
 
 function errorResponse(
@@ -402,7 +380,7 @@ function errorResponse(
       ...(details && { details }),
     },
     { status }
-  );
+  )
 }
 
 /**
@@ -410,8 +388,8 @@ function errorResponse(
  */
 export async function typeSafeRouteExample(request: NextRequest) {
   try {
-    const body = await request.json();
-    const validatedData = validateOrThrow(CreateSessionSchema, body);
+    const body = await request.json()
+    const validatedData = validateOrThrow(CreateSessionSchema, body)
 
     // Process...
 
@@ -421,22 +399,12 @@ export async function typeSafeRouteExample(request: NextRequest) {
         session: validatedData,
       },
       201
-    );
+    )
   } catch (error) {
     if (isValidationError(error)) {
-      return errorResponse(
-        'Validation failed',
-        formatValidationError(error),
-        error.issues,
-        400
-      );
+      return errorResponse('Validation failed', formatValidationError(error), error.issues, 400)
     }
 
-    return errorResponse(
-      'Internal server error',
-      'Failed to create session',
-      undefined,
-      500
-    );
+    return errorResponse('Internal server error', 'Failed to create session', undefined, 500)
   }
 }

@@ -4,9 +4,9 @@
  * Handles queries for social relationships (follows, group memberships).
  */
 
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { updateSocialGraph } from '@/lib/api/social/helpers';
+import { collection, getDocs, query, where } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
+import { updateSocialGraph } from '@/lib/api/social/helpers'
 
 export class SocialGraphRepository {
   /**
@@ -14,38 +14,35 @@ export class SocialGraphRepository {
    */
   async getFollowingIds(userId: string): Promise<string[]> {
     try {
-      let followingIds: string[] = [];
+      let followingIds: string[] = []
 
       // Try new social_graph structure first
       try {
-        const outboundRef = collection(db, `social_graph/${userId}/outbound`);
-        const outboundSnapshot = await getDocs(outboundRef);
+        const outboundRef = collection(db, `social_graph/${userId}/outbound`)
+        const outboundSnapshot = await getDocs(outboundRef)
 
         if (!outboundSnapshot.empty) {
-          followingIds = outboundSnapshot.docs.map(doc => doc.id);
-          return followingIds;
+          followingIds = outboundSnapshot.docs.map((doc) => doc.id)
+          return followingIds
         }
       } catch (__socialGraphError) {
         // If social_graph doesn't exist, fall through to legacy follows
       }
 
       // Fallback to old follows collection
-      const followingQuery = query(
-        collection(db, 'follows'),
-        where('followerId', '==', userId)
-      );
-      const followingSnapshot = await getDocs(followingQuery);
+      const followingQuery = query(collection(db, 'follows'), where('followerId', '==', userId))
+      const followingSnapshot = await getDocs(followingQuery)
 
-      followingIds = followingSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return data.followingId;
-      });
+      followingIds = followingSnapshot.docs.map((doc) => {
+        const data = doc.data()
+        return data.followingId
+      })
 
-      return followingIds;
-    } catch (error) {
+      return followingIds
+    } catch (_error) {
       throw new Error(
         `Failed to get following IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -54,38 +51,35 @@ export class SocialGraphRepository {
    */
   async getFollowerIds(userId: string): Promise<string[]> {
     try {
-      let followerIds: string[] = [];
+      let followerIds: string[] = []
 
       // Try new social_graph structure first
       try {
-        const inboundRef = collection(db, `social_graph/${userId}/inbound`);
-        const inboundSnapshot = await getDocs(inboundRef);
+        const inboundRef = collection(db, `social_graph/${userId}/inbound`)
+        const inboundSnapshot = await getDocs(inboundRef)
 
         if (!inboundSnapshot.empty) {
-          followerIds = inboundSnapshot.docs.map(doc => doc.id);
-          return followerIds;
+          followerIds = inboundSnapshot.docs.map((doc) => doc.id)
+          return followerIds
         }
       } catch (__socialGraphError) {
         // If social_graph doesn't exist, fall through to legacy follows
       }
 
       // Fallback to old follows collection
-      const followersQuery = query(
-        collection(db, 'follows'),
-        where('followingId', '==', userId)
-      );
-      const followersSnapshot = await getDocs(followersQuery);
+      const followersQuery = query(collection(db, 'follows'), where('followingId', '==', userId))
+      const followersSnapshot = await getDocs(followersQuery)
 
-      followerIds = followersSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return data.followerId;
-      });
+      followerIds = followersSnapshot.docs.map((doc) => {
+        const data = doc.data()
+        return data.followerId
+      })
 
-      return followerIds;
-    } catch (error) {
+      return followerIds
+    } catch (_error) {
       throw new Error(
         `Failed to get follower IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -99,42 +93,42 @@ export class SocialGraphRepository {
         collection(db, 'groupMemberships'),
         where('userId', '==', userId),
         where('status', '==', 'active')
-      );
-      const membershipsSnapshot = await getDocs(membershipsQuery);
-      const groupIds = membershipsSnapshot.docs.map(doc => doc.data().groupId);
+      )
+      const membershipsSnapshot = await getDocs(membershipsQuery)
+      const groupIds = membershipsSnapshot.docs.map((doc) => doc.data().groupId)
 
       if (groupIds.length === 0) {
-        return [];
+        return []
       }
 
       // Get all members from those groups (batch queries due to 'in' limitation)
-      const allMemberIds = new Set<string>();
+      const allMemberIds = new Set<string>()
 
       // Process in batches of 10 (Firestore 'in' limit)
       for (let i = 0; i < groupIds.length; i += 10) {
-        const batchGroupIds = groupIds.slice(i, i + 10);
+        const batchGroupIds = groupIds.slice(i, i + 10)
 
         const groupMembershipsQuery = query(
           collection(db, 'groupMemberships'),
           where('groupId', 'in', batchGroupIds),
           where('status', '==', 'active')
-        );
+        )
 
-        const groupMembershipsSnapshot = await getDocs(groupMembershipsQuery);
-        groupMembershipsSnapshot.docs.forEach(doc => {
-          const memberId = doc.data().userId;
+        const groupMembershipsSnapshot = await getDocs(groupMembershipsQuery)
+        groupMembershipsSnapshot.docs.forEach((doc) => {
+          const memberId = doc.data().userId
           // Don't include the user themselves
           if (memberId !== userId) {
-            allMemberIds.add(memberId);
+            allMemberIds.add(memberId)
           }
-        });
+        })
       }
 
-      return Array.from(allMemberIds);
-    } catch (error) {
+      return Array.from(allMemberIds)
+    } catch (_error) {
       throw new Error(
         `Failed to get group member IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -143,10 +137,10 @@ export class SocialGraphRepository {
    */
   async isFollowing(followerId: string, followingId: string): Promise<boolean> {
     try {
-      const followingIds = await this.getFollowingIds(followerId);
-      return followingIds.includes(followingId);
-    } catch (error) {
-      return false;
+      const followingIds = await this.getFollowingIds(followerId)
+      return followingIds.includes(followingId)
+    } catch (_error) {
+      return false
     }
   }
 
@@ -154,13 +148,13 @@ export class SocialGraphRepository {
    * Follow a user - creates follow relationship and updates counts
    */
   async follow(currentUserId: string, targetUserId: string): Promise<void> {
-    await updateSocialGraph(currentUserId, targetUserId, 'follow');
+    await updateSocialGraph(currentUserId, targetUserId, 'follow')
   }
 
   /**
    * Unfollow a user - removes follow relationship and updates counts
    */
   async unfollow(currentUserId: string, targetUserId: string): Promise<void> {
-    await updateSocialGraph(currentUserId, targetUserId, 'unfollow');
+    await updateSocialGraph(currentUserId, targetUserId, 'unfollow')
   }
 }

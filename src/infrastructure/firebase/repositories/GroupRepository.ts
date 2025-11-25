@@ -17,17 +17,17 @@ import {
   orderBy,
   limit as limitFn,
   writeBatch,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { Group } from '@/domain/entities/Group';
-import { GroupMapper } from '../mappers/GroupMapper';
+} from 'firebase/firestore'
+import { db } from '@/lib/firebase'
+import { Group } from '@/domain/entities/Group'
+import { GroupMapper } from '../mappers/GroupMapper'
 
 export class GroupRepository {
-  private readonly mapper: GroupMapper;
-  private readonly collectionName = 'groups';
+  private readonly mapper: GroupMapper
+  private readonly collectionName = 'groups'
 
   constructor() {
-    this.mapper = new GroupMapper();
+    this.mapper = new GroupMapper()
   }
 
   /**
@@ -35,18 +35,18 @@ export class GroupRepository {
    */
   async findById(groupId: string): Promise<Group | null> {
     try {
-      const docRef = doc(db, this.collectionName, groupId);
-      const docSnap = await getDoc(docRef);
+      const docRef = doc(db, this.collectionName, groupId)
+      const docSnap = await getDoc(docRef)
 
       if (!docSnap.exists()) {
-        return null;
+        return null
       }
 
-      return this.mapper.toDomain(docSnap);
-    } catch (error) {
+      return this.mapper.toDomain(docSnap)
+    } catch (_error) {
       throw new Error(
         `Failed to find group: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -60,14 +60,14 @@ export class GroupRepository {
         where('memberIds', 'array-contains', userId),
         orderBy('createdAt', 'desc'),
         limitFn(limit)
-      );
+      )
 
-      const snapshot = await getDocs(q);
-      return this.mapper.toDomainList(snapshot.docs);
-    } catch (error) {
+      const snapshot = await getDocs(q)
+      return this.mapper.toDomainList(snapshot.docs)
+    } catch (_error) {
       throw new Error(
         `Failed to find groups: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -81,14 +81,14 @@ export class GroupRepository {
         where('privacy', '==', 'public'),
         orderBy('memberCount', 'desc'),
         limitFn(limit)
-      );
+      )
 
-      const snapshot = await getDocs(q);
-      return this.mapper.toDomainList(snapshot.docs);
-    } catch (error) {
+      const snapshot = await getDocs(q)
+      return this.mapper.toDomainList(snapshot.docs)
+    } catch (_error) {
       throw new Error(
         `Failed to find public groups: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -97,14 +97,14 @@ export class GroupRepository {
    */
   async save(group: Group): Promise<void> {
     try {
-      const docRef = doc(db, this.collectionName, group.id);
-      const data = this.mapper.toFirestore(group);
+      const docRef = doc(db, this.collectionName, group.id)
+      const data = this.mapper.toFirestore(group)
 
-      await setDoc(docRef, data, { merge: true });
-    } catch (error) {
+      await setDoc(docRef, data, { merge: true })
+    } catch (_error) {
       throw new Error(
         `Failed to save group: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -115,17 +115,17 @@ export class GroupRepository {
     try {
       // Firestore doesn't have array append in batches
       // We need to read first, then write
-      const group = await this.findById(groupId);
+      const group = await this.findById(groupId)
       if (!group) {
-        throw new Error('Group not found');
+        throw new Error('Group not found')
       }
 
-      const updatedGroup = group.withAddedMember(userId);
-      await this.save(updatedGroup);
-    } catch (error) {
+      const updatedGroup = group.withAddedMember(userId)
+      await this.save(updatedGroup)
+    } catch (_error) {
       throw new Error(
         `Failed to add member: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -134,25 +134,25 @@ export class GroupRepository {
    */
   async removeMember(groupId: string, userId: string): Promise<void> {
     try {
-      const batch = writeBatch(db);
-      const groupRef = doc(db, this.collectionName, groupId);
+      const batch = writeBatch(db)
+      const groupRef = doc(db, this.collectionName, groupId)
 
       // Note: Firestore doesn't have array remove operator in batches
       // We need to read first, then write
-      const group = await this.findById(groupId);
+      const group = await this.findById(groupId)
       if (!group) {
-        throw new Error('Group not found');
+        throw new Error('Group not found')
       }
 
-      const updatedGroup = group.withRemovedMember(userId);
-      const data = this.mapper.toFirestore(updatedGroup);
+      const updatedGroup = group.withRemovedMember(userId)
+      const data = this.mapper.toFirestore(updatedGroup)
 
-      batch.set(groupRef, data);
-      await batch.commit();
-    } catch (error) {
+      batch.set(groupRef, data)
+      await batch.commit()
+    } catch (_error) {
       throw new Error(
         `Failed to remove member: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -161,12 +161,12 @@ export class GroupRepository {
    */
   async delete(groupId: string): Promise<void> {
     try {
-      const docRef = doc(db, this.collectionName, groupId);
-      await deleteDoc(docRef);
-    } catch (error) {
+      const docRef = doc(db, this.collectionName, groupId)
+      await deleteDoc(docRef)
+    } catch (_error) {
       throw new Error(
         `Failed to delete group: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -175,11 +175,11 @@ export class GroupRepository {
    */
   async exists(groupId: string): Promise<boolean> {
     try {
-      const docRef = doc(db, this.collectionName, groupId);
-      const docSnap = await getDoc(docRef);
-      return docSnap.exists();
-    } catch (error) {
-      return false;
+      const docRef = doc(db, this.collectionName, groupId)
+      const docSnap = await getDoc(docRef)
+      return docSnap.exists()
+    } catch (_error) {
+      return false
     }
   }
 
@@ -188,17 +188,17 @@ export class GroupRepository {
    */
   async getMemberCount(groupId: string): Promise<number> {
     try {
-      const docRef = doc(db, this.collectionName, groupId);
-      const docSnap = await getDoc(docRef);
+      const docRef = doc(db, this.collectionName, groupId)
+      const docSnap = await getDoc(docRef)
 
       if (!docSnap.exists()) {
-        return 0;
+        return 0
       }
 
-      const data = docSnap.data();
-      return data.memberCount || data.memberIds?.length || 0;
-    } catch (error) {
-      return 0;
+      const data = docSnap.data()
+      return data.memberCount || data.memberIds?.length || 0
+    } catch (_error) {
+      return 0
     }
   }
 }

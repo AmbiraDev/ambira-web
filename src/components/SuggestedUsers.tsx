@@ -1,17 +1,17 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { SuggestedUser } from '@/types';
-import { firebaseUserApi } from '@/lib/api';
-import { UserCard } from './UserCard';
-import { Button } from '@/components/ui/button';
-import { RefreshCw, Users, Sparkles, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { SuggestedUser } from '@/types'
+import { firebaseUserApi } from '@/lib/api'
+import { UserCard } from './UserCard'
+import { Button } from '@/components/ui/button'
+import { RefreshCw, Users, Sparkles, TrendingUp } from 'lucide-react'
 
 interface SuggestedUsersProps {
-  limit?: number;
-  showHeader?: boolean;
-  onUserSelect?: (user: SuggestedUser) => void;
-  variant?: 'default' | 'compact';
+  limit?: number
+  showHeader?: boolean
+  onUserSelect?: (user: SuggestedUser) => void
+  variant?: 'default' | 'compact'
 }
 
 const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
@@ -20,45 +20,45 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
   onUserSelect,
   variant = 'default',
 }) => {
-  const [suggestions, setSuggestions] = useState<SuggestedUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [suggestions, setSuggestions] = useState<SuggestedUser[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const loadSuggestions = async (isRefresh = false) => {
     try {
       if (isRefresh) {
-        setIsRefreshing(true);
+        setIsRefreshing(true)
       } else {
-        setIsLoading(true);
+        setIsLoading(true)
       }
 
-      const suggestions = await firebaseUserApi.getSuggestedUsers(limit);
-      setSuggestions(suggestions);
+      const suggestions = await firebaseUserApi.getSuggestedUsers(limit)
+      setSuggestions(suggestions)
     } catch (error) {
       // Don't show error for empty database - just set empty array
       if (error instanceof Error && error.message.includes('permissions')) {
-        setSuggestions([]);
+        setSuggestions([])
       } else {
-        setSuggestions([]);
+        setSuggestions([])
       }
     } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);
+      setIsLoading(false)
+      setIsRefreshing(false)
     }
-  };
+  }
 
   useEffect(() => {
-    loadSuggestions();
+    loadSuggestions()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [limit]);
+  }, [limit])
 
   const handleRefresh = () => {
-    loadSuggestions(true);
-  };
+    loadSuggestions(true)
+  }
 
   const handleFollowChange = (userId: string, isFollowing: boolean) => {
-    setSuggestions(prev =>
-      prev.map(user =>
+    setSuggestions((prev) =>
+      prev.map((user) =>
         user.id === userId
           ? {
               ...user,
@@ -69,42 +69,42 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
             }
           : user
       )
-    );
-  };
+    )
+  }
 
   const getReasonIcon = (reason: string) => {
     switch (reason) {
       case 'mutual_followers':
-        return <Users className="w-3 h-3" />;
+        return <Users className="w-3 h-3" />
       case 'similar_interests':
-        return <Sparkles className="w-3 h-3" />;
+        return <Sparkles className="w-3 h-3" />
       case 'popular_user':
-        return <TrendingUp className="w-3 h-3" />;
+        return <TrendingUp className="w-3 h-3" />
       case 'location_based':
-        return <Users className="w-3 h-3" />;
+        return <Users className="w-3 h-3" />
       case 'activity_based':
-        return <TrendingUp className="w-3 h-3" />;
+        return <TrendingUp className="w-3 h-3" />
       default:
-        return <Users className="w-3 h-3" />;
+        return <Users className="w-3 h-3" />
     }
-  };
+  }
 
   const getReasonColor = (reason: string): string => {
     switch (reason) {
       case 'mutual_followers':
-        return 'text-blue-600';
+        return 'text-blue-600'
       case 'similar_interests':
-        return 'text-purple-600';
+        return 'text-purple-600'
       case 'popular_user':
-        return 'text-orange-600';
+        return 'text-orange-600'
       case 'location_based':
-        return 'text-green-600';
+        return 'text-green-600'
       case 'activity_based':
-        return 'text-pink-600';
+        return 'text-pink-600'
       default:
-        return 'text-gray-600';
+        return 'text-gray-600'
     }
-  };
+  }
 
   if (isLoading) {
     return (
@@ -132,7 +132,7 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
           ))}
         </div>
       </div>
-    );
+    )
   }
 
   if (suggestions.length === 0) {
@@ -151,23 +151,19 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
               disabled={isRefreshing}
               className="h-8 w-8 p-0"
             >
-              <RefreshCw
-                className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`}
-              />
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             </Button>
           </div>
         )}
         <div className="text-center py-8">
           <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-          <h4 className="font-medium text-foreground mb-1">
-            No suggestions available
-          </h4>
+          <h4 className="font-medium text-foreground mb-1">No suggestions available</h4>
           <p className="text-sm text-muted-foreground">
             We couldn't find any users to suggest right now. Try again later.
           </p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -185,15 +181,13 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
             disabled={isRefreshing}
             className="h-8 w-8 p-0"
           >
-            <RefreshCw
-              className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`}
-            />
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       )}
 
       <div className="space-y-3">
-        {suggestions.map(user => (
+        {suggestions.map((user) => (
           <div key={user.id} onClick={() => onUserSelect?.(user)}>
             {variant === 'compact' ? (
               <div className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors">
@@ -216,17 +210,13 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
 
                   {/* User Info */}
                   <div className="min-w-0 flex-1">
-                    <h4 className="font-medium text-foreground truncate">
-                      {user.name}
-                    </h4>
+                    <h4 className="font-medium text-foreground truncate">{user.name}</h4>
                     <p className="text-sm text-muted-foreground truncate">
                       {user.followersCount || 0} followers
                     </p>
                     <div className="flex items-center gap-1 mt-1">
                       {getReasonIcon(user.reason)}
-                      <span
-                        className={`text-xs ${getReasonColor(user.reason)}`}
-                      >
+                      <span className={`text-xs ${getReasonColor(user.reason)}`}>
                         {user.reason.replace('_', ' ')}
                       </span>
                     </div>
@@ -238,8 +228,8 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
                   <Button
                     size="sm"
                     className="flex items-center gap-1 min-w-[70px]"
-                    onClick={e => {
-                      e.stopPropagation();
+                    onClick={(e) => {
+                      e.stopPropagation()
                       // Handle follow logic here
                     }}
                   >
@@ -248,31 +238,23 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
                 )}
               </div>
             ) : (
-              <UserCard
-                user={user}
-                variant="suggestion"
-                onFollowChange={handleFollowChange}
-              />
+              <UserCard user={user} variant="suggestion" onFollowChange={handleFollowChange} />
             )}
           </div>
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
 // Compact sidebar version
-export const SuggestedUsersSidebar: React.FC<SuggestedUsersProps> = props => {
-  return (
-    <SuggestedUsers {...props} limit={5} variant="compact" showHeader={true} />
-  );
-};
+export const SuggestedUsersSidebar: React.FC<SuggestedUsersProps> = (props) => {
+  return <SuggestedUsers {...props} limit={5} variant="compact" showHeader={true} />
+}
 
 // Widget version for dashboard
-export const SuggestedUsersWidget: React.FC<SuggestedUsersProps> = props => {
-  return (
-    <SuggestedUsers {...props} limit={6} variant="compact" showHeader={true} />
-  );
-};
+export const SuggestedUsersWidget: React.FC<SuggestedUsersProps> = (props) => {
+  return <SuggestedUsers {...props} limit={6} variant="compact" showHeader={true} />
+}
 
-export default SuggestedUsers;
+export default SuggestedUsers

@@ -5,17 +5,13 @@
  * Includes optimistic updates and cache invalidation.
  */
 
-import {
-  useMutation,
-  useQueryClient,
-  UseMutationOptions,
-} from '@tanstack/react-query';
-import { GroupService } from '../services/GroupService';
-import { GROUPS_KEYS } from './useGroups';
-import { Group } from '@/types';
+import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query'
+import { GroupService } from '../services/GroupService'
+import { GROUPS_KEYS } from './useGroups'
+import { Group } from '@/types'
 
 // Singleton service instance
-const groupService = new GroupService();
+const groupService = new GroupService()
 
 // ==================== MUTATION HOOKS ====================
 
@@ -27,43 +23,36 @@ const groupService = new GroupService();
  * joinMutation.mutate({ groupId: '123', userId: 'user-456' });
  */
 export function useJoinGroup(
-  options?: Partial<
-    UseMutationOptions<void, Error, { groupId: string; userId: string }>
-  >
+  options?: Partial<UseMutationOptions<void, Error, { groupId: string; userId: string }>>
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation<void, Error, { groupId: string; userId: string }>({
-    mutationFn: ({ groupId, userId }) =>
-      groupService.joinGroup({ groupId }, userId),
+    mutationFn: ({ groupId, userId }) => groupService.joinGroup({ groupId }, userId),
 
     onMutate: async ({ groupId, userId }) => {
       // Cancel outgoing queries
       await queryClient.cancelQueries({
         queryKey: GROUPS_KEYS.detail(groupId),
-      });
+      })
       await queryClient.cancelQueries({
         queryKey: GROUPS_KEYS.userGroups(userId),
-      });
+      })
 
       // Snapshot previous values for rollback
-      const previousGroup = queryClient.getQueryData<Group>(
-        GROUPS_KEYS.detail(groupId)
-      );
-      const previousUserGroups = queryClient.getQueryData<Group[]>(
-        GROUPS_KEYS.userGroups(userId)
-      );
+      const previousGroup = queryClient.getQueryData<Group>(GROUPS_KEYS.detail(groupId))
+      const previousUserGroups = queryClient.getQueryData<Group[]>(GROUPS_KEYS.userGroups(userId))
 
       // Optimistically update group member count
-      queryClient.setQueryData<Group>(GROUPS_KEYS.detail(groupId), old => {
-        if (!old) return old;
+      queryClient.setQueryData<Group>(GROUPS_KEYS.detail(groupId), (old) => {
+        if (!old) return old
         return {
           ...old,
           memberIds: [...old.memberIds, userId],
-        };
-      });
+        }
+      })
 
-      return { previousGroup, previousUserGroups };
+      return { previousGroup, previousUserGroups }
     },
 
     onError: (error, variables, context: unknown) => {
@@ -77,7 +66,7 @@ export function useJoinGroup(
         queryClient.setQueryData<Group>(
           GROUPS_KEYS.detail(variables.groupId),
           context.previousGroup as Group
-        );
+        )
       }
       if (
         context &&
@@ -88,25 +77,25 @@ export function useJoinGroup(
         queryClient.setQueryData<Group[]>(
           GROUPS_KEYS.userGroups(variables.userId),
           context.previousUserGroups as Group[]
-        );
+        )
       }
     },
 
     onSuccess: (_, { groupId, userId }) => {
       // Invalidate relevant caches
-      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) });
+      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) })
       queryClient.invalidateQueries({
         queryKey: GROUPS_KEYS.userGroups(userId),
-      });
-      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.stats(groupId) });
+      })
+      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.stats(groupId) })
       // Invalidate suggested groups so the joined group is removed from suggestions
       queryClient.invalidateQueries({
         queryKey: ['suggested', 'groups'],
-      });
+      })
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -117,49 +106,42 @@ export function useJoinGroup(
  * leaveMutation.mutate({ groupId: '123', userId: 'user-456' });
  */
 export function useLeaveGroup(
-  options?: Partial<
-    UseMutationOptions<void, Error, { groupId: string; userId: string }>
-  >
+  options?: Partial<UseMutationOptions<void, Error, { groupId: string; userId: string }>>
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation<void, Error, { groupId: string; userId: string }>({
-    mutationFn: ({ groupId, userId }) =>
-      groupService.leaveGroup({ groupId }, userId),
+    mutationFn: ({ groupId, userId }) => groupService.leaveGroup({ groupId }, userId),
 
     onMutate: async ({ groupId, userId }) => {
       // Cancel outgoing queries
       await queryClient.cancelQueries({
         queryKey: GROUPS_KEYS.detail(groupId),
-      });
+      })
       await queryClient.cancelQueries({
         queryKey: GROUPS_KEYS.userGroups(userId),
-      });
+      })
 
       // Snapshot previous values
-      const previousGroup = queryClient.getQueryData<Group>(
-        GROUPS_KEYS.detail(groupId)
-      );
-      const previousUserGroups = queryClient.getQueryData<Group[]>(
-        GROUPS_KEYS.userGroups(userId)
-      );
+      const previousGroup = queryClient.getQueryData<Group>(GROUPS_KEYS.detail(groupId))
+      const previousUserGroups = queryClient.getQueryData<Group[]>(GROUPS_KEYS.userGroups(userId))
 
       // Optimistically update group
-      queryClient.setQueryData<Group>(GROUPS_KEYS.detail(groupId), old => {
-        if (!old) return old;
+      queryClient.setQueryData<Group>(GROUPS_KEYS.detail(groupId), (old) => {
+        if (!old) return old
         return {
           ...old,
-          memberIds: old.memberIds.filter(id => id !== userId),
-        };
-      });
+          memberIds: old.memberIds.filter((id) => id !== userId),
+        }
+      })
 
       // Optimistically remove from user groups
-      queryClient.setQueryData<Group[]>(GROUPS_KEYS.userGroups(userId), old => {
-        if (!Array.isArray(old)) return old;
-        return old.filter(group => group.id !== groupId);
-      });
+      queryClient.setQueryData<Group[]>(GROUPS_KEYS.userGroups(userId), (old) => {
+        if (!Array.isArray(old)) return old
+        return old.filter((group) => group.id !== groupId)
+      })
 
-      return { previousGroup, previousUserGroups };
+      return { previousGroup, previousUserGroups }
     },
 
     onError: (error, variables, context: unknown) => {
@@ -173,7 +155,7 @@ export function useLeaveGroup(
         queryClient.setQueryData<Group>(
           GROUPS_KEYS.detail(variables.groupId),
           context.previousGroup as Group
-        );
+        )
       }
       if (
         context &&
@@ -184,21 +166,21 @@ export function useLeaveGroup(
         queryClient.setQueryData<Group[]>(
           GROUPS_KEYS.userGroups(variables.userId),
           context.previousUserGroups as Group[]
-        );
+        )
       }
     },
 
     onSuccess: (_, { groupId, userId }) => {
       // Invalidate relevant caches
-      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) });
+      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) })
       queryClient.invalidateQueries({
         queryKey: GROUPS_KEYS.userGroups(userId),
-      });
-      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.stats(groupId) });
+      })
+      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.stats(groupId) })
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -210,11 +192,11 @@ export function useLeaveGroup(
  * invalidateGroups();
  */
 export function useInvalidateGroups() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return () => {
-    queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.all() });
-  };
+    queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.all() })
+  }
 }
 
 /**
@@ -225,9 +207,9 @@ export function useInvalidateGroups() {
  * invalidateGroup('group-123');
  */
 export function useInvalidateGroup() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return (groupId: string) => {
-    queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) });
-  };
+    queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) })
+  }
 }

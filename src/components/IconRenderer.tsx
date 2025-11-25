@@ -1,12 +1,12 @@
-import React from 'react';
-import * as Icons from 'lucide-react';
-import { Icon } from '@iconify/react';
+import React from 'react'
+import * as Icons from 'lucide-react'
+import { Icon } from '@iconify/react'
 
 interface IconRendererProps {
-  iconName: string;
-  className?: string;
-  size?: number;
-  style?: React.CSSProperties;
+  iconName: string
+  className?: string
+  size?: number
+  style?: React.CSSProperties
 }
 
 /**
@@ -22,15 +22,7 @@ export const IconRenderer: React.FC<IconRendererProps> = ({
 }) => {
   // Check if it's an Iconify icon (contains a colon, e.g., "flat-color-icons:briefcase")
   if (iconName && iconName.includes(':')) {
-    return (
-      <Icon
-        icon={iconName}
-        width={size}
-        height={size}
-        className={className}
-        style={style}
-      />
-    );
+    return <Icon icon={iconName} width={size} height={size} className={className} style={style} />
   }
 
   // Legacy Lucide icon support (e.g., "Briefcase")
@@ -38,13 +30,13 @@ export const IconRenderer: React.FC<IconRendererProps> = ({
   const iconsRecord = Icons as unknown as Record<
     string,
     React.ComponentType<{
-      className?: string;
-      size?: number;
-      style?: React.CSSProperties;
+      className?: string
+      size?: number
+      style?: React.CSSProperties
     }>
-  >;
-  const IconComponent = (iconName && iconsRecord[iconName]) || Icons.Briefcase;
-  return <IconComponent className={className} size={size} style={style} />;
-};
+  >
+  const IconComponent = (iconName && iconsRecord[iconName]) || Icons.Briefcase
+  return <IconComponent className={className} size={size} style={style} />
+}
 
-export default IconRenderer;
+export default IconRenderer

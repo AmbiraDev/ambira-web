@@ -5,47 +5,40 @@
  * Shows user's Progress and Sessions in tabbed interface
  */
 
-'use client';
+'use client'
 
-import React, { useState, useMemo } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
-import BottomNavigation from '@/components/BottomNavigation';
-import Footer from '@/components/Footer';
-import Header from '@/components/HeaderComponent';
-import { useUserSessions } from '@/features/sessions/hooks';
-import { useProfileStats } from '@/features/profile/hooks';
-import { useActivities } from '@/hooks/useActivitiesQuery';
-import { Feed } from '@/components/Feed';
-import { Settings, BarChart3, ChevronDown } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import {
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-  Tooltip,
-  Area,
-  ComposedChart,
-} from 'recharts';
+import React, { useState, useMemo } from 'react'
+import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
+import BottomNavigation from '@/components/BottomNavigation'
+import Footer from '@/components/Footer'
+import Header from '@/components/HeaderComponent'
+import { useUserSessions } from '@/features/sessions/hooks'
+import { useProfileStats } from '@/features/profile/hooks'
+import { useActivities } from '@/hooks/useActivitiesQuery'
+import { Feed } from '@/components/Feed'
+import { Settings, BarChart3, ChevronDown } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart } from 'recharts'
 
-type YouTab = 'progress' | 'sessions';
-type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
+type YouTab = 'progress' | 'sessions'
+type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y'
 
 interface ChartDataPoint {
-  name: string;
-  hours: number;
-  sessions: number;
-  avgDuration: number;
+  name: string
+  hours: number
+  sessions: number
+  avgDuration: number
 }
 
 export function YouPageContent() {
-  const { user } = useAuth();
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState<YouTab>('progress');
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
-  const [selectedActivityId, setSelectedActivityId] = useState<string>('all');
-  const [showActivityDropdown, setShowActivityDropdown] = useState(false);
+  const { user } = useAuth()
+  const router = useRouter()
+  const [activeTab, setActiveTab] = useState<YouTab>('progress')
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D')
+  const [selectedActivityId, setSelectedActivityId] = useState<string>('all')
+  const [showActivityDropdown, setShowActivityDropdown] = useState(false)
 
   // Fetch data
   const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions(
@@ -54,82 +47,70 @@ export function YouPageContent() {
     {
       enabled: !!user?.id,
     }
-  );
-  const { data: stats, isLoading: statsLoading } = useProfileStats(
-    user?.id || '',
-    {
-      enabled: !!user?.id,
-    }
-  );
-  const { data: activities = [] } = useActivities(user?.id);
+  )
+  const { data: stats, isLoading: statsLoading } = useProfileStats(user?.id || '', {
+    enabled: !!user?.id,
+  })
+  const { data: activities = [] } = useActivities(user?.id)
 
-  const isLoading = sessionsLoading || statsLoading;
+  const isLoading = sessionsLoading || statsLoading
 
   // Filter sessions by activity
   const filteredSessions = useMemo(() => {
     if (selectedActivityId === 'all') {
-      return sessions;
+      return sessions
     }
     return sessions.filter(
-      s =>
-        s.activityId === selectedActivityId ||
-        s.projectId === selectedActivityId
-    );
-  }, [sessions, selectedActivityId]);
+      (s) => s.activityId === selectedActivityId || s.projectId === selectedActivityId
+    )
+  }, [sessions, selectedActivityId])
 
   // Calculate stats for selected time period
   const calculatedStats = useMemo(() => {
-    const now = new Date();
+    const now = new Date()
 
     const getDateRange = (period: TimePeriod) => {
-      const end = new Date(now);
-      const start = new Date(now);
+      const end = new Date(now)
+      const start = new Date(now)
 
       switch (period) {
         case '7D':
-          start.setDate(now.getDate() - 7);
-          break;
+          start.setDate(now.getDate() - 7)
+          break
         case '2W':
-          start.setDate(now.getDate() - 14);
-          break;
+          start.setDate(now.getDate() - 14)
+          break
         case '4W':
-          start.setDate(now.getDate() - 28);
-          break;
+          start.setDate(now.getDate() - 28)
+          break
         case '3M':
-          start.setMonth(now.getMonth() - 3);
-          break;
+          start.setMonth(now.getMonth() - 3)
+          break
         case '1Y':
-          start.setFullYear(now.getFullYear() - 1);
-          break;
+          start.setFullYear(now.getFullYear() - 1)
+          break
       }
 
-      return { start, end };
-    };
+      return { start, end }
+    }
 
-    const currentRange = getDateRange(timePeriod);
+    const currentRange = getDateRange(timePeriod)
 
-    const currentPeriodSessions = filteredSessions.filter(s => {
-      const sessionDate = new Date(s.createdAt);
-      return (
-        sessionDate >= currentRange.start && sessionDate <= currentRange.end
-      );
-    });
+    const currentPeriodSessions = filteredSessions.filter((s) => {
+      const sessionDate = new Date(s.createdAt)
+      return sessionDate >= currentRange.start && sessionDate <= currentRange.end
+    })
 
-    const currentHours = currentPeriodSessions.reduce(
-      (sum, s) => sum + s.duration / 3600,
-      0
-    );
-    const currentSessionCount = currentPeriodSessions.length;
+    const currentHours = currentPeriodSessions.reduce((sum, s) => sum + s.duration / 3600, 0)
+    const currentSessionCount = currentPeriodSessions.length
     const currentAvgDuration =
       currentSessionCount > 0
-        ? currentPeriodSessions.reduce((sum, s) => sum + s.duration, 0) /
-          currentSessionCount /
-          60
-        : 0;
+        ? currentPeriodSessions.reduce((sum, s) => sum + s.duration, 0) / currentSessionCount / 60
+        : 0
 
     const currentActiveDays = new Set(
-      currentPeriodSessions.map(s => new Date(s.createdAt).toDateString())
-    ).size;
+      currentPeriodSessions.map((s) => new Date(s.createdAt).toDateString())
+    ).size
 
     return {
       totalHours: currentHours,
@@ -139,46 +120,41 @@ export function YouPageContent() {
       longestStreak: stats?.longestStreak ?? 0,
       activeDays: currentActiveDays,
       activities: (activities && activities.length) || 0,
-    };
-  }, [filteredSessions, stats, activities, timePeriod]);
+    }
+  }, [filteredSessions, stats, activities, timePeriod])
 
   // Chart data
   const chartData = useMemo(() => {
-    if (!filteredSessions) return [];
-    const now = new Date();
-    const data: ChartDataPoint[] = [];
+    if (!filteredSessions) return []
+    const now = new Date()
+    const data: ChartDataPoint[] = []
 
     if (timePeriod === '7D') {
-      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
       for (let i = 6; i >= 0; i--) {
-        const day = new Date(now);
-        day.setDate(day.getDate() - i);
+        const day = new Date(now)
+        day.setDate(day.getDate() - i)
         const daySessions = filteredSessions.filter(
-          s => new Date(s.createdAt).toDateString() === day.toDateString()
-        );
-        const hoursWorked = daySessions.reduce(
-          (sum, s) => sum + s.duration / 3600,
-          0
-        );
+          (s) => new Date(s.createdAt).toDateString() === day.toDateString()
+        )
+        const hoursWorked = daySessions.reduce((sum, s) => sum + s.duration / 3600, 0)
         const avgDuration =
           daySessions.length > 0
-            ? daySessions.reduce((sum, s) => sum + s.duration, 0) /
-              daySessions.length /
-              60
-            : 0;
-        const dayIndex = day.getDay();
-        const dayName = dayNames[dayIndex]?.slice(0, 3) ?? 'Day';
+            ? daySessions.reduce((sum, s) => sum + s.duration, 0) / daySessions.length / 60
+            : 0
+        const dayIndex = day.getDay()
+        const dayName = dayNames[dayIndex]?.slice(0, 3) ?? 'Day'
         data.push({
           name: `${dayName} ${day.getDate()}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration),
-        });
+        })
       }
     }
     // Add other time periods as needed
-    return data;
-  }, [filteredSessions, timePeriod]);
+    return data
+  }, [filteredSessions, timePeriod])
 
   // Custom tooltip
   const CustomTooltip = ({
@@ -186,9 +162,9 @@ export function YouPageContent() {
     payload,
     label,
   }: {
-    active?: boolean;
-    payload?: Array<{ name: string; value: number; color: string }>;
-    label?: string;
+    active?: boolean
+    payload?: Array<{ name: string; value: number; color: string }>
+    label?: string
   }) => {
     if (active && payload && payload.length) {
       return (
@@ -200,12 +176,12 @@ export function YouPageContent() {
             </p>
           ))}
         </div>
-      );
+      )
     }
-    return null;
-  };
+    return null
+  }
 
-  if (!user) return null;
+  if (!user) return null
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -294,8 +270,8 @@ export function YouPageContent() {
                   <span className="truncate">
                     {selectedActivityId === 'all'
                       ? 'All activities'
-                      : activities?.find(p => p.id === selectedActivityId)
-                          ?.name || 'All activities'}
+                      : activities?.find((p) => p.id === selectedActivityId)?.name ||
+                        'All activities'}
                   </span>
                   <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
                 </button>
@@ -308,19 +284,19 @@ export function YouPageContent() {
                     <div className="absolute left-0 top-full mt-2 w-full max-w-xs bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
                       <button
                         onClick={() => {
-                          setSelectedActivityId('all');
-                          setShowActivityDropdown(false);
+                          setSelectedActivityId('all')
+                          setShowActivityDropdown(false)
                         }}
                         className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedActivityId === 'all' ? 'bg-blue-50 text-blue-600' : ''}`}
                       >
                         All activities
                       </button>
-                      {activities?.map(activity => (
+                      {activities?.map((activity) => (
                         <button
                           key={activity.id}
                           onClick={() => {
-                            setSelectedActivityId(activity.id);
-                            setShowActivityDropdown(false);
+                            setSelectedActivityId(activity.id)
+                            setShowActivityDropdown(false)
                           }}
                           className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedActivityId === activity.id ? 'bg-blue-50 text-blue-600' : ''}`}
                         >
@@ -334,29 +310,25 @@ export function YouPageContent() {
 
               {/* Time Period Buttons */}
               <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-                {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map(
-                  period => (
-                    <button
-                      key={period}
-                      onClick={() => setTimePeriod(period)}
-                      className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors ${
-                        timePeriod === period
-                          ? 'bg-gray-900 text-white'
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-                      }`}
-                    >
-                      {period}
-                    </button>
-                  )
-                )}
+                {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
+                  <button
+                    key={period}
+                    onClick={() => setTimePeriod(period)}
+                    className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors ${
+                      timePeriod === period
+                        ? 'bg-gray-900 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                    }`}
+                  >
+                    {period}
+                  </button>
+                ))}
               </div>
             </div>
 
             {/* Chart */}
             <div className="bg-white border border-gray-200 rounded-lg p-6 mb-4">
-              <h3 className="font-semibold text-gray-900 mb-4">
-                Hours completed
-              </h3>
+              <h3 className="font-semibold text-gray-900 mb-4">Hours completed</h3>
               <div className="h-72">
                 {isLoading ? (
                   <div className="h-full bg-gray-50 rounded animate-pulse" />
@@ -385,23 +357,9 @@ export function YouPageContent() {
                       margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                     >
                       <defs>
-                        <linearGradient
-                          id="colorHours"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="5%"
-                            stopColor="#0066CC"
-                            stopOpacity={0.3}
-                          />
-                          <stop
-                            offset="95%"
-                            stopColor="#0066CC"
-                            stopOpacity={0}
-                          />
+                        <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#0066CC" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#0066CC" stopOpacity={0} />
                         </linearGradient>
                       </defs>
                       <XAxis
@@ -437,46 +395,33 @@ export function YouPageContent() {
                 <div className="text-xs text-gray-600 mb-1 uppercase tracking-wide">
                   Total Hours
                 </div>
-                <div className="text-2xl font-bold">
-                  {calculatedStats.totalHours.toFixed(1)}
-                </div>
+                <div className="text-2xl font-bold">{calculatedStats.totalHours.toFixed(1)}</div>
               </div>
 
               <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <div className="text-xs text-gray-600 mb-1 uppercase tracking-wide">
-                  Sessions
-                </div>
-                <div className="text-2xl font-bold">
-                  {calculatedStats.sessions}
-                </div>
+                <div className="text-xs text-gray-600 mb-1 uppercase tracking-wide">Sessions</div>
+                <div className="text-2xl font-bold">{calculatedStats.sessions}</div>
               </div>
 
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <div className="text-xs text-gray-600 mb-1 uppercase tracking-wide">
                   Avg Duration
                 </div>
-                <div className="text-2xl font-bold">
-                  {calculatedStats.avgDuration}m
-                </div>
+                <div className="text-2xl font-bold">{calculatedStats.avgDuration}m</div>
               </div>
 
               <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <div className="text-xs text-gray-600 mb-1 uppercase tracking-wide">
                   Current Streak
                 </div>
-                <div className="text-2xl font-bold">
-                  {calculatedStats.currentStreak}
-                </div>
+                <div className="text-2xl font-bold">{calculatedStats.currentStreak}</div>
               </div>
             </div>
           </div>
         ) : (
           /* Sessions Tab */
           <div className="max-w-4xl mx-auto">
-            <Feed
-              filters={{ type: 'user', userId: user?.id }}
-              showEndMessage={true}
-            />
+            <Feed filters={{ type: 'user', userId: user?.id }} showEndMessage={true} />
           </div>
         )}
       </div>
@@ -487,5 +432,5 @@ export function YouPageContent() {
       </div>
       <Footer />
     </div>
-  );
+  )
 }

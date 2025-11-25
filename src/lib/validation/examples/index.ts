@@ -7,9 +7,9 @@
  */
 
 // Re-export example components for easy importing
-export { SessionFormExample } from './SessionFormExample';
-export { CommentFormExample, InlineCommentExample } from './CommentFormExample';
-export { ProfileUpdateExample } from './ProfileUpdateExample';
+export { SessionFormExample } from './SessionFormExample'
+export { CommentFormExample, InlineCommentExample } from './CommentFormExample'
+export { ProfileUpdateExample } from './ProfileUpdateExample'
 
 // API route examples are not exported as they are reference implementations
 // Import directly from './ApiRouteExample' if needed for reference

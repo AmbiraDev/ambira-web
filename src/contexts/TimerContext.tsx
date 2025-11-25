@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 /**
  * TimerContext - Placeholder for backwards compatibility
@@ -6,18 +6,16 @@
  * Use: import { useTimer } from '@/features/timer/hooks/useTimer';
  */
 
-import React, { createContext } from 'react';
+import React, { createContext } from 'react'
 
-export const TimerContext = createContext<null>(null) as React.Context<null>;
+export const TimerContext = createContext<null>(null) as React.Context<null>
 
-export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  return <TimerContext.Provider value={null}>{children}</TimerContext.Provider>;
-};
+export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return <TimerContext.Provider value={null}>{children}</TimerContext.Provider>
+}
 
 export const useTimer = () => {
   throw new Error(
     'useTimer has been migrated to @/features/timer/hooks/useTimer. Please update your imports.'
-  );
-};
+  )
+}

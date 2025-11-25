@@ -3,23 +3,13 @@
  * Shared utilities for session operations
  */
 
-import {
-  doc,
-  getDoc,
-  DocumentSnapshot,
-  DocumentData,
-} from 'firebase/firestore';
+import { doc, getDoc, DocumentSnapshot, DocumentData } from 'firebase/firestore'
 
-import { db, auth } from '@/lib/firebase';
-import {
-  handleError,
-  isPermissionError,
-  isNotFoundError,
-  ErrorSeverity,
-} from '@/lib/errorHandler';
-import { convertTimestamp } from '../shared/utils';
-import type { SessionWithDetails, Activity, Session } from '@/types';
-import { getAllActivityTypes } from '../activityTypes';
+import { db, auth } from '@/lib/firebase'
+import { handleError, isPermissionError, isNotFoundError, ErrorSeverity } from '@/lib/errorHandler'
+import { convertTimestamp } from '../shared/utils'
+import type { SessionWithDetails, Activity, Session } from '@/types'
+import { getAllActivityTypes } from '../activityTypes'
 
 /**
  * Get the activity ID from a session, checking both new and legacy fields
@@ -28,32 +18,28 @@ import { getAllActivityTypes } from '../activityTypes';
  * @param session - Session object (can be partial with just activityId/projectId)
  * @returns The activity ID or 'unassigned' if neither field exists
  */
-export function getSessionActivityId(
-  session: Pick<Session, 'activityId' | 'projectId'>
-): string {
-  return session.activityId || session.projectId || 'unassigned';
+export function getSessionActivityId(session: Pick<Session, 'activityId' | 'projectId'>): string {
+  return session.activityId || session.projectId || 'unassigned'
 }
 
 export const populateSessionsWithDetails = async (
   sessionDocs: DocumentSnapshot[]
 ): Promise<SessionWithDetails[]> => {
-  const sessions: SessionWithDetails[] = [];
-  const batchSize = 10;
+  const sessions: SessionWithDetails[] = []
+  const batchSize = 10
 
   // Cache activity types to avoid fetching multiple times
   // Key: userId, Value: Map of activityId to activity data
-  const activityCache = new Map<string, Map<string, DocumentData>>();
+  const activityCache = new Map<string, Map<string, DocumentData>>()
 
   // Helper to get or fetch activities for a user
-  const getActivitiesForUser = async (
-    userId: string
-  ): Promise<Map<string, DocumentData>> => {
+  const getActivitiesForUser = async (userId: string): Promise<Map<string, DocumentData>> => {
     if (!activityCache.has(userId)) {
-      const allActivityTypes = await getAllActivityTypes(userId);
+      const allActivityTypes = await getAllActivityTypes(userId)
 
-      const activityMap = new Map<string, DocumentData>();
+      const activityMap = new Map<string, DocumentData>()
 
-      allActivityTypes.forEach(at => {
+      allActivityTypes.forEach((at) => {
         activityMap.set(at.id, {
           id: at.id,
           name: at.name,
@@ -62,70 +48,66 @@ export const populateSessionsWithDetails = async (
           description: at.description || '',
           status: 'active',
           isDefault: at.isSystem,
-        });
-      });
+        })
+      })
 
-      activityCache.set(userId, activityMap);
+      activityCache.set(userId, activityMap)
     }
 
-    return activityCache.get(userId)!;
-  };
+    return activityCache.get(userId)!
+  }
 
   for (let i = 0; i < sessionDocs.length; i += batchSize) {
-    const batch = sessionDocs.slice(i, i + batchSize);
-    const batchPromises = batch.map(async sessionDoc => {
-      const sessionDataRaw = sessionDoc.data();
+    const batch = sessionDocs.slice(i, i + batchSize)
+    const batchPromises = batch.map(async (sessionDoc) => {
+      const sessionDataRaw = sessionDoc.data()
 
       // Skip if session data doesn't exist
       if (!sessionDataRaw) {
-        return null;
+        return null
       }
 
       // Type assertion to help TypeScript understand sessionData is non-null after check
-      const sessionData = sessionDataRaw as DocumentData;
+      const sessionData = sessionDataRaw as DocumentData
 
       // Get user data - skip session if user has been deleted or is inaccessible
-      let userDoc;
+      let userDoc
       try {
-        userDoc = await getDoc(doc(db, 'users', sessionData.userId));
+        userDoc = await getDoc(doc(db, 'users', sessionData.userId))
       } catch (_error) {
         // Handle permission errors for deleted users
         if (isPermissionError(_error) || isNotFoundError(_error)) {
-          return null;
+          return null
         }
         // Re-throw other errors
-        throw _error;
+        throw _error
       }
 
       if (!userDoc.exists()) {
         // User no longer exists - skip session
-        return null;
+        return null
       }
-      const userData = userDoc.data() as DocumentData | undefined;
+      const userData = userDoc.data() as DocumentData | undefined
 
       // Get activity data (check both activityId and projectId for backwards compatibility)
-      let activityData: DocumentData | null = null;
-      const activityId = sessionData.activityId || sessionData.projectId;
+      let activityData: DocumentData | null = null
+      const activityId = sessionData.activityId || sessionData.projectId
 
       if (activityId) {
         try {
           // Fetch all activities for this user (cached)
-          const userActivities = await getActivitiesForUser(sessionData.userId);
-          activityData = userActivities.get(activityId) || null;
+          const userActivities = await getActivitiesForUser(sessionData.userId)
+          activityData = userActivities.get(activityId) || null
         } catch (_error) {
-          handleError(
-            _error,
-            `Fetch activities for user ${sessionData.userId}`,
-            {
-              severity: ErrorSeverity.WARNING,
-            }
-          );
+          handleError(_error, `Fetch activities for user ${sessionData.userId}`, {
+            severity: ErrorSeverity.WARNING,
+          })
         }
       }
 
       // Check if current user has supported this session
-      const supportedBy = sessionData.supportedBy || [];
-      const isSupported = supportedBy.includes(auth.currentUser!.uid);
+      const supportedBy = sessionData.supportedBy || []
+      const isSupported = supportedBy.includes(auth.currentUser!.uid)
 
       // Build activity object
       // If activityData exists, use it. Otherwise, provide a friendly fallback based on the activityId
@@ -152,8 +134,7 @@ export const populateSessionsWithDetails = async (
             // If activityId matches a known system default name, display it capitalized
             // Otherwise show "Unknown Activity"
             name: activityId
-              ? activityId.charAt(0).toUpperCase() +
-                activityId.slice(1).replace(/-/g, ' ')
+              ? activityId.charAt(0).toUpperCase() + activityId.slice(1).replace(/-/g, ' ')
               : 'Unknown Activity',
             description: '',
             icon: 'flat-color-icons:briefcase',
@@ -162,7 +143,7 @@ export const populateSessionsWithDetails = async (
             isDefault: false,
             createdAt: new Date(),
             updatedAt: new Date(),
-          } as Activity);
+          } as Activity)
 
       // Build the session with full details
       const session: SessionWithDetails = {
@@ -201,20 +182,20 @@ export const populateSessionsWithDetails = async (
         },
         activity: finalActivity,
         project: finalActivity,
-      };
+      }
 
-      return session;
-    });
+      return session
+    })
 
-    const batchResults = await Promise.all(batchPromises);
+    const batchResults = await Promise.all(batchPromises)
     // Filter out null values (sessions from deleted users)
     const validSessions = batchResults.filter(
       (session): session is SessionWithDetails => session !== null
-    );
-    sessions.push(...validSessions);
+    )
+    sessions.push(...validSessions)
   }
 
-  return sessions;
-};
+  return sessions
+}
 
 // Helper function to check if username already exists

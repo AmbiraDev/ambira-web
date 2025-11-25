@@ -1,34 +1,30 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { Session, Project } from '@/types';
+import React, { useState } from 'react'
+import { Session, Project } from '@/types'
 
 interface PostStatsProps {
-  session: Session;
-  project: Project;
-  className?: string;
+  session: Session
+  project: Project
+  className?: string
 }
 
-export const PostStats: React.FC<PostStatsProps> = ({
-  session,
-  project,
-  className = '',
-}) => {
-  const [showAllTasks, setShowAllTasks] = useState(false);
+export const PostStats: React.FC<PostStatsProps> = ({ session, project, className = '' }) => {
+  const [showAllTasks, setShowAllTasks] = useState(false)
 
   const formatDuration = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
 
     if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}h ${minutes}m`
     }
-    return `${minutes}m`;
-  };
+    return `${minutes}m`
+  }
 
   // Task tracking not implemented at session level
-  const completedTasks: Array<{ name: string }> = [];
-  const totalTasks = 0;
+  const completedTasks: Array<{ name: string }> = []
+  const totalTasks = 0
 
   return (
     <div
@@ -70,9 +66,7 @@ export const PostStats: React.FC<PostStatsProps> = ({
             <div className="text-2xl font-bold text-gray-900">
               {completedTasks.length}
               {totalTasks > 0 && (
-                <span className="text-base font-normal text-gray-500 ml-1">
-                  / {totalTasks}
-                </span>
+                <span className="text-base font-normal text-gray-500 ml-1">/ {totalTasks}</span>
               )}
             </div>
           </div>
@@ -87,8 +81,7 @@ export const PostStats: React.FC<PostStatsProps> = ({
             className="w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center justify-between group"
           >
             <span className="text-sm font-medium text-gray-700">
-              {completedTasks.length}{' '}
-              {completedTasks.length === 1 ? 'task' : 'tasks'} completed
+              {completedTasks.length} {completedTasks.length === 1 ? 'task' : 'tasks'} completed
             </span>
             <svg
               className={`w-5 h-5 text-gray-400 transition-transform ${showAllTasks ? 'rotate-180' : ''}`}
@@ -110,11 +103,7 @@ export const PostStats: React.FC<PostStatsProps> = ({
               {completedTasks.map((task, index) => (
                 <div key={index} className="flex items-start gap-2">
                   <div className="flex-shrink-0 mt-0.5">
-                    <svg
-                      className="w-4 h-4 text-green-500"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
+                    <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                       <path
                         fillRule="evenodd"
                         d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
@@ -122,9 +111,7 @@ export const PostStats: React.FC<PostStatsProps> = ({
                       />
                     </svg>
                   </div>
-                  <span className="text-sm text-gray-700 flex-1">
-                    {task.name}
-                  </span>
+                  <span className="text-sm text-gray-700 flex-1">{task.name}</span>
                 </div>
               ))}
             </div>
@@ -148,7 +135,7 @@ export const PostStats: React.FC<PostStatsProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default PostStats;
+export default PostStats

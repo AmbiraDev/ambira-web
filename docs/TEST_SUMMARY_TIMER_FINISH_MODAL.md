@@ -119,7 +119,7 @@ This document describes the comprehensive test suite created to ensure the timer
 
 ```typescript
 // SessionTimerEnhanced.tsx, line 28-41
-const [showFinishModal, setShowFinishModal] = useState(false);
+const [showFinishModal, setShowFinishModal] = useState(false)
 const {
   timerState,
   getElapsedTime,
@@ -129,7 +129,7 @@ const {
   resumeTimer,
   finishTimer,
   resetTimer,
-} = useTimer({ pausePolling: showFinishModal }); // <-- PRIMARY FIX
+} = useTimer({ pausePolling: showFinishModal }) // <-- PRIMARY FIX
 ```
 
 **What it does:**
@@ -150,28 +150,28 @@ const {
 useEffect(() => {
   // Don't update timer when finish modal is open
   if (showFinishModal) {
-    return; // <-- CRITICAL EARLY RETURN
+    return // <-- CRITICAL EARLY RETURN
   }
 
   if (!timerState.isRunning) {
-    setDisplayTime(timerState.pausedDuration);
-    return;
+    setDisplayTime(timerState.pausedDuration)
+    return
   }
 
   const interval = setInterval(() => {
-    setDisplayTime(getElapsedTime()); // Would update displayTime every second
-  }, 1000);
+    setDisplayTime(getElapsedTime()) // Would update displayTime every second
+  }, 1000)
 
-  setDisplayTime(getElapsedTime());
+  setDisplayTime(getElapsedTime())
 
-  return () => clearInterval(interval);
+  return () => clearInterval(interval)
 }, [
   timerState.isRunning,
   timerState.startTime,
   timerState.pausedDuration,
   getElapsedTime,
   showFinishModal, // <-- IN DEPENDENCY ARRAY
-]);
+])
 ```
 
 **What it does:**
@@ -192,14 +192,14 @@ useEffect(() => {
 // SessionTimerEnhanced.tsx, lines 106-116
 useEffect(() => {
   if (showFinishModal) {
-    const elapsed = getElapsedTime(); // Capture once
-    setAdjustedDuration(elapsed); // Initialize to frozen value
+    const elapsed = getElapsedTime() // Capture once
+    setAdjustedDuration(elapsed) // Initialize to frozen value
 
-    const now = new Date();
-    const calculatedStartTime = new Date(now.getTime() - elapsed * 1000);
-    setStartTime(calculatedStartTime); // Calculate from frozen value
+    const now = new Date()
+    const calculatedStartTime = new Date(now.getTime() - elapsed * 1000)
+    setStartTime(calculatedStartTime) // Calculate from frozen value
   }
-}, [showFinishModal, getElapsedTime]); // Only runs when modal opens
+}, [showFinishModal, getElapsedTime]) // Only runs when modal opens
 ```
 
 **What it does:**

@@ -1,14 +1,14 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { useAuth } from '@/hooks/useAuth';
-import { Timer, Edit3 } from 'lucide-react';
+import Link from 'next/link'
+import Image from 'next/image'
+import { useAuth } from '@/hooks/useAuth'
+import { Timer, Edit3 } from 'lucide-react'
 
 export default function SessionPrompt() {
-  const { user } = useAuth();
+  const { user } = useAuth()
 
-  if (!user) return null;
+  if (!user) return null
 
   return (
     <div className="bg-white md:rounded-lg border md:border-gray-200 mb-4 p-5">
@@ -60,5 +60,5 @@ export default function SessionPrompt() {
         </div>
       </div>
     </div>
-  );
+  )
 }

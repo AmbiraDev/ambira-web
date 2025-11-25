@@ -1,29 +1,21 @@
-'use client';
+'use client'
 
-import React from 'react';
-import Link from 'next/link';
-import { Challenge, ChallengeStats } from '@/types';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Trophy,
-  Users,
-  Calendar,
-  Target,
-  Zap,
-  Timer,
-  TrendingUp,
-} from 'lucide-react';
+import React from 'react'
+import Link from 'next/link'
+import { Challenge, ChallengeStats } from '@/types'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Trophy, Users, Calendar, Target, Zap, Timer, TrendingUp } from 'lucide-react'
 
 interface ChallengeCardProps {
-  challenge: Challenge;
-  stats?: ChallengeStats;
-  isParticipating?: boolean;
-  userProgress?: number;
-  onJoin?: () => Promise<void>;
-  onLeave?: () => Promise<void>;
-  isLoading?: boolean;
-  showActions?: boolean;
+  challenge: Challenge
+  stats?: ChallengeStats
+  isParticipating?: boolean
+  userProgress?: number
+  onJoin?: () => Promise<void>
+  onLeave?: () => Promise<void>
+  isLoading?: boolean
+  showActions?: boolean
 }
 
 const challengeTypeConfig = {
@@ -51,7 +43,7 @@ const challengeTypeConfig = {
     color: 'bg-green-100 text-green-800',
     description: 'Collective target',
   },
-};
+}
 
 export default function ChallengeCard({
   challenge,
@@ -63,18 +55,18 @@ export default function ChallengeCard({
   isLoading = false,
   showActions = true,
 }: ChallengeCardProps) {
-  const typeConfig = challengeTypeConfig[challenge.type];
-  const TypeIcon = typeConfig.icon;
+  const typeConfig = challengeTypeConfig[challenge.type]
+  const TypeIcon = typeConfig.icon
 
-  const now = new Date();
-  const startDate = new Date(challenge.startDate);
-  const endDate = new Date(challenge.endDate);
-  const isActive = now >= startDate && now <= endDate && challenge.isActive;
-  const isUpcoming = now < startDate && challenge.isActive;
-  const isCompleted = now > endDate || !challenge.isActive;
+  const now = new Date()
+  const startDate = new Date(challenge.startDate)
+  const endDate = new Date(challenge.endDate)
+  const isActive = now >= startDate && now <= endDate && challenge.isActive
+  const isUpcoming = now < startDate && challenge.isActive
+  const isCompleted = now > endDate || !challenge.isActive
 
-  const timeRemaining = isActive ? endDate.getTime() - now.getTime() : 0;
-  const daysRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
+  const timeRemaining = isActive ? endDate.getTime() - now.getTime() : 0
+  const daysRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24))
 
   const getStatusBadge = () => {
     if (isUpcoming) {
@@ -82,21 +74,21 @@ export default function ChallengeCard({
         <Badge variant="secondary" className="bg-blue-100 text-blue-800">
           Upcoming
         </Badge>
-      );
+      )
     }
     if (isActive) {
       return (
         <Badge variant="secondary" className="bg-green-100 text-green-800">
           Active
         </Badge>
-      );
+      )
     }
     return (
       <Badge variant="secondary" className="bg-gray-100 text-gray-800">
         Completed
       </Badge>
-    );
-  };
+    )
+  }
 
   const formatProgress = (progress: number) => {
     if (
@@ -104,18 +96,18 @@ export default function ChallengeCard({
       challenge.type === 'group-goal' ||
       challenge.type === 'longest-session'
     ) {
-      return `${progress.toFixed(1)}h`;
+      return `${progress.toFixed(1)}h`
     }
     if (challenge.type === 'fastest-effort') {
-      return `${progress.toFixed(1)} tasks/h`;
+      return `${progress.toFixed(1)} tasks/h`
     }
-    return progress.toString();
-  };
+    return progress.toString()
+  }
 
   const getProgressPercentage = () => {
-    if (!challenge.goalValue || userProgress === 0) return 0;
-    return Math.min((userProgress / challenge.goalValue) * 100, 100);
-  };
+    if (!challenge.goalValue || userProgress === 0) return 0
+    return Math.min((userProgress / challenge.goalValue) * 100, 100)
+  }
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all">
@@ -142,9 +134,7 @@ export default function ChallengeCard({
         </div>
 
         {/* Description */}
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-          {challenge.description}
-        </p>
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{challenge.description}</p>
 
         {/* Challenge Type and Goal */}
         <div className="flex items-center gap-4 mb-4">
@@ -180,8 +170,7 @@ export default function ChallengeCard({
               <span className="text-gray-600">Your Progress</span>
               <span className="font-medium text-gray-900">
                 {formatProgress(userProgress)}
-                {challenge.goalValue &&
-                  ` / ${formatProgress(challenge.goalValue)}`}
+                {challenge.goalValue && ` / ${formatProgress(challenge.goalValue)}`}
               </span>
             </div>
             {challenge.goalValue && (
@@ -204,17 +193,12 @@ export default function ChallengeCard({
             </div>
             <div className="space-y-1">
               {stats.topPerformers.slice(0, 3).map((performer, index) => (
-                <div
-                  key={performer.userId}
-                  className="flex items-center justify-between text-sm"
-                >
+                <div key={performer.userId} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <span className="text-gray-400">#{index + 1}</span>
                     <span className="font-medium">{performer.user.name}</span>
                   </div>
-                  <span className="text-gray-600">
-                    {formatProgress(performer.progress)}
-                  </span>
+                  <span className="text-gray-600">{formatProgress(performer.progress)}</span>
                 </div>
               ))}
             </div>
@@ -225,11 +209,7 @@ export default function ChallengeCard({
         {showActions && (
           <div className="flex items-center gap-3">
             {!isParticipating && !isCompleted && (
-              <Button
-                onClick={onJoin}
-                disabled={isLoading}
-                className="flex-1 font-semibold"
-              >
+              <Button onClick={onJoin} disabled={isLoading} className="flex-1 font-semibold">
                 {isLoading ? 'Joining...' : 'Join Challenge'}
               </Button>
             )}
@@ -252,5 +232,5 @@ export default function ChallengeCard({
         )}
       </div>
     </div>
-  );
+  )
 }

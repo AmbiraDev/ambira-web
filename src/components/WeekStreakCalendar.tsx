@@ -1,69 +1,67 @@
-'use client';
+'use client'
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { Check } from 'lucide-react';
-import { firebaseApi } from '@/lib/api';
+import React, { useEffect, useMemo, useState } from 'react'
+import { Check } from 'lucide-react'
+import { firebaseApi } from '@/lib/api'
 
 interface WeekStreakCalendarProps {
-  userId: string;
+  userId: string
 }
 
 // Normalize a Date to a local YYYY-MM-DD string (avoids UTC off-by-one)
 const toLocalYMD = (d: Date) => {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
-export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({
-  userId,
-}) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeDates, setActiveDates] = useState<Set<string>>(new Set());
+export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }) => {
+  const [isLoading, setIsLoading] = useState(true)
+  const [activeDates, setActiveDates] = useState<Set<string>>(new Set())
 
   // Compute this week's start and end - ending with today as the 7th node
   const { weekStart, weekEnd } = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
 
     // Start is 6 days before today
-    const start = new Date(today);
-    start.setDate(today.getDate() - 6);
+    const start = new Date(today)
+    start.setDate(today.getDate() - 6)
 
     // End is today
-    const end = new Date(today);
-    end.setHours(23, 59, 59, 999);
+    const end = new Date(today)
+    end.setHours(23, 59, 59, 999)
 
-    return { weekStart: start, weekEnd: end };
-  }, []);
+    return { weekStart: start, weekEnd: end }
+  }, [])
 
   useEffect(() => {
     const loadWeeklySessions = async () => {
       try {
         // Fetch a generous amount and filter client-side by week range
-        const res = await firebaseApi.session.getSessions(100, {});
+        const res = await firebaseApi.session.getSessions(100, {})
 
-        const withinWeek = res.sessions.filter(s => {
-          const dt = new Date(s.startTime);
-          return dt >= weekStart && dt <= weekEnd;
-        });
+        const withinWeek = res.sessions.filter((s) => {
+          const dt = new Date(s.startTime)
+          return dt >= weekStart && dt <= weekEnd
+        })
 
-        const dateSet = new Set<string>();
-        withinWeek.forEach(s => {
-          const localKey = toLocalYMD(new Date(s.startTime));
-          dateSet.add(localKey);
-        });
+        const dateSet = new Set<string>()
+        withinWeek.forEach((s) => {
+          const localKey = toLocalYMD(new Date(s.startTime))
+          dateSet.add(localKey)
+        })
 
-        setActiveDates(dateSet);
+        setActiveDates(dateSet)
       } catch {
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    loadWeeklySessions();
-  }, [userId, weekStart, weekEnd]);
+    loadWeeklySessions()
+  }, [userId, weekStart, weekEnd])
 
   if (isLoading) {
     return (
@@ -75,35 +73,35 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({
           </div>
         ))}
       </div>
-    );
+    )
   }
 
   // Build the visual model for the current week using the activeDates Set
   const getWeekDays = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
 
     const days = [] as Array<{
-      dayOfWeek: string;
-      dayNumber: number;
-      hasActivity: boolean;
-      isToday: boolean;
-      localKey: string;
-      isPast: boolean;
-    }>;
+      dayOfWeek: string
+      dayNumber: number
+      hasActivity: boolean
+      isToday: boolean
+      localKey: string
+      isPast: boolean
+    }>
 
-    const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
     for (let i = 0; i < 7; i++) {
-      const date = new Date(weekStart);
-      date.setDate(weekStart.getDate() + i);
-      date.setHours(12, 0, 0, 0); // noon to avoid DST edge-cases in formatting
+      const date = new Date(weekStart)
+      date.setDate(weekStart.getDate() + i)
+      date.setHours(12, 0, 0, 0) // noon to avoid DST edge-cases in formatting
 
-      const localKey = toLocalYMD(date);
-      const isToday = toLocalYMD(today) === localKey;
-      const hasActivity = activeDates.has(localKey);
+      const localKey = toLocalYMD(date)
+      const isToday = toLocalYMD(today) === localKey
+      const hasActivity = activeDates.has(localKey)
 
-      const dayOfWeek = dayLabels[date.getDay()] || 'S';
+      const dayOfWeek = dayLabels[date.getDay()] || 'S'
       const dayInfo = {
         dayOfWeek,
         dayNumber: date.getDate(),
@@ -111,15 +109,15 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({
         isToday,
         localKey,
         isPast: date < today && !isToday,
-      };
+      }
 
-      days.push(dayInfo);
+      days.push(dayInfo)
     }
 
-    return days;
-  };
+    return days
+  }
 
-  const weekDays = getWeekDays();
+  const weekDays = getWeekDays()
 
   return (
     <div className="flex justify-between gap-0.5">
@@ -160,5 +158,5 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({
         </div>
       ))}
     </div>
-  );
-};
+  )
+}

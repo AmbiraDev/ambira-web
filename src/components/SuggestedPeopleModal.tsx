@@ -1,93 +1,87 @@
-'use client';
+'use client'
 
-import { useState, useEffect, useCallback } from 'react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { firebaseUserApi } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
-import { UserCardCompact } from '@/components/UserCard';
-import type { SuggestedUser } from '@/types';
+import { useState, useEffect, useCallback } from 'react'
+import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { firebaseUserApi } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
+import { UserCardCompact } from '@/components/UserCard'
+import type { SuggestedUser } from '@/types'
 
 interface SuggestedPeopleModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen: boolean
+  onClose: () => void
 }
 
-const USERS_PER_PAGE = 10;
-const TOTAL_USERS_TO_FETCH = 100;
+const USERS_PER_PAGE = 10
+const TOTAL_USERS_TO_FETCH = 100
 
-export default function SuggestedPeopleModal({
-  isOpen,
-  onClose,
-}: SuggestedPeopleModalProps) {
-  const { user } = useAuth();
-  const [allSuggestedUsers, setAllSuggestedUsers] = useState<SuggestedUser[]>(
-    []
-  );
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
+export default function SuggestedPeopleModal({ isOpen, onClose }: SuggestedPeopleModalProps) {
+  const { user } = useAuth()
+  const [allSuggestedUsers, setAllSuggestedUsers] = useState<SuggestedUser[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(0)
 
   const loadUsers = useCallback(async () => {
-    if (!user) return;
+    if (!user) return
 
     try {
-      setIsLoading(true);
-      setCurrentPage(0);
+      setIsLoading(true)
+      setCurrentPage(0)
 
       // Use the same getSuggestedUsers API as the sidebar
-      const suggestions =
-        await firebaseUserApi.getSuggestedUsers(TOTAL_USERS_TO_FETCH);
-      setAllSuggestedUsers(suggestions);
+      const suggestions = await firebaseUserApi.getSuggestedUsers(TOTAL_USERS_TO_FETCH)
+      setAllSuggestedUsers(suggestions)
     } catch {
-      setAllSuggestedUsers([]);
+      setAllSuggestedUsers([])
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, [user]);
+  }, [user])
 
   useEffect(() => {
     if (isOpen && user) {
-      loadUsers();
+      loadUsers()
     }
-  }, [isOpen, user, loadUsers]);
+  }, [isOpen, user, loadUsers])
 
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose();
+        onClose()
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleEscape)
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, onClose]);
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, onClose])
 
   // Calculate paginated users
-  const totalPages = Math.ceil(allSuggestedUsers.length / USERS_PER_PAGE);
-  const startIndex = currentPage * USERS_PER_PAGE;
-  const endIndex = startIndex + USERS_PER_PAGE;
-  const paginatedUsers = allSuggestedUsers.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(allSuggestedUsers.length / USERS_PER_PAGE)
+  const startIndex = currentPage * USERS_PER_PAGE
+  const endIndex = startIndex + USERS_PER_PAGE
+  const paginatedUsers = allSuggestedUsers.slice(startIndex, endIndex)
 
   const goToNextPage = () => {
     if (currentPage < totalPages - 1) {
-      setCurrentPage(prev => prev + 1);
+      setCurrentPage((prev) => prev + 1)
     }
-  };
+  }
 
   const goToPreviousPage = () => {
     if (currentPage > 0) {
-      setCurrentPage(prev => prev - 1);
+      setCurrentPage((prev) => prev - 1)
     }
-  };
+  }
 
   const handleFollowChange = (userId: string, isFollowing: boolean) => {
-    setAllSuggestedUsers(prev =>
-      prev.map(u =>
+    setAllSuggestedUsers((prev) =>
+      prev.map((u) =>
         u.id === userId
           ? {
               ...u,
@@ -98,10 +92,10 @@ export default function SuggestedPeopleModal({
             }
           : u
       )
-    );
-  };
+    )
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div
@@ -110,7 +104,7 @@ export default function SuggestedPeopleModal({
     >
       <div
         className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -136,16 +130,12 @@ export default function SuggestedPeopleModal({
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl">👥</span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No suggestions yet
-              </h3>
-              <p className="text-gray-600">
-                Check back later for people to connect with
-              </p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No suggestions yet</h3>
+              <p className="text-gray-600">Check back later for people to connect with</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
-              {paginatedUsers.map(suggestedUser => (
+              {paginatedUsers.map((suggestedUser) => (
                 <div key={suggestedUser.id}>
                   <UserCardCompact
                     user={suggestedUser}
@@ -184,5 +174,5 @@ export default function SuggestedPeopleModal({
         )}
       </div>
     </div>
-  );
+  )
 }

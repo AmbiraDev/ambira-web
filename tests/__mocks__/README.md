@@ -29,16 +29,16 @@ __mocks__/
 ### Firestore Mock
 
 ```typescript
-import { mockFirestore } from '@/tests/__mocks__/firebase/firestore';
+import { mockFirestore } from '@/tests/__mocks__/firebase/firestore'
 
 // Seed data
-mockFirestore._seedData('users', 'user-123', { name: 'Test User' });
+mockFirestore._seedData('users', 'user-123', { name: 'Test User' })
 
 // Clear all data
-mockFirestore._clearAll();
+mockFirestore._clearAll()
 
 // Check data
-const data = mockFirestore._getAllData('users');
+const data = mockFirestore._getAllData('users')
 ```
 
 **Features:**
@@ -53,16 +53,16 @@ const data = mockFirestore._getAllData('users');
 ### Auth Mock
 
 ```typescript
-import { mockAuth, createMockUser } from '@/tests/__mocks__/firebase/auth';
+import { mockAuth, createMockUser } from '@/tests/__mocks__/firebase/auth'
 
 // Set current user
-mockAuth._setCurrentUser(createMockUser({ email: 'test@example.com' }));
+mockAuth._setCurrentUser(createMockUser({ email: 'test@example.com' }))
 
 // Clear auth state
-mockAuth._clearAuthState();
+mockAuth._clearAuthState()
 
 // Reset all mocks
-mockAuth._reset();
+mockAuth._reset()
 ```
 
 **Features:**
@@ -77,16 +77,16 @@ mockAuth._reset();
 ### Storage Mock
 
 ```typescript
-import { mockStorage } from '@/tests/__mocks__/firebase/storage';
+import { mockStorage } from '@/tests/__mocks__/firebase/storage'
 
 // Seed file
-mockStorage._seedFile('images/test.jpg', new Blob(['data']));
+mockStorage._seedFile('images/test.jpg', new Blob(['data']))
 
 // Check if file exists
-const exists = mockStorage._hasFile('images/test.jpg');
+const exists = mockStorage._hasFile('images/test.jpg')
 
 // Clear all files
-mockStorage._clearAll();
+mockStorage._clearAll()
 ```
 
 **Features:**
@@ -100,23 +100,23 @@ mockStorage._clearAll();
 ## API Mock
 
 ```typescript
-import { mockApiClient } from '@/tests/__mocks__/api';
+import { mockApiClient } from '@/tests/__mocks__/api'
 
 // Mock a response
 mockApiClient.mockResponse('GET', '/api/users', {
   data: [{ id: '1', name: 'User' }],
   status: 200,
-});
+})
 
 // Mock an error
-mockApiClient.mockError('POST', '/api/sessions', 400, 'Invalid session data');
+mockApiClient.mockError('POST', '/api/sessions', 400, 'Invalid session data')
 
 // Check request history
-const requests = mockApiClient.getRequestHistory();
-const lastRequest = mockApiClient.getLastRequest();
+const requests = mockApiClient.getRequestHistory()
+const lastRequest = mockApiClient.getLastRequest()
 
 // Reset
-mockApiClient.reset();
+mockApiClient.reset()
 ```
 
 **Features:**
@@ -134,24 +134,20 @@ Factories create realistic mock data with sensible defaults and optional overrid
 ### Usage Pattern
 
 ```typescript
-import {
-  createMockUser,
-  createMockSession,
-  createMockActivity,
-} from '@/tests/__mocks__/factories';
+import { createMockUser, createMockSession, createMockActivity } from '@/tests/__mocks__/factories'
 
 // Create with defaults
-const user = createMockUser();
+const user = createMockUser()
 
 // Create with overrides
 const customUser = createMockUser({
   email: 'custom@example.com',
   name: 'Custom User',
   followersCount: 100,
-});
+})
 
 // Create batches
-const users = createMockUserBatch(5);
+const users = createMockUserBatch(5)
 ```
 
 ### Available Factories
@@ -218,12 +214,12 @@ createMockOldSession(overrides?): ActiveSession
 ### Factory Reset
 
 ```typescript
-import { resetAllFactories } from '@/tests/__mocks__/factories';
+import { resetAllFactories } from '@/tests/__mocks__/factories'
 
 // Reset all factory counters (useful in afterEach)
 afterEach(() => {
-  resetAllFactories();
-});
+  resetAllFactories()
+})
 ```
 
 ## Best Practices
@@ -233,27 +229,27 @@ afterEach(() => {
 ```typescript
 test('should create user', () => {
   // Arrange
-  const userData = createMockUser({ name: 'Test' });
-  mockFirestore._seedData('users', userData.id, userData);
+  const userData = createMockUser({ name: 'Test' })
+  mockFirestore._seedData('users', userData.id, userData)
 
   // Act
-  const result = getUserById(userData.id);
+  const result = getUserById(userData.id)
 
   // Assert
-  expect(result).toEqual(userData);
-});
+  expect(result).toEqual(userData)
+})
 ```
 
 ### 2. Clean Up After Tests
 
 ```typescript
-import { mockFirestore } from '@/tests/__mocks__/firebase/firestore';
-import { resetAllFactories } from '@/tests/__mocks__/factories';
+import { mockFirestore } from '@/tests/__mocks__/firebase/firestore'
+import { resetAllFactories } from '@/tests/__mocks__/factories'
 
 afterEach(() => {
-  mockFirestore._clearAll();
-  resetAllFactories();
-});
+  mockFirestore._clearAll()
+  resetAllFactories()
+})
 ```
 
 ### 3. Mock Only What You Need
@@ -262,7 +258,7 @@ afterEach(() => {
 // Good: Specific mock
 mockApiClient.mockResponse('GET', '/api/users/123', {
   data: createMockUser({ id: '123' }),
-});
+})
 
 // Avoid: Over-mocking
 // Don't mock every single API endpoint if you only test one
@@ -272,14 +268,14 @@ mockApiClient.mockResponse('GET', '/api/users/123', {
 
 ```typescript
 // Good: Use factory
-const user = createMockUser({ email: 'test@example.com' });
+const user = createMockUser({ email: 'test@example.com' })
 
 // Avoid: Manual object creation
 const user = {
   id: '123',
   email: 'test@example.com',
   // ... missing fields, inconsistent structure
-};
+}
 ```
 
 ### 5. Test Isolation
@@ -289,22 +285,22 @@ Each test should be independent:
 ```typescript
 describe('User tests', () => {
   beforeEach(() => {
-    mockFirestore._clearAll();
-    mockAuth._clearAuthState();
-  });
+    mockFirestore._clearAll()
+    mockAuth._clearAuthState()
+  })
 
   afterEach(() => {
-    resetAllFactories();
-  });
+    resetAllFactories()
+  })
 
   test('test 1', () => {
     // Fully isolated
-  });
+  })
 
   test('test 2', () => {
     // Fully isolated
-  });
-});
+  })
+})
 ```
 
 ## Integration with Jest
@@ -317,26 +313,26 @@ jest.mock('@/lib/firebase', () => ({
   auth: {},
   db: {},
   storage: {},
-}));
+}))
 
 // Import mocks
-import '@/tests/__mocks__/firebase';
-import '@/tests/__mocks__/api';
+import '@/tests/__mocks__/firebase'
+import '@/tests/__mocks__/api'
 ```
 
 ### In Test Files
 
 ```typescript
-import { mockFirestore } from '@/tests/__mocks__/firebase/firestore';
-import { createMockUser } from '@/tests/__mocks__/factories';
+import { mockFirestore } from '@/tests/__mocks__/firebase/firestore'
+import { createMockUser } from '@/tests/__mocks__/factories'
 
 describe('My Component', () => {
   it('should work', () => {
-    const user = createMockUser();
-    mockFirestore._seedData('users', user.id, user);
+    const user = createMockUser()
+    mockFirestore._seedData('users', user.id, user)
     // ... test
-  });
-});
+  })
+})
 ```
 
 ## Troubleshooting
@@ -346,7 +342,7 @@ describe('My Component', () => {
 Make sure to seed data before querying:
 
 ```typescript
-mockFirestore._seedData('users', 'user-1', createMockUser({ id: 'user-1' }));
+mockFirestore._seedData('users', 'user-1', createMockUser({ id: 'user-1' }))
 ```
 
 ### "Mock not called" Error
@@ -355,8 +351,8 @@ Ensure the mock is set up before the code under test runs:
 
 ```typescript
 // Set up mock BEFORE calling the function
-mockApiClient.mockResponse('GET', '/api/users', { data: [] });
-await fetchUsers(); // This will use the mock
+mockApiClient.mockResponse('GET', '/api/users', { data: [] })
+await fetchUsers() // This will use the mock
 ```
 
 ### Stale Data Between Tests
@@ -365,10 +361,10 @@ Always clear mocks in afterEach:
 
 ```typescript
 afterEach(() => {
-  mockFirestore._clearAll();
-  mockAuth._reset();
-  mockStorage._reset();
-  mockApiClient.reset();
-  resetAllFactories();
-});
+  mockFirestore._clearAll()
+  mockAuth._reset()
+  mockStorage._reset()
+  mockApiClient.reset()
+  resetAllFactories()
+})
 ```

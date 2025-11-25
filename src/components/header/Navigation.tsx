@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import type { NavigationProps } from './header.types';
-import { NAV_LINKS, CLASS_NAMES } from './header.constants';
-import { isActivePath, cn } from './header.utils';
+import Link from 'next/link'
+import type { NavigationProps } from './header.types'
+import { NAV_LINKS, CLASS_NAMES } from './header.constants'
+import { isActivePath, cn } from './header.utils'
 
 /**
  * Navigation Component
@@ -25,7 +25,7 @@ export default function Navigation({ pathname }: NavigationProps) {
   return (
     <nav className="hidden md:flex items-center space-x-6 h-14">
       {NAV_LINKS.map(({ href, label }) => {
-        const isActive = isActivePath(pathname, href);
+        const isActive = isActivePath(pathname, href)
 
         return (
           <Link
@@ -33,17 +33,15 @@ export default function Navigation({ pathname }: NavigationProps) {
             href={href}
             className={cn(
               'text-base font-[450] transition-colors h-full relative flex items-center',
-              isActive
-                ? CLASS_NAMES.NAV_LINK_ACTIVE
-                : CLASS_NAMES.NAV_LINK_INACTIVE
+              isActive ? CLASS_NAMES.NAV_LINK_ACTIVE : CLASS_NAMES.NAV_LINK_INACTIVE
             )}
             aria-current={isActive ? 'page' : undefined}
           >
             {label}
             {isActive && <div className={CLASS_NAMES.NAV_INDICATOR} />}
           </Link>
-        );
+        )
       })}
     </nav>
-  );
+  )
 }

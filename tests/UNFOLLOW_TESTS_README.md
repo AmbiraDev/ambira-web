@@ -129,14 +129,14 @@ All tests follow the AAA pattern for clarity:
 ```typescript
 it('decrements follower count after unfollow', async () => {
   // Arrange: Set up initial state
-  await followUser(currentUser.id, targetUser.id);
+  await followUser(currentUser.id, targetUser.id)
 
   // Act: Perform the action
-  await unfollowUser(currentUser.id, targetUser.id);
+  await unfollowUser(currentUser.id, targetUser.id)
 
   // Assert: Verify the outcome
-  expect(targetUser.followersCount).toBe(0);
-});
+  expect(targetUser.followersCount).toBe(0)
+})
 ```
 
 ### Optimistic Updates with Rollback
@@ -145,18 +145,16 @@ Tests verify that UI updates immediately (optimistic) and rolls back on error:
 
 ```typescript
 it('reverts to "Following" state on API error', async () => {
-  mockApi.unfollowUser.mockRejectedValue(new Error('Network error'));
+  mockApi.unfollowUser.mockRejectedValue(new Error('Network error'))
 
-  fireEvent.click(followingButton);
+  fireEvent.click(followingButton)
 
   // Initially optimistic: "Follow"
-  await waitFor(() => expect(screen.getByText('Follow')).toBeInTheDocument());
+  await waitFor(() => expect(screen.getByText('Follow')).toBeInTheDocument())
 
   // After error: reverts to "Following"
-  await waitFor(() =>
-    expect(screen.getByText('Following')).toBeInTheDocument()
-  );
-});
+  await waitFor(() => expect(screen.getByText('Following')).toBeInTheDocument())
+})
 ```
 
 ### Transaction Integrity
@@ -165,19 +163,19 @@ Service layer tests verify Firestore transaction requirements:
 
 ```typescript
 it('performs all reads before writes', async () => {
-  const operations: string[] = [];
+  const operations: string[] = []
   mockTransaction.get = () => {
-    operations.push('read');
-  };
+    operations.push('read')
+  }
   mockTransaction.update = () => {
-    operations.push('write');
-  };
+    operations.push('write')
+  }
 
-  await updateSocialGraph(user1, user2, 'unfollow');
+  await updateSocialGraph(user1, user2, 'unfollow')
 
-  const firstWrite = operations.indexOf('write');
-  expect(operations.slice(0, firstWrite).every(op => op === 'read')).toBe(true);
-});
+  const firstWrite = operations.indexOf('write')
+  expect(operations.slice(0, firstWrite).every((op) => op === 'read')).toBe(true)
+})
 ```
 
 ## Test Data Factories
@@ -188,7 +186,7 @@ Tests use factories from `tests/integration/__helpers__/testFactories.ts`:
 const user = createTestUser({
   email: 'test@example.com',
   username: 'testuser',
-});
+})
 ```
 
 ## Mocking Strategy

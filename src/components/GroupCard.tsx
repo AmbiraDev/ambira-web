@@ -1,17 +1,17 @@
-'use client';
+'use client'
 
-import React from 'react';
-import Link from 'next/link';
-import { Group } from '@/types';
-import GroupAvatar from '@/components/GroupAvatar';
+import React from 'react'
+import Link from 'next/link'
+import { Group } from '@/types'
+import GroupAvatar from '@/components/GroupAvatar'
 
 interface GroupCardProps {
-  group: Group;
-  currentUserId?: string;
-  isJoined?: boolean;
-  onJoin?: (groupId: string) => Promise<void>;
-  onLeave?: (groupId: string) => Promise<void>;
-  isLoading?: boolean; // Kept for future use
+  group: Group
+  currentUserId?: string
+  isJoined?: boolean
+  onJoin?: (groupId: string) => Promise<void>
+  onLeave?: (groupId: string) => Promise<void>
+  isLoading?: boolean // Kept for future use
 }
 
 export default function GroupCard({
@@ -34,5 +34,5 @@ export default function GroupCard({
         {group.name}
       </h3>
     </Link>
-  );
+  )
 }

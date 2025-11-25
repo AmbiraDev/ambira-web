@@ -1,15 +1,15 @@
-'use client';
+'use client'
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useActivitiesWithSessions } from '@/hooks/useActivitiesQuery';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import MobileHeader from '@/components/MobileHeader';
-import BottomNavigation from '@/components/BottomNavigation';
-import Footer from '@/components/Footer';
-import Header from '@/components/HeaderComponent';
-import { useUserSessions } from '@/features/sessions/hooks';
-import { useProfileStats } from '@/features/profile/hooks';
+import React, { useState, useMemo, useRef, useEffect } from 'react'
+import { useAuth } from '@/hooks/useAuth'
+import { useActivitiesWithSessions } from '@/hooks/useActivitiesQuery'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import MobileHeader from '@/components/MobileHeader'
+import BottomNavigation from '@/components/BottomNavigation'
+import Footer from '@/components/Footer'
+import Header from '@/components/HeaderComponent'
+import { useUserSessions } from '@/features/sessions/hooks'
+import { useProfileStats } from '@/features/profile/hooks'
 import {
   BarChart,
   Bar,
@@ -19,96 +19,90 @@ import {
   Tooltip,
   ComposedChart,
   Area,
-} from 'recharts';
-import {
-  ChevronDown,
-  BarChart3,
-  TrendingUp,
-  Activity,
-  Check,
-} from 'lucide-react';
-import { IconRenderer } from '@/components/IconRenderer';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { safeNumber } from '@/lib/utils';
+} from 'recharts'
+import { ChevronDown, BarChart3, TrendingUp, Activity } from 'lucide-react'
+import { IconRenderer } from '@/components/IconRenderer'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { safeNumber } from '@/lib/utils'
 
-type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
+type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y'
 
 interface ChartDataPoint {
-  name: string;
-  hours: number;
-  sessions: number;
-  avgDuration: number;
+  name: string
+  hours: number
+  sessions: number
+  avgDuration: number
 }
 
 export default function AnalyticsPage() {
-  const { user } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { user } = useAuth()
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   // Initialize selected activity from URL query param
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D')
   const [selectedProjectId, setSelectedProjectId] = useState<string>(
     () => searchParams.get('activity') || 'all'
-  );
-  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
+  )
+  const [showProjectDropdown, setShowProjectDropdown] = useState(false)
   const [chartType, setChartType] = useState<'bar' | 'line'>(() => {
     // Load chart type from localStorage
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('analyticsChartType');
-      return saved === 'bar' || saved === 'line' ? saved : 'bar';
+      const saved = localStorage.getItem('analyticsChartType')
+      return saved === 'bar' || saved === 'line' ? saved : 'bar'
     }
-    return 'bar';
-  });
-  const [showChartTypeDropdown, setShowChartTypeDropdown] = useState(false);
+    return 'bar'
+  })
+  const [showChartTypeDropdown, setShowChartTypeDropdown] = useState(false)
 
   // Refs for dropdown trigger buttons (for focus management)
-  const activityTriggerRef = useRef<HTMLButtonElement>(null);
-  const chartTypeTriggerRef = useRef<HTMLButtonElement>(null);
+  const activityTriggerRef = useRef<HTMLButtonElement>(null)
+  const chartTypeTriggerRef = useRef<HTMLButtonElement>(null)
 
   // Save chart type to localStorage when it changes
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('analyticsChartType', chartType);
+      localStorage.setItem('analyticsChartType', chartType)
     }
-  }, [chartType]);
+  }, [chartType])
 
   // Handle Escape key for Activity dropdown
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && showProjectDropdown) {
-        setShowProjectDropdown(false);
+        setShowProjectDropdown(false)
         // Return focus to the trigger button
-        activityTriggerRef.current?.focus();
+        activityTriggerRef.current?.focus()
       }
-    };
+    }
 
     if (showProjectDropdown) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleEscape)
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [showProjectDropdown]);
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [showProjectDropdown])
 
   // Handle Escape key for Chart Type dropdown
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && showChartTypeDropdown) {
-        setShowChartTypeDropdown(false);
+        setShowChartTypeDropdown(false)
         // Return focus to the trigger button
-        chartTypeTriggerRef.current?.focus();
+        chartTypeTriggerRef.current?.focus()
       }
-    };
+    }
 
     if (showChartTypeDropdown) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleEscape)
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [showChartTypeDropdown]);
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [showChartTypeDropdown])
 
   // Use new feature hooks for sessions and stats
   const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions(
@@ -117,152 +111,122 @@ export default function AnalyticsPage() {
     {
       enabled: !!user?.id,
     }
-  );
-  const { data: stats, isLoading: statsLoading } = useProfileStats(
-    user?.id || '',
-    {
-      enabled: !!user?.id,
-    }
-  );
+  )
+  const { data: stats, isLoading: statsLoading } = useProfileStats(user?.id || '', {
+    enabled: !!user?.id,
+  })
   // Use new hook that only returns activities with sessions
-  const { data: activitiesWithSessions = [] } = useActivitiesWithSessions(
-    user?.id
-  );
+  const { data: activitiesWithSessions = [] } = useActivitiesWithSessions(user?.id)
 
-  const isLoading = sessionsLoading || statsLoading;
+  const isLoading = sessionsLoading || statsLoading
 
   // Update URL when activity selection changes
   useEffect(() => {
     if (selectedProjectId === 'all') {
-      router.replace('/analytics', { scroll: false });
+      router.replace('/analytics', { scroll: false })
     } else {
       router.replace(`/analytics?activity=${selectedProjectId}`, {
         scroll: false,
-      });
+      })
     }
-  }, [selectedProjectId, router]);
+  }, [selectedProjectId, router])
 
   const filteredSessions = useMemo(() => {
     if (selectedProjectId === 'all') {
-      return sessions;
+      return sessions
     }
 
     // Filter by both activityId and projectId for backward compatibility
-    const filtered = sessions.filter(s => {
-      const matchesActivityId = s.activityId === selectedProjectId;
-      const matchesProjectId = s.projectId === selectedProjectId;
-      return matchesActivityId || matchesProjectId;
-    });
+    const filtered = sessions.filter((s) => {
+      const matchesActivityId = s.activityId === selectedProjectId
+      const matchesProjectId = s.projectId === selectedProjectId
+      return matchesActivityId || matchesProjectId
+    })
 
-    return filtered;
-  }, [sessions, selectedProjectId]);
+    return filtered
+  }, [sessions, selectedProjectId])
 
   const calculatedStats = useMemo(() => {
-    const now = new Date();
+    const now = new Date()
 
     // Helper to get date range based on time period
     const getDateRange = (period: TimePeriod) => {
-      const end = new Date(now);
-      const start = new Date(now);
+      const end = new Date(now)
+      const start = new Date(now)
 
       switch (period) {
         case '7D':
-          start.setDate(now.getDate() - 7);
-          break;
+          start.setDate(now.getDate() - 7)
+          break
         case '2W':
-          start.setDate(now.getDate() - 14);
-          break;
+          start.setDate(now.getDate() - 14)
+          break
         case '4W':
-          start.setDate(now.getDate() - 28);
-          break;
+          start.setDate(now.getDate() - 28)
+          break
         case '3M':
-          start.setMonth(now.getMonth() - 3);
-          break;
+          start.setMonth(now.getMonth() - 3)
+          break
         case '1Y':
-          start.setFullYear(now.getFullYear() - 1);
-          break;
+          start.setFullYear(now.getFullYear() - 1)
+          break
       }
 
-      return { start, end };
-    };
+      return { start, end }
+    }
 
     // Get current and previous period ranges
-    const currentRange = getDateRange(timePeriod);
-    const previousStart = new Date(currentRange.start);
-    const periodLength =
-      currentRange.end.getTime() - currentRange.start.getTime();
-    previousStart.setTime(previousStart.getTime() - periodLength);
+    const currentRange = getDateRange(timePeriod)
+    const previousStart = new Date(currentRange.start)
+    const periodLength = currentRange.end.getTime() - currentRange.start.getTime()
+    previousStart.setTime(previousStart.getTime() - periodLength)
 
     // Filter sessions for current period
-    const currentPeriodSessions = filteredSessions.filter(s => {
-      const sessionDate = new Date(s.createdAt);
-      return (
-        sessionDate >= currentRange.start && sessionDate <= currentRange.end
-      );
-    });
+    const currentPeriodSessions = filteredSessions.filter((s) => {
+      const sessionDate = new Date(s.createdAt)
+      return sessionDate >= currentRange.start && sessionDate <= currentRange.end
+    })
 
     // Filter sessions for previous period
-    const previousPeriodSessions = filteredSessions.filter(s => {
-      const sessionDate = new Date(s.createdAt);
-      return sessionDate >= previousStart && sessionDate < currentRange.start;
-    });
+    const previousPeriodSessions = filteredSessions.filter((s) => {
+      const sessionDate = new Date(s.createdAt)
+      return sessionDate >= previousStart && sessionDate < currentRange.start
+    })
 
     // Calculate current period stats
-    const currentHours = currentPeriodSessions.reduce(
-      (sum, s) => sum + s.duration / 3600,
-      0
-    );
-    const currentSessionCount = currentPeriodSessions.length;
+    const currentHours = currentPeriodSessions.reduce((sum, s) => sum + s.duration / 3600, 0)
+    const currentSessionCount = currentPeriodSessions.length
     const currentAvgDuration =
       currentSessionCount > 0
-        ? currentPeriodSessions.reduce((sum, s) => sum + s.duration, 0) /
-          currentSessionCount /
-          60
-        : 0;
+        ? currentPeriodSessions.reduce((sum, s) => sum + s.duration, 0) / currentSessionCount / 60
+        : 0
 
     const currentActiveDays = new Set(
-      currentPeriodSessions.map(s => new Date(s.createdAt).toDateString())
-    ).size;
+      currentPeriodSessions.map((s) => new Date(s.createdAt).toDateString())
+    ).size
 
     // Calculate previous period stats
-    const previousHours = previousPeriodSessions.reduce(
-      (sum, s) => sum + s.duration / 3600,
-      0
-    );
-    const previousSessionCount = previousPeriodSessions.length;
+    const previousHours = previousPeriodSessions.reduce((sum, s) => sum + s.duration / 3600, 0)
+    const previousSessionCount = previousPeriodSessions.length
     const previousAvgDuration =
       previousSessionCount > 0
-        ? previousPeriodSessions.reduce((sum, s) => sum + s.duration, 0) /
-          previousSessionCount /
-          60
-        : 0;
+        ? previousPeriodSessions.reduce((sum, s) => sum + s.duration, 0) / previousSessionCount / 60
+        : 0
 
     const previousActiveDays = new Set(
-      previousPeriodSessions.map(s => new Date(s.createdAt).toDateString())
-    ).size;
+      previousPeriodSessions.map((s) => new Date(s.createdAt).toDateString())
+    ).size
 
     // Calculate percentage changes
-    const calculateChange = (
-      current: number,
-      previous: number
-    ): number | null => {
-      if (previous === 0) return null; // No previous data
-      return ((current - previous) / previous) * 100;
-    };
+    const calculateChange = (current: number, previous: number): number | null => {
+      if (previous === 0) return null // No previous data
+      return ((current - previous) / previous) * 100
+    }
 
-    const hoursChange = calculateChange(currentHours, previousHours);
-    const sessionsChange = calculateChange(
-      currentSessionCount,
-      previousSessionCount
-    );
-    const avgDurationChange = calculateChange(
-      currentAvgDuration,
-      previousAvgDuration
-    );
-    const activeDaysChange = calculateChange(
-      currentActiveDays,
-      previousActiveDays
-    );
+    const hoursChange = calculateChange(currentHours, previousHours)
+    const sessionsChange = calculateChange(currentSessionCount, previousSessionCount)
+    const avgDurationChange = calculateChange(currentAvgDuration, previousAvgDuration)
+    const activeDaysChange = calculateChange(currentActiveDays, previousActiveDays)
 
     return {
       totalHours: currentHours,
@@ -280,94 +244,79 @@ export default function AnalyticsPage() {
       activeDaysChange,
       activitiesChange: null, // Activities count doesn't have time-based comparison
       streakChange: null, // Streaks don't have meaningful percentage changes
-    };
-  }, [filteredSessions, stats, activitiesWithSessions.length, timePeriod]);
+    }
+  }, [filteredSessions, stats, activitiesWithSessions.length, timePeriod])
 
   const chartData = useMemo(() => {
-    if (!filteredSessions) return [];
-    const now = new Date();
-    const data: ChartDataPoint[] = [];
+    if (!filteredSessions) return []
+    const now = new Date()
+    const data: ChartDataPoint[] = []
 
     if (timePeriod === '7D') {
-      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
       for (let i = 6; i >= 0; i--) {
-        const day = new Date(now);
-        day.setDate(day.getDate() - i);
+        const day = new Date(now)
+        day.setDate(day.getDate() - i)
         const daySessions = filteredSessions.filter(
-          s => new Date(s.createdAt).toDateString() === day.toDateString()
-        );
-        const hoursWorked = daySessions.reduce(
-          (sum, s) => sum + s.duration / 3600,
-          0
-        );
+          (s) => new Date(s.createdAt).toDateString() === day.toDateString()
+        )
+        const hoursWorked = daySessions.reduce((sum, s) => sum + s.duration / 3600, 0)
         const avgDuration =
           daySessions.length > 0
-            ? daySessions.reduce((sum, s) => sum + s.duration, 0) /
-              daySessions.length /
-              60
-            : 0;
-        const dayIndex = day.getDay();
-        const dayName = dayNames[dayIndex]?.slice(0, 3) ?? 'Day';
+            ? daySessions.reduce((sum, s) => sum + s.duration, 0) / daySessions.length / 60
+            : 0
+        const dayIndex = day.getDay()
+        const dayName = dayNames[dayIndex]?.slice(0, 3) ?? 'Day'
         data.push({
           name: `${dayName} ${day.getDate()}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration),
-        });
+        })
       }
     } else if (timePeriod === '2W') {
-      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
       for (let i = 13; i >= 0; i--) {
-        const day = new Date(now);
-        day.setDate(day.getDate() - i);
+        const day = new Date(now)
+        day.setDate(day.getDate() - i)
         const daySessions = filteredSessions.filter(
-          s => new Date(s.createdAt).toDateString() === day.toDateString()
-        );
-        const hoursWorked = daySessions.reduce(
-          (sum, s) => sum + s.duration / 3600,
-          0
-        );
+          (s) => new Date(s.createdAt).toDateString() === day.toDateString()
+        )
+        const hoursWorked = daySessions.reduce((sum, s) => sum + s.duration / 3600, 0)
         const avgDuration =
           daySessions.length > 0
-            ? daySessions.reduce((sum, s) => sum + s.duration, 0) /
-              daySessions.length /
-              60
-            : 0;
-        const dayIndex = day.getDay();
-        const dayName = dayNames[dayIndex]?.slice(0, 3) ?? 'Day';
+            ? daySessions.reduce((sum, s) => sum + s.duration, 0) / daySessions.length / 60
+            : 0
+        const dayIndex = day.getDay()
+        const dayName = dayNames[dayIndex]?.slice(0, 3) ?? 'Day'
         data.push({
           name: `${dayName} ${day.getDate()}`,
           hours: safeNumber(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration),
-        });
+        })
       }
     } else if (timePeriod === '4W') {
       for (let i = 3; i >= 0; i--) {
-        const weekStart = new Date(now);
-        weekStart.setDate(weekStart.getDate() - (i * 7 + 6));
-        const weekEnd = new Date(now);
-        weekEnd.setDate(weekEnd.getDate() - i * 7);
-        const weekSessions = filteredSessions.filter(s => {
-          const sessionDate = new Date(s.createdAt);
-          return sessionDate >= weekStart && sessionDate <= weekEnd;
-        });
-        const hoursWorked = weekSessions.reduce(
-          (sum, s) => sum + s.duration / 3600,
-          0
-        );
+        const weekStart = new Date(now)
+        weekStart.setDate(weekStart.getDate() - (i * 7 + 6))
+        const weekEnd = new Date(now)
+        weekEnd.setDate(weekEnd.getDate() - i * 7)
+        const weekSessions = filteredSessions.filter((s) => {
+          const sessionDate = new Date(s.createdAt)
+          return sessionDate >= weekStart && sessionDate <= weekEnd
+        })
+        const hoursWorked = weekSessions.reduce((sum, s) => sum + s.duration / 3600, 0)
         const avgDuration =
           weekSessions.length > 0
-            ? weekSessions.reduce((sum, s) => sum + s.duration, 0) /
-              weekSessions.length /
-              60
-            : 0;
+            ? weekSessions.reduce((sum, s) => sum + s.duration, 0) / weekSessions.length / 60
+            : 0
         data.push({
           name: `Week ${4 - i}`,
           hours: safeNumber(hoursWorked.toFixed(2)),
           sessions: weekSessions.length,
           avgDuration: Math.round(avgDuration),
-        });
+        })
       }
     } else if (timePeriod === '3M' || timePeriod === '1Y') {
       const monthNames = [
@@ -383,45 +332,40 @@ export default function AnalyticsPage() {
         'Oct',
         'Nov',
         'Dec',
-      ];
-      const monthsBack = timePeriod === '3M' ? 2 : 11;
+      ]
+      const monthsBack = timePeriod === '3M' ? 2 : 11
       for (let i = monthsBack; i >= 0; i--) {
-        const month = new Date(now);
-        month.setMonth(month.getMonth() - i);
-        const monthSessions = filteredSessions.filter(s => {
-          const sessionDate = new Date(s.createdAt);
+        const month = new Date(now)
+        month.setMonth(month.getMonth() - i)
+        const monthSessions = filteredSessions.filter((s) => {
+          const sessionDate = new Date(s.createdAt)
           return (
             sessionDate.getMonth() === month.getMonth() &&
             sessionDate.getFullYear() === month.getFullYear()
-          );
-        });
-        const hoursWorked = monthSessions.reduce(
-          (sum, s) => sum + s.duration / 3600,
-          0
-        );
+          )
+        })
+        const hoursWorked = monthSessions.reduce((sum, s) => sum + s.duration / 3600, 0)
         const avgDuration =
           monthSessions.length > 0
-            ? monthSessions.reduce((sum, s) => sum + s.duration, 0) /
-              monthSessions.length /
-              60
-            : 0;
-        const monthIndex = month.getMonth();
-        const monthName = monthNames[monthIndex] ?? 'Month';
+            ? monthSessions.reduce((sum, s) => sum + s.duration, 0) / monthSessions.length / 60
+            : 0
+        const monthIndex = month.getMonth()
+        const monthName = monthNames[monthIndex] ?? 'Month'
         data.push({
           name: monthName,
           hours: safeNumber(hoursWorked.toFixed(2)),
           sessions: monthSessions.length,
           avgDuration: Math.round(avgDuration),
-        });
+        })
       }
     }
-    return data;
-  }, [filteredSessions, timePeriod]);
+    return data
+  }, [filteredSessions, timePeriod])
 
   // Average duration over time data - extract from chartData
   const avgDurationData = useMemo(() => {
-    return chartData.map(d => ({ name: d.name, value: d.avgDuration }));
-  }, [chartData]);
+    return chartData.map((d) => ({ name: d.name, value: d.avgDuration }))
+  }, [chartData])
 
   // Custom tooltip formatter
   const CustomTooltip = ({
@@ -429,9 +373,9 @@ export default function AnalyticsPage() {
     payload,
     label,
   }: {
-    active?: boolean;
-    payload?: Array<{ name: string; value: number; color: string }>;
-    label?: string;
+    active?: boolean
+    payload?: Array<{ name: string; value: number; color: string }>
+    label?: string
   }) => {
     if (active && payload && payload.length) {
       return (
@@ -443,10 +387,10 @@ export default function AnalyticsPage() {
             </p>
           ))}
         </div>
-      );
+      )
     }
-    return null;
-  };
+    return null
+  }
 
   // Empty state component for charts
   const ChartEmptyState = ({
@@ -454,9 +398,9 @@ export default function AnalyticsPage() {
     title,
     description,
   }: {
-    icon: React.ElementType;
-    title: string;
-    description: string;
+    icon: React.ElementType
+    title: string
+    description: string
   }) => (
     <div
       className="h-full flex items-center justify-center"
@@ -464,13 +408,8 @@ export default function AnalyticsPage() {
       aria-label={`No data: ${title}`}
     >
       <div className="text-center max-w-md px-4">
-        <Icon
-          className="w-16 h-16 md:w-20 md:h-20 text-gray-300 mx-auto mb-4"
-          aria-hidden="true"
-        />
-        <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
-          {title}
-        </h3>
+        <Icon className="w-16 h-16 md:w-20 md:h-20 text-gray-300 mx-auto mb-4" aria-hidden="true" />
+        <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">{title}</h3>
         <p className="text-sm md:text-base text-gray-600 mb-4">{description}</p>
         <button
           onClick={() => router.push('/timer')}
@@ -482,28 +421,26 @@ export default function AnalyticsPage() {
         </button>
       </div>
     </div>
-  );
+  )
 
   // Check if user has no sessions at all for full-page empty state
-  const hasNoSessions = sessions.length === 0;
+  const hasNoSessions = sessions.length === 0
 
   // Helper to render percentage change
   const renderPercentageChange = (change: number | null) => {
-    if (change === null) return null;
+    if (change === null) return null
 
-    const isPositive = change >= 0;
-    const formattedChange = Math.abs(change).toFixed(0);
+    const isPositive = change >= 0
+    const formattedChange = Math.abs(change).toFixed(0)
 
     return (
-      <div
-        className={`text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}
-      >
+      <div className={`text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
         {isPositive ? '↑' : '↓'} {formattedChange}%
       </div>
-    );
-  };
+    )
+  }
 
-  if (!user) return null;
+  if (!user) return null
 
   return (
     <ProtectedRoute>
@@ -519,9 +456,7 @@ export default function AnalyticsPage() {
           <div className="max-w-5xl mx-auto px-4 md:px-6 py-4">
             {/* Header - Desktop only */}
             <div className="hidden md:block mb-4">
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-                Analytics
-              </h1>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900">Analytics</h1>
             </div>
 
             {/* Controls */}
@@ -544,21 +479,19 @@ export default function AnalyticsPage() {
                       <>
                         {(() => {
                           const selectedActivity = activitiesWithSessions?.find(
-                            p => p.id === selectedProjectId
-                          );
+                            (p) => p.id === selectedProjectId
+                          )
                           return selectedActivity ? (
                             <>
                               <IconRenderer
                                 iconName={selectedActivity.icon}
                                 className="w-4 h-4 flex-shrink-0"
                               />
-                              <span className="truncate">
-                                {selectedActivity.name}
-                              </span>
+                              <span className="truncate">{selectedActivity.name}</span>
                             </>
                           ) : (
                             <span className="truncate">All Activities</span>
-                          );
+                          )
                         })()}
                       </>
                     )}
@@ -576,8 +509,8 @@ export default function AnalyticsPage() {
                       >
                         <button
                           onClick={() => {
-                            setSelectedProjectId('all');
-                            setShowProjectDropdown(false);
+                            setSelectedProjectId('all')
+                            setShowProjectDropdown(false)
                           }}
                           className={`w-full text-left px-3 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 flex items-center gap-2 ${selectedProjectId === 'all' ? 'bg-blue-50' : ''}`}
                           role="option"
@@ -590,12 +523,12 @@ export default function AnalyticsPage() {
                             No activities with sessions yet
                           </div>
                         )}
-                        {activitiesWithSessions.map(activity => (
+                        {activitiesWithSessions.map((activity) => (
                           <button
                             key={activity.id}
                             onClick={() => {
-                              setSelectedProjectId(activity.id);
-                              setShowProjectDropdown(false);
+                              setSelectedProjectId(activity.id)
+                              setShowProjectDropdown(false)
                             }}
                             className={`w-full text-left px-3 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 flex items-center gap-2 ${selectedProjectId === activity.id ? 'bg-blue-50' : ''}`}
                             role="option"
@@ -618,9 +551,7 @@ export default function AnalyticsPage() {
                 <div className="relative flex-shrink-0">
                   <button
                     ref={chartTypeTriggerRef}
-                    onClick={() =>
-                      setShowChartTypeDropdown(!showChartTypeDropdown)
-                    }
+                    onClick={() => setShowChartTypeDropdown(!showChartTypeDropdown)}
                     className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC]"
                     aria-label="Select chart type for analytics visualization"
                     aria-expanded={showChartTypeDropdown}
@@ -663,35 +594,25 @@ export default function AnalyticsPage() {
                       >
                         <button
                           onClick={() => {
-                            setChartType('bar');
-                            setShowChartTypeDropdown(false);
+                            setChartType('bar')
+                            setShowChartTypeDropdown(false)
                           }}
                           className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 flex items-center gap-2 ${chartType === 'bar' ? 'bg-blue-50 text-blue-600' : ''}`}
                           role="option"
                           aria-selected={chartType === 'bar'}
                           aria-label="Display charts as bar charts"
                         >
-                          <svg
-                            className="w-4 h-4"
-                            viewBox="0 0 16 16"
-                            fill="currentColor"
-                          >
+                          <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
                             <rect x="2" y="8" width="3" height="6" rx="0.5" />
-                            <rect
-                              x="6.5"
-                              y="4"
-                              width="3"
-                              height="10"
-                              rx="0.5"
-                            />
+                            <rect x="6.5" y="4" width="3" height="10" rx="0.5" />
                             <rect x="11" y="6" width="3" height="8" rx="0.5" />
                           </svg>
                           Bar
                         </button>
                         <button
                           onClick={() => {
-                            setChartType('line');
-                            setShowChartTypeDropdown(false);
+                            setChartType('line')
+                            setShowChartTypeDropdown(false)
                           }}
                           className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 flex items-center gap-2 ${chartType === 'line' ? 'bg-blue-50 text-blue-600' : ''}`}
                           role="option"
@@ -725,32 +646,30 @@ export default function AnalyticsPage() {
                 role="group"
                 aria-label="Time period selection"
               >
-                {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map(
-                  period => {
-                    const ariaLabels: Record<TimePeriod, string> = {
-                      '7D': 'Last 7 days',
-                      '2W': 'Last 2 weeks',
-                      '4W': 'Last 4 weeks',
-                      '3M': 'Last 3 months',
-                      '1Y': 'Last 1 year',
-                    };
-                    return (
-                      <button
-                        key={period}
-                        onClick={() => setTimePeriod(period)}
-                        className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#0066CC] ${
-                          timePeriod === period
-                            ? 'bg-gray-900 text-white focus:ring-offset-2'
-                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 focus:border-[#0066CC]'
-                        }`}
-                        aria-label={ariaLabels[period]}
-                        aria-pressed={timePeriod === period}
-                      >
-                        {period}
-                      </button>
-                    );
+                {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => {
+                  const ariaLabels: Record<TimePeriod, string> = {
+                    '7D': 'Last 7 days',
+                    '2W': 'Last 2 weeks',
+                    '4W': 'Last 4 weeks',
+                    '3M': 'Last 3 months',
+                    '1Y': 'Last 1 year',
                   }
-                )}
+                  return (
+                    <button
+                      key={period}
+                      onClick={() => setTimePeriod(period)}
+                      className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#0066CC] ${
+                        timePeriod === period
+                          ? 'bg-gray-900 text-white focus:ring-offset-2'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 focus:border-[#0066CC]'
+                      }`}
+                      aria-label={ariaLabels[period]}
+                      aria-pressed={timePeriod === period}
+                    >
+                      {period}
+                    </button>
+                  )
+                })}
               </div>
             </div>
 
@@ -766,19 +685,15 @@ export default function AnalyticsPage() {
                     Start tracking time to see your analytics
                   </h2>
                   <p className="text-base md:text-lg text-gray-600 mb-6">
-                    Your productivity insights will appear here once you
-                    complete your first session. Track your work, build streaks,
-                    and visualize your progress over time.
+                    Your productivity insights will appear here once you complete your first
+                    session. Track your work, build streaks, and visualize your progress over time.
                   </p>
                   <button
                     onClick={() => router.push('/timer')}
                     className="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors duration-200 font-semibold text-base md:text-lg shadow-lg hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
                     aria-label="Start your first timer session"
                   >
-                    <Activity
-                      className="w-5 h-5 md:w-6 md:h-6"
-                      aria-hidden="true"
-                    />
+                    <Activity className="w-5 h-5 md:w-6 md:h-6" aria-hidden="true" />
                     Start Your First Timer
                   </button>
                 </div>
@@ -788,15 +703,12 @@ export default function AnalyticsPage() {
                 {/* Main Chart */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <div className="mb-4">
-                    <h3 className="font-semibold text-gray-900">
-                      Hours completed
-                    </h3>
+                    <h3 className="font-semibold text-gray-900">Hours completed</h3>
                   </div>
                   <div className="h-72">
                     {isLoading ? (
                       <div className="h-full bg-gray-50 rounded animate-pulse" />
-                    ) : chartData.length === 0 ||
-                      chartData.every(d => d.hours === 0) ? (
+                    ) : chartData.length === 0 || chartData.every((d) => d.hours === 0) ? (
                       <ChartEmptyState
                         icon={BarChart3}
                         title="No session data yet"
@@ -845,23 +757,9 @@ export default function AnalyticsPage() {
                             }}
                           >
                             <defs>
-                              <linearGradient
-                                id="colorHours"
-                                x1="0"
-                                y1="0"
-                                x2="0"
-                                y2="1"
-                              >
-                                <stop
-                                  offset="5%"
-                                  stopColor="#0066CC"
-                                  stopOpacity={0.3}
-                                />
-                                <stop
-                                  offset="95%"
-                                  stopColor="#0066CC"
-                                  stopOpacity={0}
-                                />
+                              <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#0066CC" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#0066CC" stopOpacity={0} />
                               </linearGradient>
                             </defs>
                             <XAxis
@@ -897,13 +795,11 @@ export default function AnalyticsPage() {
                   {/* Average Session Duration */}
                   <div className="bg-white border border-gray-200 rounded-lg p-6">
                     <div className="mb-4">
-                      <h3 className="font-semibold text-gray-900">
-                        Average session duration
-                      </h3>
+                      <h3 className="font-semibold text-gray-900">Average session duration</h3>
                     </div>
                     <div className="h-48">
                       {avgDurationData.length === 0 ||
-                      avgDurationData.every(d => d.value === 0) ? (
+                      avgDurationData.every((d) => d.value === 0) ? (
                         <ChartEmptyState
                           icon={TrendingUp}
                           title="No duration data"
@@ -951,23 +847,9 @@ export default function AnalyticsPage() {
                               }}
                             >
                               <defs>
-                                <linearGradient
-                                  id="colorAvgDuration"
-                                  x1="0"
-                                  y1="0"
-                                  x2="0"
-                                  y2="1"
-                                >
-                                  <stop
-                                    offset="5%"
-                                    stopColor="#34C759"
-                                    stopOpacity={0.3}
-                                  />
-                                  <stop
-                                    offset="95%"
-                                    stopColor="#34C759"
-                                    stopOpacity={0}
-                                  />
+                                <linearGradient id="colorAvgDuration" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#34C759" stopOpacity={0.3} />
+                                  <stop offset="95%" stopColor="#34C759" stopOpacity={0} />
                                 </linearGradient>
                               </defs>
                               <XAxis
@@ -1000,13 +882,10 @@ export default function AnalyticsPage() {
                   {/* Sessions */}
                   <div className="bg-white border border-gray-200 rounded-lg p-6">
                     <div className="mb-4">
-                      <h3 className="font-semibold text-gray-900">
-                        Sessions completed
-                      </h3>
+                      <h3 className="font-semibold text-gray-900">Sessions completed</h3>
                     </div>
                     <div className="h-48">
-                      {chartData.length === 0 ||
-                      chartData.every(d => d.sessions === 0) ? (
+                      {chartData.length === 0 || chartData.every((d) => d.sessions === 0) ? (
                         <ChartEmptyState
                           icon={Activity}
                           title="No sessions tracked"
@@ -1054,23 +933,9 @@ export default function AnalyticsPage() {
                               }}
                             >
                               <defs>
-                                <linearGradient
-                                  id="colorSessionsSmall"
-                                  x1="0"
-                                  y1="0"
-                                  x2="0"
-                                  y2="1"
-                                >
-                                  <stop
-                                    offset="5%"
-                                    stopColor="#34C759"
-                                    stopOpacity={0.3}
-                                  />
-                                  <stop
-                                    offset="95%"
-                                    stopColor="#34C759"
-                                    stopOpacity={0}
-                                  />
+                                <linearGradient id="colorSessionsSmall" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#34C759" stopOpacity={0.3} />
+                                  <stop offset="95%" stopColor="#34C759" stopOpacity={0} />
                                 </linearGradient>
                               </defs>
                               <XAxis
@@ -1117,9 +982,7 @@ export default function AnalyticsPage() {
                     <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
                       Avg Duration
                     </div>
-                    <div className="text-2xl font-bold mb-1">
-                      {calculatedStats.avgDuration}m
-                    </div>
+                    <div className="text-2xl font-bold mb-1">{calculatedStats.avgDuration}m</div>
                     {renderPercentageChange(calculatedStats.avgDurationChange)}
                   </div>
 
@@ -1127,9 +990,7 @@ export default function AnalyticsPage() {
                     <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
                       Sessions
                     </div>
-                    <div className="text-2xl font-bold mb-1">
-                      {calculatedStats.sessions}
-                    </div>
+                    <div className="text-2xl font-bold mb-1">{calculatedStats.sessions}</div>
                     {renderPercentageChange(calculatedStats.sessionsChange)}
                   </div>
 
@@ -1137,9 +998,7 @@ export default function AnalyticsPage() {
                     <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
                       Active Days
                     </div>
-                    <div className="text-2xl font-bold mb-1">
-                      {calculatedStats.activeDays}
-                    </div>
+                    <div className="text-2xl font-bold mb-1">{calculatedStats.activeDays}</div>
                     {renderPercentageChange(calculatedStats.activeDaysChange)}
                   </div>
 
@@ -1147,9 +1006,7 @@ export default function AnalyticsPage() {
                     <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
                       Activities
                     </div>
-                    <div className="text-2xl font-bold mb-1">
-                      {calculatedStats.activities}
-                    </div>
+                    <div className="text-2xl font-bold mb-1">{calculatedStats.activities}</div>
                     {renderPercentageChange(calculatedStats.activitiesChange)}
                   </div>
                 </div>
@@ -1160,9 +1017,7 @@ export default function AnalyticsPage() {
                     <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
                       Current Streak
                     </div>
-                    <div className="text-2xl font-bold mb-1">
-                      {calculatedStats.currentStreak}
-                    </div>
+                    <div className="text-2xl font-bold mb-1">{calculatedStats.currentStreak}</div>
                     {renderPercentageChange(calculatedStats.streakChange)}
                   </div>
 
@@ -1170,9 +1025,7 @@ export default function AnalyticsPage() {
                     <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
                       Longest Streak
                     </div>
-                    <div className="text-2xl font-bold mb-1">
-                      {calculatedStats.longestStreak}
-                    </div>
+                    <div className="text-2xl font-bold mb-1">{calculatedStats.longestStreak}</div>
                     {renderPercentageChange(calculatedStats.streakChange)}
                   </div>
                 </div>
@@ -1187,5 +1040,5 @@ export default function AnalyticsPage() {
         <Footer />
       </div>
     </ProtectedRoute>
-  );
+  )
 }

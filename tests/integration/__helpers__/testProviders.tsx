@@ -7,10 +7,10 @@
  * - Mock router context
  */
 
-import React from 'react';
-import { render, RenderOptions } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import React from 'react'
+import { render, RenderOptions } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 
 /**
  * Creates a fresh QueryClient for each test
@@ -31,77 +31,68 @@ export function createTestQueryClient(): QueryClient {
         retry: false,
       },
     },
-  });
+  })
 }
 
 /**
  * Test wrapper that provides all necessary context providers
  */
 interface TestProvidersProps {
-  children: React.ReactNode;
-  queryClient?: QueryClient;
-  initialRoute?: string;
+  children: React.ReactNode
+  queryClient?: QueryClient
+  initialRoute?: string
 }
 
-export function TestProviders({
-  children,
-  queryClient: providedQueryClient,
-}: TestProvidersProps) {
-  const queryClient = providedQueryClient || createTestQueryClient();
+export function TestProviders({ children, queryClient: providedQueryClient }: TestProvidersProps) {
+  const queryClient = providedQueryClient || createTestQueryClient()
 
-  return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 }
 
 /**
  * Custom render function that wraps components with test providers
  */
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
-  queryClient?: QueryClient;
-  initialRoute?: string;
+  queryClient?: QueryClient
+  initialRoute?: string
 }
 
 export function renderWithProviders(
   ui: React.ReactElement,
-  {
-    queryClient,
-    initialRoute = '/',
-    ...renderOptions
-  }: CustomRenderOptions = {}
+  { queryClient, initialRoute = '/', ...renderOptions }: CustomRenderOptions = {}
 ) {
-  const testQueryClient = queryClient || createTestQueryClient();
+  const testQueryClient = queryClient || createTestQueryClient()
 
   function Wrapper({ children }: { children: React.ReactNode }) {
     return (
       <TestProviders queryClient={testQueryClient} initialRoute={initialRoute}>
         {children}
       </TestProviders>
-    );
+    )
   }
 
   return {
     ...render(ui, { wrapper: Wrapper, ...renderOptions }),
     queryClient: testQueryClient,
-  };
+  }
 }
 
 /**
  * Mock router push/replace functions for testing navigation
  */
-export const mockRouterPush = jest.fn();
-export const mockRouterReplace = jest.fn();
-export const mockRouterBack = jest.fn();
-export const mockRouterRefresh = jest.fn();
+export const mockRouterPush = jest.fn()
+export const mockRouterReplace = jest.fn()
+export const mockRouterBack = jest.fn()
+export const mockRouterRefresh = jest.fn()
 
 /**
  * Reset all router mocks
  */
 export function resetRouterMocks() {
-  mockRouterPush.mockClear();
-  mockRouterReplace.mockClear();
-  mockRouterBack.mockClear();
-  mockRouterRefresh.mockClear();
+  mockRouterPush.mockClear()
+  mockRouterReplace.mockClear()
+  mockRouterBack.mockClear()
+  mockRouterRefresh.mockClear()
 }
 
 /**
@@ -118,15 +109,15 @@ export function createMockRouter(
     forward: jest.fn(),
     refresh: mockRouterRefresh,
     prefetch: jest.fn(),
-  };
+  }
 
-  const mockPathname = pathname;
-  const mockSearchParamsInstance = new URLSearchParams(searchParams);
+  const mockPathname = pathname
+  const mockSearchParamsInstance = new URLSearchParams(searchParams)
 
   // Mock the Next.js navigation hooks
-  (useRouter as jest.Mock).mockReturnValue(mockRouter);
-  (usePathname as jest.Mock).mockReturnValue(mockPathname);
-  (useSearchParams as jest.Mock).mockReturnValue(mockSearchParamsInstance);
+  ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
+  ;(usePathname as jest.Mock).mockReturnValue(mockPathname)
+  ;(useSearchParams as jest.Mock).mockReturnValue(mockSearchParamsInstance)
 
-  return mockRouter;
+  return mockRouter
 }

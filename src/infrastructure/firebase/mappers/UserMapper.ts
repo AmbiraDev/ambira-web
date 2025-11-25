@@ -4,17 +4,17 @@
  * Converts between Firestore documents and User domain entities.
  */
 
-import { DocumentSnapshot, Timestamp } from 'firebase/firestore';
-import { User, ProfileVisibility } from '@/domain/entities/User';
+import { DocumentSnapshot, Timestamp } from 'firebase/firestore'
+import { User, ProfileVisibility } from '@/domain/entities/User'
 
 export class UserMapper {
   /**
    * Convert Firestore document to User domain entity
    */
   toDomain(doc: DocumentSnapshot): User {
-    const data = doc.data();
+    const data = doc.data()
     if (!data) {
-      throw new Error(`User document ${doc.id} does not exist`);
+      throw new Error(`User document ${doc.id} does not exist`)
     }
 
     return new User(
@@ -29,7 +29,7 @@ export class UserMapper {
       data.followerCount || 0,
       data.followingCount || 0,
       (data.profileVisibility as ProfileVisibility) || 'everyone'
-    );
+    )
   }
 
   /**
@@ -44,22 +44,22 @@ export class UserMapper {
       followerCount: user.followerCount,
       followingCount: user.followingCount,
       profileVisibility: user.profileVisibility,
-    };
+    }
 
     // Add optional fields only if defined
     if (user.bio !== undefined) {
-      data.bio = user.bio;
+      data.bio = user.bio
     }
 
     if (user.location !== undefined) {
-      data.location = user.location;
+      data.location = user.location
     }
 
     if (user.profilePicture !== undefined) {
-      data.profilePicture = user.profilePicture;
+      data.profilePicture = user.profilePicture
     }
 
-    return data;
+    return data
   }
 
   /**
@@ -67,20 +67,20 @@ export class UserMapper {
    */
   private timestampToDate(timestamp: Timestamp | Date | undefined): Date {
     if (!timestamp) {
-      return new Date();
+      return new Date()
     }
 
     if (timestamp instanceof Date) {
-      return timestamp;
+      return timestamp
     }
 
-    return timestamp.toDate();
+    return timestamp.toDate()
   }
 
   /**
    * Convert multiple Firestore documents to User entities
    */
   toDomainList(docs: DocumentSnapshot[]): User[] {
-    return docs.map(doc => this.toDomain(doc));
+    return docs.map((doc) => this.toDomain(doc))
   }
 }

@@ -1,133 +1,129 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Session, Project, SessionFilters, SessionSort } from '@/types';
-import { firebaseProjectApi, firebaseSessionApi } from '@/lib/api';
-import { MoreVertical } from 'lucide-react';
-import ConfirmDialog from './ConfirmDialog';
+import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Session, Project, SessionFilters, SessionSort } from '@/types'
+import { firebaseProjectApi, firebaseSessionApi } from '@/lib/api'
+import { MoreVertical } from 'lucide-react'
+import ConfirmDialog from './ConfirmDialog'
 
 export const SessionHistory: React.FC = () => {
-  const router = useRouter();
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [filters, setFilters] = useState<SessionFilters>({});
+  const router = useRouter()
+  const [sessions, setSessions] = useState<Session[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
+  const [filters, setFilters] = useState<SessionFilters>({})
   const [sort, setSort] = useState<SessionSort>({
     field: 'startTime',
     direction: 'desc',
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showMenuForSession, setShowMenuForSession] = useState<string | null>(
-    null
-  );
-  const [deleteConfirmSession, setDeleteConfirmSession] = useState<
-    string | null
-  >(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  })
+  const [isLoading, setIsLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showMenuForSession, setShowMenuForSession] = useState<string | null>(null)
+  const [deleteConfirmSession, setDeleteConfirmSession] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Load initial data
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        setIsLoading(true);
+        setIsLoading(true)
         // Load projects and user's sessions from Firebase
         const [projectsData, sessionsResp] = await Promise.all([
           firebaseProjectApi.getProjects(),
           firebaseSessionApi.getSessions(20, {}),
-        ]);
+        ])
 
-        setProjects(projectsData);
-        setSessions(sessionsResp.sessions);
-        setTotalCount(sessionsResp.totalCount);
-        setHasMore(sessionsResp.hasMore);
+        setProjects(projectsData)
+        setSessions(sessionsResp.sessions)
+        setTotalCount(sessionsResp.totalCount)
+        setHasMore(sessionsResp.hasMore)
       } catch {
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    loadInitialData();
-  }, []);
+    loadInitialData()
+  }, [])
 
   // Load sessions when filters or sort change
   useEffect(() => {
     const loadSessions = async () => {
       try {
-        setIsLoading(true);
+        setIsLoading(true)
         const sessionsResp = await firebaseSessionApi.getSessions(20, {
           ...filters,
           search: searchQuery,
-        });
+        })
 
-        setSessions(sessionsResp.sessions);
-        setTotalCount(sessionsResp.totalCount);
-        setHasMore(sessionsResp.hasMore);
+        setSessions(sessionsResp.sessions)
+        setTotalCount(sessionsResp.totalCount)
+        setHasMore(sessionsResp.hasMore)
       } catch {
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    loadSessions();
-  }, [filters, sort, currentPage, searchQuery]);
+    loadSessions()
+  }, [filters, sort, currentPage, searchQuery])
 
   const handleFiltersChange = (newFilters: SessionFilters) => {
-    setFilters(newFilters);
-    setCurrentPage(1);
-  };
+    setFilters(newFilters)
+    setCurrentPage(1)
+  }
 
   const handleSortChange = (newSort: SessionSort) => {
-    setSort(newSort);
-    setCurrentPage(1);
-  };
+    setSort(newSort)
+    setCurrentPage(1)
+  }
 
   const handleSessionEdit = (sessionId: string) => {
-    router.push(`/sessions/${sessionId}/edit`);
-  };
+    router.push(`/sessions/${sessionId}/edit`)
+  }
 
   const handleSessionDelete = (sessionId: string) => {
-    setDeleteConfirmSession(sessionId);
-  };
+    setDeleteConfirmSession(sessionId)
+  }
 
   const confirmDelete = async () => {
-    if (!deleteConfirmSession) return;
+    if (!deleteConfirmSession) return
 
     try {
-      setIsDeleting(true);
-      await firebaseSessionApi.deleteSession(deleteConfirmSession);
+      setIsDeleting(true)
+      await firebaseSessionApi.deleteSession(deleteConfirmSession)
 
       // Reload sessions from Firebase
       const sessionsResp = await firebaseSessionApi.getSessions(20, {
         ...filters,
         search: searchQuery,
-      });
-      setSessions(sessionsResp.sessions);
-      setTotalCount(sessionsResp.totalCount);
-      setHasMore(sessionsResp.hasMore);
-      setDeleteConfirmSession(null);
+      })
+      setSessions(sessionsResp.sessions)
+      setTotalCount(sessionsResp.totalCount)
+      setHasMore(sessionsResp.hasMore)
+      setDeleteConfirmSession(null)
     } catch {
     } finally {
-      setIsDeleting(false);
+      setIsDeleting(false)
     }
-  };
+  }
 
   const formatDuration = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
 
     if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}h ${minutes}m`
     } else if (minutes > 0) {
-      return `${minutes}m ${secs}s`;
+      return `${minutes}m ${secs}s`
     } else {
-      return `${secs}s`;
+      return `${secs}s`
     }
-  };
+  }
 
   const formatDate = (date: Date): string => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -136,52 +132,52 @@ export const SessionHistory: React.FC = () => {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-    });
-  };
+    })
+  }
 
   const getProjectName = (projectId: string | undefined): string => {
-    if (!projectId) return 'Unknown Project';
-    const project = projects.find(p => p.id === projectId);
-    return project ? project.name : 'Unknown Project';
-  };
+    if (!projectId) return 'Unknown Project'
+    const project = projects.find((p) => p.id === projectId)
+    return project ? project.name : 'Unknown Project'
+  }
 
   const getVisibilityIcon = (visibility: string) => {
     switch (visibility) {
       case 'everyone':
-        return '🌍';
+        return '🌍'
       case 'followers':
-        return '👥';
+        return '👥'
       case 'private':
-        return '🔒';
+        return '🔒'
       default:
-        return '🔒';
+        return '🔒'
     }
-  };
+  }
 
   const getFeelingEmoji = (rating?: number) => {
-    if (!rating) return '😐';
+    if (!rating) return '😐'
     switch (rating) {
       case 1:
-        return '😞';
+        return '😞'
       case 2:
-        return '😕';
+        return '😕'
       case 3:
-        return '😐';
+        return '😐'
       case 4:
-        return '🙂';
+        return '🙂'
       case 5:
-        return '😊';
+        return '😊'
       default:
-        return '😐';
+        return '😐'
     }
-  };
+  }
 
   if (isLoading && sessions.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -191,13 +187,11 @@ export const SessionHistory: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* Search */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Search
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
             <input
               type="text"
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Search sessions..."
             />
@@ -205,12 +199,10 @@ export const SessionHistory: React.FC = () => {
 
           {/* Project Filter */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Project
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Project</label>
             <select
               value={filters.projectId || ''}
-              onChange={e =>
+              onChange={(e) =>
                 handleFiltersChange({
                   ...filters,
                   projectId: e.target.value || undefined,
@@ -219,7 +211,7 @@ export const SessionHistory: React.FC = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Projects</option>
-              {projects.map(project => (
+              {projects.map((project) => (
                 <option key={project.id} value={project.id}>
                   {project.name}
                 </option>
@@ -229,22 +221,14 @@ export const SessionHistory: React.FC = () => {
 
           {/* Date Range */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              From Date
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">From Date</label>
             <input
               type="date"
-              value={
-                filters.dateFrom
-                  ? filters.dateFrom.toISOString().split('T')[0]
-                  : ''
-              }
-              onChange={e =>
+              value={filters.dateFrom ? filters.dateFrom.toISOString().split('T')[0] : ''}
+              onChange={(e) =>
                 handleFiltersChange({
                   ...filters,
-                  dateFrom: e.target.value
-                    ? new Date(e.target.value)
-                    : undefined,
+                  dateFrom: e.target.value ? new Date(e.target.value) : undefined,
                 })
               }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -252,15 +236,11 @@ export const SessionHistory: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              To Date
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">To Date</label>
             <input
               type="date"
-              value={
-                filters.dateTo ? filters.dateTo.toISOString().split('T')[0] : ''
-              }
-              onChange={e =>
+              value={filters.dateTo ? filters.dateTo.toISOString().split('T')[0] : ''}
+              onChange={(e) =>
                 handleFiltersChange({
                   ...filters,
                   dateTo: e.target.value ? new Date(e.target.value) : undefined,
@@ -276,15 +256,12 @@ export const SessionHistory: React.FC = () => {
           <label className="text-sm font-medium text-gray-700">Sort by:</label>
           <select
             value={`${sort.field}-${sort.direction}`}
-            onChange={e => {
-              const [field, direction] = e.target.value.split('-');
+            onChange={(e) => {
+              const [field, direction] = e.target.value.split('-')
               handleSortChange({
-                field: (field || 'startTime') as
-                  | 'startTime'
-                  | 'duration'
-                  | 'title',
+                field: (field || 'startTime') as 'startTime' | 'duration' | 'title',
                 direction: (direction || 'desc') as 'asc' | 'desc',
-              });
+              })
             }}
             className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
@@ -303,23 +280,16 @@ export const SessionHistory: React.FC = () => {
         {sessions.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <p className="text-lg">No sessions found</p>
-            <p className="text-sm mt-2">
-              Try adjusting your filters or start a new session
-            </p>
+            <p className="text-sm mt-2">Try adjusting your filters or start a new session</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {sessions.map(session => (
-              <div
-                key={session.id}
-                className="p-6 hover:bg-gray-50 transition-colors"
-              >
+            {sessions.map((session) => (
+              <div key={session.id} className="p-6 hover:bg-gray-50 transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-medium text-gray-900">
-                        {session.title}
-                      </h3>
+                      <h3 className="text-lg font-medium text-gray-900">{session.title}</h3>
                       <span className="text-sm text-gray-500">
                         {getVisibilityIcon(session.visibility)}
                       </span>
@@ -333,20 +303,16 @@ export const SessionHistory: React.FC = () => {
                       <span>•</span>
                       <span>{formatDate(session.startTime)}</span>
                       <span>•</span>
-                      <span className="font-medium">
-                        {formatDuration(session.duration)}
-                      </span>
+                      <span className="font-medium">{formatDuration(session.duration)}</span>
                     </div>
 
                     {session.description && (
-                      <p className="text-gray-700 text-sm mb-3">
-                        {session.description}
-                      </p>
+                      <p className="text-gray-700 text-sm mb-3">{session.description}</p>
                     )}
 
                     {session.tags && session.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-3">
-                        {session.tags.map(tag => (
+                        {session.tags.map((tag) => (
                           <span
                             key={tag}
                             className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
@@ -362,9 +328,7 @@ export const SessionHistory: React.FC = () => {
                   <div className="relative">
                     <button
                       onClick={() =>
-                        setShowMenuForSession(
-                          showMenuForSession === session.id ? null : session.id
-                        )
+                        setShowMenuForSession(showMenuForSession === session.id ? null : session.id)
                       }
                       className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
                     >
@@ -375,8 +339,8 @@ export const SessionHistory: React.FC = () => {
                       <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
                         <button
                           onClick={() => {
-                            handleSessionEdit(session.id);
-                            setShowMenuForSession(null);
+                            handleSessionEdit(session.id)
+                            setShowMenuForSession(null)
                           }}
                           className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
                         >
@@ -384,8 +348,8 @@ export const SessionHistory: React.FC = () => {
                         </button>
                         <button
                           onClick={() => {
-                            handleSessionDelete(session.id);
-                            setShowMenuForSession(null);
+                            handleSessionDelete(session.id)
+                            setShowMenuForSession(null)
                           }}
                           className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
                         >
@@ -415,9 +379,7 @@ export const SessionHistory: React.FC = () => {
             >
               Previous
             </button>
-            <span className="px-3 py-1 text-sm text-gray-700">
-              Page {currentPage}
-            </span>
+            <span className="px-3 py-1 text-sm text-gray-700">Page {currentPage}</span>
             <button
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={!hasMore}
@@ -442,5 +404,5 @@ export const SessionHistory: React.FC = () => {
         isLoading={isDeleting}
       />
     </div>
-  );
-};
+  )
+}

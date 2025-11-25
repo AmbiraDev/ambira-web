@@ -8,12 +8,7 @@
  */
 
 // Query hooks
-export {
-  useProjects,
-  useProject,
-  useProjectStats,
-  PROJECT_KEYS,
-} from './useProjects';
+export { useProjects, useProject, useProjectStats, PROJECT_KEYS } from './useProjects'
 
 // Mutation hooks
 export {
@@ -24,4 +19,4 @@ export {
   useRestoreProject,
   useInvalidateProject,
   useInvalidateAllProjects,
-} from './useProjectMutations';
+} from './useProjectMutations'

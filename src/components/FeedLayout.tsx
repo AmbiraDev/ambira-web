@@ -1,58 +1,56 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { firebaseApi } from '@/lib/api';
-import { UserStats, FeedFilters } from '@/types';
-import Feed from './Feed';
-import SuggestedUsers from './SuggestedUsers';
+import React, { useState } from 'react'
+import { useAuth } from '@/hooks/useAuth'
+import { firebaseApi } from '@/lib/api'
+import { UserStats, FeedFilters } from '@/types'
+import Feed from './Feed'
+import SuggestedUsers from './SuggestedUsers'
 
-type FeedType = 'recent' | 'following' | 'trending';
+type FeedType = 'recent' | 'following' | 'trending'
 
 interface FeedLayoutProps {
-  className?: string;
+  className?: string
 }
 
 export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
-  const { user } = useAuth();
-  const [userStats, setUserStats] = useState<UserStats | null>(null);
-  const [isLoadingStats, setIsLoadingStats] = useState(true);
-  const [feedType, setFeedType] = useState<FeedType>('recent');
-  const [filters] = useState<FeedFilters>({ type: 'recent' });
+  const { user } = useAuth()
+  const [userStats, setUserStats] = useState<UserStats | null>(null)
+  const [isLoadingStats, setIsLoadingStats] = useState(true)
+  const [feedType, setFeedType] = useState<FeedType>('recent')
+  const [filters] = useState<FeedFilters>({ type: 'recent' })
 
   // Load user stats and suggestions
   React.useEffect(() => {
     const loadData = async () => {
-      if (!user) return;
+      if (!user) return
 
       try {
-        const stats = await firebaseApi.user.getUserStats(user.id);
-        await firebaseApi.user.getSuggestedUsers(5);
+        const stats = await firebaseApi.user.getUserStats(user.id)
+        await firebaseApi.user.getSuggestedUsers(5)
 
-        setUserStats(stats);
-      } catch (err) {
+        setUserStats(stats)
+      } catch (_err) {
       } finally {
-        setIsLoadingStats(false);
+        setIsLoadingStats(false)
       }
-    };
+    }
 
-    loadData();
-  }, [user]);
+    loadData()
+  }, [user])
 
   const formatTime = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
 
     if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}h ${minutes}m`
     }
-    return `${minutes}m`;
-  };
+    return `${minutes}m`
+  }
 
   return (
-    <div
-      className={`max-w-7xl mx-auto px-0 md:px-4 sm:px-6 lg:px-8 py-0 md:py-6 ${className}`}
-    >
+    <div className={`max-w-7xl mx-auto px-0 md:px-4 sm:px-6 lg:px-8 py-0 md:py-6 ${className}`}>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 md:gap-6">
         {/* Left Sidebar - Personal Stats */}
         <div className="lg:col-span-3 order-2 lg:order-1 hidden lg:block">
@@ -60,17 +58,12 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
             {/* Personal Stats Widget */}
             {user && (
               <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Your Stats
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Stats</h3>
 
                 {isLoadingStats ? (
                   <div className="space-y-3">
                     {[...Array(4)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="h-4 bg-gray-200 rounded animate-pulse"
-                      ></div>
+                      <div key={i} className="h-4 bg-gray-200 rounded animate-pulse"></div>
                     ))}
                   </div>
                 ) : userStats ? (
@@ -90,18 +83,14 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">
-                        Current Streak
-                      </span>
+                      <span className="text-sm text-gray-600">Current Streak</span>
                       <span className="font-semibold text-gray-900">
                         {userStats.currentStreak} days
                       </span>
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">
-                        Sessions This Week
-                      </span>
+                      <span className="text-sm text-gray-600">Sessions This Week</span>
                       <span className="font-semibold text-gray-900">
                         {userStats.sessionsThisWeek}
                       </span>
@@ -109,9 +98,7 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
 
                     {userStats.favoriteProject && (
                       <div className="pt-3 border-t border-gray-200">
-                        <span className="text-sm text-gray-600 block mb-1">
-                          Favorite Project
-                        </span>
+                        <span className="text-sm text-gray-600 block mb-1">Favorite Project</span>
                         <span className="font-semibold text-gray-900">
                           {userStats.favoriteProject.name}
                         </span>
@@ -122,18 +109,14 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
                     )}
                   </div>
                 ) : (
-                  <div className="text-center text-gray-500 text-sm">
-                    No stats available
-                  </div>
+                  <div className="text-center text-gray-500 text-sm">No stats available</div>
                 )}
               </div>
             )}
 
             {/* Quick Actions */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Quick Actions
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
 
               <div className="space-y-3">
                 <button className="w-full text-left px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
@@ -154,12 +137,8 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
                       </svg>
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900">
-                        Start Timer
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        Begin a new session
-                      </div>
+                      <div className="font-medium text-gray-900">Start Timer</div>
+                      <div className="text-sm text-gray-600">Begin a new session</div>
                     </div>
                   </div>
                 </button>
@@ -183,9 +162,7 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
                     </div>
                     <div>
                       <div className="font-medium text-gray-900">Add Task</div>
-                      <div className="text-sm text-gray-600">
-                        Create a new task
-                      </div>
+                      <div className="text-sm text-gray-600">Create a new task</div>
                     </div>
                   </div>
                 </button>
@@ -243,12 +220,9 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
 
             {/* Feed Tips */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                💡 Feed Tips
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">💡 Feed Tips</h3>
               <p className="text-sm text-gray-700 mb-3">
-                Share your productive sessions to inspire others and build your
-                network!
+                Share your productive sessions to inspire others and build your network!
               </p>
               <ul className="text-sm text-gray-600 space-y-1">
                 <li>• Use meaningful descriptions</li>
@@ -261,7 +235,7 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default FeedLayout;
+export default FeedLayout

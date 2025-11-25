@@ -1,13 +1,13 @@
-'use client';
+'use client'
 
-import React, { useEffect, useState } from 'react';
-import { X, Share2 } from 'lucide-react';
-import { Achievement } from '@/types';
+import React, { useEffect, useState } from 'react'
+import { X, Share2 } from 'lucide-react'
+import { Achievement } from '@/types'
 
 interface AchievementUnlockProps {
-  achievement: Achievement;
-  onClose: () => void;
-  onShare?: (achievementId: string) => void;
+  achievement: Achievement
+  onClose: () => void
+  onShare?: (achievementId: string) => void
 }
 
 export const AchievementUnlock: React.FC<AchievementUnlockProps> = ({
@@ -15,22 +15,22 @@ export const AchievementUnlock: React.FC<AchievementUnlockProps> = ({
   onClose,
   onShare,
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
     // Trigger animation
-    setTimeout(() => setIsVisible(true), 100);
-  }, []);
+    setTimeout(() => setIsVisible(true), 100)
+  }, [])
 
   const handleClose = () => {
-    setIsVisible(false);
-    setTimeout(onClose, 300);
-  };
+    setIsVisible(false)
+    setTimeout(onClose, 300)
+  }
 
   const handleShare = () => {
-    onShare?.(achievement.id);
-    handleClose();
-  };
+    onShare?.(achievement.id)
+    handleClose()
+  }
 
   return (
     <div
@@ -39,10 +39,7 @@ export const AchievementUnlock: React.FC<AchievementUnlockProps> = ({
       }`}
     >
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black bg-opacity-50"
-        onClick={handleClose}
-      />
+      <div className="absolute inset-0 bg-black bg-opacity-50" onClick={handleClose} />
 
       {/* Modal */}
       <div
@@ -69,14 +66,10 @@ export const AchievementUnlock: React.FC<AchievementUnlockProps> = ({
           </div>
 
           {/* Title */}
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Achievement Unlocked!
-          </h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Achievement Unlocked!</h2>
 
           {/* Achievement name */}
-          <h3 className="text-2xl font-semibold text-orange-600 mb-3">
-            {achievement.name}
-          </h3>
+          <h3 className="text-2xl font-semibold text-orange-600 mb-3">{achievement.name}</h3>
 
           {/* Description */}
           <p className="text-gray-600 mb-6">{achievement.description}</p>
@@ -105,5 +98,5 @@ export const AchievementUnlock: React.FC<AchievementUnlockProps> = ({
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500" />
       </div>
     </div>
-  );
-};
+  )
+}

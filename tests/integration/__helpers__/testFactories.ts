@@ -6,33 +6,33 @@
 
 // Note: 'any' types are acceptable in test factories for flexibility with partial overrides
 
-import { User, Session, Project, Group, Challenge, Activity } from '@/types';
+import { User, Session, Project, Group, Challenge, Activity } from '@/types'
 
-let userIdCounter = 1;
-let sessionIdCounter = 1;
-let projectIdCounter = 1;
-let groupIdCounter = 1;
-let challengeIdCounter = 1;
-let activityIdCounter = 1;
+let userIdCounter = 1
+let sessionIdCounter = 1
+let projectIdCounter = 1
+let groupIdCounter = 1
+let challengeIdCounter = 1
+let activityIdCounter = 1
 
 /**
  * Reset all ID counters (call in beforeEach)
  */
 export function resetFactoryCounters(): void {
-  userIdCounter = 1;
-  sessionIdCounter = 1;
-  projectIdCounter = 1;
-  groupIdCounter = 1;
-  challengeIdCounter = 1;
-  activityIdCounter = 1;
+  userIdCounter = 1
+  sessionIdCounter = 1
+  projectIdCounter = 1
+  groupIdCounter = 1
+  challengeIdCounter = 1
+  activityIdCounter = 1
 }
 
 /**
  * Create a test user
  */
 export function createTestUser(overrides?: Partial<User>): User {
-  const id = `user-${userIdCounter++}`;
-  const username = overrides?.username || `testuser${userIdCounter}`;
+  const id = `user-${userIdCounter++}`
+  const username = overrides?.username || `testuser${userIdCounter}`
 
   return {
     id,
@@ -46,17 +46,14 @@ export function createTestUser(overrides?: Partial<User>): User {
     followersCount: overrides?.followersCount || 0,
     followingCount: overrides?.followingCount || 0,
     ...overrides,
-  };
+  }
 }
 
 /**
  * Create a test project (Activity)
  */
-export function createTestProject(
-  userId: string,
-  overrides?: Partial<Project>
-): Project {
-  const id = `project-${projectIdCounter++}`;
+export function createTestProject(userId: string, overrides?: Partial<Project>): Project {
+  const id = `project-${projectIdCounter++}`
 
   return {
     id,
@@ -69,17 +66,14 @@ export function createTestProject(
     createdAt: overrides?.createdAt || new Date(),
     updatedAt: overrides?.updatedAt || new Date(),
     ...overrides,
-  };
+  }
 }
 
 /**
  * Create a test activity
  */
-export function createTestActivity(
-  userId: string,
-  overrides?: Partial<Activity>
-): Activity {
-  const id = `activity-${activityIdCounter++}`;
+export function createTestActivity(userId: string, overrides?: Partial<Activity>): Activity {
+  const id = `activity-${activityIdCounter++}`
 
   return {
     id,
@@ -92,7 +86,7 @@ export function createTestActivity(
     createdAt: overrides?.createdAt || new Date(),
     updatedAt: overrides?.updatedAt || new Date(),
     ...overrides,
-  };
+  }
 }
 
 /**
@@ -104,9 +98,9 @@ export function createTestSession(
   activityId: string,
   overrides?: Partial<Session>
 ): Session {
-  const id = `session-${sessionIdCounter++}`;
-  const startTime = overrides?.startTime || new Date(Date.now() - 3600000); // 1 hour ago
-  const duration = overrides?.duration || 3600; // 1 hour in seconds
+  const id = `session-${sessionIdCounter++}`
+  const startTime = overrides?.startTime || new Date(Date.now() - 3600000) // 1 hour ago
+  const duration = overrides?.duration || 3600 // 1 hour in seconds
 
   return {
     id,
@@ -129,17 +123,14 @@ export function createTestSession(
     images: overrides?.images || [],
     showStartTime: overrides?.showStartTime !== false,
     ...overrides,
-  };
+  }
 }
 
 /**
  * Create a test group
  */
-export function createTestGroup(
-  createdByUserId: string,
-  overrides?: Partial<Group>
-): Group {
-  const id = `group-${groupIdCounter++}`;
+export function createTestGroup(createdByUserId: string, overrides?: Partial<Group>): Group {
+  const id = `group-${groupIdCounter++}`
 
   return {
     id,
@@ -156,7 +147,7 @@ export function createTestGroup(
     updatedAt: overrides?.updatedAt || new Date(),
     imageUrl: overrides?.imageUrl,
     ...overrides,
-  };
+  }
 }
 
 /**
@@ -166,10 +157,9 @@ export function createTestChallenge(
   createdByUserId: string,
   overrides?: Partial<Challenge>
 ): Challenge {
-  const id = `challenge-${challengeIdCounter++}`;
-  const startDate = overrides?.startDate || new Date();
-  const endDate =
-    overrides?.endDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+  const id = `challenge-${challengeIdCounter++}`
+  const startDate = overrides?.startDate || new Date()
+  const endDate = overrides?.endDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
 
   return {
     id,
@@ -187,16 +177,13 @@ export function createTestChallenge(
     goalValue: overrides?.goalValue,
     rules: overrides?.rules,
     ...overrides,
-  };
+  }
 }
 
 /**
  * Create an active session data (for timer)
  */
-export function createActiveSessionData(
-  projectId: string,
-  overrides?: any
-): any {
+export function createActiveSessionData(projectId: string, overrides?: any): any {
   return {
     startTime: overrides?.startTime || new Date(),
     projectId,
@@ -204,17 +191,13 @@ export function createActiveSessionData(
     pausedDuration: overrides?.pausedDuration || 0,
     isPaused: overrides?.isPaused || false,
     ...overrides,
-  };
+  }
 }
 
 /**
  * Create a test comment
  */
-export function createTestComment(
-  userId: string,
-  sessionId: string,
-  overrides?: any
-): any {
+export function createTestComment(userId: string, sessionId: string, overrides?: any): any {
   return {
     id: `comment-${Date.now()}`,
     userId,
@@ -223,14 +206,14 @@ export function createTestComment(
     createdAt: overrides?.createdAt || new Date(),
     updatedAt: overrides?.updatedAt || new Date(),
     ...overrides,
-  };
+  }
 }
 
 /**
  * Create multiple test users
  */
 export function createTestUsers(count: number): User[] {
-  return Array.from({ length: count }, () => createTestUser());
+  return Array.from({ length: count }, () => createTestUser())
 }
 
 /**
@@ -242,29 +225,27 @@ export function createTestSessions(
   activityId: string,
   count: number
 ): Session[] {
-  return Array.from({ length: count }, () =>
-    createTestSession(userId, projectId, activityId)
-  );
+  return Array.from({ length: count }, () => createTestSession(userId, projectId, activityId))
 }
 
 /**
  * Create a complete test user with projects, activities, and sessions
  */
 export function createCompleteTestUser(): {
-  user: User;
-  projects: Project[];
-  activities: Activity[];
-  sessions: Session[];
+  user: User
+  projects: Project[]
+  activities: Activity[]
+  sessions: Session[]
 } {
-  const user = createTestUser();
-  const project = createTestProject(user.id);
-  const activity = createTestActivity(user.id);
-  const sessions = createTestSessions(user.id, project.id, activity.id, 3);
+  const user = createTestUser()
+  const project = createTestProject(user.id)
+  const activity = createTestActivity(user.id)
+  const sessions = createTestSessions(user.id, project.id, activity.id, 3)
 
   return {
     user,
     projects: [project],
     activities: [activity],
     sessions,
-  };
+  }
 }

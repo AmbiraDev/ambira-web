@@ -3,30 +3,30 @@
  * Provides comprehensive HTTP request mocking
  */
 
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 interface MockResponse<T = unknown> {
-  data: T;
-  status: number;
-  statusText: string;
-  headers: Record<string, string>;
+  data: T
+  status: number
+  statusText: string
+  headers: Record<string, string>
 }
 
 interface MockRequest {
-  method: HttpMethod;
-  url: string;
-  data?: unknown;
-  params?: Record<string, string>;
-  headers?: Record<string, string>;
+  method: HttpMethod
+  url: string
+  data?: unknown
+  params?: Record<string, string>
+  headers?: Record<string, string>
 }
 
 // Store mock responses
-const mockResponses = new Map<string, MockResponse>();
-const requestHistory: MockRequest[] = [];
+const mockResponses = new Map<string, MockResponse>()
+const requestHistory: MockRequest[] = []
 
 // Helper to create response key
 function createResponseKey(method: HttpMethod, url: string): string {
-  return `${method}:${url}`;
+  return `${method}:${url}`
 }
 
 // Mock API client
@@ -35,8 +35,8 @@ export const mockApiClient = {
     async <T = unknown>(
       url: string,
       config?: {
-        params?: Record<string, string>;
-        headers?: Record<string, string>;
+        params?: Record<string, string>
+        headers?: Record<string, string>
       }
     ): Promise<MockResponse<T>> => {
       requestHistory.push({
@@ -44,10 +44,10 @@ export const mockApiClient = {
         url,
         params: config?.params,
         headers: config?.headers,
-      });
+      })
 
-      const key = createResponseKey('GET', url);
-      const response = mockResponses.get(key);
+      const key = createResponseKey('GET', url)
+      const response = mockResponses.get(key)
 
       if (response) {
         if (response.status >= 400) {
@@ -58,9 +58,9 @@ export const mockApiClient = {
               statusText: response.statusText,
             },
             message: `Request failed with status code ${response.status}`,
-          };
+          }
         }
-        return response as MockResponse<T>;
+        return response as MockResponse<T>
       }
 
       // Default successful response
@@ -69,7 +69,7 @@ export const mockApiClient = {
         status: 200,
         statusText: 'OK',
         headers: { 'content-type': 'application/json' },
-      };
+      }
     }
   ),
 
@@ -86,10 +86,10 @@ export const mockApiClient = {
           url,
           data,
           headers: config?.headers,
-        });
+        })
 
-        const key = createResponseKey('POST', url);
-        const response = mockResponses.get(key);
+        const key = createResponseKey('POST', url)
+        const response = mockResponses.get(key)
 
         if (response) {
           if (response.status >= 400) {
@@ -100,9 +100,9 @@ export const mockApiClient = {
                 statusText: response.statusText,
               },
               message: `Request failed with status code ${response.status}`,
-            };
+            }
           }
-          return response as MockResponse<T>;
+          return response as MockResponse<T>
         }
 
         // Default successful response
@@ -111,7 +111,7 @@ export const mockApiClient = {
           status: 201,
           statusText: 'Created',
           headers: { 'content-type': 'application/json' },
-        };
+        }
       }
     ),
 
@@ -128,10 +128,10 @@ export const mockApiClient = {
           url,
           data,
           headers: config?.headers,
-        });
+        })
 
-        const key = createResponseKey('PUT', url);
-        const response = mockResponses.get(key);
+        const key = createResponseKey('PUT', url)
+        const response = mockResponses.get(key)
 
         if (response) {
           if (response.status >= 400) {
@@ -142,9 +142,9 @@ export const mockApiClient = {
                 statusText: response.statusText,
               },
               message: `Request failed with status code ${response.status}`,
-            };
+            }
           }
-          return response as MockResponse<T>;
+          return response as MockResponse<T>
         }
 
         // Default successful response
@@ -153,7 +153,7 @@ export const mockApiClient = {
           status: 200,
           statusText: 'OK',
           headers: { 'content-type': 'application/json' },
-        };
+        }
       }
     ),
 
@@ -170,10 +170,10 @@ export const mockApiClient = {
           url,
           data,
           headers: config?.headers,
-        });
+        })
 
-        const key = createResponseKey('PATCH', url);
-        const response = mockResponses.get(key);
+        const key = createResponseKey('PATCH', url)
+        const response = mockResponses.get(key)
 
         if (response) {
           if (response.status >= 400) {
@@ -184,9 +184,9 @@ export const mockApiClient = {
                 statusText: response.statusText,
               },
               message: `Request failed with status code ${response.status}`,
-            };
+            }
           }
-          return response as MockResponse<T>;
+          return response as MockResponse<T>
         }
 
         // Default successful response
@@ -195,7 +195,7 @@ export const mockApiClient = {
           status: 200,
           statusText: 'OK',
           headers: { 'content-type': 'application/json' },
-        };
+        }
       }
     ),
 
@@ -210,10 +210,10 @@ export const mockApiClient = {
           method: 'DELETE',
           url,
           headers: config?.headers,
-        });
+        })
 
-        const key = createResponseKey('DELETE', url);
-        const response = mockResponses.get(key);
+        const key = createResponseKey('DELETE', url)
+        const response = mockResponses.get(key)
 
         if (response) {
           if (response.status >= 400) {
@@ -224,9 +224,9 @@ export const mockApiClient = {
                 statusText: response.statusText,
               },
               message: `Request failed with status code ${response.status}`,
-            };
+            }
           }
-          return response as MockResponse<T>;
+          return response as MockResponse<T>
         }
 
         // Default successful response
@@ -235,7 +235,7 @@ export const mockApiClient = {
           status: 204,
           statusText: 'No Content',
           headers: { 'content-type': 'application/json' },
-        };
+        }
       }
     ),
 
@@ -245,28 +245,23 @@ export const mockApiClient = {
     url: string,
     response: Partial<MockResponse<T>>
   ) => {
-    const key = createResponseKey(method, url);
+    const key = createResponseKey(method, url)
     mockResponses.set(key, {
       data: response.data as T,
       status: response.status || 200,
       statusText: response.statusText || 'OK',
       headers: response.headers || { 'content-type': 'application/json' },
-    });
+    })
   },
 
-  mockError: (
-    method: HttpMethod,
-    url: string,
-    status: number,
-    message?: string
-  ) => {
-    const key = createResponseKey(method, url);
+  mockError: (method: HttpMethod, url: string, status: number, message?: string) => {
+    const key = createResponseKey(method, url)
     mockResponses.set(key, {
       data: { error: message || 'Error occurred' },
       status,
       statusText: message || 'Error',
       headers: { 'content-type': 'application/json' },
-    });
+    })
   },
 
   getRequestHistory: () => [...requestHistory],
@@ -274,23 +269,23 @@ export const mockApiClient = {
   getLastRequest: () => requestHistory[requestHistory.length - 1],
 
   clearRequestHistory: () => {
-    requestHistory.length = 0;
+    requestHistory.length = 0
   },
 
   clearMockResponses: () => {
-    mockResponses.clear();
+    mockResponses.clear()
   },
 
   reset: () => {
-    mockResponses.clear();
-    requestHistory.length = 0;
-    mockApiClient.get.mockClear();
-    mockApiClient.post.mockClear();
-    mockApiClient.put.mockClear();
-    mockApiClient.patch.mockClear();
-    mockApiClient.delete.mockClear();
+    mockResponses.clear()
+    requestHistory.length = 0
+    mockApiClient.get.mockClear()
+    mockApiClient.post.mockClear()
+    mockApiClient.put.mockClear()
+    mockApiClient.patch.mockClear()
+    mockApiClient.delete.mockClear()
   },
-};
+}
 
 // Export for convenient use
 export const {
@@ -306,6 +301,6 @@ export const {
   clearRequestHistory,
   clearMockResponses,
   reset: resetApiMock,
-} = mockApiClient;
+} = mockApiClient
 
-export default mockApiClient;
+export default mockApiClient

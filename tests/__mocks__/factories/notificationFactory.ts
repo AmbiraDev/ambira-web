@@ -3,27 +3,25 @@
  * Creates mock notification objects for testing
  */
 
-import type { Notification } from '@/types';
+import type { Notification } from '@/types'
 
-let notificationIdCounter = 1;
+let notificationIdCounter = 1
 
 /**
  * Reset the notification ID counter
  * Call this in beforeEach to ensure consistent IDs across tests
  */
 export function resetNotificationFactory(): void {
-  notificationIdCounter = 1;
+  notificationIdCounter = 1
 }
 
 /**
  * Create a mock notification with default values
  * All fields can be overridden via the overrides parameter
  */
-export function createMockNotification(
-  overrides: Partial<Notification> = {}
-): Notification {
-  const id = `notification-${notificationIdCounter}`;
-  notificationIdCounter += 1;
+export function createMockNotification(overrides: Partial<Notification> = {}): Notification {
+  const id = `notification-${notificationIdCounter}`
+  notificationIdCounter += 1
 
   return {
     id,
@@ -34,7 +32,7 @@ export function createMockNotification(
     isRead: false,
     createdAt: new Date('2024-01-01T00:00:00Z'),
     ...overrides,
-  };
+  }
 }
 
 /**
@@ -50,39 +48,33 @@ export function createMockNotificationBatch(
       message: `Notification ${i + 1}`,
       createdAt: new Date(`2024-01-01T00:${i.toString().padStart(2, '0')}:00Z`),
     })
-  );
+  )
 }
 
 /**
  * Create a mock unread notification
  */
-export function createMockUnreadNotification(
-  overrides: Partial<Notification> = {}
-): Notification {
+export function createMockUnreadNotification(overrides: Partial<Notification> = {}): Notification {
   return createMockNotification({
     isRead: false,
     ...overrides,
-  });
+  })
 }
 
 /**
  * Create a mock read notification
  */
-export function createMockReadNotification(
-  overrides: Partial<Notification> = {}
-): Notification {
+export function createMockReadNotification(overrides: Partial<Notification> = {}): Notification {
   return createMockNotification({
     isRead: true,
     ...overrides,
-  });
+  })
 }
 
 /**
  * Create a mock follow notification
  */
-export function createMockFollowNotification(
-  overrides: Partial<Notification> = {}
-): Notification {
+export function createMockFollowNotification(overrides: Partial<Notification> = {}): Notification {
   return createMockNotification({
     type: 'follow',
     title: 'New Follower',
@@ -93,15 +85,13 @@ export function createMockFollowNotification(
     actorProfilePicture: 'https://example.com/alex.jpg',
     linkUrl: '/profile/alex',
     ...overrides,
-  });
+  })
 }
 
 /**
  * Create a mock support notification
  */
-export function createMockSupportNotification(
-  overrides: Partial<Notification> = {}
-): Notification {
+export function createMockSupportNotification(overrides: Partial<Notification> = {}): Notification {
   return createMockNotification({
     type: 'support',
     title: 'New Support',
@@ -112,15 +102,13 @@ export function createMockSupportNotification(
     sessionId: 'session-123',
     linkUrl: '/sessions/session-123',
     ...overrides,
-  });
+  })
 }
 
 /**
  * Create a mock comment notification
  */
-export function createMockCommentNotification(
-  overrides: Partial<Notification> = {}
-): Notification {
+export function createMockCommentNotification(overrides: Partial<Notification> = {}): Notification {
   return createMockNotification({
     type: 'comment',
     title: 'New Comment',
@@ -132,7 +120,7 @@ export function createMockCommentNotification(
     commentId: 'comment-456',
     linkUrl: '/sessions/session-123#comment-456',
     ...overrides,
-  });
+  })
 }
 
 /**
@@ -148,15 +136,13 @@ export function createMockChallengeNotification(
     challengeId: 'challenge-789',
     linkUrl: '/challenges/challenge-789',
     ...overrides,
-  });
+  })
 }
 
 /**
  * Create a mock group notification
  */
-export function createMockGroupNotification(
-  overrides: Partial<Notification> = {}
-): Notification {
+export function createMockGroupNotification(overrides: Partial<Notification> = {}): Notification {
   return createMockNotification({
     type: 'group',
     title: 'New Group Member',
@@ -167,5 +153,5 @@ export function createMockGroupNotification(
     groupId: 'group-101',
     linkUrl: '/groups/group-101',
     ...overrides,
-  });
+  })
 }

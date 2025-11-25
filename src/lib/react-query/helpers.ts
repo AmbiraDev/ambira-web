@@ -4,8 +4,8 @@
  * Reusable utilities for implementing the standardized caching pattern.
  */
 
-import { QueryClient } from '@tanstack/react-query';
-import type { CacheKeyFactory } from './types';
+import { QueryClient } from '@tanstack/react-query'
+import type { CacheKeyFactory } from './types'
 
 /**
  * Create a standard cache key factory for a feature
@@ -27,31 +27,29 @@ import type { CacheKeyFactory } from './types';
  * // GROUPS_KEYS.details() => ['groups', 'detail']
  * // GROUPS_KEYS.detail('123') => ['groups', 'detail', '123']
  */
-export function createCacheKeyFactory<
-  T extends Record<string, (...args: never[]) => unknown[]>,
->(
+export function createCacheKeyFactory<T extends Record<string, (...args: never[]) => unknown[]>>(
   featureName: string,
   keys: T
 ): CacheKeyFactory & T & { all: () => readonly [string] } {
-  const all = () => [featureName] as const;
+  const all = () => [featureName] as const
 
-  type FactoryType = CacheKeyFactory & T & { all: () => readonly [string] };
+  type FactoryType = CacheKeyFactory & T & { all: () => readonly [string] }
 
   const factory = Object.entries(keys).reduce(
     (acc, [key, fn]) => {
       // Type assertion necessary for dynamic key assignment with generic type parameters
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (acc as any)[key] = (...args: Parameters<typeof fn>) => {
-        const base = all();
-        const suffix = fn(...args);
-        return [...base, ...suffix] as const;
-      };
-      return acc;
+      ;(acc as any)[key] = (...args: Parameters<typeof fn>) => {
+        const base = all()
+        const suffix = fn(...args)
+        return [...base, ...suffix] as const
+      }
+      return acc
     },
     { all } as FactoryType
-  );
+  )
 
-  return factory;
+  return factory
 }
 
 /**
@@ -69,13 +67,10 @@ export function createCacheKeyFactory<
  * const invalidate = useInvalidateGroups();
  * invalidate(); // Invalidates all group queries
  */
-export function createInvalidator(
-  queryClient: QueryClient,
-  queryKey: readonly unknown[]
-) {
+export function createInvalidator(queryClient: QueryClient, queryKey: readonly unknown[]) {
   return () => {
-    queryClient.invalidateQueries({ queryKey });
-  };
+    queryClient.invalidateQueries({ queryKey })
+  }
 }
 
 /**
@@ -115,7 +110,7 @@ export function prefetchQuery<TData>(
     queryKey,
     queryFn,
     staleTime: options?.staleTime,
-  });
+  })
 }
 
 /**
@@ -141,8 +136,8 @@ export function prefetchQuery<TData>(
  * }
  */
 interface OptimisticUpdateContext<TData> {
-  previousData: TData | undefined;
-  queryKey: readonly unknown[];
+  previousData: TData | undefined
+  queryKey: readonly unknown[]
 }
 
 export function createOptimisticUpdate<TData, TVariables>(
@@ -151,26 +146,21 @@ export function createOptimisticUpdate<TData, TVariables>(
   updater: (oldData: TData, variables: TVariables) => TData
 ) {
   return {
-    onMutate: async (
-      variables: TVariables
-    ): Promise<OptimisticUpdateContext<TData>> => {
-      const queryKey = getQueryKey(variables);
+    onMutate: async (variables: TVariables): Promise<OptimisticUpdateContext<TData>> => {
+      const queryKey = getQueryKey(variables)
 
       // Cancel outgoing queries
-      await queryClient.cancelQueries({ queryKey });
+      await queryClient.cancelQueries({ queryKey })
 
       // Snapshot previous value
-      const previousData = queryClient.getQueryData<TData>(queryKey);
+      const previousData = queryClient.getQueryData<TData>(queryKey)
 
       // Optimistically update
       if (previousData) {
-        queryClient.setQueryData<TData>(
-          queryKey,
-          updater(previousData, variables)
-        );
+        queryClient.setQueryData<TData>(queryKey, updater(previousData, variables))
       }
 
-      return { previousData, queryKey };
+      return { previousData, queryKey }
     },
 
     onError: (
@@ -180,16 +170,16 @@ export function createOptimisticUpdate<TData, TVariables>(
     ) => {
       // Rollback on error
       if (context?.previousData && context?.queryKey) {
-        queryClient.setQueryData(context.queryKey, context.previousData);
+        queryClient.setQueryData(context.queryKey, context.previousData)
       }
     },
 
     onSettled: (_data: unknown, _error: unknown, variables: TVariables) => {
       // Invalidate to refetch
-      const queryKey = getQueryKey(variables);
-      queryClient.invalidateQueries({ queryKey });
+      const queryKey = getQueryKey(variables)
+      queryClient.invalidateQueries({ queryKey })
     },
-  };
+  }
 }
 
 /**
@@ -206,13 +196,10 @@ export function createOptimisticUpdate<TData, TVariables>(
  *   ]);
  * }
  */
-export function batchInvalidate(
-  queryClient: QueryClient,
-  queryKeys: readonly unknown[][]
-) {
-  queryKeys.forEach(queryKey => {
-    queryClient.invalidateQueries({ queryKey });
-  });
+export function batchInvalidate(queryClient: QueryClient, queryKeys: readonly unknown[][]) {
+  queryKeys.forEach((queryKey) => {
+    queryClient.invalidateQueries({ queryKey })
+  })
 }
 
 /**
@@ -226,12 +213,9 @@ export function batchInvalidate(
  *   // Prefetch or show loading state
  * }
  */
-export function isCached(
-  queryClient: QueryClient,
-  queryKey: readonly unknown[]
-): boolean {
-  const state = queryClient.getQueryState(queryKey);
-  return !!state && state.status === 'success' && !state.isInvalidated;
+export function isCached(queryClient: QueryClient, queryKey: readonly unknown[]): boolean {
+  const state = queryClient.getQueryState(queryKey)
+  return !!state && state.status === 'success' && !state.isInvalidated
 }
 
 /**
@@ -251,7 +235,7 @@ export function getCachedData<TData>(
   queryClient: QueryClient,
   queryKey: readonly unknown[]
 ): TData | undefined {
-  return queryClient.getQueryData<TData>(queryKey);
+  return queryClient.getQueryData<TData>(queryKey)
 }
 
 /**
@@ -270,5 +254,5 @@ export function setCachedData<TData>(
   queryKey: readonly unknown[],
   data: TData | ((old: TData | undefined) => TData)
 ) {
-  queryClient.setQueryData<TData>(queryKey, data);
+  queryClient.setQueryData<TData>(queryKey, data)
 }

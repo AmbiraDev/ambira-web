@@ -1,21 +1,21 @@
-'use client';
+'use client'
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import { Search, Settings, ChevronLeft } from 'lucide-react';
-import NotificationIcon from './NotificationIcon';
+import React from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
+import { Search, Settings, ChevronLeft } from 'lucide-react'
+import NotificationIcon from './NotificationIcon'
 
 interface MobileHeaderProps {
-  title: string;
-  showNotifications?: boolean;
-  showProfilePicture?: boolean;
-  showBackButton?: boolean;
-  showSettings?: boolean;
-  settingsExpanded?: boolean;
-  onSettingsClick?: () => void;
+  title: string
+  showNotifications?: boolean
+  showProfilePicture?: boolean
+  showBackButton?: boolean
+  showSettings?: boolean
+  settingsExpanded?: boolean
+  onSettingsClick?: () => void
 }
 
 export default function MobileHeader({
@@ -27,10 +27,10 @@ export default function MobileHeader({
   settingsExpanded = false,
   onSettingsClick,
 }: MobileHeaderProps) {
-  const { user } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth()
+  const router = useRouter()
 
-  if (!user) return null;
+  if (!user) return null
 
   return (
     <header className="md:hidden bg-gray-50 px-4 py-2 sticky top-0 z-40 shadow-sm">
@@ -41,23 +41,16 @@ export default function MobileHeader({
           {showBackButton && (
             <button
               onClick={() => {
-                if (
-                  typeof window !== 'undefined' &&
-                  window.history.length > 1
-                ) {
-                  router.back();
+                if (typeof window !== 'undefined' && window.history.length > 1) {
+                  router.back()
                 } else {
-                  router.push('/');
+                  router.push('/')
                 }
               }}
               className="p-1.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="Go back"
             >
-              <ChevronLeft
-                className="w-6 h-6"
-                strokeWidth={2}
-                aria-hidden="true"
-              />
+              <ChevronLeft className="w-6 h-6" strokeWidth={2} aria-hidden="true" />
             </button>
           )}
 
@@ -92,11 +85,7 @@ export default function MobileHeader({
               className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="Search and discover"
             >
-              <Search
-                className="w-6 h-6 text-gray-700"
-                strokeWidth={2}
-                aria-hidden="true"
-              />
+              <Search className="w-6 h-6 text-gray-700" strokeWidth={2} aria-hidden="true" />
             </Link>
           )}
         </div>
@@ -115,15 +104,11 @@ export default function MobileHeader({
               aria-haspopup="true"
               aria-expanded={settingsExpanded}
             >
-              <Settings
-                className="w-6 h-6"
-                strokeWidth={2}
-                aria-hidden="true"
-              />
+              <Settings className="w-6 h-6" strokeWidth={2} aria-hidden="true" />
             </button>
           )}
         </div>
       </div>
     </header>
-  );
+  )
 }

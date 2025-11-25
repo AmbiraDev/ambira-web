@@ -92,8 +92,8 @@ ErrorBoundary
 **Dependencies:**
 
 ```typescript
-import { useRouter } from 'next/navigation';
-import { firebaseAuthApi } from '@/lib/firebaseApi';
+import { useRouter } from 'next/navigation'
+import { firebaseAuthApi } from '@/lib/firebaseApi'
 ```
 
 **State Management:**
@@ -126,19 +126,19 @@ export function useAuth() {
     queryFn: () => authService.getCurrentUser(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: true,
-  });
+  })
 }
 
 export function useAuthSession() {
   // Subscribe to Firebase Auth state changes
-  const [authState, setAuthState] = useState<AuthUser | null>(null);
+  const [authState, setAuthState] = useState<AuthUser | null>(null)
 
   useEffect(() => {
-    const unsubscribe = firebaseAuthApi.onAuthStateChanged(setAuthState);
-    return unsubscribe;
-  }, []);
+    const unsubscribe = firebaseAuthApi.onAuthStateChanged(setAuthState)
+    return unsubscribe
+  }, [])
 
-  return authState;
+  return authState
 }
 ```
 
@@ -167,13 +167,13 @@ import { useActivities } from '@/hooks/useActivitiesQuery' // ✅ Already using 
 
 ```typescript
 timerState: {
-  isRunning: boolean;
-  startTime: Date | null;
-  pausedDuration: number;
-  currentProject: Project | null;
-  activeTimerId: string | null;
-  isConnected: boolean;
-  lastAutoSave: Date | null;
+  isRunning: boolean
+  startTime: Date | null
+  pausedDuration: number
+  currentProject: Project | null
+  activeTimerId: string | null
+  isConnected: boolean
+  lastAutoSave: Date | null
 }
 ```
 
@@ -200,9 +200,9 @@ export function useTimerState() {
     isRunning: false,
     startTime: null,
     pausedDuration: 0,
-  });
+  })
 
-  return { timerState, setTimerState };
+  return { timerState, setTimerState }
 }
 
 // SERVER STATE: src/features/timer/hooks/useTimer.ts (already exists!)
@@ -211,7 +211,7 @@ export function useActiveTimer() {
     queryKey: ['timer', 'active'],
     queryFn: () => timerService.getActiveSession(),
     refetchInterval: 10000, // Cross-tab sync
-  });
+  })
 }
 ```
 
@@ -233,8 +233,8 @@ export function useActiveTimer() {
 **Dependencies:**
 
 ```typescript
-import { useAuth } from './AuthContext'; // ❌ Context dependency
-import { firebaseActivityApi } from '@/lib/firebaseApi';
+import { useAuth } from './AuthContext' // ❌ Context dependency
+import { firebaseActivityApi } from '@/lib/firebaseApi'
 ```
 
 **Migration Status:** 🟢 95% Complete
@@ -271,7 +271,7 @@ import { useActivities } from '@/hooks/useActivitiesQuery'
 **Dependencies:**
 
 ```typescript
-import { useAuth } from './AuthContext'; // ❌ Context dependency
+import { useAuth } from './AuthContext' // ❌ Context dependency
 ```
 
 **Migration Status:** 🟢 100% Complete
@@ -386,17 +386,17 @@ src/features/profile/components/OwnProfilePageContent.tsx
 ```typescript
 // TimerContext depends on AuthContext
 export const TimerProvider = ({ children }) => {
-  const { user } = useAuth(); // ❌ Context calling context
+  const { user } = useAuth() // ❌ Context calling context
   // ...
-};
+}
 ```
 
 #### ❌ Violation 2: Components Bypassing Feature Boundaries
 
 ```typescript
 // src/components/SessionCard.tsx
-const { user } = useAuth(); // ❌ Should use feature hook
-const { timerState } = useTimer(); // ❌ Should use feature hook
+const { user } = useAuth() // ❌ Should use feature hook
+const { timerState } = useTimer() // ❌ Should use feature hook
 ```
 
 #### ❌ Violation 3: Mixing Server + Client State
@@ -468,34 +468,34 @@ const { timerState } = useTimer(); // ❌ Should use feature hook
 ```typescript
 // src/features/timer/hooks/useTimer.ts
 export function useTimerActions() {
-  const queryClient = useQueryClient();
-  const saveActiveSession = useSaveActiveSession();
+  const queryClient = useQueryClient()
+  const saveActiveSession = useSaveActiveSession()
 
   const startTimer = async (projectId: string) => {
     await saveActiveSession.mutateAsync({
       startTime: new Date(),
       projectId,
       isPaused: false,
-    });
-  };
+    })
+  }
 
-  return { startTimer, pauseTimer, resumeTimer, finishTimer };
+  return { startTimer, pauseTimer, resumeTimer, finishTimer }
 }
 
 // src/features/timer/hooks/useTimerState.ts (client state)
 export function useTimerState() {
-  const { data: activeSession } = useActiveSession();
+  const { data: activeSession } = useActiveSession()
   const [localState, setLocalState] = useState({
     isRunning: false,
     elapsedSeconds: 0,
-  });
+  })
 
   // Calculate elapsed time from activeSession
   useEffect(() => {
     // Timer tick logic
-  }, [activeSession]);
+  }, [activeSession])
 
-  return { timerState: localState, isRunning: localState.isRunning };
+  return { timerState: localState, isRunning: localState.isRunning }
 }
 ```
 
@@ -537,12 +537,12 @@ export function useTimerState() {
 // src/features/auth/services/AuthService.ts
 export class AuthService {
   async getCurrentUser(): Promise<AuthUser | null> {
-    return firebaseAuthApi.getCurrentUser();
+    return firebaseAuthApi.getCurrentUser()
   }
 
   async login(credentials: LoginCredentials): Promise<AuthUser> {
-    const result = await firebaseAuthApi.login(credentials);
-    return result.user;
+    const result = await firebaseAuthApi.login(credentials)
+    return result.user
   }
 
   // ... other methods
@@ -559,19 +559,19 @@ export function useAuth() {
     queryFn: () => authService.getCurrentUser(),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: true,
-  });
+  })
 }
 
 // Firebase Auth state subscription (must remain reactive)
 export function useAuthListener() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   useEffect(() => {
-    const unsubscribe = firebaseAuthApi.onAuthStateChanged(user => {
-      queryClient.setQueryData(['auth', 'session'], user);
-    });
-    return unsubscribe;
-  }, [queryClient]);
+    const unsubscribe = firebaseAuthApi.onAuthStateChanged((user) => {
+      queryClient.setQueryData(['auth', 'session'], user)
+    })
+    return unsubscribe
+  }, [queryClient])
 }
 ```
 
@@ -600,11 +600,11 @@ export function AuthInitializer({ children }: { children: ReactNode }) {
 
 ```typescript
 // OLD:
-const { user, isAuthenticated, isLoading } = useAuth();
+const { user, isAuthenticated, isLoading } = useAuth()
 
 // NEW:
-const { data: user, isLoading } = useAuth();
-const isAuthenticated = !!user;
+const { data: user, isLoading } = useAuth()
+const isAuthenticated = !!user
 ```
 
 **Phase 5: Create Auth Mutations**
@@ -612,30 +612,29 @@ const isAuthenticated = !!user;
 ```typescript
 // src/features/auth/hooks/useAuthMutations.ts
 export function useLogin() {
-  const queryClient = useQueryClient();
-  const router = useRouter();
+  const queryClient = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
-    mutationFn: (credentials: LoginCredentials) =>
-      authService.login(credentials),
-    onSuccess: user => {
-      queryClient.setQueryData(['auth', 'session'], user);
-      router.push('/');
+    mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
+    onSuccess: (user) => {
+      queryClient.setQueryData(['auth', 'session'], user)
+      router.push('/')
     },
-  });
+  })
 }
 
 export function useLogout() {
-  const queryClient = useQueryClient();
-  const router = useRouter();
+  const queryClient = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: () => authService.logout(),
     onSuccess: () => {
-      queryClient.setQueryData(['auth', 'session'], null);
-      router.push('/');
+      queryClient.setQueryData(['auth', 'session'], null)
+      router.push('/')
     },
-  });
+  })
 }
 ```
 
@@ -897,27 +896,27 @@ export const useFeature = () => {
 // src/features/feature/services/FeatureService.ts
 export class FeatureService {
   async getData() {
-    return featureRepository.findAll();
+    return featureRepository.findAll()
   }
 }
 
 // src/features/feature/hooks/useFeature.ts
-import { useQuery } from '@tanstack/react-query';
-import { featureService } from '../services/FeatureService';
+import { useQuery } from '@tanstack/react-query'
+import { featureService } from '../services/FeatureService'
 
 export function useFeature() {
   return useQuery({
     queryKey: ['feature', 'data'],
     queryFn: () => featureService.getData(),
     staleTime: 5 * 60 * 1000,
-  });
+  })
 }
 
 // Components
-import { useFeature } from '@/features/feature/hooks';
+import { useFeature } from '@/features/feature/hooks'
 
 function MyComponent() {
-  const { data, isLoading } = useFeature(); // Same API!
+  const { data, isLoading } = useFeature() // Same API!
   // ... rest of component
 }
 ```
@@ -971,29 +970,29 @@ export function useActiveTimer() {
     queryFn: () => timerService.getActiveSession(),
     staleTime: 30 * 1000,
     refetchInterval: 10000,
-  });
+  })
 }
 
 // CLIENT STATE: src/features/timer/hooks/useTimerState.ts
 export function useTimerState() {
-  const { data: activeSession } = useActiveTimer();
-  const [isRunning, setIsRunning] = useState(false);
-  const [elapsed, setElapsed] = useState(0);
+  const { data: activeSession } = useActiveTimer()
+  const [isRunning, setIsRunning] = useState(false)
+  const [elapsed, setElapsed] = useState(0)
 
   // Timer tick (client-only)
   useEffect(() => {
     const interval = setInterval(() => {
-      if (isRunning) setElapsed(e => e + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isRunning]);
+      if (isRunning) setElapsed((e) => e + 1)
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [isRunning])
 
   return {
     activeSession, // From server
     isRunning, // Client state
     elapsed, // Derived client state
     setIsRunning,
-  };
+  }
 }
 ```
 
@@ -1182,12 +1181,12 @@ function LoginForm() {
 // Test both old and new implementations side-by-side
 describe('Auth migration', () => {
   it('should maintain session across migrations', async () => {
-    const { result: oldAuth } = renderHook(() => useAuthContext());
-    const { result: newAuth } = renderHook(() => useAuth());
+    const { result: oldAuth } = renderHook(() => useAuthContext())
+    const { result: newAuth } = renderHook(() => useAuth())
 
-    expect(oldAuth.current.user?.id).toBe(newAuth.current.data?.id);
-  });
-});
+    expect(oldAuth.current.user?.id).toBe(newAuth.current.data?.id)
+  })
+})
 ```
 
 ---
@@ -1209,14 +1208,14 @@ describe('Auth migration', () => {
 ```typescript
 // E2E test with Playwright
 test('timer should persist across page reloads', async ({ page }) => {
-  await page.goto('/timer');
-  await page.click('[data-testid="start-timer"]');
+  await page.goto('/timer')
+  await page.click('[data-testid="start-timer"]')
 
-  await page.reload();
+  await page.reload()
 
   // Timer should still be running
-  await expect(page.locator('[data-testid="timer-running"]')).toBeVisible();
-});
+  await expect(page.locator('[data-testid="timer-running"]')).toBeVisible()
+})
 ```
 
 ---
@@ -1236,14 +1235,14 @@ test('timer should persist across page reloads', async ({ page }) => {
 
 ```typescript
 // Track cache hit rates
-const { data, isStale } = useFeature();
+const { data, isStale } = useFeature()
 
 useEffect(() => {
   analytics.track('cache_hit', {
     feature: 'feature-name',
     wasStale: isStale,
-  });
-}, [isStale]);
+  })
+}, [isStale])
 ```
 
 ---
@@ -1264,13 +1263,13 @@ useEffect(() => {
 ```typescript
 // src/features/feature/types/index.ts
 export interface Feature {
-  id: string;
-  name: string;
+  id: string
+  name: string
   // ... other fields
 }
 
 export interface FeatureService {
-  getData(): Promise<Feature[]>;
+  getData(): Promise<Feature[]>
 }
 
 // src/features/feature/hooks/useFeature.ts
@@ -1279,7 +1278,7 @@ export function useFeature() {
     // ← Typed return
     queryKey: ['feature', 'data'],
     queryFn: () => featureService.getData(),
-  });
+  })
 }
 ```
 
@@ -1311,18 +1310,18 @@ export function useFeature() {
 ```typescript
 // Add telemetry to track migration success
 export function useFeatureWithTelemetry(feature: string) {
-  const result = useFeature();
+  const result = useFeature()
 
   useEffect(() => {
     if (result.isSuccess) {
-      analytics.track('react_query_success', { feature });
+      analytics.track('react_query_success', { feature })
     }
     if (result.isError) {
-      analytics.track('react_query_error', { feature, error: result.error });
+      analytics.track('react_query_error', { feature, error: result.error })
     }
-  }, [result.isSuccess, result.isError]);
+  }, [result.isSuccess, result.isError])
 
-  return result;
+  return result
 }
 ```
 
@@ -1416,14 +1415,13 @@ module.exports = {
         patterns: [
           {
             group: ['**/contexts/*Context'],
-            message:
-              'Use feature hooks from @/features/[feature]/hooks instead',
+            message: 'Use feature hooks from @/features/[feature]/hooks instead',
           },
         ],
       },
     ],
   },
-};
+}
 ```
 
 ### D. Quick Reference Commands

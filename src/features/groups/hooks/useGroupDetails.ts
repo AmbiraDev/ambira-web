@@ -9,18 +9,18 @@
  * This file is kept for backwards compatibility and will be removed in a future version.
  */
 
-import { useGroupDetails as useGroupDetailsNew } from './useGroups';
+import { useGroupDetails as useGroupDetailsNew } from './useGroups'
 
 /**
  * @deprecated Import from './useGroups' or '@/features/groups/hooks' instead
  */
 export function useGroupDetails(groupId: string) {
-  const { data, isLoading, error, refetch } = useGroupDetailsNew(groupId);
+  const { data, isLoading, error, refetch } = useGroupDetailsNew(groupId)
 
   return {
     group: data,
     isLoading,
     error,
     refetch,
-  };
+  }
 }

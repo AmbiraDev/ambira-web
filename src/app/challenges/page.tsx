@@ -1,53 +1,49 @@
-'use client';
+'use client'
 
-import React, { useState, useMemo } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { ChallengeFilters } from '@/types';
-import {
-  useChallenges,
-  useJoinChallenge,
-  useLeaveChallenge,
-} from '@/features/challenges/hooks';
-import Header from '@/components/HeaderComponent';
-import MobileHeader from '@/components/MobileHeader';
-import BottomNavigation from '@/components/BottomNavigation';
-import Footer from '@/components/Footer';
-import ChallengeCard from '@/components/ChallengeCard';
-import { Button } from '@/components/ui/button';
-import { Trophy, Target, Search, TrendingUp, Zap, Timer } from 'lucide-react';
+import React, { useState, useMemo } from 'react'
+import { useAuth } from '@/hooks/useAuth'
+import { ChallengeFilters } from '@/types'
+import { useChallenges, useJoinChallenge, useLeaveChallenge } from '@/features/challenges/hooks'
+import Header from '@/components/HeaderComponent'
+import MobileHeader from '@/components/MobileHeader'
+import BottomNavigation from '@/components/BottomNavigation'
+import Footer from '@/components/Footer'
+import ChallengeCard from '@/components/ChallengeCard'
+import { Button } from '@/components/ui/button'
+import { Trophy, Target, Search, TrendingUp, Zap, Timer } from 'lucide-react'
 
 const filterTabs = [
   { key: 'all', label: 'All Challenges', icon: Trophy },
   { key: 'active', label: 'Active', icon: TrendingUp },
   { key: 'upcoming', label: 'Upcoming', icon: Target },
   { key: 'participating', label: 'My Challenges', icon: Target },
-];
+]
 
 const challengeTypeFilters = [
   { key: 'most-activity', label: 'Most Activity', icon: TrendingUp },
   { key: 'fastest-effort', label: 'Fastest Effort', icon: Zap },
   { key: 'longest-session', label: 'Longest Session', icon: Timer },
   { key: 'group-goal', label: 'Group Goal', icon: Target },
-];
+]
 
 export default function ChallengesPage() {
-  const { user } = useAuth();
-  const [activeFilter, setActiveFilter] = useState<
-    'all' | 'active' | 'upcoming' | 'participating'
-  >('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const { user } = useAuth()
+  const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'upcoming' | 'participating'>(
+    'all'
+  )
+  const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Build filters based on active filter state
   const filters = useMemo(() => {
-    const filterObj: ChallengeFilters = {};
+    const filterObj: ChallengeFilters = {}
 
     if (activeFilter === 'active') {
-      filterObj.status = 'active';
+      filterObj.status = 'active'
     } else if (activeFilter === 'upcoming') {
-      filterObj.status = 'upcoming';
+      filterObj.status = 'upcoming'
     } else if (activeFilter === 'participating') {
-      filterObj.isParticipating = true;
+      filterObj.isParticipating = true
     }
 
     if (typeFilter !== 'all') {
@@ -55,55 +51,55 @@ export default function ChallengesPage() {
         | 'most-activity'
         | 'fastest-effort'
         | 'longest-session'
-        | 'group-goal';
+        | 'group-goal'
     }
 
-    return filterObj;
-  }, [activeFilter, typeFilter]);
+    return filterObj
+  }, [activeFilter, typeFilter])
 
   // Use new challenge hooks
-  const { data: challenges = [], isLoading } = useChallenges(filters);
-  const joinChallengeMutation = useJoinChallenge();
-  const leaveChallengeMutation = useLeaveChallenge();
+  const { data: challenges = [], isLoading } = useChallenges(filters)
+  const joinChallengeMutation = useJoinChallenge()
+  const leaveChallengeMutation = useLeaveChallenge()
 
   // Build set of participating challenge IDs based on filter result
   // When filtering by 'participating', all returned challenges are ones the user is in
   const participatingChallenges = useMemo(() => {
     if (activeFilter === 'participating') {
       // All challenges returned when filtering by participation are participating
-      return new Set(challenges.map(c => c.id));
+      return new Set(challenges.map((c) => c.id))
     }
     // Otherwise, we need a different method to determine participation
     // For now, we mark none as participating unless the filter explicitly sets it
-    return new Set<string>();
-  }, [challenges, activeFilter]);
+    return new Set<string>()
+  }, [challenges, activeFilter])
 
   const handleJoinChallenge = async (challengeId: string) => {
     try {
-      await joinChallengeMutation.mutateAsync(challengeId);
+      await joinChallengeMutation.mutateAsync(challengeId)
     } catch {
-      alert('Failed to join challenge. Please try again.');
+      alert('Failed to join challenge. Please try again.')
     }
-  };
+  }
 
   const handleLeaveChallenge = async (challengeId: string) => {
     try {
-      await leaveChallengeMutation.mutateAsync(challengeId);
+      await leaveChallengeMutation.mutateAsync(challengeId)
     } catch {
-      alert('Failed to leave challenge. Please try again.');
+      alert('Failed to leave challenge. Please try again.')
     }
-  };
+  }
 
   const filteredChallenges = useMemo(() => {
-    if (!searchQuery) return challenges;
+    if (!searchQuery) return challenges
 
-    const query = searchQuery.toLowerCase();
+    const query = searchQuery.toLowerCase()
     return challenges.filter(
-      challenge =>
+      (challenge) =>
         challenge.name.toLowerCase().includes(query) ||
         challenge.description.toLowerCase().includes(query)
-    );
-  }, [challenges, searchQuery]);
+    )
+  }, [challenges, searchQuery])
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -125,17 +121,15 @@ export default function ChallengesPage() {
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
           {/* Status Filter Tabs */}
           <div className="flex flex-wrap gap-2 mb-4">
-            {filterTabs.map(tab => {
-              const Icon = tab.icon;
-              const isActive = activeFilter === tab.key;
+            {filterTabs.map((tab) => {
+              const Icon = tab.icon
+              const isActive = activeFilter === tab.key
 
               return (
                 <button
                   key={tab.key}
                   onClick={() =>
-                    setActiveFilter(
-                      tab.key as 'all' | 'active' | 'upcoming' | 'participating'
-                    )
+                    setActiveFilter(tab.key as 'all' | 'active' | 'upcoming' | 'participating')
                   }
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors min-h-[44px] ${
                     isActive
@@ -146,7 +140,7 @@ export default function ChallengesPage() {
                   <Icon className="w-4 h-4" />
                   {tab.label}
                 </button>
-              );
+              )
             })}
           </div>
 
@@ -158,18 +152,18 @@ export default function ChallengesPage() {
                 type="text"
                 placeholder="Search challenges..."
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             <select
               value={typeFilter}
-              onChange={e => setTypeFilter(e.target.value)}
+              onChange={(e) => setTypeFilter(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Types</option>
-              {challengeTypeFilters.map(type => (
+              {challengeTypeFilters.map((type) => (
                 <option key={type.key} value={type.key}>
                   {type.label}
                 </option>
@@ -195,7 +189,7 @@ export default function ChallengesPage() {
           </div>
         ) : filteredChallenges.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {filteredChallenges.map(challenge => (
+            {filteredChallenges.map((challenge) => (
               <ChallengeCard
                 key={challenge.id}
                 challenge={challenge}
@@ -235,5 +229,5 @@ export default function ChallengesPage() {
 
       <BottomNavigation />
     </div>
-  );
+  )
 }

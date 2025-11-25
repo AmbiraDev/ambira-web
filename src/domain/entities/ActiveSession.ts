@@ -5,7 +5,7 @@
  * Contains business rules for timer state and duration calculations.
  */
 
-export type TimerStatus = 'running' | 'paused';
+export type TimerStatus = 'running' | 'paused'
 
 export class ActiveSession {
   constructor(
@@ -20,7 +20,7 @@ export class ActiveSession {
     public readonly title?: string,
     public readonly description?: string
   ) {
-    this.validateInvariants();
+    this.validateInvariants()
   }
 
   /**
@@ -28,27 +28,27 @@ export class ActiveSession {
    */
   private validateInvariants(): void {
     if (!this.userId || this.userId.trim().length === 0) {
-      throw new Error('Active session must have a user ID');
+      throw new Error('Active session must have a user ID')
     }
 
     if (!this.projectId || this.projectId.trim().length === 0) {
-      throw new Error('Active session must have a project ID');
+      throw new Error('Active session must have a project ID')
     }
 
     if (this.pausedDuration < 0) {
-      throw new Error('Paused duration cannot be negative');
+      throw new Error('Paused duration cannot be negative')
     }
 
     if (this.status === 'paused' && !this.lastPausedAt) {
-      throw new Error('Paused sessions must have lastPausedAt timestamp');
+      throw new Error('Paused sessions must have lastPausedAt timestamp')
     }
 
     // Business rule: Max session duration is 24 hours
-    const currentDuration = this.getCurrentDuration();
-    const MAX_DURATION = 24 * 60 * 60; // 24 hours in seconds
+    const currentDuration = this.getCurrentDuration()
+    const MAX_DURATION = 24 * 60 * 60 // 24 hours in seconds
 
     if (currentDuration > MAX_DURATION) {
-      throw new Error('Session duration cannot exceed 24 hours');
+      throw new Error('Session duration cannot exceed 24 hours')
     }
   }
 
@@ -56,44 +56,44 @@ export class ActiveSession {
    * Business Logic: Get current elapsed time in seconds
    */
   getCurrentDuration(now: Date = new Date()): number {
-    const elapsedMs = now.getTime() - this.startTime.getTime();
-    const elapsedSeconds = Math.floor(elapsedMs / 1000);
+    const elapsedMs = now.getTime() - this.startTime.getTime()
+    const elapsedSeconds = Math.floor(elapsedMs / 1000)
 
     // Subtract paused duration
-    return Math.max(0, elapsedSeconds - this.pausedDuration);
+    return Math.max(0, elapsedSeconds - this.pausedDuration)
   }
 
   /**
    * Business Logic: Get formatted duration (HH:MM:SS)
    */
   getFormattedDuration(now: Date = new Date()): string {
-    const totalSeconds = this.getCurrentDuration(now);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+    const totalSeconds = this.getCurrentDuration(now)
+    const hours = Math.floor(totalSeconds / 3600)
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
+    const seconds = totalSeconds % 60
 
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
   }
 
   /**
    * Business Logic: Check if session is too old (>24 hours)
    */
   isTooOld(now: Date = new Date()): boolean {
-    const ageMs = now.getTime() - this.startTime.getTime();
-    const MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
-    return ageMs > MAX_AGE_MS;
+    const ageMs = now.getTime() - this.startTime.getTime()
+    const MAX_AGE_MS = 24 * 60 * 60 * 1000 // 24 hours
+    return ageMs > MAX_AGE_MS
   }
 
   /**
    * Business Logic: Check if session should be auto-saved
    */
   needsAutoSave(lastAutoSave: Date | null, now: Date = new Date()): boolean {
-    if (!lastAutoSave) return true;
+    if (!lastAutoSave) return true
 
-    const timeSinceLastSave = now.getTime() - lastAutoSave.getTime();
-    const AUTO_SAVE_INTERVAL_MS = 30 * 1000; // 30 seconds
+    const timeSinceLastSave = now.getTime() - lastAutoSave.getTime()
+    const AUTO_SAVE_INTERVAL_MS = 30 * 1000 // 30 seconds
 
-    return timeSinceLastSave >= AUTO_SAVE_INTERVAL_MS;
+    return timeSinceLastSave >= AUTO_SAVE_INTERVAL_MS
   }
 
   /**
@@ -101,7 +101,7 @@ export class ActiveSession {
    */
   withPause(pausedAt: Date = new Date()): ActiveSession {
     if (this.status === 'paused') {
-      throw new Error('Session is already paused');
+      throw new Error('Session is already paused')
     }
 
     return new ActiveSession(
@@ -115,7 +115,7 @@ export class ActiveSession {
       this.activityId,
       this.title,
       this.description
-    );
+    )
   }
 
   /**
@@ -123,17 +123,17 @@ export class ActiveSession {
    */
   withResume(resumedAt: Date = new Date()): ActiveSession {
     if (this.status === 'running') {
-      throw new Error('Session is already running');
+      throw new Error('Session is already running')
     }
 
     if (!this.lastPausedAt) {
-      throw new Error('Cannot resume session without lastPausedAt');
+      throw new Error('Cannot resume session without lastPausedAt')
     }
 
     // Calculate additional paused duration
-    const pausedMs = resumedAt.getTime() - this.lastPausedAt.getTime();
-    const additionalPausedSeconds = Math.floor(pausedMs / 1000);
-    const newPausedDuration = this.pausedDuration + additionalPausedSeconds;
+    const pausedMs = resumedAt.getTime() - this.lastPausedAt.getTime()
+    const additionalPausedSeconds = Math.floor(pausedMs / 1000)
+    const newPausedDuration = this.pausedDuration + additionalPausedSeconds
 
     return new ActiveSession(
       this.id,
@@ -146,7 +146,7 @@ export class ActiveSession {
       this.activityId,
       this.title,
       this.description
-    );
+    )
   }
 
   /**
@@ -164,7 +164,7 @@ export class ActiveSession {
       this.activityId,
       title ?? this.title,
       description ?? this.description
-    );
+    )
   }
 
   /**
@@ -182,21 +182,21 @@ export class ActiveSession {
       this.activityId,
       this.title,
       this.description
-    );
+    )
   }
 
   /**
    * Convert to completed Session data
    */
   toCompletedSessionData(endedAt: Date = new Date()): {
-    userId: string;
-    projectId: string;
-    activityId: string | null;
-    duration: number;
-    startTime: Date;
-    endedAt: Date;
-    title?: string;
-    description?: string;
+    userId: string
+    projectId: string
+    activityId: string | null
+    duration: number
+    startTime: Date
+    endedAt: Date
+    title?: string
+    description?: string
   } {
     return {
       userId: this.userId,
@@ -207,7 +207,7 @@ export class ActiveSession {
       endedAt,
       title: this.title,
       description: this.description,
-    };
+    }
   }
 
   /**
@@ -226,6 +226,6 @@ export class ActiveSession {
       title: this.title,
       description: this.description,
       currentDuration: this.getCurrentDuration(),
-    };
+    }
   }
 }

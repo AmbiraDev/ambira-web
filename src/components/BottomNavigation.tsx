@@ -1,69 +1,68 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import { useTimer } from '@/features/timer/hooks';
-import { Home, Compass, Play, Users, User } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
+import { useTimer } from '@/features/timer/hooks'
+import { Home, Play, Users, User } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 export default function BottomNavigation() {
-  const pathname = usePathname();
-  const { user } = useAuth();
-  const { timerState } = useTimer();
-  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+  const pathname = usePathname()
+  const { user } = useAuth()
+  const { timerState } = useTimer()
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false)
 
   // Detect keyboard open/close on mobile by monitoring viewport height changes
   useEffect(() => {
     // Only run on mobile devices
     if (typeof window === 'undefined' || window.innerWidth > 768) {
-      return;
+      return
     }
 
-    const initialHeight = window.visualViewport?.height || window.innerHeight;
+    const initialHeight = window.visualViewport?.height || window.innerHeight
 
     const handleResize = () => {
-      const currentHeight = window.visualViewport?.height || window.innerHeight;
+      const currentHeight = window.visualViewport?.height || window.innerHeight
 
       // If viewport height decreased by more than 150px, keyboard is likely open
       // This threshold helps avoid false positives from browser chrome changes
-      setIsKeyboardOpen(initialHeight - currentHeight > 150);
-    };
+      setIsKeyboardOpen(initialHeight - currentHeight > 150)
+    }
 
     // Use visualViewport if available (better for keyboard detection)
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleResize);
+      window.visualViewport.addEventListener('resize', handleResize)
     } else {
-      window.addEventListener('resize', handleResize);
+      window.addEventListener('resize', handleResize)
     }
 
     return () => {
       if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleResize);
+        window.visualViewport.removeEventListener('resize', handleResize)
       } else {
-        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('resize', handleResize)
       }
-    };
-  }, []);
+    }
+  }, [])
 
   const isActive = (path: string) => {
-    if (path === '/') return pathname === '/';
-    if (path === '/search') return pathname.startsWith('/search');
-    if (path === '/groups') return pathname.startsWith('/groups');
+    if (path === '/') return pathname === '/'
+    if (path === '/search') return pathname.startsWith('/search')
+    if (path === '/groups') return pathname.startsWith('/groups')
     if (path === '/you') {
       // Highlight "You" tab when on /you or on the user's own profile
       return (
         pathname.startsWith('/you') ||
         pathname === '/profile' ||
         (user?.username && pathname === `/profile/${user.username}`)
-      );
+      )
     }
-    return pathname === path;
-  };
+    return pathname === path
+  }
 
   const hasActiveSession =
-    timerState.currentProject &&
-    (timerState.isRunning || timerState.pausedDuration > 0);
+    timerState.currentProject && (timerState.isRunning || timerState.pausedDuration > 0)
 
   return (
     <>
@@ -83,11 +82,7 @@ export default function BottomNavigation() {
             aria-label="View feed"
             aria-current={isActive('/') ? 'page' : undefined}
           >
-            <Home
-              className="w-8 h-8"
-              strokeWidth={isActive('/') ? 2.5 : 2}
-              aria-hidden="true"
-            />
+            <Home className="w-8 h-8" strokeWidth={isActive('/') ? 2.5 : 2} aria-hidden="true" />
             <span className="text-sm font-medium">Home</span>
           </Link>
 
@@ -95,15 +90,9 @@ export default function BottomNavigation() {
           <Link
             href="/timer"
             className={`flex flex-col items-center justify-center px-4 py-1 transition-colors ${
-              hasActiveSession
-                ? ''
-                : isActive('/timer')
-                  ? 'text-[#0066CC]'
-                  : 'text-gray-500'
+              hasActiveSession ? '' : isActive('/timer') ? 'text-[#0066CC]' : 'text-gray-500'
             }`}
-            aria-label={
-              hasActiveSession ? 'View active session' : 'Start session timer'
-            }
+            aria-label={hasActiveSession ? 'View active session' : 'Start session timer'}
             aria-current={isActive('/timer') ? 'page' : undefined}
           >
             <div
@@ -112,16 +101,10 @@ export default function BottomNavigation() {
               <Play
                 className="w-8 h-8"
                 strokeWidth={hasActiveSession || isActive('/timer') ? 2.5 : 2}
-                fill={
-                  hasActiveSession || isActive('/timer')
-                    ? 'currentColor'
-                    : 'none'
-                }
+                fill={hasActiveSession || isActive('/timer') ? 'currentColor' : 'none'}
                 aria-hidden="true"
               />
-              <span className="text-sm font-medium">
-                {hasActiveSession ? 'Active' : 'Record'}
-              </span>
+              <span className="text-sm font-medium">{hasActiveSession ? 'Active' : 'Record'}</span>
             </div>
           </Link>
 
@@ -151,15 +134,11 @@ export default function BottomNavigation() {
             aria-label="View your profile and progress"
             aria-current={isActive('/you') ? 'page' : undefined}
           >
-            <User
-              className="w-8 h-8"
-              strokeWidth={isActive('/you') ? 2.5 : 2}
-              aria-hidden="true"
-            />
+            <User className="w-8 h-8" strokeWidth={isActive('/you') ? 2.5 : 2} aria-hidden="true" />
             <span className="text-sm font-medium">You</span>
           </Link>
         </div>
       </nav>
     </>
-  );
+  )
 }

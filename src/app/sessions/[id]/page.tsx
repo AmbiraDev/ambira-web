@@ -1,199 +1,189 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import { SessionWithDetails } from '@/types';
-import { firebaseApi } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
-import SessionCard from '@/components/SessionCard';
-import Header from '@/components/HeaderComponent';
-import MobileHeader from '@/components/MobileHeader';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
+import { SessionWithDetails } from '@/types'
+import { firebaseApi } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
+import SessionCard from '@/components/SessionCard'
+import Header from '@/components/HeaderComponent'
+import MobileHeader from '@/components/MobileHeader'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 interface SessionDetailPageProps {
   params: Promise<{
-    id: string;
-  }>;
+    id: string
+  }>
 }
 
 function SessionDetailContent({ sessionId }: { sessionId: string }) {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [session, setSession] = useState<SessionWithDetails | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter()
+  const { user } = useAuth()
+  const [session, setSession] = useState<SessionWithDetails | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (sessionId) {
-      loadSession();
+      loadSession()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId]);
+  }, [sessionId])
 
   const loadSession = async () => {
     try {
-      setIsLoading(true);
-      setError(null);
+      setIsLoading(true)
+      setError(null)
 
       // Fetch the session with details
-      const sessionData =
-        await firebaseApi.session.getSessionWithDetails(sessionId);
-      setSession(sessionData as unknown as SessionWithDetails);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load session');
+      const sessionData = await firebaseApi.session.getSessionWithDetails(sessionId)
+      setSession(sessionData as unknown as SessionWithDetails)
+    } catch (_err: unknown) {
+      setError(_err instanceof Error ? _err.message : 'Failed to load session')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleSupport = async (sessionId: string) => {
     try {
-      await firebaseApi.post.supportSession(sessionId);
+      await firebaseApi.post.supportSession(sessionId)
 
       // Optimistic update
-      setSession(prev =>
+      setSession((prev) =>
         prev
           ? {
               ...prev,
               isSupported: true,
               supportCount: prev.supportCount + 1,
-              supportedBy: [...(prev.supportedBy || []), user?.id || ''].filter(
-                Boolean
-              ),
+              supportedBy: [...(prev.supportedBy || []), user?.id || ''].filter(Boolean),
             }
           : null
-      );
-    } catch (err: unknown) {}
-  };
+      )
+    } catch (_err: unknown) {}
+  }
 
   const handleRemoveSupport = async (sessionId: string) => {
     try {
-      await firebaseApi.post.removeSupportFromSession(sessionId);
+      await firebaseApi.post.removeSupportFromSession(sessionId)
 
       // Optimistic update
-      setSession(prev =>
+      setSession((prev) =>
         prev
           ? {
               ...prev,
               isSupported: false,
               supportCount: Math.max(0, prev.supportCount - 1),
-              supportedBy: (prev.supportedBy || []).filter(
-                id => id !== user?.id
-              ),
+              supportedBy: (prev.supportedBy || []).filter((id) => id !== user?.id),
             }
           : null
-      );
-    } catch (err: unknown) {}
-  };
+      )
+    } catch (_err: unknown) {}
+  }
 
   const handleShare = async (sessionId: string) => {
     try {
-      const sessionUrl = `${window.location.origin}/sessions/${sessionId}`;
+      const sessionUrl = `${window.location.origin}/sessions/${sessionId}`
 
       if (navigator.share) {
         await navigator.share({
           title: session?.title || 'Check out this session on Ambira',
           text: session?.description || 'Look at this productive session!',
           url: sessionUrl,
-        });
+        })
       } else {
-        await navigator.clipboard.writeText(sessionUrl);
-        alert('Link copied to clipboard!');
+        await navigator.clipboard.writeText(sessionUrl)
+        alert('Link copied to clipboard!')
       }
     } catch (err: unknown) {
       if (err instanceof Error && err.name === 'AbortError') {
-        return;
+        return
       }
     }
-  };
+  }
 
   const handleDelete = async (sessionId: string) => {
     if (!confirm('Are you sure you want to delete this session?')) {
-      return;
+      return
     }
 
     try {
-      await firebaseApi.session.deleteSession(sessionId);
-      router.push('/');
-    } catch (err: unknown) {
-      alert('Failed to delete session. Please try again.');
+      await firebaseApi.session.deleteSession(sessionId)
+      router.push('/')
+    } catch (_err: unknown) {
+      alert('Failed to delete session. Please try again.')
     }
-  };
+  }
 
   // Dynamic metadata using useEffect for client component
   // MUST be called before any conditional returns
   React.useEffect(() => {
     if (session) {
-      const title = session.title || 'Session';
-      document.title = `${title} by ${session.user?.name || 'User'} - Ambira`;
+      const title = session.title || 'Session'
+      document.title = `${title} by ${session.user?.name || 'User'} - Ambira`
 
-      const description =
-        session.description || `Check out this productive session on Ambira`;
+      const description = session.description || `Check out this productive session on Ambira`
 
-      let metaDescription = document.querySelector('meta[name="description"]');
+      let metaDescription = document.querySelector('meta[name="description"]')
       if (!metaDescription) {
-        metaDescription = document.createElement('meta');
-        metaDescription.setAttribute('name', 'description');
-        document.head.appendChild(metaDescription);
+        metaDescription = document.createElement('meta')
+        metaDescription.setAttribute('name', 'description')
+        document.head.appendChild(metaDescription)
       }
-      metaDescription.setAttribute('content', description);
+      metaDescription.setAttribute('content', description)
 
       // Open Graph tags
-      let ogTitle = document.querySelector('meta[property="og:title"]');
+      let ogTitle = document.querySelector('meta[property="og:title"]')
       if (!ogTitle) {
-        ogTitle = document.createElement('meta');
-        ogTitle.setAttribute('property', 'og:title');
-        document.head.appendChild(ogTitle);
+        ogTitle = document.createElement('meta')
+        ogTitle.setAttribute('property', 'og:title')
+        document.head.appendChild(ogTitle)
       }
-      ogTitle.setAttribute('content', `${title} - Ambira`);
+      ogTitle.setAttribute('content', `${title} - Ambira`)
 
-      let ogDescription = document.querySelector(
-        'meta[property="og:description"]'
-      );
+      let ogDescription = document.querySelector('meta[property="og:description"]')
       if (!ogDescription) {
-        ogDescription = document.createElement('meta');
-        ogDescription.setAttribute('property', 'og:description');
-        document.head.appendChild(ogDescription);
+        ogDescription = document.createElement('meta')
+        ogDescription.setAttribute('property', 'og:description')
+        document.head.appendChild(ogDescription)
       }
-      ogDescription.setAttribute('content', description);
+      ogDescription.setAttribute('content', description)
 
-      let ogType = document.querySelector('meta[property="og:type"]');
+      let ogType = document.querySelector('meta[property="og:type"]')
       if (!ogType) {
-        ogType = document.createElement('meta');
-        ogType.setAttribute('property', 'og:type');
-        document.head.appendChild(ogType);
+        ogType = document.createElement('meta')
+        ogType.setAttribute('property', 'og:type')
+        document.head.appendChild(ogType)
       }
-      ogType.setAttribute('content', 'article');
+      ogType.setAttribute('content', 'article')
 
       // Twitter card tags
-      let twitterCard = document.querySelector('meta[name="twitter:card"]');
+      let twitterCard = document.querySelector('meta[name="twitter:card"]')
       if (!twitterCard) {
-        twitterCard = document.createElement('meta');
-        twitterCard.setAttribute('name', 'twitter:card');
-        document.head.appendChild(twitterCard);
+        twitterCard = document.createElement('meta')
+        twitterCard.setAttribute('name', 'twitter:card')
+        document.head.appendChild(twitterCard)
       }
-      twitterCard.setAttribute('content', 'summary_large_image');
+      twitterCard.setAttribute('content', 'summary_large_image')
 
-      let twitterTitle = document.querySelector('meta[name="twitter:title"]');
+      let twitterTitle = document.querySelector('meta[name="twitter:title"]')
       if (!twitterTitle) {
-        twitterTitle = document.createElement('meta');
-        twitterTitle.setAttribute('name', 'twitter:title');
-        document.head.appendChild(twitterTitle);
+        twitterTitle = document.createElement('meta')
+        twitterTitle.setAttribute('name', 'twitter:title')
+        document.head.appendChild(twitterTitle)
       }
-      twitterTitle.setAttribute('content', `${title} - Ambira`);
+      twitterTitle.setAttribute('content', `${title} - Ambira`)
 
-      let twitterDescription = document.querySelector(
-        'meta[name="twitter:description"]'
-      );
+      let twitterDescription = document.querySelector('meta[name="twitter:description"]')
       if (!twitterDescription) {
-        twitterDescription = document.createElement('meta');
-        twitterDescription.setAttribute('name', 'twitter:description');
-        document.head.appendChild(twitterDescription);
+        twitterDescription = document.createElement('meta')
+        twitterDescription.setAttribute('name', 'twitter:description')
+        document.head.appendChild(twitterDescription)
       }
-      twitterDescription.setAttribute('content', description);
+      twitterDescription.setAttribute('content', description)
     }
-  }, [session]);
+  }, [session])
 
   if (isLoading) {
     return (
@@ -220,7 +210,7 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   if (error || !session) {
@@ -262,10 +252,10 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
-  const isOwnSession = user && session.userId === user.id;
+  const isOwnSession = user && session.userId === user.id
 
   return (
     <ErrorBoundary
@@ -276,12 +266,8 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
           </div>
           <MobileHeader title="Session" />
           <div className="max-w-[600px] mx-auto px-4 py-6 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Error loading session
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Something went wrong while loading this session.
-            </p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Error loading session</h2>
+            <p className="text-gray-600 mb-6">Something went wrong while loading this session.</p>
             <button
               onClick={() => router.push('/')}
               className="px-4 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors"
@@ -315,9 +301,7 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
             onRemoveSupport={handleRemoveSupport}
             onShare={handleShare}
             onEdit={
-              isOwnSession
-                ? sessionId => router.push(`/sessions/${sessionId}/edit`)
-                : undefined
+              isOwnSession ? (sessionId) => router.push(`/sessions/${sessionId}/edit`) : undefined
             }
             onDelete={isOwnSession ? handleDelete : undefined}
             showComments={true}
@@ -325,17 +309,15 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
         </div>
       </div>
     </ErrorBoundary>
-  );
+  )
 }
 
-export default function SessionDetailPageWrapper({
-  params,
-}: SessionDetailPageProps) {
-  const [sessionId, setSessionId] = React.useState<string>('');
+export default function SessionDetailPageWrapper({ params }: SessionDetailPageProps) {
+  const [sessionId, setSessionId] = React.useState<string>('')
 
   React.useEffect(() => {
-    params.then(({ id }) => setSessionId(id));
-  }, [params]);
+    params.then(({ id }) => setSessionId(id))
+  }, [params])
 
   return (
     <>
@@ -356,5 +338,5 @@ export default function SessionDetailPageWrapper({
         <SessionDetailContent sessionId={sessionId} />
       )}
     </>
-  );
+  )
 }

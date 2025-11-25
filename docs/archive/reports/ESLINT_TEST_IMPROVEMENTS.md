@@ -94,15 +94,15 @@ Fixed linting issues across all test files:
    **Before**:
 
    ```typescript
-   const mockUseAuth = require('@/hooks/useAuth').useAuth;
+   const mockUseAuth = require('@/hooks/useAuth').useAuth
    ```
 
    **After**:
 
    ```typescript
-   import { useAuth } from '@/hooks/useAuth';
-   jest.mock('@/hooks/useAuth');
-   const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+   import { useAuth } from '@/hooks/useAuth'
+   jest.mock('@/hooks/useAuth')
+   const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>
    ```
 
 3. **Proper Mock Typing**

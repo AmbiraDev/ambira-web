@@ -88,18 +88,18 @@ Services contain pure business logic with no React dependencies:
 ```typescript
 // src/features/groups/services/GroupService.ts
 export class GroupService {
-  private readonly groupRepo: GroupRepository;
+  private readonly groupRepo: GroupRepository
 
   constructor() {
-    this.groupRepo = new GroupRepository();
+    this.groupRepo = new GroupRepository()
   }
 
   async getGroupDetails(groupId: string): Promise<Group | null> {
-    return this.groupRepo.findById(groupId);
+    return this.groupRepo.findById(groupId)
   }
 
   async getUserGroups(userId: string): Promise<Group[]> {
-    return this.groupRepo.findByMemberId(userId);
+    return this.groupRepo.findByMemberId(userId)
   }
 
   async joinGroup(groupId: string, userId: string): Promise<void> {
@@ -114,10 +114,10 @@ Feature hooks are THE ONLY place where React Query is used:
 
 ```typescript
 // src/features/groups/hooks/useGroups.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { GroupService } from '../services/GroupService';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { GroupService } from '../services/GroupService'
 
-const groupService = new GroupService();
+const groupService = new GroupService()
 
 // CACHE KEYS - Centralized per feature
 const GROUPS_KEYS = {
@@ -126,9 +126,8 @@ const GROUPS_KEYS = {
   list: (filters: string) => [...GROUPS_KEYS.lists(), { filters }] as const,
   details: () => [...GROUPS_KEYS.all(), 'detail'] as const,
   detail: (id: string) => [...GROUPS_KEYS.details(), id] as const,
-  userGroups: (userId: string) =>
-    [...GROUPS_KEYS.all(), 'user', userId] as const,
-};
+  userGroups: (userId: string) => [...GROUPS_KEYS.all(), 'user', userId] as const,
+}
 
 // QUERIES
 export function useGroupDetails(groupId: string) {
@@ -136,7 +135,7 @@ export function useGroupDetails(groupId: string) {
     queryKey: GROUPS_KEYS.detail(groupId),
     queryFn: () => groupService.getGroupDetails(groupId),
     staleTime: 15 * 60 * 1000, // 15 minutes
-  });
+  })
 }
 
 export function useUserGroups(userId: string) {
@@ -144,12 +143,12 @@ export function useUserGroups(userId: string) {
     queryKey: GROUPS_KEYS.userGroups(userId),
     queryFn: () => groupService.getUserGroups(userId),
     staleTime: 15 * 60 * 1000,
-  });
+  })
 }
 
 // MUTATIONS
 export function useJoinGroup() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({ groupId, userId }: { groupId: string; userId: string }) =>
@@ -159,12 +158,12 @@ export function useJoinGroup() {
       // Invalidate relevant caches
       queryClient.invalidateQueries({
         queryKey: GROUPS_KEYS.detail(variables.groupId),
-      });
+      })
       queryClient.invalidateQueries({
         queryKey: GROUPS_KEYS.userGroups(variables.userId),
-      });
+      })
     },
-  });
+  })
 }
 ```
 
@@ -312,7 +311,7 @@ function MyComponent() {
   const { data } = useQuery({
     queryKey: ['users'],
     queryFn: () => firebaseApi.user.getUsers(),
-  });
+  })
 }
 ```
 
@@ -322,8 +321,8 @@ function MyComponent() {
 // BAD - Don't do this
 function MyComponent() {
   const handleClick = async () => {
-    await firebaseApi.user.updateUser(id, data);
-  };
+    await firebaseApi.user.updateUser(id, data)
+  }
 }
 ```
 
@@ -333,7 +332,7 @@ function MyComponent() {
 // BAD - Don't do this
 class UserService {
   async getUser(id: string) {
-    const queryClient = useQueryClient(); // ❌ Can't use hooks in services
+    const queryClient = useQueryClient() // ❌ Can't use hooks in services
   }
 }
 ```
@@ -376,7 +375,7 @@ const FEATURE_KEYS = {
   list: (filters: string) => [...FEATURE_KEYS.lists(), { filters }] as const,
   details: () => [...FEATURE_KEYS.all(), 'detail'] as const,
   detail: (id: string) => [...FEATURE_KEYS.details(), id] as const,
-};
+}
 
 // Examples:
 // ['feature']

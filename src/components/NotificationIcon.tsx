@@ -1,15 +1,15 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { Bell } from 'lucide-react';
-import { useNotifications, useUnreadCount } from '@/hooks/useNotifications';
-import NotificationsPanel from './NotificationsPanel';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react'
+import { Bell } from 'lucide-react'
+import { useNotifications, useUnreadCount } from '@/hooks/useNotifications'
+import NotificationsPanel from './NotificationsPanel'
+import { useRouter } from 'next/navigation'
 
 interface NotificationIconProps {
-  className?: string;
-  showLabel?: boolean;
-  labelClassName?: string;
+  className?: string
+  showLabel?: boolean
+  labelClassName?: string
 }
 
 export default function NotificationIcon({
@@ -18,40 +18,36 @@ export default function NotificationIcon({
   labelClassName = '',
 }: NotificationIconProps) {
   // Enable real-time updates for notification bell
-  useNotifications({ realtime: true });
-  const unreadCount = useUnreadCount();
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const router = useRouter();
+  useNotifications({ realtime: true })
+  const unreadCount = useUnreadCount()
+  const [isPanelOpen, setIsPanelOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+      setIsMobile(window.innerWidth < 768)
+    }
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const handleClick = () => {
     if (isMobile) {
-      router.push('/notifications');
+      router.push('/notifications')
     } else {
-      setIsPanelOpen(true);
+      setIsPanelOpen(true)
     }
-  };
+  }
 
   return (
     <div className="relative">
       <button
         onClick={handleClick}
         className={`relative flex items-center gap-2 ${className}`}
-        aria-label={
-          unreadCount > 0
-            ? `Notifications (${unreadCount} unread)`
-            : 'Notifications'
-        }
+        aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : 'Notifications'}
       >
         <div className="relative">
           <Bell className="w-6 h-6" aria-hidden="true" />
@@ -66,11 +62,8 @@ export default function NotificationIcon({
 
       {/* Desktop dropdown panel */}
       {!isMobile && (
-        <NotificationsPanel
-          isOpen={isPanelOpen}
-          onClose={() => setIsPanelOpen(false)}
-        />
+        <NotificationsPanel isOpen={isPanelOpen} onClose={() => setIsPanelOpen(false)} />
       )}
     </div>
-  );
+  )
 }

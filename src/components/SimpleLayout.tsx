@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
+import Link from 'next/link'
 
 interface SimpleLayoutProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export default function SimpleLayout({ children }: SimpleLayoutProps) {
@@ -19,10 +19,7 @@ export default function SimpleLayout({ children }: SimpleLayoutProps) {
               <span className="text-xl font-bold text-gray-900">Ambira</span>
             </div>
             <nav className="hidden md:flex items-center space-x-8">
-              <Link
-                href="/"
-                className="text-gray-700 hover:text-blue-600 transition-colors"
-              >
+              <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors">
                 Home
               </Link>
               <Link
@@ -31,10 +28,7 @@ export default function SimpleLayout({ children }: SimpleLayoutProps) {
               >
                 Activities
               </Link>
-              <Link
-                href="/groups"
-                className="text-gray-700 hover:text-blue-600 transition-colors"
-              >
+              <Link href="/groups" className="text-gray-700 hover:text-blue-600 transition-colors">
                 Groups
               </Link>
             </nav>
@@ -46,5 +40,5 @@ export default function SimpleLayout({ children }: SimpleLayoutProps) {
         <div className="container mx-auto px-4 py-8">{children}</div>
       </main>
     </div>
-  );
+  )
 }

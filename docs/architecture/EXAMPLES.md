@@ -155,12 +155,12 @@ export default function GroupPage({ params }: { params: { id: string } }) {
 
 ```typescript
 // src/features/groups/hooks/useGroups.ts
-import { useQuery, UseQueryOptions } from '@tanstack/react-query';
-import { GroupService } from '../services/GroupService';
-import { Group } from '@/domain/entities/Group';
-import { LeaderboardEntry, TimePeriod } from '../types/groups.types';
+import { useQuery, UseQueryOptions } from '@tanstack/react-query'
+import { GroupService } from '../services/GroupService'
+import { Group } from '@/domain/entities/Group'
+import { LeaderboardEntry, TimePeriod } from '../types/groups.types'
 
-const groupService = new GroupService();
+const groupService = new GroupService()
 
 export const GROUPS_KEYS = {
   all: () => ['groups'] as const,
@@ -168,7 +168,7 @@ export const GROUPS_KEYS = {
   detail: (id: string) => [...GROUPS_KEYS.details(), id] as const,
   leaderboard: (groupId: string, period: TimePeriod) =>
     [...GROUPS_KEYS.detail(groupId), 'leaderboard', period] as const,
-};
+}
 
 export function useGroupDetails(
   groupId: string,
@@ -180,7 +180,7 @@ export function useGroupDetails(
     staleTime: 15 * 60 * 1000,
     enabled: !!groupId,
     ...options,
-  });
+  })
 }
 
 export function useGroupLeaderboard(
@@ -194,72 +194,60 @@ export function useGroupLeaderboard(
     staleTime: 5 * 60 * 1000,
     enabled: !!groupId,
     ...options,
-  });
+  })
 }
 ```
 
 ```typescript
 // src/features/groups/hooks/useGroupMutations.ts
-import {
-  useMutation,
-  useQueryClient,
-  UseMutationOptions,
-} from '@tanstack/react-query';
-import { GroupService } from '../services/GroupService';
-import { GROUPS_KEYS } from './useGroups';
+import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query'
+import { GroupService } from '../services/GroupService'
+import { GROUPS_KEYS } from './useGroups'
 
-const groupService = new GroupService();
+const groupService = new GroupService()
 
 export function useJoinGroup(
-  options?: Partial<
-    UseMutationOptions<void, Error, { groupId: string; userId: string }>
-  >
+  options?: Partial<UseMutationOptions<void, Error, { groupId: string; userId: string }>>
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation<void, Error, { groupId: string; userId: string }>({
-    mutationFn: ({ groupId, userId }) =>
-      groupService.joinGroup(groupId, userId),
+    mutationFn: ({ groupId, userId }) => groupService.joinGroup(groupId, userId),
 
     // Optimistic update
     onMutate: async ({ groupId, userId }) => {
       await queryClient.cancelQueries({
         queryKey: GROUPS_KEYS.detail(groupId),
-      });
+      })
 
-      const previousGroup = queryClient.getQueryData(
-        GROUPS_KEYS.detail(groupId)
-      );
+      const previousGroup = queryClient.getQueryData(GROUPS_KEYS.detail(groupId))
 
       queryClient.setQueryData(GROUPS_KEYS.detail(groupId), (old: any) => {
-        if (!old) return old;
+        if (!old) return old
         return {
           ...old,
           memberIds: [...old.memberIds, userId],
-        };
-      });
+        }
+      })
 
-      return { previousGroup };
+      return { previousGroup }
     },
 
     // Rollback on error
     onError: (error, variables, context) => {
       if (context?.previousGroup) {
-        queryClient.setQueryData(
-          GROUPS_KEYS.detail(variables.groupId),
-          context.previousGroup
-        );
+        queryClient.setQueryData(GROUPS_KEYS.detail(variables.groupId), context.previousGroup)
       }
     },
 
     // Invalidate on success
     onSuccess: (_, { groupId, userId }) => {
-      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) });
-      queryClient.invalidateQueries({ queryKey: ['groups', 'user', userId] });
+      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) })
+      queryClient.invalidateQueries({ queryKey: ['groups', 'user', userId] })
     },
 
     ...options,
-  });
+  })
 }
 ```
 
@@ -267,102 +255,99 @@ export function useJoinGroup(
 
 ```typescript
 // src/features/groups/services/GroupService.ts
-import { Group } from '@/domain/entities/Group';
-import { GroupRepository } from '@/infrastructure/firebase/repositories/GroupRepository';
-import { UserRepository } from '@/infrastructure/firebase/repositories/UserRepository';
-import { SessionRepository } from '@/infrastructure/firebase/repositories/SessionRepository';
-import { LeaderboardCalculator } from '../domain/LeaderboardCalculator';
-import { LeaderboardEntry, TimePeriod } from '../types/groups.types';
+import { Group } from '@/domain/entities/Group'
+import { GroupRepository } from '@/infrastructure/firebase/repositories/GroupRepository'
+import { UserRepository } from '@/infrastructure/firebase/repositories/UserRepository'
+import { SessionRepository } from '@/infrastructure/firebase/repositories/SessionRepository'
+import { LeaderboardCalculator } from '../domain/LeaderboardCalculator'
+import { LeaderboardEntry, TimePeriod } from '../types/groups.types'
 
 export class GroupService {
-  private readonly groupRepo: GroupRepository;
-  private readonly userRepo: UserRepository;
-  private readonly sessionRepo: SessionRepository;
-  private readonly leaderboardCalc: LeaderboardCalculator;
+  private readonly groupRepo: GroupRepository
+  private readonly userRepo: UserRepository
+  private readonly sessionRepo: SessionRepository
+  private readonly leaderboardCalc: LeaderboardCalculator
 
   constructor() {
-    this.groupRepo = new GroupRepository();
-    this.userRepo = new UserRepository();
-    this.sessionRepo = new SessionRepository();
-    this.leaderboardCalc = new LeaderboardCalculator();
+    this.groupRepo = new GroupRepository()
+    this.userRepo = new UserRepository()
+    this.sessionRepo = new SessionRepository()
+    this.leaderboardCalc = new LeaderboardCalculator()
   }
 
   async getGroupDetails(groupId: string): Promise<Group | null> {
-    return this.groupRepo.findById(groupId);
+    return this.groupRepo.findById(groupId)
   }
 
   async joinGroup(groupId: string, userId: string): Promise<void> {
-    const group = await this.groupRepo.findById(groupId);
+    const group = await this.groupRepo.findById(groupId)
 
     if (!group) {
-      throw new Error('Group not found');
+      throw new Error('Group not found')
     }
 
     // Business rule: Check if already a member
     if (group.isMember(userId)) {
-      throw new Error('Already a member of this group');
+      throw new Error('Already a member of this group')
     }
 
     // Business rule: Check if can join (public vs approval-required)
     if (group.privacy === 'approval-required') {
-      throw new Error('This group requires approval to join');
+      throw new Error('This group requires approval to join')
     }
 
     // Create updated group with new member
-    const updatedGroup = group.withAddedMember(userId);
+    const updatedGroup = group.withAddedMember(userId)
 
     // Save to repository
-    await this.groupRepo.save(updatedGroup);
+    await this.groupRepo.save(updatedGroup)
   }
 
-  async getGroupLeaderboard(
-    groupId: string,
-    period: TimePeriod
-  ): Promise<LeaderboardEntry[]> {
-    const group = await this.groupRepo.findById(groupId);
+  async getGroupLeaderboard(groupId: string, period: TimePeriod): Promise<LeaderboardEntry[]> {
+    const group = await this.groupRepo.findById(groupId)
 
     if (!group) {
-      throw new Error('Group not found');
+      throw new Error('Group not found')
     }
 
-    const memberIds = Array.from(group.memberIds);
-    const users = await this.userRepo.findByIds(memberIds);
+    const memberIds = Array.from(group.memberIds)
+    const users = await this.userRepo.findByIds(memberIds)
 
-    const dateRange = this.getDateRangeForPeriod(period);
+    const dateRange = this.getDateRangeForPeriod(period)
 
     const sessions = await this.sessionRepo.findByUserIds(memberIds, {
       groupId: groupId,
       startDate: dateRange.start,
       endDate: dateRange.end,
-    });
+    })
 
-    return this.leaderboardCalc.calculate(users, sessions, period);
+    return this.leaderboardCalc.calculate(users, sessions, period)
   }
 
   private getDateRangeForPeriod(period: TimePeriod): {
-    start: Date;
-    end: Date;
+    start: Date
+    end: Date
   } {
-    const now = new Date();
-    const end = now;
-    let start: Date;
+    const now = new Date()
+    const end = now
+    let start: Date
 
     switch (period) {
       case 'week':
-        start = new Date(now);
-        start.setDate(start.getDate() - 7);
-        break;
+        start = new Date(now)
+        start.setDate(start.getDate() - 7)
+        break
 
       case 'month':
-        start = new Date(now);
-        start.setMonth(start.getMonth() - 1);
-        break;
+        start = new Date(now)
+        start.setMonth(start.getMonth() - 1)
+        break
 
       default:
-        start = new Date(0);
+        start = new Date(0)
     }
 
-    return { start, end };
+    return { start, end }
   }
 }
 ```
@@ -371,50 +356,42 @@ export class GroupService {
 
 ```typescript
 // src/infrastructure/firebase/repositories/GroupRepository.ts
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-  updateDoc,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { Group } from '@/domain/entities/Group';
+import { collection, doc, getDoc, getDocs, query, where, updateDoc } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
+import { Group } from '@/domain/entities/Group'
 
 export class GroupRepository {
-  private readonly collectionName = 'groups';
+  private readonly collectionName = 'groups'
 
   async findById(groupId: string): Promise<Group | null> {
-    const docRef = doc(db, this.collectionName, groupId);
-    const docSnap = await getDoc(docRef);
+    const docRef = doc(db, this.collectionName, groupId)
+    const docSnap = await getDoc(docRef)
 
     if (!docSnap.exists()) {
-      return null;
+      return null
     }
 
-    return this.mapToEntity(docSnap.id, docSnap.data());
+    return this.mapToEntity(docSnap.id, docSnap.data())
   }
 
   async findByMemberId(userId: string, limit?: number): Promise<Group[]> {
     const q = query(
       collection(db, this.collectionName),
       where('memberIds', 'array-contains', userId)
-    );
+    )
 
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(q)
 
-    return snapshot.docs.map(doc => this.mapToEntity(doc.id, doc.data()));
+    return snapshot.docs.map((doc) => this.mapToEntity(doc.id, doc.data()))
   }
 
   async save(group: Group): Promise<void> {
-    const docRef = doc(db, this.collectionName, group.id);
+    const docRef = doc(db, this.collectionName, group.id)
 
     await updateDoc(docRef, {
       memberIds: Array.from(group.memberIds),
       updatedAt: new Date(),
-    });
+    })
   }
 
   private mapToEntity(id: string, data: any): Group {
@@ -429,7 +406,7 @@ export class GroupRepository {
       adminIds: data.adminIds || [],
       createdAt: data.createdAt?.toDate() || new Date(),
       updatedAt: data.updatedAt?.toDate() || new Date(),
-    });
+    })
   }
 }
 ```
@@ -493,17 +470,16 @@ export default function FeedPage() {
 
 ```typescript
 // src/features/feed/hooks/useFeed.ts
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { FeedService, FeedFilters } from '../services/FeedService';
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { FeedService, FeedFilters } from '../services/FeedService'
 
-const feedService = new FeedService();
+const feedService = new FeedService()
 
 export const FEED_KEYS = {
   all: () => ['feed'] as const,
   lists: () => [...FEED_KEYS.all(), 'list'] as const,
-  list: (userId: string, filters: FeedFilters) =>
-    [...FEED_KEYS.lists(), userId, filters] as const,
-};
+  list: (userId: string, filters: FeedFilters) => [...FEED_KEYS.lists(), userId, filters] as const,
+}
 
 export function useFeedSessions(userId: string, filters: FeedFilters = {}) {
   return useInfiniteQuery({
@@ -513,13 +489,13 @@ export function useFeedSessions(userId: string, filters: FeedFilters = {}) {
         limit: 20,
         cursor: pageParam,
       }),
-    getNextPageParam: lastPage => {
-      return lastPage.hasMore ? lastPage.nextCursor : undefined;
+    getNextPageParam: (lastPage) => {
+      return lastPage.hasMore ? lastPage.nextCursor : undefined
     },
     initialPageParam: undefined as string | undefined,
     staleTime: 1 * 60 * 1000, // 1 minute
     enabled: !!userId,
-  });
+  })
 }
 ```
 
@@ -578,35 +554,28 @@ export function CommentForm({ sessionId }: { sessionId: string }) {
 
 ```typescript
 // src/features/comments/hooks/useCommentMutations.ts
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { CommentService } from '../services/CommentService';
-import { COMMENTS_KEYS } from './useComments';
-import { SESSION_KEYS } from '@/features/sessions/hooks';
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { CommentService } from '../services/CommentService'
+import { COMMENTS_KEYS } from './useComments'
+import { SESSION_KEYS } from '@/features/sessions/hooks'
 
-const commentService = new CommentService();
+const commentService = new CommentService()
 
 export function useCreateComment() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({
-      sessionId,
-      content,
-    }: {
-      sessionId: string;
-      content: string;
-    }) => commentService.createComment(sessionId, content),
+    mutationFn: ({ sessionId, content }: { sessionId: string; content: string }) =>
+      commentService.createComment(sessionId, content),
 
     onMutate: async ({ sessionId, content }) => {
       // Cancel queries
       await queryClient.cancelQueries({
         queryKey: COMMENTS_KEYS.list(sessionId),
-      });
+      })
 
       // Snapshot
-      const previousComments = queryClient.getQueryData(
-        COMMENTS_KEYS.list(sessionId)
-      );
+      const previousComments = queryClient.getQueryData(COMMENTS_KEYS.list(sessionId))
 
       // Optimistic update - add temporary comment
       const tempComment = {
@@ -617,55 +586,47 @@ export function useCreateComment() {
         username: 'You',
         createdAt: new Date(),
         isOptimistic: true, // Flag for UI
-      };
+      }
 
       queryClient.setQueryData(COMMENTS_KEYS.list(sessionId), (old: any) => {
-        return old ? [...old, tempComment] : [tempComment];
-      });
+        return old ? [...old, tempComment] : [tempComment]
+      })
 
       // Update comment count on session
       queryClient.setQueryData(SESSION_KEYS.detail(sessionId), (old: any) => {
-        if (!old) return old;
+        if (!old) return old
         return {
           ...old,
           commentCount: old.commentCount + 1,
-        };
-      });
+        }
+      })
 
-      return { previousComments };
+      return { previousComments }
     },
 
     onError: (error, variables, context) => {
       // Rollback
       if (context?.previousComments) {
-        queryClient.setQueryData(
-          COMMENTS_KEYS.list(variables.sessionId),
-          context.previousComments
-        );
+        queryClient.setQueryData(COMMENTS_KEYS.list(variables.sessionId), context.previousComments)
       }
     },
 
     onSuccess: (newComment, variables) => {
       // Replace optimistic comment with real one
-      queryClient.setQueryData(
-        COMMENTS_KEYS.list(variables.sessionId),
-        (old: any) => {
-          if (!Array.isArray(old)) return [newComment];
-          return old.map(comment =>
-            comment.isOptimistic ? newComment : comment
-          );
-        }
-      );
+      queryClient.setQueryData(COMMENTS_KEYS.list(variables.sessionId), (old: any) => {
+        if (!Array.isArray(old)) return [newComment]
+        return old.map((comment) => (comment.isOptimistic ? newComment : comment))
+      })
 
       // Invalidate to get fresh data
       queryClient.invalidateQueries({
         queryKey: COMMENTS_KEYS.list(variables.sessionId),
-      });
+      })
       queryClient.invalidateQueries({
         queryKey: SESSION_KEYS.detail(variables.sessionId),
-      });
+      })
     },
-  });
+  })
 }
 ```
 

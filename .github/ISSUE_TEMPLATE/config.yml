@@ -1,0 +1,17 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/your-org/ambira/blob/main/CLAUDE.md
+    about: Read the project documentation and guidelines
+  - name: Architecture Documentation
+    url: https://github.com/your-org/ambira/blob/main/docs/architecture/README.md
+    about: Learn about the system architecture and design patterns
+  - name: Contributing Guidelines
+    url: https://github.com/your-org/ambira/blob/main/.github/CONTRIBUTING.md
+    about: Learn how to contribute to Ambira
+  - name: Test Documentation
+    url: https://github.com/your-org/ambira/blob/main/tests/README.md
+    about: Learn about the testing strategy and how to write tests
+  - name: GitHub Discussions
+    url: https://github.com/your-org/ambira/discussions
+    about: Ask questions, share ideas, and discuss with the community

@@ -22,39 +22,28 @@ import {
   serverTimestamp,
   Timestamp,
   DocumentData,
-  QueryDocumentSnapshot,
-} from 'firebase/firestore';
+} from 'firebase/firestore'
 
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-} from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
 
 // Local Firebase config
-import { db, auth, storage } from '@/lib/firebase';
+import { db, auth, storage } from '@/lib/firebase'
 
 // Error handling
-import {
-  handleError,
-  isPermissionError,
-  isNotFoundError,
-  ErrorSeverity,
-} from '@/lib/errorHandler';
+import { handleError, isPermissionError, isNotFoundError, ErrorSeverity } from '@/lib/errorHandler'
 
 // Rate limiting
-import { checkRateLimit } from '@/lib/rateLimit';
+import { checkRateLimit } from '@/lib/rateLimit'
 
 // Error messages
-import { ERROR_MESSAGES } from '@/config/errorMessages';
+import { ERROR_MESSAGES } from '@/config/errorMessages'
 
 // Shared utilities
-import { convertTimestamp } from '../shared/utils';
-import { safeNumber } from '@/lib/utils';
+import { convertTimestamp } from '../shared/utils'
+import { safeNumber } from '@/lib/utils'
 
 // Social helpers
-import { updateSocialGraph } from '../social/helpers';
+import { updateSocialGraph } from '../social/helpers'
 
 // Types
 import type {
@@ -67,7 +56,7 @@ import type {
   PrivacySettings,
   UserSearchResult,
   SuggestedUser,
-} from '@/types';
+} from '@/types'
 
 export const firebaseUserApi = {
   /**
@@ -79,73 +68,64 @@ export const firebaseUserApi = {
    */
   getUserProfile: async (username: string): Promise<UserProfile> => {
     try {
-      const usersQuery = query(
-        collection(db, 'users'),
-        where('username', '==', username)
-      );
-      const querySnapshot = await getDocs(usersQuery);
+      const usersQuery = query(collection(db, 'users'), where('username', '==', username))
+      const querySnapshot = await getDocs(usersQuery)
 
       if (querySnapshot.empty) {
         // Don't log "not found" as an error - it's expected user behavior
-        throw new Error('User not found');
+        throw new Error('User not found')
       }
 
-      const userDoc = querySnapshot.docs[0];
+      const userDoc = querySnapshot.docs[0]
       if (!userDoc) {
-        throw new Error('User not found');
+        throw new Error('User not found')
       }
-      const userData = userDoc.data();
-      const isOwnProfile = auth.currentUser?.uid === userDoc.id;
+      const userData = userDoc.data()
+      const isOwnProfile = auth.currentUser?.uid === userDoc.id
 
       // Check privacy settings
-      const profileVisibility = userData.profileVisibility || 'everyone';
+      const profileVisibility = userData.profileVisibility || 'everyone'
 
       // If profile is private and not the owner, deny access
       if (!isOwnProfile && profileVisibility === 'private') {
-        throw new Error('This profile is private');
+        throw new Error('This profile is private')
       }
 
       // Check if current user is following this user
-      let isFollowing = false;
+      let isFollowing = false
       if (auth.currentUser && !isOwnProfile) {
         const socialGraphDoc = await getDoc(
           doc(db, `social_graph/${auth.currentUser.uid}/outbound`, userDoc.id)
-        );
-        isFollowing = socialGraphDoc.exists();
+        )
+        isFollowing = socialGraphDoc.exists()
       }
 
       // If profile is followers-only, check if current user is a follower
       if (!isOwnProfile && profileVisibility === 'followers' && !isFollowing) {
-        throw new Error('This profile is only visible to followers');
+        throw new Error('This profile is only visible to followers')
       }
 
       // Ensure follower/following counts are accurate
       // For OWN profile, always recalc from follows to avoid stale zeros across ports/domains
       // For others' profiles, recalc only if missing to reduce reads
-      let followersCount = userData.followersCount || 0;
-      let followingCount = userData.followingCount || 0;
+      let followersCount = userData.followersCount || 0
+      let followingCount = userData.followingCount || 0
 
       const shouldRecalculate =
         isOwnProfile ||
         userData.followersCount === undefined ||
-        userData.followingCount === undefined;
+        userData.followingCount === undefined
       if (shouldRecalculate) {
         try {
           // Count followers (people who follow this user) using social_graph
-          const inboundRef = collection(
-            db,
-            `social_graph/${userDoc.id}/inbound`
-          );
-          const inboundSnapshot = await getDocs(inboundRef);
-          followersCount = inboundSnapshot.size;
+          const inboundRef = collection(db, `social_graph/${userDoc.id}/inbound`)
+          const inboundSnapshot = await getDocs(inboundRef)
+          followersCount = inboundSnapshot.size
 
           // Count following (people this user follows) using social_graph
-          const outboundRef = collection(
-            db,
-            `social_graph/${userDoc.id}/outbound`
-          );
-          const outboundSnapshot = await getDocs(outboundRef);
-          followingCount = outboundSnapshot.size;
+          const outboundRef = collection(db, `social_graph/${userDoc.id}/outbound`)
+          const outboundSnapshot = await getDocs(outboundRef)
+          followingCount = outboundSnapshot.size
 
           // Update the user document with correct counts
           // For own profile, always update to keep counts fresh
@@ -159,14 +139,14 @@ export const firebaseUserApi = {
               followersCount,
               followingCount,
               updatedAt: serverTimestamp(),
-            });
+            })
           }
         } catch (_err) {
           // Handle permission errors silently - this is expected for privacy-protected data
           if (!isPermissionError(_err)) {
             handleError(_err, 'Recalculate follower counts', {
               severity: ErrorSeverity.WARNING,
-            });
+            })
           }
           // Keep the default values if recalculation fails
         }
@@ -186,23 +166,22 @@ export const firebaseUserApi = {
         isPrivate: profileVisibility === 'private',
         createdAt: convertTimestamp(userData.createdAt),
         updatedAt: convertTimestamp(userData.updatedAt),
-      };
+      }
     } catch (_err) {
       // Don't log "not found" and privacy errors - these are expected user flows
-      const errorMessage =
-        _err instanceof Error ? _err.message : 'Failed to get user profile';
+      const errorMessage = _err instanceof Error ? _err.message : 'Failed to get user profile'
       const isExpectedError =
         errorMessage === 'User not found' ||
         errorMessage === 'This profile is private' ||
-        errorMessage === 'This profile is only visible to followers';
+        errorMessage === 'This profile is only visible to followers'
 
       if (!isExpectedError) {
         handleError(_err, 'Get user profile', {
           defaultMessage: ERROR_MESSAGES.PROFILE_LOAD_FAILED,
-        });
+        })
       }
 
-      throw _err;
+      throw _err
     }
   },
 
@@ -215,13 +194,13 @@ export const firebaseUserApi = {
    */
   getUserById: async (userId: string): Promise<User> => {
     try {
-      const userDoc = await getDoc(doc(db, 'users', userId));
+      const userDoc = await getDoc(doc(db, 'users', userId))
 
       if (!userDoc.exists()) {
-        throw new Error('User not found');
+        throw new Error('User not found')
       }
 
-      const userData = userDoc.data();
+      const userData = userDoc.data()
 
       return {
         id: userDoc.id,
@@ -233,16 +212,16 @@ export const firebaseUserApi = {
         profilePicture: userData.profilePicture,
         createdAt: convertTimestamp(userData.createdAt),
         updatedAt: convertTimestamp(userData.updatedAt),
-      };
+      }
     } catch (_error) {
       // Handle permission errors for deleted users gracefully
       if (isPermissionError(_error)) {
-        throw new Error('User not found');
+        throw new Error('User not found')
       }
       const apiError = handleError(_error, 'Get user by ID', {
         defaultMessage: 'Failed to get user',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -255,61 +234,53 @@ export const firebaseUserApi = {
    * @returns Promise resolving to array of daily activity data (365/366 entries)
    * @throws Error if fetch fails
    */
-  getUserDailyActivity: async (
-    userId: string,
-    year: number
-  ): Promise<ActivityData[]> => {
+  getUserDailyActivity: async (userId: string, year: number): Promise<ActivityData[]> => {
     try {
-      const startOfYear = new Date(year, 0, 1, 0, 0, 0, 0);
-      const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
+      const startOfYear = new Date(year, 0, 1, 0, 0, 0, 0)
+      const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999)
 
       const sessionsQuery = query(
         collection(db, 'sessions'),
         where('userId', '==', userId),
         where('startTime', '>=', Timestamp.fromDate(startOfYear)),
         where('startTime', '<=', Timestamp.fromDate(endOfYear))
-      );
+      )
 
-      const snapshot = await getDocs(sessionsQuery);
+      const snapshot = await getDocs(sessionsQuery)
 
-      const dayToTotals: Record<string, { seconds: number; sessions: number }> =
-        {};
+      const dayToTotals: Record<string, { seconds: number; sessions: number }> = {}
 
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        const start: Date = convertTimestamp(data.startTime);
-        const dateStr = start.toISOString().substring(0, 10);
-        const durationSeconds = safeNumber(data.duration, 0);
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data()
+        const start: Date = convertTimestamp(data.startTime)
+        const dateStr = start.toISOString().substring(0, 10)
+        const durationSeconds = safeNumber(data.duration, 0)
 
         if (!dayToTotals[dateStr]) {
-          dayToTotals[dateStr] = { seconds: 0, sessions: 0 };
+          dayToTotals[dateStr] = { seconds: 0, sessions: 0 }
         }
-        dayToTotals[dateStr].seconds += durationSeconds;
-        dayToTotals[dateStr].sessions += 1;
-      });
+        dayToTotals[dateStr].seconds += durationSeconds
+        dayToTotals[dateStr].sessions += 1
+      })
 
       // Generate full year range with zeros where no data
-      const results: ActivityData[] = [];
-      for (
-        let d = new Date(startOfYear);
-        d <= endOfYear;
-        d.setDate(d.getDate() + 1)
-      ) {
-        const dateStr = d.toISOString().substring(0, 10);
-        const item = dayToTotals[dateStr];
+      const results: ActivityData[] = []
+      for (let d = new Date(startOfYear); d <= endOfYear; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().substring(0, 10)
+        const item = dayToTotals[dateStr]
         results.push({
           date: dateStr,
           hours: item ? item.seconds / 3600 : 0,
           sessions: item ? item.sessions : 0,
-        });
+        })
       }
 
-      return results;
+      return results
     } catch (_error) {
       const apiError = handleError(_error, 'Get daily activity', {
         defaultMessage: 'Failed to get daily activity',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -326,68 +297,61 @@ export const firebaseUserApi = {
     numberOfWeeks: number = 12
   ): Promise<WeeklyActivity[]> => {
     try {
-      const end = new Date();
-      const start = new Date();
-      start.setDate(end.getDate() - numberOfWeeks * 7);
+      const end = new Date()
+      const start = new Date()
+      start.setDate(end.getDate() - numberOfWeeks * 7)
 
       const sessionsQuery = query(
         collection(db, 'sessions'),
         where('userId', '==', userId),
         where('startTime', '>=', Timestamp.fromDate(start)),
         where('startTime', '<=', Timestamp.fromDate(end))
-      );
+      )
 
-      const snapshot = await getDocs(sessionsQuery);
+      const snapshot = await getDocs(sessionsQuery)
 
       // Buckets keyed by ISO week number within the range
-      const weekToTotals: Record<
-        string,
-        { seconds: number; sessions: number }
-      > = {};
+      const weekToTotals: Record<string, { seconds: number; sessions: number }> = {}
 
       const getWeekKey = (date: Date): string => {
-        const d = new Date(
-          Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-        );
-        const dayNum = d.getUTCDay() || 7;
-        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-        const weekNo = Math.ceil(
-          ((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7
-        );
-        return `${d.getUTCFullYear()}-W${weekNo}`;
-      };
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+        const dayNum = d.getUTCDay() || 7
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum)
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+        const weekNo = Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7)
+        return `${d.getUTCFullYear()}-W${weekNo}`
+      }
 
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        const startTime: Date = convertTimestamp(data.startTime);
-        const key = getWeekKey(startTime);
-        const durationSeconds = safeNumber(data.duration, 0);
-        if (!weekToTotals[key]) weekToTotals[key] = { seconds: 0, sessions: 0 };
-        weekToTotals[key].seconds += durationSeconds;
-        weekToTotals[key].sessions += 1;
-      });
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data()
+        const startTime: Date = convertTimestamp(data.startTime)
+        const key = getWeekKey(startTime)
+        const durationSeconds = safeNumber(data.duration, 0)
+        if (!weekToTotals[key]) weekToTotals[key] = { seconds: 0, sessions: 0 }
+        weekToTotals[key].seconds += durationSeconds
+        weekToTotals[key].sessions += 1
+      })
 
       // Generate continuous sequence of weeks
-      const results: WeeklyActivity[] = [];
-      const iter = new Date(start);
+      const results: WeeklyActivity[] = []
+      const iter = new Date(start)
       for (let i = 0; i < numberOfWeeks; i++) {
-        const key = getWeekKey(iter);
-        const item = weekToTotals[key];
+        const key = getWeekKey(iter)
+        const item = weekToTotals[key]
         results.push({
           week: key,
           hours: item ? item.seconds / 3600 : 0,
           sessions: item ? item.sessions : 0,
-        });
-        iter.setDate(iter.getDate() + 7);
+        })
+        iter.setDate(iter.getDate() + 7)
       }
 
-      return results;
+      return results
     } catch (_error) {
       const apiError = handleError(_error, 'Get weekly activity', {
         defaultMessage: 'Failed to get weekly activity',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -399,77 +363,67 @@ export const firebaseUserApi = {
    * @returns Promise resolving to array of project breakdowns with hours and percentages
    * @throws Error if fetch fails
    */
-  getUserProjectBreakdown: async (
-    userId: string,
-    year?: number
-  ): Promise<ProjectBreakdown[]> => {
+  getUserProjectBreakdown: async (userId: string, year?: number): Promise<ProjectBreakdown[]> => {
     try {
-      let sessionsQueryBase = query(
-        collection(db, 'sessions'),
-        where('userId', '==', userId)
-      );
+      let sessionsQueryBase = query(collection(db, 'sessions'), where('userId', '==', userId))
 
       if (year) {
-        const startOfYear = new Date(year, 0, 1, 0, 0, 0, 0);
-        const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
+        const startOfYear = new Date(year, 0, 1, 0, 0, 0, 0)
+        const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999)
         sessionsQueryBase = query(
           collection(db, 'sessions'),
           where('userId', '==', userId),
           where('startTime', '>=', Timestamp.fromDate(startOfYear)),
           where('startTime', '<=', Timestamp.fromDate(endOfYear))
-        );
+        )
       }
 
-      const snapshot = await getDocs(sessionsQueryBase);
+      const snapshot = await getDocs(sessionsQueryBase)
 
       // Aggregate seconds per projectId
-      const projectToSeconds: Record<string, number> = {};
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        const projectId = data.projectId || 'unknown';
-        const durationSeconds = safeNumber(data.duration, 0);
-        projectToSeconds[projectId] =
-          (projectToSeconds[projectId] || 0) + durationSeconds;
-      });
+      const projectToSeconds: Record<string, number> = {}
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data()
+        const projectId = data.projectId || 'unknown'
+        const durationSeconds = safeNumber(data.duration, 0)
+        projectToSeconds[projectId] = (projectToSeconds[projectId] || 0) + durationSeconds
+      })
 
-      const totalSeconds =
-        Object.values(projectToSeconds).reduce((a, b) => a + b, 0) || 1;
+      const totalSeconds = Object.values(projectToSeconds).reduce((a, b) => a + b, 0) || 1
 
-      const results: ProjectBreakdown[] = [];
+      const results: ProjectBreakdown[] = []
       // For each project, fetch project details for name/color
       for (const [projectId, seconds] of Object.entries(projectToSeconds)) {
-        let name = 'Unknown Project';
-        let color = '#64748B';
+        let name = 'Unknown Project'
+        let color = '#64748B'
         try {
-          const projectDoc = await getDoc(
-            doc(db, 'projects', userId, 'userProjects', projectId)
-          );
-          const proj = projectDoc.data();
+          const projectDoc = await getDoc(doc(db, 'projects', userId, 'userProjects', projectId))
+          const proj = projectDoc.data()
           if (proj) {
-            name = proj.name || name;
-            color = proj.color || color;
+            name = proj.name || name
+            color = proj.color || color
           }
         } catch {}
 
-        const hours = seconds / 3600;
-        const percentage = (seconds / totalSeconds) * 100;
+        const hours = seconds / 3600
+        const percentage = (seconds / totalSeconds) * 100
         results.push({
           projectId,
           projectName: name,
           hours,
           percentage,
           color,
-        });
+        })
       }
 
       // Sort by hours desc
-      results.sort((a, b) => b.hours - a.hours);
-      return results;
+      results.sort((a, b) => b.hours - a.hours)
+      return results
     } catch (_error) {
       const apiError = handleError(_error, 'Get project breakdown', {
         defaultMessage: 'Failed to get project breakdown',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -483,33 +437,28 @@ export const firebaseUserApi = {
   uploadProfilePicture: async (file: File): Promise<string> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
       // Validate file type
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
       if (!validTypes.includes(file.type)) {
-        throw new Error(
-          'Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.'
-        );
+        throw new Error('Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.')
       }
 
       // Validate file size (5MB max)
-      const maxSize = 5 * 1024 * 1024;
+      const maxSize = 5 * 1024 * 1024
       if (file.size > maxSize) {
-        throw new Error('File size too large. Maximum size is 5MB.');
+        throw new Error('File size too large. Maximum size is 5MB.')
       }
 
       // Create a unique filename with timestamp
-      const timestamp = Date.now();
-      const fileExtension = file.name.split('.').pop() || 'jpg';
-      const fileName = `profile_${timestamp}.${fileExtension}`;
+      const timestamp = Date.now()
+      const fileExtension = file.name.split('.').pop() || 'jpg'
+      const fileName = `profile_${timestamp}.${fileExtension}`
 
       // Create storage reference
-      const storageRef = ref(
-        storage,
-        `profile-pictures/${auth.currentUser.uid}/${fileName}`
-      );
+      const storageRef = ref(storage, `profile-pictures/${auth.currentUser.uid}/${fileName}`)
 
       // Upload file
       const snapshot = await uploadBytes(storageRef, file, {
@@ -518,17 +467,17 @@ export const firebaseUserApi = {
           uploadedBy: auth.currentUser.uid,
           uploadedAt: new Date().toISOString(),
         },
-      });
+      })
 
       // Get download URL
-      const downloadURL = await getDownloadURL(snapshot.ref);
+      const downloadURL = await getDownloadURL(snapshot.ref)
 
-      return downloadURL;
+      return downloadURL
     } catch (_error) {
       const apiError = handleError(_error, 'Upload profile picture', {
         defaultMessage: 'Failed to upload profile picture',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -542,32 +491,32 @@ export const firebaseUserApi = {
   deleteProfilePicture: async (profilePictureUrl: string): Promise<void> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
       // Only delete if it's a Firebase Storage URL
       if (!profilePictureUrl.includes('firebasestorage.googleapis.com')) {
-        return; // Skip deletion for external URLs (e.g., Google profile photos)
+        return // Skip deletion for external URLs (e.g., Google profile photos)
       }
 
       // Extract the storage path from the URL
-      const storageRef = ref(storage, profilePictureUrl);
+      const storageRef = ref(storage, profilePictureUrl)
 
       // Delete the file (will fail silently if file doesn't exist)
       try {
-        await deleteObject(storageRef);
+        await deleteObject(storageRef)
       } catch (_error) {
         // Ignore errors if file doesn't exist
         if (!isNotFoundError(_error)) {
           handleError(_error, 'Delete old profile picture', {
             severity: ErrorSeverity.WARNING,
-          });
+          })
         }
       }
     } catch (_error) {
       handleError(_error, 'in deleteProfilePicture', {
         severity: ErrorSeverity.WARNING,
-      });
+      })
       // Don't throw error - this is a cleanup operation
     }
   },
@@ -581,51 +530,51 @@ export const firebaseUserApi = {
    */
   updateProfile: async (
     data: Partial<{
-      name: string;
-      bio: string;
-      tagline: string;
-      pronouns: string;
-      location: string;
-      website: string;
-      profilePicture: string;
+      name: string
+      bio: string
+      tagline: string
+      pronouns: string
+      location: string
+      website: string
+      profilePicture: string
       socialLinks: {
-        twitter?: string;
-        github?: string;
-        linkedin?: string;
-      };
-      profileVisibility: 'everyone' | 'followers' | 'private';
-      activityVisibility: 'everyone' | 'followers' | 'private';
-      projectVisibility: 'everyone' | 'followers' | 'private';
+        twitter?: string
+        github?: string
+        linkedin?: string
+      }
+      profileVisibility: 'everyone' | 'followers' | 'private'
+      activityVisibility: 'everyone' | 'followers' | 'private'
+      projectVisibility: 'everyone' | 'followers' | 'private'
     }>
   ): Promise<UserProfile> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
       // Strip undefined values to avoid Firestore errors
-      const cleanData: Record<string, unknown> = {};
+      const cleanData: Record<string, unknown> = {}
       Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined) {
-          cleanData[key] = value;
+          cleanData[key] = value
         }
-      });
+      })
 
       // Add lowercase fields for searchability
       if (cleanData.name && typeof cleanData.name === 'string') {
-        cleanData.nameLower = cleanData.name.toLowerCase();
+        cleanData.nameLower = cleanData.name.toLowerCase()
       }
 
       const updateData = {
         ...cleanData,
         updatedAt: serverTimestamp(),
-      };
+      }
 
-      await updateDoc(doc(db, 'users', auth.currentUser.uid), updateData);
+      await updateDoc(doc(db, 'users', auth.currentUser.uid), updateData)
 
       // Get updated profile
-      const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
-      const userData = userDoc.data()!;
+      const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid))
+      const userData = userDoc.data()!
 
       return {
         id: auth.currentUser.uid,
@@ -641,12 +590,12 @@ export const firebaseUserApi = {
         isPrivate: userData.profileVisibility === 'private',
         createdAt: convertTimestamp(userData.createdAt),
         updatedAt: convertTimestamp(userData.updatedAt),
-      };
+      }
     } catch (_error) {
       const apiError = handleError(_error, 'Update profile', {
         defaultMessage: ERROR_MESSAGES.PROFILE_UPDATE_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -659,83 +608,76 @@ export const firebaseUserApi = {
   getUserStats: async (userId: string): Promise<UserStats> => {
     try {
       // Compute stats from sessions collection
-      const sessionsQuery = query(
-        collection(db, 'sessions'),
-        where('userId', '==', userId)
-      );
-      const sessionsSnapshot = await getDocs(sessionsQuery);
+      const sessionsQuery = query(collection(db, 'sessions'), where('userId', '==', userId))
+      const sessionsSnapshot = await getDocs(sessionsQuery)
 
-      let totalSeconds = 0;
-      let weeklySeconds = 0;
-      let monthlySeconds = 0;
-      let sessionsThisWeek = 0;
-      let sessionsThisMonth = 0;
-      const sessionDurations: number[] = [];
-      const hourBuckets: Record<number, number> = {};
+      let totalSeconds = 0
+      let weeklySeconds = 0
+      let monthlySeconds = 0
+      let sessionsThisWeek = 0
+      let sessionsThisMonth = 0
+      const sessionDurations: number[] = []
+      const hourBuckets: Record<number, number> = {}
 
-      const now = new Date();
-      const weekStart = new Date(now);
-      weekStart.setDate(now.getDate() - now.getDay()); // Sunday start
-      weekStart.setHours(0, 0, 0, 0);
+      const now = new Date()
+      const weekStart = new Date(now)
+      weekStart.setDate(now.getDate() - now.getDay()) // Sunday start
+      weekStart.setHours(0, 0, 0, 0)
 
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
 
-      sessionsSnapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        const duration = Number(data.duration) || 0; // seconds
-        const start = convertTimestamp(data.startTime);
-        totalSeconds += duration;
-        sessionDurations.push(duration);
+      sessionsSnapshot.forEach((docSnap) => {
+        const data = docSnap.data()
+        const duration = Number(data.duration) || 0 // seconds
+        const start = convertTimestamp(data.startTime)
+        totalSeconds += duration
+        sessionDurations.push(duration)
 
         // Most productive hour (by count)
-        const h = new Date(start).getHours();
-        hourBuckets[h] = (hourBuckets[h] || 0) + 1;
+        const h = new Date(start).getHours()
+        hourBuckets[h] = (hourBuckets[h] || 0) + 1
 
         if (start >= weekStart) {
-          weeklySeconds += duration;
-          sessionsThisWeek += 1;
+          weeklySeconds += duration
+          sessionsThisWeek += 1
         }
         if (start >= monthStart) {
-          monthlySeconds += duration;
-          sessionsThisMonth += 1;
+          monthlySeconds += duration
+          sessionsThisMonth += 1
         }
-      });
+      })
 
       // Streaks: simple placeholder based on recent days with activity
       // Count consecutive days from today with at least one session
-      const daysWithActivity = new Set<string>();
-      sessionsSnapshot.forEach(docSnap => {
-        const start = convertTimestamp(docSnap.data().startTime);
-        daysWithActivity.add(start.toISOString().substring(0, 10));
-      });
-      let currentStreak = 0;
-      const cursor = new Date();
-      cursor.setHours(0, 0, 0, 0);
+      const daysWithActivity = new Set<string>()
+      sessionsSnapshot.forEach((docSnap) => {
+        const start = convertTimestamp(docSnap.data().startTime)
+        daysWithActivity.add(start.toISOString().substring(0, 10))
+      })
+      let currentStreak = 0
+      const cursor = new Date()
+      cursor.setHours(0, 0, 0, 0)
       while (daysWithActivity.has(cursor.toISOString().substring(0, 10))) {
-        currentStreak += 1;
-        cursor.setDate(cursor.getDate() - 1);
+        currentStreak += 1
+        cursor.setDate(cursor.getDate() - 1)
       }
-      const longestStreak = Math.max(currentStreak, 0);
+      const longestStreak = Math.max(currentStreak, 0)
 
       // Average session duration (in minutes)
       const averageSessionDuration = sessionDurations.length
-        ? Math.round(
-            sessionDurations.reduce((a, b) => a + b, 0) /
-              sessionDurations.length /
-              60
-          )
-        : 0;
+        ? Math.round(sessionDurations.reduce((a, b) => a + b, 0) / sessionDurations.length / 60)
+        : 0
 
       // Most productive hour (0-23)
-      let mostProductiveHour = 0;
-      let maxCount = -1;
+      let mostProductiveHour = 0
+      let maxCount = -1
       Object.entries(hourBuckets).forEach(([hourStr, count]) => {
-        const hour = Number(hourStr);
+        const hour = Number(hourStr)
         if (count > maxCount) {
-          maxCount = count as number;
-          mostProductiveHour = hour;
+          maxCount = count as number
+          mostProductiveHour = hour
         }
-      });
+      })
 
       return {
         totalHours: totalSeconds / 3600,
@@ -748,9 +690,9 @@ export const firebaseUserApi = {
         averageSessionDuration,
         mostProductiveHour,
         favoriteProject: undefined,
-      };
+      }
     } catch (_error) {
-      handleError(_error, 'get user stats', { severity: ErrorSeverity.ERROR });
+      handleError(_error, 'get user stats', { severity: ErrorSeverity.ERROR })
       // Return default stats instead of throwing error
       return {
         totalHours: 0,
@@ -763,7 +705,7 @@ export const firebaseUserApi = {
         averageSessionDuration: 0,
         mostProductiveHour: 0,
         favoriteProject: undefined,
-      };
+      }
     }
   },
 
@@ -776,11 +718,11 @@ export const firebaseUserApi = {
    */
   followUser: async (userId: string): Promise<void> => {
     if (!auth.currentUser) {
-      throw new Error('User not authenticated');
+      throw new Error('User not authenticated')
     }
     // Rate limitFn follow actions
-    checkRateLimit(auth.currentUser.uid, 'FOLLOW');
-    await updateSocialGraph(auth.currentUser.uid, userId, 'follow');
+    checkRateLimit(auth.currentUser.uid, 'FOLLOW')
+    await updateSocialGraph(auth.currentUser.uid, userId, 'follow')
   },
 
   /**
@@ -792,11 +734,11 @@ export const firebaseUserApi = {
    */
   unfollowUser: async (userId: string): Promise<void> => {
     if (!auth.currentUser) {
-      throw new Error('User not authenticated');
+      throw new Error('User not authenticated')
     }
     // Rate limitFn unfollow actions (uses same limitFn as follow)
-    checkRateLimit(auth.currentUser.uid, 'FOLLOW');
-    await updateSocialGraph(auth.currentUser.uid, userId, 'unfollow');
+    checkRateLimit(auth.currentUser.uid, 'FOLLOW')
+    await updateSocialGraph(auth.currentUser.uid, userId, 'unfollow')
   },
 
   /**
@@ -806,20 +748,17 @@ export const firebaseUserApi = {
    * @param targetUserId - The ID of the target user to check
    * @returns Promise resolving to true if following, false otherwise
    */
-  isFollowing: async (
-    currentUserId: string,
-    targetUserId: string
-  ): Promise<boolean> => {
+  isFollowing: async (currentUserId: string, targetUserId: string): Promise<boolean> => {
     try {
       const socialGraphDoc = await getDoc(
         doc(db, `social_graph/${currentUserId}/outbound`, targetUserId)
-      );
-      return socialGraphDoc.exists();
+      )
+      return socialGraphDoc.exists()
     } catch (_error) {
       handleError(_error, 'checking follow status', {
         severity: ErrorSeverity.ERROR,
-      });
-      return false;
+      })
+      return false
     }
   },
 
@@ -833,15 +772,15 @@ export const firebaseUserApi = {
    */
   getFollowers: async (userId: string): Promise<User[]> => {
     try {
-      let followerIds: string[] = [];
+      let followerIds: string[] = []
 
       // Try new social_graph structure first
       try {
-        const inboundRef = collection(db, `social_graph/${userId}/inbound`);
-        const inboundSnapshot = await getDocs(inboundRef);
+        const inboundRef = collection(db, `social_graph/${userId}/inbound`)
+        const inboundSnapshot = await getDocs(inboundRef)
 
         if (!inboundSnapshot.empty) {
-          followerIds = inboundSnapshot.docs.map(doc => doc.id);
+          followerIds = inboundSnapshot.docs.map((doc) => doc.id)
         }
       } catch (_socialGraphError) {
         // If social_graph doesn't exist or has permission issues, continue to fallback
@@ -849,29 +788,26 @@ export const firebaseUserApi = {
 
       // Fallback to old follows collection if no followers found via social_graph
       if (followerIds.length === 0) {
-        const followersQuery = query(
-          collection(db, 'follows'),
-          where('followingId', '==', userId)
-        );
-        const followersSnapshot = await getDocs(followersQuery);
+        const followersQuery = query(collection(db, 'follows'), where('followingId', '==', userId))
+        const followersSnapshot = await getDocs(followersQuery)
 
-        followerIds = followersSnapshot.docs.map(doc => {
-          const data = doc.data();
-          return data.followerId;
-        });
+        followerIds = followersSnapshot.docs.map((doc) => {
+          const data = doc.data()
+          return data.followerId
+        })
       }
 
       if (followerIds.length === 0) {
-        return [];
+        return []
       }
 
       // Get user details for all followers
-      const followers: User[] = [];
+      const followers: User[] = []
 
       for (const followerId of followerIds) {
-        const userDoc = await getDoc(doc(db, 'users', followerId));
+        const userDoc = await getDoc(doc(db, 'users', followerId))
         if (userDoc.exists()) {
-          const userData = userDoc.data();
+          const userData = userDoc.data()
           followers.push({
             id: userDoc.id,
             username: userData.username,
@@ -883,21 +819,21 @@ export const firebaseUserApi = {
             followingCount: userData.followingCount || 0,
             createdAt: userData.createdAt?.toDate() || new Date(),
             updatedAt: userData.updatedAt?.toDate() || new Date(),
-          });
+          })
         } else {
         }
       }
 
-      return followers;
+      return followers
     } catch (_error) {
       // Handle permission errors silently for privacy-protected data
       if (isPermissionError(_error)) {
-        return [];
+        return []
       }
       const apiError = handleError(_error, 'Fetch followers', {
         defaultMessage: ERROR_MESSAGES.PROFILE_LOAD_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -911,15 +847,15 @@ export const firebaseUserApi = {
    */
   getFollowing: async (userId: string): Promise<User[]> => {
     try {
-      let followingIds: string[] = [];
+      let followingIds: string[] = []
 
       // Try new social_graph structure first
       try {
-        const outboundRef = collection(db, `social_graph/${userId}/outbound`);
-        const outboundSnapshot = await getDocs(outboundRef);
+        const outboundRef = collection(db, `social_graph/${userId}/outbound`)
+        const outboundSnapshot = await getDocs(outboundRef)
 
         if (!outboundSnapshot.empty) {
-          followingIds = outboundSnapshot.docs.map(doc => doc.id);
+          followingIds = outboundSnapshot.docs.map((doc) => doc.id)
         }
       } catch (_socialGraphError) {
         // If social_graph doesn't exist or has permission issues, continue to fallback
@@ -927,29 +863,26 @@ export const firebaseUserApi = {
 
       // Fallback to old follows collection if no following found via social_graph
       if (followingIds.length === 0) {
-        const followingQuery = query(
-          collection(db, 'follows'),
-          where('followerId', '==', userId)
-        );
-        const followingSnapshot = await getDocs(followingQuery);
+        const followingQuery = query(collection(db, 'follows'), where('followerId', '==', userId))
+        const followingSnapshot = await getDocs(followingQuery)
 
-        followingIds = followingSnapshot.docs.map(doc => {
-          const data = doc.data();
-          return data.followingId;
-        });
+        followingIds = followingSnapshot.docs.map((doc) => {
+          const data = doc.data()
+          return data.followingId
+        })
       }
 
       if (followingIds.length === 0) {
-        return [];
+        return []
       }
 
       // Get user details for all following
-      const following: User[] = [];
+      const following: User[] = []
 
       for (const followingId of followingIds) {
-        const userDoc = await getDoc(doc(db, 'users', followingId));
+        const userDoc = await getDoc(doc(db, 'users', followingId))
         if (userDoc.exists()) {
-          const userData = userDoc.data();
+          const userData = userDoc.data()
           following.push({
             id: userDoc.id,
             username: userData.username,
@@ -961,21 +894,21 @@ export const firebaseUserApi = {
             followingCount: userData.followingCount || 0,
             createdAt: userData.createdAt?.toDate() || new Date(),
             updatedAt: userData.updatedAt?.toDate() || new Date(),
-          });
+          })
         } else {
         }
       }
 
-      return following;
+      return following
     } catch (_error) {
       // Handle permission errors silently for privacy-protected data
       if (isPermissionError(_error)) {
-        return [];
+        return []
       }
       const apiError = handleError(_error, 'Fetch following', {
         defaultMessage: ERROR_MESSAGES.PROFILE_LOAD_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -992,34 +925,28 @@ export const firebaseUserApi = {
   ): Promise<{ followersCount: number; followingCount: number }> => {
     try {
       // Count followers (people who follow this user)
-      const followersQuery = query(
-        collection(db, 'follows'),
-        where('followingId', '==', userId)
-      );
-      const followersSnapshot = await getDocs(followersQuery);
-      const followersCount = followersSnapshot.size;
+      const followersQuery = query(collection(db, 'follows'), where('followingId', '==', userId))
+      const followersSnapshot = await getDocs(followersQuery)
+      const followersCount = followersSnapshot.size
 
       // Count following (people this user follows)
-      const followingQuery = query(
-        collection(db, 'follows'),
-        where('followerId', '==', userId)
-      );
-      const followingSnapshot = await getDocs(followingQuery);
-      const followingCount = followingSnapshot.size;
+      const followingQuery = query(collection(db, 'follows'), where('followerId', '==', userId))
+      const followingSnapshot = await getDocs(followingQuery)
+      const followingCount = followingSnapshot.size
 
       // Update the user document with correct counts
       await updateDoc(doc(db, 'users', userId), {
         followersCount,
         followingCount,
         updatedAt: serverTimestamp(),
-      });
+      })
 
-      return { followersCount, followingCount };
+      return { followersCount, followingCount }
     } catch (_error) {
       const apiError = handleError(_error, 'Sync follower counts', {
         defaultMessage: 'Failed to sync follower counts',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -1036,35 +963,35 @@ export const firebaseUserApi = {
     searchTerm: string,
     limitCount: number = 20
   ): Promise<{
-    users: UserSearchResult[];
-    totalCount: number;
-    hasMore: boolean;
+    users: UserSearchResult[]
+    totalCount: number
+    hasMore: boolean
   }> => {
     try {
       // Rate limitFn search operations
       if (auth.currentUser) {
-        checkRateLimit(auth.currentUser.uid, 'SEARCH');
+        checkRateLimit(auth.currentUser.uid, 'SEARCH')
       }
 
-      const term = (searchTerm || '').trim();
+      const term = (searchTerm || '').trim()
       if (!term) {
-        return { users: [], totalCount: 0, hasMore: false };
+        return { users: [], totalCount: 0, hasMore: false }
       }
 
       // Convert search term to lowercase for case-insensitive search
-      const termLower = term.toLowerCase();
+      const termLower = term.toLowerCase()
 
       // Get all users and filter client-side for guaranteed results
       // This ensures search works even if lowercase fields are missing or indexes aren't deployed
-      const usersQuery = query(collection(db, 'users'), limitFn(1000)); // Increased limit for better results
-      const querySnapshot = await getDocs(usersQuery);
+      const usersQuery = query(collection(db, 'users'), limitFn(1000)) // Increased limit for better results
+      const querySnapshot = await getDocs(usersQuery)
 
       // Merge and de-duplicate results, prefer username matches first
-      const byId: Record<string, UserSearchResult> = {};
-      querySnapshot.forEach(docSnap => {
-        const userData = docSnap.data();
-        const username = (userData.username || '').toLowerCase();
-        const name = (userData.name || '').toLowerCase();
+      const byId: Record<string, UserSearchResult> = {}
+      querySnapshot.forEach((docSnap) => {
+        const userData = docSnap.data()
+        const username = (userData.username || '').toLowerCase()
+        const name = (userData.name || '').toLowerCase()
 
         // Only include users whose username or name contains the search term
         if (username.includes(termLower) || name.includes(termLower)) {
@@ -1074,63 +1001,62 @@ export const firebaseUserApi = {
             name: userData.name,
             bio: userData.bio,
             profilePicture: userData.profilePicture,
-            followersCount:
-              userData.inboundFriendshipCount || userData.followersCount || 0,
+            followersCount: userData.inboundFriendshipCount || userData.followersCount || 0,
             isFollowing: false,
-          } as UserSearchResult;
+          } as UserSearchResult
         }
-      });
+      })
 
       // Convert to array and apply a basic relevance sort: exact prefix on username > name > others
       let users = Object.values(byId)
         .sort((a, b) => {
-          const t = termLower;
-          const aUser = a.username?.toLowerCase() || '';
-          const bUser = b.username?.toLowerCase() || '';
-          const aName = a.name?.toLowerCase() || '';
-          const bName = b.name?.toLowerCase() || '';
+          const t = termLower
+          const aUser = a.username?.toLowerCase() || ''
+          const bUser = b.username?.toLowerCase() || ''
+          const aName = a.name?.toLowerCase() || ''
+          const bName = b.name?.toLowerCase() || ''
 
           // Prioritize exact prefix matches, then contains matches
           const aScore =
             (aUser.startsWith(t) ? 4 : 0) +
             (aName.startsWith(t) ? 2 : 0) +
             (aUser.includes(t) ? 1 : 0) +
-            (aName.includes(t) ? 0.5 : 0);
+            (aName.includes(t) ? 0.5 : 0)
           const bScore =
             (bUser.startsWith(t) ? 4 : 0) +
             (bName.startsWith(t) ? 2 : 0) +
             (bUser.includes(t) ? 1 : 0) +
-            (bName.includes(t) ? 0.5 : 0);
-          return bScore - aScore;
+            (bName.includes(t) ? 0.5 : 0)
+          return bScore - aScore
         })
-        .slice(0, limitCount);
+        .slice(0, limitCount)
 
       // Check if current user is following each user
       if (auth.currentUser) {
         const followingChecks = await Promise.all(
-          users.map(async user => {
+          users.map(async (user) => {
             if (user.id === auth.currentUser!.uid) {
-              return { ...user, isFollowing: false }; // Don't check for own profile
+              return { ...user, isFollowing: false } // Don't check for own profile
             }
             const socialGraphDoc = await getDoc(
               doc(db, `social_graph/${auth.currentUser!.uid}/outbound`, user.id)
-            );
-            return { ...user, isFollowing: socialGraphDoc.exists() };
+            )
+            return { ...user, isFollowing: socialGraphDoc.exists() }
           })
-        );
-        users = followingChecks;
+        )
+        users = followingChecks
       }
 
       return {
         users,
         totalCount: users.length,
         hasMore: users.length === limitCount,
-      };
+      }
     } catch (_error) {
       const apiError = handleError(_error, 'Search users', {
         defaultMessage: 'Failed to search users',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -1142,22 +1068,17 @@ export const firebaseUserApi = {
    * @returns Promise resolving to array of suggested users with follow reasons
    * @throws Error if fetch fails (returns empty array on error)
    */
-  getSuggestedUsers: async (
-    limitCount: number = 10
-  ): Promise<SuggestedUser[]> => {
+  getSuggestedUsers: async (limitCount: number = 10): Promise<SuggestedUser[]> => {
     try {
       if (!auth.currentUser) {
-        return [];
+        return []
       }
 
       // Get list of users we're already following directly from social_graph
-      const outboundRef = collection(
-        db,
-        `social_graph/${auth.currentUser.uid}/outbound`
-      );
-      const outboundSnapshot = await getDocs(outboundRef);
-      const followingIds = new Set(outboundSnapshot.docs.map(doc => doc.id));
-      followingIds.add(auth.currentUser.uid); // Also exclude current user
+      const outboundRef = collection(db, `social_graph/${auth.currentUser.uid}/outbound`)
+      const outboundSnapshot = await getDocs(outboundRef)
+      const followingIds = new Set(outboundSnapshot.docs.map((doc) => doc.id))
+      followingIds.add(auth.currentUser.uid) // Also exclude current user
 
       // Also check old follows collection for backward compatibility if social_graph is empty
       if (followingIds.size === 1) {
@@ -1165,42 +1086,42 @@ export const firebaseUserApi = {
         const followingQuery = query(
           collection(db, 'follows'),
           where('followerId', '==', auth.currentUser.uid)
-        );
-        const followingSnapshot = await getDocs(followingQuery);
-        followingSnapshot.docs.forEach(doc => {
-          const data = doc.data();
+        )
+        const followingSnapshot = await getDocs(followingQuery)
+        followingSnapshot.docs.forEach((doc) => {
+          const data = doc.data()
           if (data.followingId) {
-            followingIds.add(data.followingId);
+            followingIds.add(data.followingId)
           }
-        });
+        })
       }
 
       // Query users ordered by popularity (follower count descending)
       // Fetch a reasonable buffer to account for already-followed users
       // If we need 5 suggestions and user follows ~20 people, fetching 30 should be sufficient
-      const fetchLimit = Math.min(limitCount * 5, 50); // 5x multiplier, max 50
+      const fetchLimit = Math.min(limitCount * 5, 50) // 5x multiplier, max 50
       const usersQuery = query(
         collection(db, 'users'),
         where('profileVisibility', '==', 'everyone'),
         orderBy('followersCount', 'desc'),
         limitFn(fetchLimit)
-      );
+      )
 
-      const querySnapshot = await getDocs(usersQuery);
-      const suggestions: SuggestedUser[] = [];
+      const querySnapshot = await getDocs(usersQuery)
+      const suggestions: SuggestedUser[] = []
 
       // Filter and collect until we have enough suggestions
       for (const doc of querySnapshot.docs) {
         if (suggestions.length >= limitCount) {
-          break;
+          break
         }
 
         // Skip users we're already following or current user
         if (followingIds.has(doc.id)) {
-          continue;
+          continue
         }
 
-        const userData = doc.data();
+        const userData = doc.data()
         suggestions.push({
           id: doc.id,
           username: userData.username,
@@ -1208,23 +1129,20 @@ export const firebaseUserApi = {
           bio: userData.bio,
           profilePicture: userData.profilePicture,
           followersCount: userData.followersCount || 0,
-          reason:
-            (userData.followersCount || 0) > 10
-              ? 'popular_user'
-              : 'similar_interests',
+          reason: (userData.followersCount || 0) > 10 ? 'popular_user' : 'similar_interests',
           isFollowing: false,
-        });
+        })
       }
 
-      return suggestions;
+      return suggestions
     } catch (_error) {
       handleError(_error, 'getting suggested users', {
         severity: ErrorSeverity.ERROR,
-      });
+      })
       const apiError = handleError(_error, 'Get suggested users', {
         defaultMessage: 'Failed to get suggested users',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -1237,23 +1155,23 @@ export const firebaseUserApi = {
   getPrivacySettings: async (): Promise<PrivacySettings> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
-      const userData = userDoc.data();
+      const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid))
+      const userData = userDoc.data()
 
       return {
         profileVisibility: userData?.profileVisibility || 'everyone',
         activityVisibility: userData?.activityVisibility || 'everyone',
         projectVisibility: userData?.projectVisibility || 'everyone',
         blockedUsers: userData?.blockedUsers || [],
-      };
+      }
     } catch (_error) {
       const apiError = handleError(_error, 'Get privacy settings', {
         defaultMessage: 'Failed to get privacy settings',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -1264,32 +1182,30 @@ export const firebaseUserApi = {
    * @returns Promise resolving to the updated privacy settings
    * @throws Error if user is not authenticated or update fails
    */
-  updatePrivacySettings: async (
-    settings: Partial<PrivacySettings>
-  ): Promise<PrivacySettings> => {
+  updatePrivacySettings: async (settings: Partial<PrivacySettings>): Promise<PrivacySettings> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
       const updateData = {
         ...settings,
         updatedAt: serverTimestamp(),
-      };
+      }
 
-      await updateDoc(doc(db, 'users', auth.currentUser.uid), updateData);
+      await updateDoc(doc(db, 'users', auth.currentUser.uid), updateData)
 
       return {
         profileVisibility: settings.profileVisibility || 'everyone',
         activityVisibility: settings.activityVisibility || 'everyone',
         projectVisibility: settings.projectVisibility || 'everyone',
         blockedUsers: settings.blockedUsers || [],
-      };
+      }
     } catch (_error) {
       const apiError = handleError(_error, 'Update privacy settings', {
         defaultMessage: 'Failed to update privacy settings',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -1306,24 +1222,23 @@ export const firebaseUserApi = {
         collection(db, 'users'),
         where('username', '==', username),
         limitFn(1)
-      );
-      const querySnapshot = await getDocs(usersQuery);
-      return querySnapshot.empty;
+      )
+      const querySnapshot = await getDocs(usersQuery)
+      return querySnapshot.empty
     } catch (_error) {
       // Handle Firebase permission errors gracefully
       if (isPermissionError(_error)) {
         handleError(_error, 'Check username availability', {
           severity: ErrorSeverity.WARNING,
-        });
+        })
         // In case of permission error, assume username is available to allow registration to proceed
         // The actual uniqueness will be enforced by Firebase Auth and server-side validation
-        return true;
+        return true
       }
-      const apiError = handleError(_error, 'Check username availability');
+      const apiError = handleError(_error, 'Check username availability')
       throw new Error(
-        apiError.userMessage ||
-          'Unable to verify username availability. Please try again.'
-      );
+        apiError.userMessage || 'Unable to verify username availability. Please try again.'
+      )
     }
   },
 
@@ -1335,54 +1250,54 @@ export const firebaseUserApi = {
    * @throws Error if user is not authenticated or migration fails
    */
   migrateUsersToLowercase: async (): Promise<{
-    success: number;
-    failed: number;
-    total: number;
+    success: number
+    failed: number
+    total: number
   }> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const usersQuery = query(collection(db, 'users'), limitFn(500));
-      const querySnapshot = await getDocs(usersQuery);
+      const usersQuery = query(collection(db, 'users'), limitFn(500))
+      const querySnapshot = await getDocs(usersQuery)
 
-      let success = 0;
-      let failed = 0;
-      const total = querySnapshot.size;
+      let success = 0
+      let failed = 0
+      const total = querySnapshot.size
 
       for (const userDoc of querySnapshot.docs) {
         try {
-          const userData = userDoc.data();
+          const userData = userDoc.data()
           const updates: DocumentData = {
             updatedAt: serverTimestamp(),
-          };
+          }
 
           if (userData.username && !userData.usernameLower) {
-            updates.usernameLower = userData.username.toLowerCase();
+            updates.usernameLower = userData.username.toLowerCase()
           }
 
           if (userData.name && !userData.nameLower) {
-            updates.nameLower = userData.name.toLowerCase();
+            updates.nameLower = userData.name.toLowerCase()
           }
 
           // Only update if there are new fields to add
           if (Object.keys(updates).length > 1) {
-            await updateDoc(doc(db, 'users', userDoc.id), updates);
-            success++;
+            await updateDoc(doc(db, 'users', userDoc.id), updates)
+            success++
           }
         } catch (_error) {
-          failed++;
+          failed++
         }
       }
 
-      const result = { success, failed, total };
-      return result;
+      const result = { success, failed, total }
+      return result
     } catch (_error) {
       const apiError = handleError(_error, 'Migrate users to lowercase', {
         defaultMessage: 'Failed to migrate users',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -1396,114 +1311,90 @@ export const firebaseUserApi = {
   deleteAccount: async (): Promise<void> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('No authenticated user');
+        throw new Error('No authenticated user')
       }
 
-      const userId = auth.currentUser.uid;
+      const userId = auth.currentUser.uid
 
       // 1. Delete all user's sessions
-      const sessionsQuery = query(
-        collection(db, 'sessions'),
-        where('userId', '==', userId)
-      );
-      const sessionsSnapshot = await getDocs(sessionsQuery);
-      const sessionDeletes = sessionsSnapshot.docs.map(doc =>
-        deleteDoc(doc.ref)
-      );
-      await Promise.all(sessionDeletes);
+      const sessionsQuery = query(collection(db, 'sessions'), where('userId', '==', userId))
+      const sessionsSnapshot = await getDocs(sessionsQuery)
+      const sessionDeletes = sessionsSnapshot.docs.map((doc) => deleteDoc(doc.ref))
+      await Promise.all(sessionDeletes)
 
       // 2. Delete all user's comments
-      const commentsQuery = query(
-        collection(db, 'comments'),
-        where('userId', '==', userId)
-      );
-      const commentsSnapshot = await getDocs(commentsQuery);
-      const commentDeletes = commentsSnapshot.docs.map(doc =>
-        deleteDoc(doc.ref)
-      );
-      await Promise.all(commentDeletes);
+      const commentsQuery = query(collection(db, 'comments'), where('userId', '==', userId))
+      const commentsSnapshot = await getDocs(commentsQuery)
+      const commentDeletes = commentsSnapshot.docs.map((doc) => deleteDoc(doc.ref))
+      await Promise.all(commentDeletes)
 
       // 3. Delete all follow relationships where user is follower or following
       const followsAsFollowerQuery = query(
         collection(db, 'follows'),
         where('followerId', '==', userId)
-      );
+      )
       const followsAsFollowingQuery = query(
         collection(db, 'follows'),
         where('followingId', '==', userId)
-      );
-      const [followsAsFollowerSnapshot, followsAsFollowingSnapshot] =
-        await Promise.all([
-          getDocs(followsAsFollowerQuery),
-          getDocs(followsAsFollowingQuery),
-        ]);
+      )
+      const [followsAsFollowerSnapshot, followsAsFollowingSnapshot] = await Promise.all([
+        getDocs(followsAsFollowerQuery),
+        getDocs(followsAsFollowingQuery),
+      ])
       const followDeletes = [
-        ...followsAsFollowerSnapshot.docs.map(doc => deleteDoc(doc.ref)),
-        ...followsAsFollowingSnapshot.docs.map(doc => deleteDoc(doc.ref)),
-      ];
-      await Promise.all(followDeletes);
+        ...followsAsFollowerSnapshot.docs.map((doc) => deleteDoc(doc.ref)),
+        ...followsAsFollowingSnapshot.docs.map((doc) => deleteDoc(doc.ref)),
+      ]
+      await Promise.all(followDeletes)
 
       // 4. Delete user's projects and their tasks
-      const projectsRef = collection(db, 'projects', userId, 'userProjects');
-      const projectsSnapshot = await getDocs(projectsRef);
+      const projectsRef = collection(db, 'projects', userId, 'userProjects')
+      const projectsSnapshot = await getDocs(projectsRef)
 
       for (const projectDoc of projectsSnapshot.docs) {
         // Delete tasks in each project
-        const tasksRef = collection(
-          db,
-          'projects',
-          userId,
-          'userProjects',
-          projectDoc.id,
-          'tasks'
-        );
-        const tasksSnapshot = await getDocs(tasksRef);
-        const taskDeletes = tasksSnapshot.docs.map(doc => deleteDoc(doc.ref));
-        await Promise.all(taskDeletes);
+        const tasksRef = collection(db, 'projects', userId, 'userProjects', projectDoc.id, 'tasks')
+        const tasksSnapshot = await getDocs(tasksRef)
+        const taskDeletes = tasksSnapshot.docs.map((doc) => deleteDoc(doc.ref))
+        await Promise.all(taskDeletes)
 
         // Delete the project
-        await deleteDoc(projectDoc.ref);
+        await deleteDoc(projectDoc.ref)
       }
 
       // 5. Delete user's streak data
       try {
-        const streakRef = doc(db, 'streaks', userId);
-        await deleteDoc(streakRef);
+        const streakRef = doc(db, 'streaks', userId)
+        await deleteDoc(streakRef)
       } catch (_error) {}
 
       // 6. Delete user's active session data
       try {
-        const activeSessionRef = doc(
-          db,
-          'users',
-          userId,
-          'activeSession',
-          'current'
-        );
-        await deleteDoc(activeSessionRef);
+        const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current')
+        await deleteDoc(activeSessionRef)
       } catch (_error) {}
 
       // 7. Delete profile picture from storage if it exists
       try {
-        const userDoc = await getDoc(doc(db, 'users', userId));
-        const userData = userDoc.data();
+        const userDoc = await getDoc(doc(db, 'users', userId))
+        const userData = userDoc.data()
         if (userData?.profilePicture) {
-          const storageRef = ref(storage, `profile-pictures/${userId}`);
-          await deleteObject(storageRef);
+          const storageRef = ref(storage, `profile-pictures/${userId}`)
+          await deleteObject(storageRef)
         }
       } catch (_error) {}
 
       // 8. Delete the user document from Firestore
-      await deleteDoc(doc(db, 'users', userId));
+      await deleteDoc(doc(db, 'users', userId))
 
       // 9. Finally, delete the Firebase Auth user
-      await auth.currentUser.delete();
+      await auth.currentUser.delete()
     } catch (_error) {
       const apiError = handleError(_error, 'Delete account', {
         defaultMessage:
           'Failed to delete account. Please try logging out and back in, then try again.',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
-};
+}

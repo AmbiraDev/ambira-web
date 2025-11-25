@@ -126,12 +126,12 @@ All smoke tests include automated accessibility checks using [axe-core](https://
 Runs a comprehensive accessibility scan on the current page.
 
 ```typescript
-import { runAccessibilityScan } from '../utils/accessibility';
+import { runAccessibilityScan } from '../utils/accessibility'
 
 const results = await runAccessibilityScan(page, {
   exclude: ['#third-party-widget'], // Exclude specific elements
   disableRules: ['color-contrast'], // Disable specific rules
-});
+})
 ```
 
 **`formatA11yViolations(violations)`**
@@ -150,15 +150,15 @@ Performs basic accessibility checks:
 The `test` fixture from `fixtures/test-base.ts` includes accessibility utilities:
 
 ```typescript
-import { test, expect } from '../fixtures/test-base';
+import { test, expect } from '../fixtures/test-base'
 
 test('my test', async ({ page, makeAxeBuilder }) => {
-  await page.goto('/');
+  await page.goto('/')
 
   // Run accessibility scan
-  const results = await makeAxeBuilder().analyze();
-  expect(results.violations).toHaveLength(0);
-});
+  const results = await makeAxeBuilder().analyze()
+  expect(results.violations).toHaveLength(0)
+})
 ```
 
 ## 🔧 Configuration
@@ -214,10 +214,10 @@ In CI, test reports are uploaded as artifacts and available in the GitHub Action
 
 ```typescript
 // Good ✅
-await page.getByRole('button', { name: 'Start Timer' }).click();
+await page.getByRole('button', { name: 'Start Timer' }).click()
 
 // Avoid ❌
-await page.locator('.timer-button-class').click();
+await page.locator('.timer-button-class').click()
 ```
 
 ### 2. Use Playwright's Auto-Waiting
@@ -226,7 +226,7 @@ Playwright automatically waits for elements to be actionable:
 
 ```typescript
 // Playwright automatically waits for element to be visible and enabled
-await page.getByRole('button').click();
+await page.getByRole('button').click()
 ```
 
 ### 3. Test Accessibility in Every Test
@@ -236,26 +236,23 @@ test('feature works correctly', async ({ page, makeAxeBuilder }) => {
   // ... test logic ...
 
   // Always check accessibility
-  const results = await makeAxeBuilder().analyze();
-  expect(results.violations).toHaveLength(0);
-});
+  const results = await makeAxeBuilder().analyze()
+  expect(results.violations).toHaveLength(0)
+})
 ```
 
 ### 4. Test Responsive Design
 
 ```typescript
 test('mobile viewport', async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 667 });
+  await page.setViewportSize({ width: 375, height: 667 })
 
   // Verify no horizontal scroll
   const hasHorizontalScroll = await page.evaluate(() => {
-    return (
-      document.documentElement.scrollWidth >
-      document.documentElement.clientWidth
-    );
-  });
-  expect(hasHorizontalScroll).toBe(false);
-});
+    return document.documentElement.scrollWidth > document.documentElement.clientWidth
+  })
+  expect(hasHorizontalScroll).toBe(false)
+})
 ```
 
 ### 5. Handle Authentication State
@@ -264,7 +261,7 @@ For authenticated tests, use Playwright's [authentication state](https://playwri
 
 ```typescript
 // Future enhancement: Store auth state
-test.use({ storageState: 'auth.json' });
+test.use({ storageState: 'auth.json' })
 ```
 
 ### 6. Keep Smoke Tests Fast
@@ -280,10 +277,10 @@ Smoke tests should:
 
 ```typescript
 // Good ✅
-test('should display error message when submitting invalid email');
+test('should display error message when submitting invalid email')
 
 // Avoid ❌
-test('email validation');
+test('email validation')
 ```
 
 ## 🐛 Debugging Tests
@@ -338,31 +335,31 @@ touch e2e/smoke/my-feature.spec.ts
 ### 3. Use the Template
 
 ```typescript
-import { test, expect } from '../fixtures/test-base';
-import { formatA11yViolations } from '../utils/accessibility';
+import { test, expect } from '../fixtures/test-base'
+import { formatA11yViolations } from '../utils/accessibility'
 
 test.describe('My Feature - Smoke Tests', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/my-feature');
-  });
+    await page.goto('/my-feature')
+  })
 
   test('should load successfully', async ({ page }) => {
-    await page.waitForLoadState('networkidle');
-    const title = await page.title();
-    expect(title).toBeTruthy();
-  });
+    await page.waitForLoadState('networkidle')
+    const title = await page.title()
+    expect(title).toBeTruthy()
+  })
 
   test('should pass accessibility audit', async ({ page, makeAxeBuilder }) => {
-    await page.waitForLoadState('networkidle');
-    const results = await makeAxeBuilder().analyze();
+    await page.waitForLoadState('networkidle')
+    const results = await makeAxeBuilder().analyze()
 
     if (results.violations.length > 0) {
-      console.log(formatA11yViolations(results.violations));
+      console.log(formatA11yViolations(results.violations))
     }
 
-    expect(results.violations).toHaveLength(0);
-  });
-});
+    expect(results.violations).toHaveLength(0)
+  })
+})
 ```
 
 ### 4. Run and Verify

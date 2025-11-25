@@ -1,35 +1,35 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
-import { SessionWithDetails } from '@/types';
-import SessionInteractions from './SessionInteractions';
-import TopComments from './TopComments';
-import { ImageGallery } from './ImageGallery';
-import LikesModal from './LikesModal';
-import CommentsModal from './CommentsModal';
-import { PrefetchLink } from './PrefetchLink';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import { firebaseApi } from '@/lib/api';
-import { MoreVertical } from 'lucide-react';
-import Link from 'next/link';
-import { cn, isEmpty } from '@/lib/utils';
-import { formatSessionDate, formatDuration } from '@/lib/formatters';
-import { getUserInitials } from '@/lib/userUtils';
+import React, { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
+import { SessionWithDetails } from '@/types'
+import SessionInteractions from './SessionInteractions'
+import TopComments from './TopComments'
+import { ImageGallery } from './ImageGallery'
+import LikesModal from './LikesModal'
+import CommentsModal from './CommentsModal'
+import { PrefetchLink } from './PrefetchLink'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
+import { firebaseApi } from '@/lib/api'
+import { MoreVertical } from 'lucide-react'
+import Link from 'next/link'
+import { cn, isEmpty } from '@/lib/utils'
+import { formatSessionDate, formatDuration } from '@/lib/formatters'
+import { getUserInitials } from '@/lib/userUtils'
 
 interface SessionCardProps {
-  session: SessionWithDetails;
-  onSupport: (sessionId: string) => Promise<void>;
-  onRemoveSupport: (sessionId: string) => Promise<void>;
-  onShare: (sessionId: string) => Promise<void>;
-  onDelete?: (sessionId: string) => Promise<void>;
-  onEdit?: (sessionId: string) => void;
-  className?: string;
-  showComments?: boolean;
-  showGroupInfo?: boolean;
-  isAboveFold?: boolean; // Add prop to indicate if card is above the fold
-  priority?: boolean; // Add prop for image priority loading
+  session: SessionWithDetails
+  onSupport: (sessionId: string) => Promise<void>
+  onRemoveSupport: (sessionId: string) => Promise<void>
+  onShare: (sessionId: string) => Promise<void>
+  onDelete?: (sessionId: string) => Promise<void>
+  onEdit?: (sessionId: string) => void
+  className?: string
+  showComments?: boolean
+  showGroupInfo?: boolean
+  isAboveFold?: boolean // Add prop to indicate if card is above the fold
+  priority?: boolean // Add prop for image priority loading
 }
 
 export const SessionCard: React.FC<SessionCardProps> = ({
@@ -44,131 +44,126 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   isAboveFold = false,
   priority = false,
 }) => {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [showMenu, setShowMenu] = useState(false);
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [isFollowLoading, setIsFollowLoading] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [localCommentCount, setLocalCommentCount] = useState(
-    session.commentCount || 0
-  );
-  const [showLikesModal, setShowLikesModal] = useState(false);
-  const [showCommentsModal, setShowCommentsModal] = useState(false);
-  const [expandComments, setExpandComments] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const commentSectionRef = useRef<HTMLDivElement>(null);
+  const router = useRouter()
+  const { user } = useAuth()
+  const [showMenu, setShowMenu] = useState(false)
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [isFollowLoading, setIsFollowLoading] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [localCommentCount, setLocalCommentCount] = useState(session.commentCount || 0)
+  const [showLikesModal, setShowLikesModal] = useState(false)
+  const [showCommentsModal, setShowCommentsModal] = useState(false)
+  const [expandComments, setExpandComments] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  const commentSectionRef = useRef<HTMLDivElement>(null)
 
   // Check if user is following the session author
   useEffect(() => {
     const checkFollowStatus = async () => {
       if (user && session.userId !== user.id && showGroupInfo) {
         try {
-          const isUserFollowing = await firebaseApi.user.isFollowing(
-            user.id,
-            session.userId
-          );
-          setIsFollowing(isUserFollowing);
+          const isUserFollowing = await firebaseApi.user.isFollowing(user.id, session.userId)
+          setIsFollowing(isUserFollowing)
         } catch {
           // Error checking follow status - silently fail
         }
       }
-    };
-    checkFollowStatus();
-  }, [user, session.userId, showGroupInfo]);
+    }
+    checkFollowStatus()
+  }, [user, session.userId, showGroupInfo])
 
   // Handle follow/unfollow
   const handleFollowToggle = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
 
-    if (!user || isFollowLoading) return;
+    if (!user || isFollowLoading) return
 
-    setIsFollowLoading(true);
+    setIsFollowLoading(true)
     try {
       if (isFollowing) {
-        await firebaseApi.user.unfollowUser(session.userId);
-        setIsFollowing(false);
+        await firebaseApi.user.unfollowUser(session.userId)
+        setIsFollowing(false)
       } else {
-        await firebaseApi.user.followUser(session.userId);
-        setIsFollowing(true);
+        await firebaseApi.user.followUser(session.userId)
+        setIsFollowing(true)
       }
     } catch {
       // Error toggling follow - silently fail
     } finally {
-      setIsFollowLoading(false);
+      setIsFollowLoading(false)
     }
-  };
+  }
 
   // Close menu when clicking outside or pressing escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowMenu(false);
+        setShowMenu(false)
       }
-    };
+    }
 
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setShowMenu(false);
+        setShowMenu(false)
       }
-    };
+    }
 
     if (showMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleEscapeKey);
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleEscapeKey)
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscapeKey);
-    };
-  }, [showMenu]);
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscapeKey)
+    }
+  }, [showMenu])
 
   // Handle comment icon click - different behavior for mobile vs desktop
   const handleCommentClick = () => {
     // Check if mobile (window width < 768px which is md breakpoint)
-    const isMobile = window.innerWidth < 768;
+    const isMobile = window.innerWidth < 768
 
     if (isMobile) {
       // Mobile: Open modal
-      setShowCommentsModal(true);
+      setShowCommentsModal(true)
     } else {
       // Desktop: Expand inline and scroll to comment section
-      setExpandComments(true);
+      setExpandComments(true)
       // Scroll to comment section after a short delay to allow expansion
       setTimeout(() => {
         commentSectionRef.current?.scrollIntoView({
           behavior: 'smooth',
           block: 'nearest',
-        });
-      }, 100);
+        })
+      }, 100)
     }
-  };
+  }
 
   // Guard: Return null if user data is missing (during architecture migration)
   if (!session.user) {
-    return null;
+    return null
   }
 
   // Get activity display name with fallback
   // If activity/project objects exist, use their names
   // Otherwise, if activityId/projectId exists, format it nicely (e.g., "coding" -> "Coding")
   const getActivityDisplayName = () => {
-    if (session.activity?.name) return session.activity.name;
-    if (session.project?.name) return session.project.name;
+    if (session.activity?.name) return session.activity.name
+    if (session.project?.name) return session.project.name
 
     // Fallback: format the activityId or projectId
-    const id = session.activityId || session.projectId;
+    const id = session.activityId || session.projectId
     if (id) {
       // Convert kebab-case to Title Case (e.g., "side-project" -> "Side Project")
-      return id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
+      return id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ')
     }
 
-    return 'N/A';
-  };
+    return 'N/A'
+  }
 
-  const activityDisplayName = getActivityDisplayName();
+  const activityDisplayName = getActivityDisplayName()
 
   return (
     <article
@@ -229,9 +224,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                 </button>
               )}
             </div>
-            <div className="text-xs text-gray-500">
-              {formatSessionDate(session.createdAt)}
-            </div>
+            <div className="text-xs text-gray-500">{formatSessionDate(session.createdAt)}</div>
           </div>
         </PrefetchLink>
 
@@ -256,8 +249,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               {onEdit && (
                 <button
                   onClick={() => {
-                    onEdit(session.id);
-                    setShowMenu(false);
+                    onEdit(session.id)
+                    setShowMenu(false)
                   }}
                   className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200"
                   role="menuitem"
@@ -268,8 +261,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               {onDelete && (
                 <button
                   onClick={() => {
-                    onDelete(session.id);
-                    setShowMenu(false);
+                    onDelete(session.id)
+                    setShowMenu(false)
                   }}
                   className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50 transition-colors duration-200"
                   role="menuitem"
@@ -283,10 +276,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       </div>
 
       {/* Title and Description */}
-      <Link
-        href={`/sessions/${session.id}`}
-        className="px-4 pb-3 block cursor-pointer"
-      >
+      <Link href={`/sessions/${session.id}`} className="px-4 pb-3 block cursor-pointer">
         <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1 leading-tight hover:text-[#0066CC] transition-colors duration-200">
           {session.title || 'Focus Session'}
         </h3>
@@ -295,9 +285,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
             <p
               className={cn(
                 'text-gray-600 text-sm md:text-base whitespace-pre-wrap break-words',
-                !isExpanded &&
-                  session.description.length > 280 &&
-                  'line-clamp-3 sm:line-clamp-4'
+                !isExpanded && session.description.length > 280 && 'line-clamp-3 sm:line-clamp-4'
               )}
             >
               {session.description.length > 1000
@@ -306,15 +294,13 @@ export const SessionCard: React.FC<SessionCardProps> = ({
             </p>
             {session.description.length > 280 && (
               <button
-                onClick={e => {
-                  e.preventDefault();
-                  setIsExpanded(!isExpanded);
+                onClick={(e) => {
+                  e.preventDefault()
+                  setIsExpanded(!isExpanded)
                 }}
                 className="text-[#0066CC] text-sm font-semibold mt-1 hover:underline transition-colors duration-200 min-h-[44px] flex items-center"
                 aria-expanded={isExpanded}
-                aria-label={
-                  isExpanded ? 'Show less description' : 'Show more description'
-                }
+                aria-label={isExpanded ? 'Show less description' : 'Show more description'}
               >
                 {isExpanded ? 'Show less' : 'Show more'}
               </button>
@@ -326,10 +312,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       {/* Image Gallery */}
       {!isEmpty(session.images) && (
         <div className="px-4 pb-4">
-          <ImageGallery
-            images={session.images || []}
-            priority={isAboveFold || priority}
-          />
+          <ImageGallery images={session.images || []} priority={isAboveFold || priority} />
         </div>
       )}
 
@@ -401,7 +384,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         onCommentCountChange={setLocalCommentCount}
       />
     </article>
-  );
-};
+  )
+}
 
-export default SessionCard;
+export default SessionCard

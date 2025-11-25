@@ -1,6 +1,6 @@
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import React from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Footer() {
   return (
@@ -11,12 +11,7 @@ export default function Footer() {
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 flex items-center justify-center">
-                <Image
-                  src="/logo.svg"
-                  alt="Ambira Logo"
-                  width={32}
-                  height={32}
-                />
+                <Image src="/logo.svg" alt="Ambira Logo" width={32} height={32} />
               </div>
               <span className="text-xl font-bold text-[#0066CC]">Ambira</span>
             </div>
@@ -166,11 +161,9 @@ export default function Footer() {
 
         {/* Copyright - Centered at bottom */}
         <div className="mt-12 pt-8 border-t border-gray-200">
-          <p className="text-center text-sm text-gray-500">
-            © {new Date().getFullYear()} Ambira
-          </p>
+          <p className="text-center text-sm text-gray-500">© {new Date().getFullYear()} Ambira</p>
         </div>
       </div>
     </footer>
-  );
+  )
 }

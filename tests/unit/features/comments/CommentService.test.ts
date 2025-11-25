@@ -4,14 +4,14 @@
  * Tests comment CRUD operations, likes, and retrieval
  */
 
-import { CommentService } from '@/features/comments/services/CommentService';
-import { firebaseApi } from '@/lib/api';
-import { CommentWithDetails, CreateCommentData } from '@/types';
+import { CommentService } from '@/features/comments/services/CommentService'
+import { firebaseApi } from '@/lib/api'
+import { CommentWithDetails, CreateCommentData } from '@/types'
 
-jest.mock('@/lib/api');
+jest.mock('@/lib/api')
 
 describe('CommentService', () => {
-  let commentService: CommentService;
+  let commentService: CommentService
 
   const mockComment: CommentWithDetails = {
     id: 'comment123456789012345',
@@ -31,12 +31,12 @@ describe('CommentService', () => {
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
     },
-  };
+  }
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    commentService = new CommentService();
-  });
+    jest.clearAllMocks()
+    commentService = new CommentService()
+  })
 
   describe('getSessionComments', () => {
     it('should get all comments for a session', async () => {
@@ -44,63 +44,55 @@ describe('CommentService', () => {
       const mockResponse = {
         comments: [mockComment, { ...mockComment, id: 'comment-2' }],
         hasMore: false,
-      };
+      }
 
-      (firebaseApi.comment.getSessionComments as jest.Mock).mockResolvedValue(
-        mockResponse
-      );
+      ;(firebaseApi.comment.getSessionComments as jest.Mock).mockResolvedValue(mockResponse)
 
       // ACT
-      const result = await commentService.getSessionComments(
-        'session12345678901234'
-      );
+      const result = await commentService.getSessionComments('session12345678901234')
 
       // ASSERT
-      expect(result.comments).toHaveLength(2);
-      expect(result.hasMore).toBe(false);
+      expect(result.comments).toHaveLength(2)
+      expect(result.hasMore).toBe(false)
       expect(firebaseApi.comment.getSessionComments).toHaveBeenCalledWith(
         'session12345678901234',
         20
-      );
-    });
+      )
+    })
 
     it('should support custom limit', async () => {
       // ARRANGE
       const mockResponse = {
         comments: [mockComment],
         hasMore: true,
-      };
+      }
 
-      (firebaseApi.comment.getSessionComments as jest.Mock).mockResolvedValue(
-        mockResponse
-      );
+      ;(firebaseApi.comment.getSessionComments as jest.Mock).mockResolvedValue(mockResponse)
 
       // ACT
-      await commentService.getSessionComments('session12345678901234', 50);
+      await commentService.getSessionComments('session12345678901234', 50)
 
       // ASSERT
       expect(firebaseApi.comment.getSessionComments).toHaveBeenCalledWith(
         'session12345678901234',
         50
-      );
-    });
+      )
+    })
 
     it('should return empty array on error', async () => {
       // ARRANGE
-      (firebaseApi.comment.getSessionComments as jest.Mock).mockRejectedValue(
+      ;(firebaseApi.comment.getSessionComments as jest.Mock).mockRejectedValue(
         new Error('API Error')
-      );
+      )
 
       // ACT
-      const result = await commentService.getSessionComments(
-        'session12345678901234'
-      );
+      const result = await commentService.getSessionComments('session12345678901234')
 
       // ASSERT
-      expect(result.comments).toEqual([]);
-      expect(result.hasMore).toBe(false);
-    });
-  });
+      expect(result.comments).toEqual([])
+      expect(result.hasMore).toBe(false)
+    })
+  })
 
   describe('createComment', () => {
     it('should create comment with valid data', async () => {
@@ -108,37 +100,35 @@ describe('CommentService', () => {
       const createData: CreateCommentData = {
         sessionId: 'session12345678901234',
         content: 'New comment',
-      };
+      }
 
-      (firebaseApi.comment.createComment as jest.Mock).mockResolvedValue(
-        mockComment
-      );
+      ;(firebaseApi.comment.createComment as jest.Mock).mockResolvedValue(mockComment)
 
       // ACT
-      const result = await commentService.createComment(createData);
+      const result = await commentService.createComment(createData)
 
       // ASSERT
-      expect(result).toEqual(mockComment);
-      expect(firebaseApi.comment.createComment).toHaveBeenCalled();
-    });
+      expect(result).toEqual(mockComment)
+      expect(firebaseApi.comment.createComment).toHaveBeenCalled()
+    })
 
     it('should validate comment data', async () => {
       // ARRANGE
-      const invalidData = { sessionId: 'session12345678901234', content: '' };
+      const invalidData = { sessionId: 'session12345678901234', content: '' }
 
       // ACT & ASSERT
       try {
-        await commentService.createComment(invalidData);
+        await commentService.createComment(invalidData)
       } catch (_err) {
         // Expected validation error
       }
-    });
+    })
 
     it('should propagate API errors', async () => {
       // ARRANGE
-      (firebaseApi.comment.createComment as jest.Mock).mockRejectedValue(
+      ;(firebaseApi.comment.createComment as jest.Mock).mockRejectedValue(
         new Error('Creation failed')
-      );
+      )
 
       // ACT & ASSERT
       await expect(
@@ -146,136 +136,115 @@ describe('CommentService', () => {
           sessionId: 'session12345678901234',
           content: 'Test',
         })
-      ).rejects.toThrow();
-    });
-  });
+      ).rejects.toThrow()
+    })
+  })
 
   describe('updateComment', () => {
     it('should update comment content', async () => {
       // ARRANGE
-      (firebaseApi.comment.updateComment as jest.Mock).mockResolvedValue(
-        undefined
-      );
+      ;(firebaseApi.comment.updateComment as jest.Mock).mockResolvedValue(undefined)
 
       // ACT
       await commentService.updateComment('comment-1', {
         content: 'Updated comment',
-      });
+      })
 
       // ASSERT
-      expect(firebaseApi.comment.updateComment).toHaveBeenCalledWith(
-        'comment-1',
-        { content: 'Updated comment' }
-      );
-    });
+      expect(firebaseApi.comment.updateComment).toHaveBeenCalledWith('comment-1', {
+        content: 'Updated comment',
+      })
+    })
 
     it('should validate update data', async () => {
       // ARRANGE
-      const invalidData = { content: '' };
+      const invalidData = { content: '' }
 
       // ACT & ASSERT
       try {
-        await commentService.updateComment('comment-1', invalidData);
+        await commentService.updateComment('comment-1', invalidData)
       } catch (_err) {
         // Expected validation error
       }
-    });
+    })
 
     it('should propagate API errors', async () => {
       // ARRANGE
-      (firebaseApi.comment.updateComment as jest.Mock).mockRejectedValue(
+      ;(firebaseApi.comment.updateComment as jest.Mock).mockRejectedValue(
         new Error('Update failed')
-      );
+      )
 
       // ACT & ASSERT
-      await expect(
-        commentService.updateComment('comment-1', { content: 'New' })
-      ).rejects.toThrow('Update failed');
-    });
-  });
+      await expect(commentService.updateComment('comment-1', { content: 'New' })).rejects.toThrow(
+        'Update failed'
+      )
+    })
+  })
 
   describe('deleteComment', () => {
     it('should delete comment by ID', async () => {
       // ARRANGE
-      (firebaseApi.comment.deleteComment as jest.Mock).mockResolvedValue(
-        undefined
-      );
+      ;(firebaseApi.comment.deleteComment as jest.Mock).mockResolvedValue(undefined)
 
       // ACT
-      await commentService.deleteComment('comment-1');
+      await commentService.deleteComment('comment-1')
 
       // ASSERT
-      expect(firebaseApi.comment.deleteComment).toHaveBeenCalledWith(
-        'comment-1'
-      );
-    });
+      expect(firebaseApi.comment.deleteComment).toHaveBeenCalledWith('comment-1')
+    })
 
     it('should propagate API errors', async () => {
       // ARRANGE
-      (firebaseApi.comment.deleteComment as jest.Mock).mockRejectedValue(
+      ;(firebaseApi.comment.deleteComment as jest.Mock).mockRejectedValue(
         new Error('Delete failed')
-      );
+      )
 
       // ACT & ASSERT
-      await expect(commentService.deleteComment('comment-1')).rejects.toThrow(
-        'Delete failed'
-      );
-    });
-  });
+      await expect(commentService.deleteComment('comment-1')).rejects.toThrow('Delete failed')
+    })
+  })
 
   describe('likeComment', () => {
     it('should like a comment', async () => {
       // ARRANGE
-      (firebaseApi.comment.likeComment as jest.Mock).mockResolvedValue(
-        undefined
-      );
+      ;(firebaseApi.comment.likeComment as jest.Mock).mockResolvedValue(undefined)
 
       // ACT
-      await commentService.likeComment('comment-1');
+      await commentService.likeComment('comment-1')
 
       // ASSERT
-      expect(firebaseApi.comment.likeComment).toHaveBeenCalledWith('comment-1');
-    });
+      expect(firebaseApi.comment.likeComment).toHaveBeenCalledWith('comment-1')
+    })
 
     it('should propagate API errors', async () => {
       // ARRANGE
-      (firebaseApi.comment.likeComment as jest.Mock).mockRejectedValue(
-        new Error('Like failed')
-      );
+      ;(firebaseApi.comment.likeComment as jest.Mock).mockRejectedValue(new Error('Like failed'))
 
       // ACT & ASSERT
-      await expect(commentService.likeComment('comment-1')).rejects.toThrow(
-        'Like failed'
-      );
-    });
-  });
+      await expect(commentService.likeComment('comment-1')).rejects.toThrow('Like failed')
+    })
+  })
 
   describe('unlikeComment', () => {
     it('should unlike a comment', async () => {
       // ARRANGE
-      (firebaseApi.comment.unlikeComment as jest.Mock).mockResolvedValue(
-        undefined
-      );
+      ;(firebaseApi.comment.unlikeComment as jest.Mock).mockResolvedValue(undefined)
 
       // ACT
-      await commentService.unlikeComment('comment-1');
+      await commentService.unlikeComment('comment-1')
 
       // ASSERT
-      expect(firebaseApi.comment.unlikeComment).toHaveBeenCalledWith(
-        'comment-1'
-      );
-    });
+      expect(firebaseApi.comment.unlikeComment).toHaveBeenCalledWith('comment-1')
+    })
 
     it('should propagate API errors', async () => {
       // ARRANGE
-      (firebaseApi.comment.unlikeComment as jest.Mock).mockRejectedValue(
+      ;(firebaseApi.comment.unlikeComment as jest.Mock).mockRejectedValue(
         new Error('Unlike failed')
-      );
+      )
 
       // ACT & ASSERT
-      await expect(commentService.unlikeComment('comment-1')).rejects.toThrow(
-        'Unlike failed'
-      );
-    });
-  });
-});
+      await expect(commentService.unlikeComment('comment-1')).rejects.toThrow('Unlike failed')
+    })
+  })
+})

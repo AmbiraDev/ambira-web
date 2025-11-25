@@ -1,12 +1,12 @@
-'use client';
+'use client'
 
-import React from 'react';
+import React from 'react'
 
-type ActivityTab = 'sessions' | 'analytics';
+type ActivityTab = 'sessions' | 'analytics'
 
 interface ActivityTabsProps {
-  activeTab: ActivityTab;
-  setActiveTab: (tab: ActivityTab) => void;
+  activeTab: ActivityTab
+  setActiveTab: (tab: ActivityTab) => void
 }
 
 export function ActivityTabs({ activeTab, setActiveTab }: ActivityTabsProps) {
@@ -35,5 +35,5 @@ export function ActivityTabs({ activeTab, setActiveTab }: ActivityTabsProps) {
         </button>
       </nav>
     </div>
-  );
+  )
 }

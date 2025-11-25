@@ -122,7 +122,36 @@ A social productivity tracking application built with Next.js, TypeScript, and T
 ### Prerequisites
 
 - Node.js 18+
-- npm or yarn
+- npm (this project uses npm exclusively)
+- Firebase account (free tier is sufficient for development)
+
+### Firebase Setup (Required)
+
+**Before running the app, you must configure Firebase:**
+
+Ambira uses Firebase for authentication and database. Follow our comprehensive setup guide:
+
+**[Complete Firebase Setup Guide](./docs/setup/FIREBASE_SETUP.md)** - Step-by-step instructions with screenshots
+
+**Quick Setup**:
+
+1. **Create Firebase Project** at [console.firebase.google.com](https://console.firebase.google.com)
+2. **Enable Authentication** (Email/Password and Google providers)
+3. **Create Firestore Database** (production mode)
+4. **Copy Firebase Config** from Project Settings
+5. **Configure Environment Variables**:
+   ```bash
+   cp .env.example .env.local
+   # Edit .env.local with your Firebase configuration
+   ```
+6. **Deploy Security Rules**:
+   ```bash
+   npx firebase-tools login
+   npx firebase-tools init firestore
+   npx firebase-tools deploy --only firestore:rules --non-interactive
+   ```
+
+See [FIREBASE_SETUP.md](./docs/setup/FIREBASE_SETUP.md) for detailed instructions and troubleshooting.
 
 ### Installation
 
@@ -139,13 +168,15 @@ cd ambira-web
 npm install
 ```
 
-3. Start the development server:
+3. Configure Firebase (see Firebase Setup section above)
+
+4. Start the development server:
 
 ```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Available Scripts
 
@@ -222,19 +253,35 @@ The social foundation is now complete! Key areas for further development include
 
 ### Required Firestore Indexes
 
-The following composite indexes are required for the feed to work correctly:
+Composite indexes are required for complex queries in Ambira. The easiest approach is to let Firestore auto-create them when needed.
+
+**Quick Method**: When you see index errors in the browser console, click the provided link to auto-create the index.
+
+**Complete Index Documentation**: See [docs/setup/FIREBASE_INDEXES.md](./docs/setup/FIREBASE_INDEXES.md) for:
+
+- Full list of required indexes
+- Manual creation instructions
+- Troubleshooting index issues
+- Performance best practices
+
+**Common Indexes**:
 
 1. **Sessions - Following Feed**
    - Collection: `sessions`
    - Fields: `visibility` (Ascending), `createdAt` (Descending)
    - Used for: Recent and Following feed types
 
-2. **Sessions - Trending Feed**
+2. **Sessions - User Activity with Date Filter**
    - Collection: `sessions`
-   - Fields: `visibility` (Ascending), `createdAt` (Descending)
-   - Used for: Trending posts in the last 7 days
+   - Fields: `userId` (Ascending), `createdAt` (Ascending)
+   - Used for: Group leaderboards with time filters
 
-Create these indexes in Firebase Console or they will be auto-suggested when you first load the feed.
+3. **Challenge Participants - Leaderboard**
+   - Collection: `challengeParticipants`
+   - Fields: `challengeId` (Ascending), `progress` (Descending)
+   - Used for: Challenge leaderboards
+
+See the [complete index guide](./docs/setup/FIREBASE_INDEXES.md) for all required indexes.
 
 ## Documentation
 

@@ -1,25 +1,17 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { UserProfile } from '@/types';
-import { firebaseUserApi } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import {
-  MapPin,
-  Calendar,
-  Clock,
-  Edit3,
-  UserPlus,
-  Check,
-  LogOut,
-} from 'lucide-react';
+import React, { useState } from 'react'
+import { UserProfile } from '@/types'
+import { firebaseUserApi } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
+import { Button } from '@/components/ui/button'
+import { MapPin, Calendar, Clock, Edit3, UserPlus, Check, LogOut } from 'lucide-react'
 
 interface ProfileHeaderProps {
-  profile: UserProfile;
-  onProfileUpdate?: (updatedProfile: UserProfile) => void;
-  showEditButton?: boolean;
-  onEditClick?: () => void;
+  profile: UserProfile
+  onProfileUpdate?: (updatedProfile: UserProfile) => void
+  showEditButton?: boolean
+  onEditClick?: () => void
 }
 
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
@@ -28,28 +20,28 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   showEditButton = false,
   onEditClick,
 }) => {
-  const { user, logout } = useAuth();
-  const [isFollowing, setIsFollowing] = useState(profile.isFollowing || false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [followersCount, setFollowersCount] = useState(profile.followersCount);
+  const { user, logout } = useAuth()
+  const [isFollowing, setIsFollowing] = useState(profile.isFollowing || false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [followersCount, setFollowersCount] = useState(profile.followersCount)
 
-  const isOwnProfile = user?.username === profile.username;
-  const canFollow = !isOwnProfile && user;
+  const isOwnProfile = user?.username === profile.username
+  const canFollow = !isOwnProfile && user
 
   const handleFollow = async () => {
-    if (!canFollow) return;
+    if (!canFollow) return
 
     try {
-      setIsLoading(true);
+      setIsLoading(true)
 
       if (isFollowing) {
-        await firebaseUserApi.unfollowUser(profile.id);
-        setIsFollowing(false);
-        setFollowersCount(prev => Math.max(0, prev - 1));
+        await firebaseUserApi.unfollowUser(profile.id)
+        setIsFollowing(false)
+        setFollowersCount((prev) => Math.max(0, prev - 1))
       } else {
-        await firebaseUserApi.followUser(profile.id);
-        setIsFollowing(true);
-        setFollowersCount(prev => prev + 1);
+        await firebaseUserApi.followUser(profile.id)
+        setIsFollowing(true)
+        setFollowersCount((prev) => prev + 1)
       }
 
       // Update profile data if callback provided
@@ -58,32 +50,32 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           ...profile,
           isFollowing: !isFollowing,
           followersCount: isFollowing ? followersCount - 1 : followersCount + 1,
-        };
-        onProfileUpdate(updatedProfile);
+        }
+        onProfileUpdate(updatedProfile)
       }
     } catch (_error) {
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const formatHours = (hours: number): string => {
     if (hours < 1) {
-      const minutes = Math.round(hours * 60);
-      return `${minutes}m`;
+      const minutes = Math.round(hours * 60)
+      return `${minutes}m`
     }
     if (hours < 100) {
-      return `${hours.toFixed(1)}h`;
+      return `${hours.toFixed(1)}h`
     }
-    return `${Math.round(hours)}h`;
-  };
+    return `${Math.round(hours)}h`
+  }
 
   const formatDate = (date: Date): string => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-    });
-  };
+    })
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-8">
@@ -112,9 +104,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  {profile.name}
-                </h1>
+                <h1 className="text-3xl font-bold text-gray-900">{profile.name}</h1>
                 {profile.location && (
                   <div className="flex items-center gap-1 mt-1 text-gray-600">
                     <MapPin className="w-4 h-4" />
@@ -141,9 +131,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     disabled={isLoading}
                     variant={isFollowing ? 'outline' : 'default'}
                     className={`flex items-center gap-2 min-w-[110px] ${
-                      isFollowing
-                        ? 'border-gray-300'
-                        : 'bg-[#FC4C02] hover:bg-[#E04502]'
+                      isFollowing ? 'border-gray-300' : 'bg-[#FC4C02] hover:bg-[#E04502]'
                     }`}
                   >
                     {isLoading ? (
@@ -183,9 +171,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         </div>
 
         {/* Bio */}
-        {profile.bio && (
-          <div className="text-gray-700 leading-relaxed">{profile.bio}</div>
-        )}
+        {profile.bio && <div className="text-gray-700 leading-relaxed">{profile.bio}</div>}
 
         {/* Additional info */}
         <div className="flex items-center gap-4 text-sm text-gray-600 border-t border-gray-200 pt-4">
@@ -209,5 +195,5 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

@@ -1,18 +1,18 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { X, AlertTriangle } from 'lucide-react';
+import React from 'react'
+import { X, AlertTriangle } from 'lucide-react'
 
 interface ConfirmDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  title: string;
-  message: string;
-  confirmText?: string;
-  cancelText?: string;
-  variant?: 'danger' | 'warning' | 'info';
-  isLoading?: boolean;
+  isOpen: boolean
+  onClose: () => void
+  onConfirm: () => void
+  title: string
+  message: string
+  confirmText?: string
+  cancelText?: string
+  variant?: 'danger' | 'warning' | 'info'
+  isLoading?: boolean
 }
 
 export default function ConfirmDialog({
@@ -26,7 +26,7 @@ export default function ConfirmDialog({
   variant = 'danger',
   isLoading = false,
 }: ConfirmDialogProps) {
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const variantStyles = {
     danger: {
@@ -41,9 +41,9 @@ export default function ConfirmDialog({
       icon: 'bg-blue-100 text-blue-600',
       button: 'bg-[#0066CC] hover:bg-[#0051D5] text-white',
     },
-  };
+  }
 
-  const styles = variantStyles[variant];
+  const styles = variantStyles[variant]
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
@@ -113,5 +113,5 @@ export default function ConfirmDialog({
         </div>
       </div>
     </div>
-  );
+  )
 }

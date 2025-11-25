@@ -17,17 +17,17 @@ import {
   orderBy,
   limit as limitFn,
   increment,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { User } from '@/domain/entities/User';
-import { UserMapper } from '../mappers/UserMapper';
+} from 'firebase/firestore'
+import { db } from '@/lib/firebase'
+import { User } from '@/domain/entities/User'
+import { UserMapper } from '../mappers/UserMapper'
 
 export class UserRepository {
-  private readonly mapper: UserMapper;
-  private readonly collectionName = 'users';
+  private readonly mapper: UserMapper
+  private readonly collectionName = 'users'
 
   constructor() {
-    this.mapper = new UserMapper();
+    this.mapper = new UserMapper()
   }
 
   /**
@@ -35,18 +35,18 @@ export class UserRepository {
    */
   async findById(userId: string): Promise<User | null> {
     try {
-      const docRef = doc(db, this.collectionName, userId);
-      const docSnap = await getDoc(docRef);
+      const docRef = doc(db, this.collectionName, userId)
+      const docSnap = await getDoc(docRef)
 
       if (!docSnap.exists()) {
-        return null;
+        return null
       }
 
-      return this.mapper.toDomain(docSnap);
-    } catch (error) {
+      return this.mapper.toDomain(docSnap)
+    } catch (_error) {
       throw new Error(
         `Failed to find user: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -59,23 +59,23 @@ export class UserRepository {
         collection(db, this.collectionName),
         where('username', '==', username),
         limitFn(1)
-      );
+      )
 
-      const snapshot = await getDocs(q);
+      const snapshot = await getDocs(q)
 
       if (snapshot.empty) {
-        return null;
+        return null
       }
 
-      const doc = snapshot.docs[0];
+      const doc = snapshot.docs[0]
       if (!doc) {
-        return null;
+        return null
       }
-      return this.mapper.toDomain(doc);
-    } catch (error) {
+      return this.mapper.toDomain(doc)
+    } catch (_error) {
       throw new Error(
         `Failed to find user: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -85,26 +85,26 @@ export class UserRepository {
   async findByIds(userIds: string[]): Promise<User[]> {
     try {
       if (userIds.length === 0) {
-        return [];
+        return []
       }
 
       // Firestore 'in' queries are limited to 10 items
       // If we have more, we need to batch the requests
-      const batchSize = 10;
-      const batches: Promise<User[]>[] = [];
+      const batchSize = 10
+      const batches: Promise<User[]>[] = []
 
       for (let i = 0; i < userIds.length; i += batchSize) {
-        const batchIds = userIds.slice(i, i + batchSize);
-        const batchPromise = this.fetchUserBatch(batchIds);
-        batches.push(batchPromise);
+        const batchIds = userIds.slice(i, i + batchSize)
+        const batchPromise = this.fetchUserBatch(batchIds)
+        batches.push(batchPromise)
       }
 
-      const results = await Promise.all(batches);
-      return results.flat();
-    } catch (error) {
+      const results = await Promise.all(batches)
+      return results.flat()
+    } catch (_error) {
       throw new Error(
         `Failed to find users: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -112,13 +112,10 @@ export class UserRepository {
    * Helper method to fetch a batch of users (max 10)
    */
   private async fetchUserBatch(userIds: string[]): Promise<User[]> {
-    const q = query(
-      collection(db, this.collectionName),
-      where('__name__', 'in', userIds)
-    );
+    const q = query(collection(db, this.collectionName), where('__name__', 'in', userIds))
 
-    const snapshot = await getDocs(q);
-    return this.mapper.toDomainList(snapshot.docs);
+    const snapshot = await getDocs(q)
+    return this.mapper.toDomainList(snapshot.docs)
   }
 
   /**
@@ -134,14 +131,14 @@ export class UserRepository {
         where('username', '<=', prefix + '\uf8ff'),
         orderBy('username'),
         limitFn(limit)
-      );
+      )
 
-      const snapshot = await getDocs(q);
-      return this.mapper.toDomainList(snapshot.docs);
-    } catch (error) {
+      const snapshot = await getDocs(q)
+      return this.mapper.toDomainList(snapshot.docs)
+    } catch (_error) {
       throw new Error(
         `Failed to search users: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -150,14 +147,14 @@ export class UserRepository {
    */
   async save(user: User): Promise<void> {
     try {
-      const docRef = doc(db, this.collectionName, user.id);
-      const data = this.mapper.toFirestore(user);
+      const docRef = doc(db, this.collectionName, user.id)
+      const data = this.mapper.toFirestore(user)
 
-      await setDoc(docRef, data, { merge: true });
-    } catch (error) {
+      await setDoc(docRef, data, { merge: true })
+    } catch (_error) {
       throw new Error(
         `Failed to save user: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -166,14 +163,14 @@ export class UserRepository {
    */
   async updateFollowerCount(userId: string, delta: number): Promise<void> {
     try {
-      const docRef = doc(db, this.collectionName, userId);
+      const docRef = doc(db, this.collectionName, userId)
       await updateDoc(docRef, {
         followerCount: increment(delta),
-      });
-    } catch (error) {
+      })
+    } catch (_error) {
       throw new Error(
         `Failed to update follower count: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -182,14 +179,14 @@ export class UserRepository {
    */
   async updateFollowingCount(userId: string, delta: number): Promise<void> {
     try {
-      const docRef = doc(db, this.collectionName, userId);
+      const docRef = doc(db, this.collectionName, userId)
       await updateDoc(docRef, {
         followingCount: increment(delta),
-      });
-    } catch (error) {
+      })
+    } catch (_error) {
       throw new Error(
         `Failed to update following count: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -198,11 +195,11 @@ export class UserRepository {
    */
   async exists(userId: string): Promise<boolean> {
     try {
-      const docRef = doc(db, this.collectionName, userId);
-      const docSnap = await getDoc(docRef);
-      return docSnap.exists();
-    } catch (error) {
-      return false;
+      const docRef = doc(db, this.collectionName, userId)
+      const docSnap = await getDoc(docRef)
+      return docSnap.exists()
+    } catch (_error) {
+      return false
     }
   }
 
@@ -211,10 +208,10 @@ export class UserRepository {
    */
   async isUsernameAvailable(username: string): Promise<boolean> {
     try {
-      const user = await this.findByUsername(username);
-      return user === null;
-    } catch (error) {
-      return false;
+      const user = await this.findByUsername(username)
+      return user === null
+    } catch (_error) {
+      return false
     }
   }
 }

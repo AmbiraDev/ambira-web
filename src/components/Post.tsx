@@ -1,16 +1,16 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { SessionWithDetails } from '@/types';
-import PostCard from './PostCard';
+import React from 'react'
+import { SessionWithDetails } from '@/types'
+import PostCard from './PostCard'
 
 interface PostProps {
-  post: SessionWithDetails;
-  onSupport: (postId: string) => Promise<void>;
-  onRemoveSupport: (postId: string) => Promise<void>;
-  onShare: (postId: string) => Promise<void>;
-  className?: string;
-  variant?: 'full' | 'compact';
+  post: SessionWithDetails
+  onSupport: (postId: string) => Promise<void>
+  onRemoveSupport: (postId: string) => Promise<void>
+  onShare: (postId: string) => Promise<void>
+  className?: string
+  variant?: 'full' | 'compact'
 }
 
 export const Post: React.FC<PostProps> = ({
@@ -30,7 +30,7 @@ export const Post: React.FC<PostProps> = ({
       onShare={onShare}
       className={className}
     />
-  );
-};
+  )
+}
 
-export default Post;
+export default Post

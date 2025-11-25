@@ -93,35 +93,33 @@ All features follow this pattern:
 #### 1. Entity Detail Keys
 
 ```typescript
-['sessions', 'detail', sessionId][
-  ('sessions', 'detail', sessionId, 'with-details')
-][('profile', 'detail', userId)][('profile', 'detail', userId, 'stats')][
-  ('groups', 'detail', groupId)
-][('groups', 'detail', groupId, 'leaderboard', period)];
+;['sessions', 'detail', sessionId][('sessions', 'detail', sessionId, 'with-details')][
+  ('profile', 'detail', userId)
+][('profile', 'detail', userId, 'stats')][('groups', 'detail', groupId)][
+  ('groups', 'detail', groupId, 'leaderboard', period)
+]
 ```
 
 #### 2. List/Collection Keys
 
 ```typescript
-['projects', 'list'][('feed', 'list', userId, filters)][
-  ('groups', 'list', 'public')
-][('sessions', 'user', userId, filters)];
+;['projects', 'list'][('feed', 'list', userId, filters)][('groups', 'list', 'public')][
+  ('sessions', 'user', userId, filters)
+]
 ```
 
 #### 3. Relationship Keys
 
 ```typescript
-['profile', 'followers', userId][('profile', 'following', userId)][
+;['profile', 'followers', userId][('profile', 'following', userId)][
   ('profile', 'isFollowing', currentUserId, targetUserId)
-][('groups', 'user', userId)];
+][('groups', 'user', userId)]
 ```
 
 #### 4. Lookup Keys
 
 ```typescript
-['profile', 'username', username][
-  ('groups', 'detail', groupId, 'canJoin', userId)
-];
+;['profile', 'username', username][('groups', 'detail', groupId, 'canJoin', userId)]
 ```
 
 ### Cache Key Factories
@@ -136,7 +134,7 @@ export const SESSION_KEYS = {
   detail: (id: string) => [...SESSION_KEYS.details(), id] as const,
   userSessions: (userId: string, filters?: SessionFilters) =>
     [...SESSION_KEYS.all(), 'user', userId, filters] as const,
-};
+}
 ```
 
 **Benefits:**
@@ -160,7 +158,7 @@ export const STANDARD_CACHE_TIMES = {
   LONG: 15 * 60 * 1000, // 15 minutes
   VERY_LONG: 60 * 60 * 1000, // 1 hour
   INFINITE: Infinity,
-} as const;
+} as const
 ```
 
 ### Cache Time Usage by Feature
@@ -220,17 +218,17 @@ onSettled: () => {
 ```typescript
 onSuccess: (newComment, variables) => {
   // 1. Invalidate comments
-  queryClient.invalidateQueries({ queryKey: COMMENT_KEYS.session(sessionId) });
+  queryClient.invalidateQueries({ queryKey: COMMENT_KEYS.session(sessionId) })
 
   // 2. Update session cache
-  queryClient.setQueryData(SESSION_KEYS.detail(sessionId), old => ({
+  queryClient.setQueryData(SESSION_KEYS.detail(sessionId), (old) => ({
     ...old,
     commentCount: (old.commentCount || 0) + 1,
-  }));
+  }))
 
   // 3. Update feed caches
-  queryClient.setQueriesData({ queryKey: ['feed'] }, updateFn);
-};
+  queryClient.setQueriesData({ queryKey: ['feed'] }, updateFn)
+}
 ```
 
 ### 3. Helper Invalidation Hooks
@@ -239,17 +237,17 @@ Every mutation file exports helper hooks:
 
 ```typescript
 export function useInvalidateSession() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
   return (sessionId: string) => {
-    queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(sessionId) });
-  };
+    queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(sessionId) })
+  }
 }
 
 export function useInvalidateAllSessions() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
   return () => {
-    queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() });
-  };
+    queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() })
+  }
 }
 ```
 
@@ -278,14 +276,14 @@ retry: false, // Don't retry expected errors
 // Like comment - handle "already liked" gracefully
 mutationFn: async ({ commentId, action }) => {
   try {
-    await commentService.likeComment(commentId);
+    await commentService.likeComment(commentId)
   } catch (error: any) {
     if (error.message.includes('Already liked')) {
-      return; // Idempotent - treat as success
+      return // Idempotent - treat as success
     }
-    throw error;
+    throw error
   }
-};
+}
 ```
 
 #### Conditional Queries
@@ -296,7 +294,7 @@ useQuery({
   queryKey: PROFILE_KEYS.isFollowing(currentUserId, targetUserId),
   queryFn: () => profileService.isFollowing(currentUserId, targetUserId),
   enabled: !!currentUserId && !!targetUserId && currentUserId !== targetUserId,
-});
+})
 ```
 
 ### 5. Infinite Query Pattern
@@ -304,10 +302,7 @@ useQuery({
 Used for feed pagination:
 
 ```typescript
-export function useFeedInfinite(
-  currentUserId: string,
-  filters: FeedFilters = {}
-) {
+export function useFeedInfinite(currentUserId: string, filters: FeedFilters = {}) {
   return useInfiniteQuery({
     queryKey: FEED_KEYS.list(currentUserId, filters),
     queryFn: ({ pageParam }) =>
@@ -315,11 +310,10 @@ export function useFeedInfinite(
         limit: 20,
         cursor: pageParam as string | undefined,
       }),
-    getNextPageParam: lastPage =>
-      lastPage.hasMore ? lastPage.nextCursor : undefined,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextCursor : undefined),
     initialPageParam: undefined as string | undefined,
     staleTime: STANDARD_CACHE_TIMES.SHORT,
-  });
+  })
 }
 ```
 
@@ -358,11 +352,11 @@ Every feature exports hooks via index:
 
 ```typescript
 // src/features/sessions/hooks/index.ts
-export * from './useSessions';
-export * from './useSessionMutations';
+export * from './useSessions'
+export * from './useSessionMutations'
 
 // Usage in components:
-import { useSession, useDeleteSession } from '@/features/sessions/hooks';
+import { useSession, useDeleteSession } from '@/features/sessions/hooks'
 ```
 
 ---
@@ -377,13 +371,13 @@ The timer feature combines React Query (server state) with local state (client-s
 // useTimer.ts - Unified interface
 export function useTimer() {
   // React Query for server state
-  const { data: activeSession } = useActiveTimerQuery();
+  const { data: activeSession } = useActiveTimerQuery()
 
   // Local state for client-side countdown
   const clientState = useTimerState({
     activeSession,
     onAutoSave: () => saveActiveSessionMutation.mutate(),
-  });
+  })
 
   return {
     // Server state
@@ -395,7 +389,7 @@ export function useTimer() {
     startTimer,
     pauseTimer,
     // ...
-  };
+  }
 }
 ```
 
@@ -412,17 +406,17 @@ function adaptDomainGroupToUI(domainGroup: DomainGroup): UIGroup {
     memberCount: domainGroup.getMemberCount(),
     adminUserIds: Array.from(domainGroup.adminUserIds),
     // ...
-  };
+  }
 }
 
 export function useGroupDetails(groupId: string) {
   return useQuery({
     queryKey: GROUPS_KEYS.detail(groupId),
     queryFn: async () => {
-      const domainGroup = await groupService.getGroupDetails(groupId);
-      return domainGroup ? adaptDomainGroupToUI(domainGroup) : null;
+      const domainGroup = await groupService.getGroupDetails(groupId)
+      return domainGroup ? adaptDomainGroupToUI(domainGroup) : null
     },
-  });
+  })
 }
 ```
 
@@ -432,20 +426,20 @@ Sessions feature handles different feed query structures:
 
 ```typescript
 queryClient.setQueriesData({ queryKey: ['feed'] }, (old: any) => {
-  if (!old) return old;
+  if (!old) return old
 
   const updateFn = (session: any) => {
     /* ... */
-  };
+  }
 
   // Handle array
   if (Array.isArray(old)) {
-    return old.map(updateFn);
+    return old.map(updateFn)
   }
 
   // Handle object with sessions
   if (old.sessions) {
-    return { ...old, sessions: old.sessions.map(updateFn) };
+    return { ...old, sessions: old.sessions.map(updateFn) }
   }
 
   // Handle infinite query pages
@@ -456,11 +450,11 @@ queryClient.setQueriesData({ queryKey: ['feed'] }, (old: any) => {
         ...page,
         sessions: page.sessions.map(updateFn),
       })),
-    };
+    }
   }
 
-  return old;
-});
+  return old
+})
 ```
 
 ---

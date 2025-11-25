@@ -3,14 +3,12 @@
  * Creates mock activities/projects for testing
  */
 
-import type { Activity } from '@/types';
+import type { Activity } from '@/types'
 
-let activityIdCounter = 0;
+let activityIdCounter = 0
 
-export function createMockActivity(
-  overrides: Partial<Activity> = {}
-): Activity {
-  const id = overrides.id || `activity-${Date.now()}-${++activityIdCounter}`;
+export function createMockActivity(overrides: Partial<Activity> = {}): Activity {
+  const id = overrides.id || `activity-${Date.now()}-${++activityIdCounter}`
 
   return {
     id,
@@ -25,11 +23,11 @@ export function createMockActivity(
     isDefault: overrides.isDefault || false,
     createdAt: overrides.createdAt || new Date(),
     updatedAt: overrides.updatedAt || new Date(),
-  };
+  }
 }
 
 export function createMockProject(overrides: Partial<Activity> = {}): Activity {
-  return createMockActivity(overrides);
+  return createMockActivity(overrides)
 }
 
 export function createMockActivityBatch(
@@ -38,9 +36,9 @@ export function createMockActivityBatch(
 ): Activity[] {
   return Array.from({ length: count }, (_, i) =>
     createMockActivity({ ...baseOverrides, name: `Activity ${i + 1}` })
-  );
+  )
 }
 
 export function resetActivityFactory() {
-  activityIdCounter = 0;
+  activityIdCounter = 0
 }

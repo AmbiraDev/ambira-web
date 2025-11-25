@@ -112,12 +112,12 @@ Pre-configured code snippets for common patterns.
 // Type: rq-query [Tab]
 
 // Generates:
-import { useQuery } from '@tanstack/react-query';
-import { FeatureService } from '../services/FeatureService';
-import type { QueryOptions } from '@/lib/react-query';
-import { STANDARD_CACHE_TIMES } from '@/lib/react-query';
+import { useQuery } from '@tanstack/react-query'
+import { FeatureService } from '../services/FeatureService'
+import type { QueryOptions } from '@/lib/react-query'
+import { STANDARD_CACHE_TIMES } from '@/lib/react-query'
 
-const featureService = new FeatureService();
+const featureService = new FeatureService()
 
 /**
  * Get description
@@ -125,17 +125,14 @@ const featureService = new FeatureService();
  * @example
  * const { data, isLoading, error } = useHookName(param);
  */
-export function useHookName(
-  param: ParamType,
-  options?: QueryOptions<ReturnType>
-) {
+export function useHookName(param: ParamType, options?: QueryOptions<ReturnType>) {
   return useQuery<ReturnType, Error>({
     queryKey: FEATURE_KEYS.keyName(param),
     queryFn: () => featureService.methodName(param),
     staleTime: STANDARD_CACHE_TIMES.LONG,
     enabled: !!param,
     ...options,
-  });
+  })
 }
 ```
 
@@ -172,13 +169,10 @@ Reusable TypeScript types and helper functions.
 #### Types (`types.ts`)
 
 ```typescript
-import type { QueryOptions, MutationOptions } from '@/lib/react-query';
+import type { QueryOptions, MutationOptions } from '@/lib/react-query'
 
 // Use in your hooks for consistent typing
-export function useGroupDetails(
-  groupId: string,
-  options?: QueryOptions<Group | null>
-) {
+export function useGroupDetails(groupId: string, options?: QueryOptions<Group | null>) {
   // ...
 }
 ```
@@ -215,14 +209,14 @@ Available constants:
 **createCacheKeyFactory**:
 
 ```typescript
-import { createCacheKeyFactory } from '@/lib/react-query';
+import { createCacheKeyFactory } from '@/lib/react-query'
 
 export const GROUPS_KEYS = createCacheKeyFactory('groups', {
   lists: () => [],
   list: (filters?: string) => [{ filters }],
   details: () => [],
   detail: (id: string) => [id],
-});
+})
 
 // Results in proper hierarchical keys:
 // ['groups']
@@ -235,14 +229,13 @@ export const GROUPS_KEYS = createCacheKeyFactory('groups', {
 **createOptimisticUpdate**:
 
 ```typescript
-import { createOptimisticUpdate } from '@/lib/react-query';
+import { createOptimisticUpdate } from '@/lib/react-query'
 
 export function useJoinGroup() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ groupId, userId }) =>
-      groupService.joinGroup(groupId, userId),
+    mutationFn: ({ groupId, userId }) => groupService.joinGroup(groupId, userId),
     ...createOptimisticUpdate(
       queryClient,
       ({ groupId }) => GROUPS_KEYS.detail(groupId),
@@ -251,31 +244,31 @@ export function useJoinGroup() {
         memberIds: [...old.memberIds, userId],
       })
     ),
-  });
+  })
 }
 ```
 
 **batchInvalidate**:
 
 ```typescript
-import { batchInvalidate } from '@/lib/react-query';
+import { batchInvalidate } from '@/lib/react-query'
 
 onSuccess: (_, variables) => {
   batchInvalidate(queryClient, [
     GROUPS_KEYS.detail(variables.groupId),
     GROUPS_KEYS.userGroups(variables.userId),
     FEED_KEYS.all(),
-  ]);
-};
+  ])
+}
 ```
 
 **prefetchQuery**:
 
 ```typescript
-import { prefetchQuery } from '@/lib/react-query';
+import { prefetchQuery } from '@/lib/react-query'
 
 export function usePrefetchGroup() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return (groupId: string) => {
     prefetchQuery(
@@ -283,8 +276,8 @@ export function usePrefetchGroup() {
       GROUPS_KEYS.detail(groupId),
       () => groupService.getGroupDetails(groupId),
       { staleTime: 15 * 60 * 1000 }
-    );
-  };
+    )
+  }
 }
 ```
 
@@ -309,7 +302,7 @@ Add to your `.eslintrc.js`:
 module.exports = {
   ...require('./.eslintrc.react-query-rules.js'),
   // ... rest of your config
-};
+}
 ```
 
 #### What It Enforces
@@ -318,19 +311,19 @@ module.exports = {
 
 ```typescript
 // ❌ Will fail linting
-import { firebaseApi } from '@/lib/firebaseApi';
+import { firebaseApi } from '@/lib/firebaseApi'
 
 function MyComponent() {
-  const data = await firebaseApi.group.getGroup(id);
+  const data = await firebaseApi.group.getGroup(id)
 }
 ```
 
 ```typescript
 // ✅ Correct
-import { useGroupDetails } from '@/features/groups/hooks';
+import { useGroupDetails } from '@/features/groups/hooks'
 
 function MyComponent({ id }) {
-  const { data } = useGroupDetails(id);
+  const { data } = useGroupDetails(id)
 }
 ```
 
@@ -347,10 +340,10 @@ function MyComponent() {
 
 ```typescript
 // ✅ Correct
-import { useGroupDetails } from '@/features/groups/hooks';
+import { useGroupDetails } from '@/features/groups/hooks'
 
 function MyComponent({ id }) {
-  const { data } = useGroupDetails(id);
+  const { data } = useGroupDetails(id)
 }
 ```
 
@@ -358,7 +351,7 @@ function MyComponent({ id }) {
 
 ```typescript
 // ❌ Will fail linting in services
-import { useState } from 'react';
+import { useState } from 'react'
 
 export class GroupService {
   // Services must be pure TypeScript
@@ -369,7 +362,7 @@ export class GroupService {
 
 ```typescript
 // ⚠️ Will warn
-import { useGroup } from '@/hooks/useCache';
+import { useGroup } from '@/hooks/useCache'
 
 // Suggests:
 // Use feature-specific hooks instead: @/features/groups/hooks
@@ -431,10 +424,10 @@ The rules are smart and don't apply to:
 6. **Update components**:
 
    ```typescript
-   import { useSession } from '@/features/sessions/hooks';
+   import { useSession } from '@/features/sessions/hooks'
 
    function SessionView({ id }) {
-     const { data, isLoading } = useSession(id);
+     const { data, isLoading } = useSession(id)
      // ...
    }
    ```
@@ -449,12 +442,12 @@ The rules are smart and don't apply to:
 
    ```typescript
    // src/features/sessions/hooks/index.ts
-   export { useNewHook } from './useSessions';
+   export { useNewHook } from './useSessions'
    ```
 
 3. **Use in components**:
    ```typescript
-   import { useNewHook } from '@/features/sessions/hooks';
+   import { useNewHook } from '@/features/sessions/hooks'
    ```
 
 ## Testing Utilities
@@ -465,12 +458,12 @@ The rules are smart and don't apply to:
 // No special utilities needed - pure functions!
 describe('GroupService', () => {
   it('validates business rules', async () => {
-    const service = new GroupService();
-    await expect(
-      service.joinGroup('group-id', 'already-member')
-    ).rejects.toThrow('Already a member');
-  });
-});
+    const service = new GroupService()
+    await expect(service.joinGroup('group-id', 'already-member')).rejects.toThrow(
+      'Already a member'
+    )
+  })
+})
 ```
 
 ### Hook Tests (React Testing Library)
@@ -546,11 +539,11 @@ When adding to an existing feature, use the snippets:
 
 ```typescript
 // ✅ Good
-import { QueryOptions, STANDARD_CACHE_TIMES } from '@/lib/react-query';
+import { QueryOptions, STANDARD_CACHE_TIMES } from '@/lib/react-query'
 
 // ❌ Bad
-import { UseQueryOptions } from '@tanstack/react-query';
-const LONG = 15 * 60 * 1000;
+import { UseQueryOptions } from '@tanstack/react-query'
+const LONG = 15 * 60 * 1000
 ```
 
 ### 4. Enable ESLint Rules
@@ -561,7 +554,7 @@ Add the rules to catch mistakes early:
 // .eslintrc.js
 module.exports = {
   ...require('./.eslintrc.react-query-rules.js'),
-};
+}
 ```
 
 ### 5. Use Helper Functions
@@ -570,14 +563,14 @@ Don't rewrite common patterns:
 
 ```typescript
 // ✅ Good
-import { createOptimisticUpdate } from '@/lib/react-query';
+import { createOptimisticUpdate } from '@/lib/react-query'
 
-const optimistic = createOptimisticUpdate(/* ... */);
+const optimistic = createOptimisticUpdate(/* ... */)
 
 // ❌ Bad
-onMutate: async variables => {
+onMutate: async (variables) => {
   // 30 lines of boilerplate...
-};
+}
 ```
 
 ## Troubleshooting

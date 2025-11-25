@@ -1,7 +1,7 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { ChevronDown } from 'lucide-react';
+import React from 'react'
+import { ChevronDown } from 'lucide-react'
 import {
   BarChart,
   Bar,
@@ -11,33 +11,33 @@ import {
   Tooltip,
   ComposedChart,
   Area,
-} from 'recharts';
-import { ActivityChartTooltip } from './ActivityChartTooltip';
+} from 'recharts'
+import { ActivityChartTooltip } from './ActivityChartTooltip'
 
-type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
+type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y'
 
 interface ChartDataPoint {
-  name: string;
-  hours: number;
-  sessions: number;
-  avgDuration: number;
+  name: string
+  hours: number
+  sessions: number
+  avgDuration: number
 }
 
 interface CalculatedStats {
-  totalHours: number;
-  sessions: number;
-  avgDuration: number;
-  activeDays: number;
+  totalHours: number
+  sessions: number
+  avgDuration: number
+  activeDays: number
 }
 
 interface ActivityAnalyticsProps {
-  chartData: ChartDataPoint[];
-  calculatedStats: CalculatedStats;
-  timePeriod: TimePeriod;
-  chartType: 'bar' | 'line';
-  isLoading: boolean;
-  onTimePeriodChange: (period: TimePeriod) => void;
-  onChartTypeChange: (type: 'bar' | 'line') => void;
+  chartData: ChartDataPoint[]
+  calculatedStats: CalculatedStats
+  timePeriod: TimePeriod
+  chartType: 'bar' | 'line'
+  isLoading: boolean
+  onTimePeriodChange: (period: TimePeriod) => void
+  onChartTypeChange: (type: 'bar' | 'line') => void
 }
 
 export function ActivityAnalytics({
@@ -49,15 +49,14 @@ export function ActivityAnalytics({
   onTimePeriodChange,
   onChartTypeChange,
 }: ActivityAnalyticsProps) {
-  const [showChartTypeDropdown, setShowChartTypeDropdown] =
-    React.useState(false);
+  const [showChartTypeDropdown, setShowChartTypeDropdown] = React.useState(false)
 
   return (
     <div className="max-w-5xl mx-auto">
       {/* Header with controls */}
       <div className="flex items-center justify-end gap-2 mb-6">
         {/* Time Period Buttons */}
-        {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map(period => (
+        {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
           <button
             key={period}
             onClick={() => onTimePeriodChange(period)}
@@ -100,23 +99,16 @@ export function ActivityAnalytics({
           </button>
           {showChartTypeDropdown && (
             <>
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setShowChartTypeDropdown(false)}
-              />
+              <div className="fixed inset-0 z-40" onClick={() => setShowChartTypeDropdown(false)} />
               <div className="absolute right-0 top-full mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                 <button
                   onClick={() => {
-                    onChartTypeChange('bar');
-                    setShowChartTypeDropdown(false);
+                    onChartTypeChange('bar')
+                    setShowChartTypeDropdown(false)
                   }}
                   className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${chartType === 'bar' ? 'bg-blue-50 text-blue-600' : ''}`}
                 >
-                  <svg
-                    className="w-4 h-4"
-                    viewBox="0 0 16 16"
-                    fill="currentColor"
-                  >
+                  <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
                     <rect x="2" y="8" width="3" height="6" rx="0.5" />
                     <rect x="6.5" y="4" width="3" height="10" rx="0.5" />
                     <rect x="11" y="6" width="3" height="8" rx="0.5" />
@@ -125,17 +117,12 @@ export function ActivityAnalytics({
                 </button>
                 <button
                   onClick={() => {
-                    onChartTypeChange('line');
-                    setShowChartTypeDropdown(false);
+                    onChartTypeChange('line')
+                    setShowChartTypeDropdown(false)
                   }}
                   className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${chartType === 'line' ? 'bg-blue-50 text-blue-600' : ''}`}
                 >
-                  <svg
-                    className="w-4 h-4"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    stroke="currentColor"
-                  >
+                  <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor">
                     <path
                       d="M2 12 L5 8 L8 10 L11 4 L14 6"
                       strokeWidth="1.5"
@@ -185,12 +172,7 @@ export function ActivityAnalytics({
                       width={40}
                     />
                     <Tooltip content={<ActivityChartTooltip />} />
-                    <Bar
-                      dataKey="hours"
-                      fill="#1D9BF0"
-                      radius={[4, 4, 0, 0]}
-                      name="Hours"
-                    />
+                    <Bar dataKey="hours" fill="#1D9BF0" radius={[4, 4, 0, 0]} name="Hours" />
                   </BarChart>
                 ) : (
                   <ComposedChart
@@ -203,23 +185,9 @@ export function ActivityAnalytics({
                     }}
                   >
                     <defs>
-                      <linearGradient
-                        id="colorHours"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#1D9BF0"
-                          stopOpacity={0.3}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="#1D9BF0"
-                          stopOpacity={0}
-                        />
+                      <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#1D9BF0" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#1D9BF0" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <XAxis
@@ -255,9 +223,7 @@ export function ActivityAnalytics({
           {/* Average Session Duration */}
           <div className="bg-white border border-gray-200 rounded-xl p-6">
             <div className="mb-4">
-              <h3 className="font-semibold text-gray-900">
-                Average session duration
-              </h3>
+              <h3 className="font-semibold text-gray-900">Average session duration</h3>
             </div>
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
@@ -301,23 +267,9 @@ export function ActivityAnalytics({
                     }}
                   >
                     <defs>
-                      <linearGradient
-                        id="colorAvgDuration"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#00BA7C"
-                          stopOpacity={0.3}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="#00BA7C"
-                          stopOpacity={0}
-                        />
+                      <linearGradient id="colorAvgDuration" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#00BA7C" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#00BA7C" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <XAxis
@@ -349,9 +301,7 @@ export function ActivityAnalytics({
           {/* Sessions completed */}
           <div className="bg-white border border-gray-200 rounded-xl p-6">
             <div className="mb-4">
-              <h3 className="font-semibold text-gray-900">
-                Sessions completed
-              </h3>
+              <h3 className="font-semibold text-gray-900">Sessions completed</h3>
             </div>
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
@@ -377,12 +327,7 @@ export function ActivityAnalytics({
                       tickLine={false}
                     />
                     <Tooltip content={<ActivityChartTooltip />} />
-                    <Bar
-                      dataKey="sessions"
-                      fill="#00BA7C"
-                      radius={[4, 4, 0, 0]}
-                      name="Sessions"
-                    />
+                    <Bar dataKey="sessions" fill="#00BA7C" radius={[4, 4, 0, 0]} name="Sessions" />
                   </BarChart>
                 ) : (
                   <ComposedChart
@@ -395,23 +340,9 @@ export function ActivityAnalytics({
                     }}
                   >
                     <defs>
-                      <linearGradient
-                        id="colorSessionsSmall"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#00BA7C"
-                          stopOpacity={0.3}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="#00BA7C"
-                          stopOpacity={0}
-                        />
+                      <linearGradient id="colorSessionsSmall" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#00BA7C" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#00BA7C" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <XAxis
@@ -445,33 +376,25 @@ export function ActivityAnalytics({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white border border-gray-200 rounded-xl p-4">
             <div className="text-sm text-gray-600 mb-2">Total Hours</div>
-            <div className="text-2xl font-bold mb-1">
-              {calculatedStats.totalHours.toFixed(1)}
-            </div>
+            <div className="text-2xl font-bold mb-1">{calculatedStats.totalHours.toFixed(1)}</div>
           </div>
 
           <div className="bg-white border border-gray-200 rounded-xl p-4">
             <div className="text-sm text-gray-600 mb-2">Avg Duration</div>
-            <div className="text-2xl font-bold mb-1">
-              {calculatedStats.avgDuration}m
-            </div>
+            <div className="text-2xl font-bold mb-1">{calculatedStats.avgDuration}m</div>
           </div>
 
           <div className="bg-white border border-gray-200 rounded-xl p-4">
             <div className="text-sm text-gray-600 mb-2">Sessions</div>
-            <div className="text-2xl font-bold mb-1">
-              {calculatedStats.sessions}
-            </div>
+            <div className="text-2xl font-bold mb-1">{calculatedStats.sessions}</div>
           </div>
 
           <div className="bg-white border border-gray-200 rounded-xl p-4">
             <div className="text-sm text-gray-600 mb-2">Active Days</div>
-            <div className="text-2xl font-bold mb-1">
-              {calculatedStats.activeDays}
-            </div>
+            <div className="text-2xl font-bold mb-1">{calculatedStats.activeDays}</div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

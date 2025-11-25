@@ -8,27 +8,25 @@
  * - Displays session count if activity has been used
  */
 
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { AlertTriangle, X } from 'lucide-react';
-import { useDeleteCustomActivity } from '@/hooks/useActivityTypes';
-import { IconRenderer } from '@/components/IconRenderer';
-import { Button } from '@/components/ui/button';
-import { ActivityType } from '@/types';
+import React, { useState, useEffect } from 'react'
+import { AlertTriangle, X } from 'lucide-react'
+import { useDeleteCustomActivity } from '@/hooks/useActivityTypes'
+import { IconRenderer } from '@/components/IconRenderer'
+import { Button } from '@/components/ui/button'
+import { ActivityType } from '@/types'
 
 interface DeleteCustomActivityModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess?: () => void;
-  activity: ActivityType | null;
-  sessionCount?: number; // Number of sessions using this activity
-  totalHours?: number; // Total hours logged with this activity
+  isOpen: boolean
+  onClose: () => void
+  onSuccess?: () => void
+  activity: ActivityType | null
+  sessionCount?: number // Number of sessions using this activity
+  totalHours?: number // Total hours logged with this activity
 }
 
-export const DeleteCustomActivityModal: React.FC<
-  DeleteCustomActivityModalProps
-> = ({
+export const DeleteCustomActivityModal: React.FC<DeleteCustomActivityModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
@@ -36,61 +34,60 @@ export const DeleteCustomActivityModal: React.FC<
   sessionCount = 0,
   totalHours = 0,
 }) => {
-  const deleteMutation = useDeleteCustomActivity();
+  const deleteMutation = useDeleteCustomActivity()
 
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
-      setIsDeleting(false);
-      setError(null);
+      setIsDeleting(false)
+      setError(null)
     }
-  }, [isOpen]);
+  }, [isOpen])
 
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen && !isDeleting) {
-        onClose();
+        onClose()
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleEscape)
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, onClose, isDeleting]);
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, onClose, isDeleting])
 
   const handleDelete = async () => {
-    if (!activity) return;
+    if (!activity) return
 
-    setIsDeleting(true);
-    setError(null);
+    setIsDeleting(true)
+    setError(null)
 
     try {
-      await deleteMutation.mutateAsync(activity.id);
+      await deleteMutation.mutateAsync(activity.id)
 
       // Success
-      onSuccess?.();
-      onClose();
+      onSuccess?.()
+      onClose()
     } catch (err) {
       // Error handling
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to delete custom activity';
-      setError(errorMessage);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete custom activity'
+      setError(errorMessage)
     } finally {
-      setIsDeleting(false);
+      setIsDeleting(false)
     }
-  };
+  }
 
-  if (!isOpen || !activity) return null;
+  if (!isOpen || !activity) return null
 
-  const hasUsage = sessionCount > 0;
+  const hasUsage = sessionCount > 0
 
   return (
     <div
@@ -101,7 +98,7 @@ export const DeleteCustomActivityModal: React.FC<
     >
       <div
         className="bg-white rounded-lg shadow-xl max-w-md w-full"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -112,10 +109,7 @@ export const DeleteCustomActivityModal: React.FC<
             >
               <AlertTriangle className="h-5 w-5 text-red-600" />
             </div>
-            <h2
-              id="delete-activity-title"
-              className="text-xl font-semibold text-gray-900"
-            >
+            <h2 id="delete-activity-title" className="text-xl font-semibold text-gray-900">
               Delete Activity?
             </h2>
           </div>
@@ -134,19 +128,12 @@ export const DeleteCustomActivityModal: React.FC<
           {/* Activity Display */}
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
             <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-white border border-gray-200">
-              <IconRenderer
-                iconName={activity.icon}
-                className="w-5 h-5 text-gray-700"
-              />
+              <IconRenderer iconName={activity.icon} className="w-5 h-5 text-gray-700" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-gray-900 truncate">
-                {activity.name}
-              </p>
+              <p className="font-medium text-gray-900 truncate">{activity.name}</p>
               {activity.description && (
-                <p className="text-sm text-gray-500 truncate">
-                  {activity.description}
-                </p>
+                <p className="text-sm text-gray-500 truncate">{activity.description}</p>
               )}
             </div>
           </div>
@@ -154,8 +141,7 @@ export const DeleteCustomActivityModal: React.FC<
           {/* Warning Message */}
           <div className="space-y-3">
             <p className="text-sm text-gray-600">
-              Are you sure you want to delete this custom activity? This action
-              cannot be undone.
+              Are you sure you want to delete this custom activity? This action cannot be undone.
             </p>
 
             {hasUsage && (
@@ -183,8 +169,7 @@ export const DeleteCustomActivityModal: React.FC<
             {!hasUsage && (
               <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
                 <p className="text-sm text-gray-600">
-                  This activity has never been used, so no sessions will be
-                  affected.
+                  This activity has never been used, so no sessions will be affected.
                 </p>
               </div>
             )}
@@ -192,10 +177,7 @@ export const DeleteCustomActivityModal: React.FC<
 
           {/* Error Message */}
           {error && (
-            <div
-              className="p-3 bg-red-50 border border-red-200 rounded-lg"
-              role="alert"
-            >
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg" role="alert">
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
@@ -224,5 +206,5 @@ export const DeleteCustomActivityModal: React.FC<
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

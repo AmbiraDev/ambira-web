@@ -1,16 +1,16 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { usePathname } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import NotificationIcon from '../NotificationIcon';
-import Logo from './Logo';
-import SearchBar from './SearchBar';
-import Navigation from './Navigation';
-import TimerStatus from './TimerStatus';
-import ProfileMenu from './ProfileMenu';
-import MobileMenu from './MobileMenu';
-import AuthButtons from './AuthButtons';
+import { useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
+import NotificationIcon from '../NotificationIcon'
+import Logo from './Logo'
+import SearchBar from './SearchBar'
+import Navigation from './Navigation'
+import TimerStatus from './TimerStatus'
+import ProfileMenu from './ProfileMenu'
+import MobileMenu from './MobileMenu'
+import AuthButtons from './AuthButtons'
 
 /**
  * Header Component
@@ -49,12 +49,12 @@ import AuthButtons from './AuthButtons';
  * ```
  */
 export default function Header() {
-  const pathname = usePathname();
-  const { user } = useAuth();
+  const pathname = usePathname()
+  const { user } = useAuth()
 
   // Local UI state (simple toggles only)
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
     <header className="sticky top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
@@ -66,10 +66,7 @@ export default function Header() {
 
             {/* Search - Only show when authenticated */}
             {user && (
-              <SearchBar
-                isOpen={isSearchOpen}
-                onToggle={() => setIsSearchOpen(!isSearchOpen)}
-              />
+              <SearchBar isOpen={isSearchOpen} onToggle={() => setIsSearchOpen(!isSearchOpen)} />
             )}
 
             {/* Desktop Navigation - Only show when search is closed AND user is authenticated */}
@@ -104,5 +101,5 @@ export default function Header() {
         </div>
       </div>
     </header>
-  );
+  )
 }

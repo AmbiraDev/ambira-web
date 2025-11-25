@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 export default function NotFound() {
   return (
@@ -24,9 +24,7 @@ export default function NotFound() {
         </div>
 
         {/* Heading */}
-        <h1 className="text-4xl font-bold text-gray-900 mb-3">
-          Page Not Found
-        </h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-3">Page Not Found</h1>
 
         {/* Body */}
         <p className="text-base text-gray-600 mb-8">
@@ -41,5 +39,5 @@ export default function NotFound() {
         </Link>
       </div>
     </div>
-  );
+  )
 }

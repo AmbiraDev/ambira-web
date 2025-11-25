@@ -1,19 +1,19 @@
-import React from 'react';
-import { SignupCredentials } from '@/types';
-import { GoogleAuthButton } from './GoogleAuthButton';
+import React from 'react'
+import { SignupCredentials } from '@/types'
+import { GoogleAuthButton } from './GoogleAuthButton'
 
 interface SignupFormProps {
-  onSubmit: (e: React.FormEvent) => void;
-  onGoogleSignIn: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  signupData: SignupCredentials;
-  confirmPassword: string;
-  signupErrors: Partial<SignupCredentials & { confirmPassword: string }>;
-  error: string | null;
-  isLoading: boolean;
-  usernameCheckLoading: boolean;
-  usernameAvailable: boolean | null;
-  isMobile?: boolean;
+  onSubmit: (e: React.FormEvent) => void
+  onGoogleSignIn: (e: React.MouseEvent<HTMLButtonElement>) => void
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  signupData: SignupCredentials
+  confirmPassword: string
+  signupErrors: Partial<SignupCredentials & { confirmPassword: string }>
+  error: string | null
+  isLoading: boolean
+  usernameCheckLoading: boolean
+  usernameAvailable: boolean | null
+  isMobile?: boolean
 }
 
 export const SignupForm: React.FC<SignupFormProps> = ({
@@ -36,9 +36,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         onClick={onGoogleSignIn}
         disabled={isLoading}
         buttonText="Continue with Google"
-        className={
-          isMobile ? 'py-3 font-medium min-h-[44px]' : 'px-6 py-4 font-medium'
-        }
+        className={isMobile ? 'py-3 font-medium min-h-[44px]' : 'px-6 py-4 font-medium'}
       />
 
       {/* Divider */}
@@ -73,14 +71,10 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           className={`w-full border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
             signupErrors.name ? 'border-red-300' : 'border-gray-300'
           } ${isMobile ? 'px-4 py-3 text-base' : 'px-3 py-2 shadow-sm placeholder-gray-400'}`}
-          placeholder={
-            isMobile ? 'Enter your full name' : 'Enter your full name'
-          }
+          placeholder={isMobile ? 'Enter your full name' : 'Enter your full name'}
         />
         {signupErrors.name && (
-          <p
-            className={`mt-1 ${isMobile ? 'text-xs' : 'text-sm'} text-red-600`}
-          >
+          <p className={`mt-1 ${isMobile ? 'text-xs' : 'text-sm'} text-red-600`}>
             {signupErrors.name}
           </p>
         )}
@@ -156,18 +150,14 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           )}
         </div>
         {signupErrors.username && (
-          <p
-            className={`mt-1 ${isMobile ? 'text-xs' : 'text-sm'} text-red-600`}
-          >
+          <p className={`mt-1 ${isMobile ? 'text-xs' : 'text-sm'} text-red-600`}>
             {signupErrors.username}
           </p>
         )}
         {!signupErrors.username &&
           usernameAvailable === true &&
           signupData.username.trim().length >= 3 && (
-            <p
-              className={`mt-1 ${isMobile ? 'text-xs' : 'text-sm'} text-green-600`}
-            >
+            <p className={`mt-1 ${isMobile ? 'text-xs' : 'text-sm'} text-green-600`}>
               Username is available!
             </p>
           )}
@@ -194,9 +184,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           placeholder="Enter your email"
         />
         {signupErrors.email && (
-          <p
-            className={`mt-1 ${isMobile ? 'text-xs' : 'text-sm'} text-red-600`}
-          >
+          <p className={`mt-1 ${isMobile ? 'text-xs' : 'text-sm'} text-red-600`}>
             {signupErrors.email}
           </p>
         )}
@@ -223,9 +211,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           placeholder="Create a password"
         />
         {signupErrors.password && (
-          <p
-            className={`mt-1 ${isMobile ? 'text-xs' : 'text-sm'} text-red-600`}
-          >
+          <p className={`mt-1 ${isMobile ? 'text-xs' : 'text-sm'} text-red-600`}>
             {signupErrors.password}
           </p>
         )}
@@ -234,9 +220,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       {/* Confirm Password */}
       <div>
         <label
-          htmlFor={
-            isMobile ? 'mobile-signup-confirmPassword' : 'confirmPassword'
-          }
+          htmlFor={isMobile ? 'mobile-signup-confirmPassword' : 'confirmPassword'}
           className="block text-sm font-medium text-gray-700 mb-1"
         >
           Confirm Password
@@ -254,9 +238,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           placeholder="Confirm your password"
         />
         {signupErrors.confirmPassword && (
-          <p
-            className={`mt-1 ${isMobile ? 'text-xs' : 'text-sm'} text-red-600`}
-          >
+          <p className={`mt-1 ${isMobile ? 'text-xs' : 'text-sm'} text-red-600`}>
             {signupErrors.confirmPassword}
           </p>
         )}
@@ -284,5 +266,5 @@ export const SignupForm: React.FC<SignupFormProps> = ({
         )}
       </button>
     </form>
-  );
-};
+  )
+}

@@ -1,70 +1,68 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { X, Share, Plus, MoreVertical, Square } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
+import { X, Share, Plus, MoreVertical, Square } from 'lucide-react'
 
-type Platform = 'ios' | 'android' | 'unknown';
+type Platform = 'ios' | 'android' | 'unknown'
 
 interface PWAInstallPromptProps {
   /**
    * If true, always show the prompt on mobile browsers, ignoring localStorage dismissal
    * Useful for sign in/sign up pages where we want to encourage PWA installation
    */
-  alwaysShowOnMobile?: boolean;
+  alwaysShowOnMobile?: boolean
 }
 
 export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
   alwaysShowOnMobile = false,
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [platform, setPlatform] = useState<Platform>('unknown');
-  const [activeTab, setActiveTab] = useState<'ios' | 'android'>('ios');
+  const [isVisible, setIsVisible] = useState(false)
+  const [platform, setPlatform] = useState<Platform>('unknown')
+  const [activeTab, setActiveTab] = useState<'ios' | 'android'>('ios')
 
   useEffect(() => {
     // Check if already installed as PWA
-    const isStandalone = window.matchMedia(
-      '(display-mode: standalone)'
-    ).matches;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
     if (isStandalone) {
-      return;
+      return
     }
 
     // Check if user has already dismissed the prompt
     // Even with alwaysShowOnMobile, we respect user dismissal to avoid annoying them
-    const hasSeenPrompt = localStorage.getItem('pwa-install-prompt-dismissed');
+    const hasSeenPrompt = localStorage.getItem('pwa-install-prompt-dismissed')
     if (hasSeenPrompt === 'true') {
-      return;
+      return
     }
 
     // Detect platform
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isIOS = /iphone|ipad|ipod/.test(userAgent);
-    const isAndroid = /android/.test(userAgent);
+    const userAgent = navigator.userAgent.toLowerCase()
+    const isIOS = /iphone|ipad|ipod/.test(userAgent)
+    const isAndroid = /android/.test(userAgent)
 
     if (isIOS) {
-      setPlatform('ios');
-      setActiveTab('ios');
+      setPlatform('ios')
+      setActiveTab('ios')
     } else if (isAndroid) {
-      setPlatform('android');
-      setActiveTab('android');
+      setPlatform('android')
+      setActiveTab('android')
     } else {
       // Desktop or unknown - don't show prompt
-      return;
+      return
     }
 
     // Show prompt immediately
-    setIsVisible(true);
-  }, [alwaysShowOnMobile]);
+    setIsVisible(true)
+  }, [alwaysShowOnMobile])
 
   const handleDismiss = () => {
-    setIsVisible(false);
+    setIsVisible(false)
     // Always save dismissal state to respect user preference
-    localStorage.setItem('pwa-install-prompt-dismissed', 'true');
-  };
+    localStorage.setItem('pwa-install-prompt-dismissed', 'true')
+  }
 
   if (!isVisible || platform === 'unknown') {
-    return null;
+    return null
   }
 
   return (
@@ -99,9 +97,7 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
               />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900">
-                Install Ambira
-              </h3>
+              <h3 className="text-xl font-bold text-gray-900">Install Ambira</h3>
               <p className="text-sm text-gray-600">Add to your home screen</p>
             </div>
           </div>
@@ -140,14 +136,10 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
             <div className="space-y-6">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-[#0066CC]/10 rounded-full flex items-center justify-center">
-                  <span className="text-[#0066CC] font-semibold text-lg">
-                    1
-                  </span>
+                  <span className="text-[#0066CC] font-semibold text-lg">1</span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-gray-900 font-semibold text-lg mb-2">
-                    Press the Share button
-                  </p>
+                  <p className="text-gray-900 font-semibold text-lg mb-2">Press the Share button</p>
                   <div className="flex items-center gap-2 text-base text-gray-600">
                     <div className="relative w-5 h-5">
                       <Square className="w-5 h-5 absolute" />
@@ -160,9 +152,7 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
 
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-[#0066CC]/10 rounded-full flex items-center justify-center">
-                  <span className="text-[#0066CC] font-semibold text-lg">
-                    2
-                  </span>
+                  <span className="text-[#0066CC] font-semibold text-lg">2</span>
                 </div>
                 <div className="flex-1">
                   <p className="text-gray-900 font-semibold text-lg mb-2">
@@ -177,17 +167,11 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
 
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-[#0066CC]/10 rounded-full flex items-center justify-center">
-                  <span className="text-[#0066CC] font-semibold text-lg">
-                    3
-                  </span>
+                  <span className="text-[#0066CC] font-semibold text-lg">3</span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-gray-900 font-semibold text-lg mb-2">
-                    Tap "Add" to confirm
-                  </p>
-                  <p className="text-base text-gray-600">
-                    The app will appear on your home screen
-                  </p>
+                  <p className="text-gray-900 font-semibold text-lg mb-2">Tap "Add" to confirm</p>
+                  <p className="text-base text-gray-600">The app will appear on your home screen</p>
                 </div>
               </div>
             </div>
@@ -195,14 +179,10 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
             <div className="space-y-6">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-[#0066CC]/10 rounded-full flex items-center justify-center">
-                  <span className="text-[#0066CC] font-semibold text-lg">
-                    1
-                  </span>
+                  <span className="text-[#0066CC] font-semibold text-lg">1</span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-gray-900 font-semibold text-lg mb-2">
-                    Tap the menu button
-                  </p>
+                  <p className="text-gray-900 font-semibold text-lg mb-2">Tap the menu button</p>
                   <div className="flex items-center gap-2 text-base text-gray-600">
                     <MoreVertical className="w-5 h-5" />
                     <span>in the top-right corner</span>
@@ -212,9 +192,7 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
 
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-[#0066CC]/10 rounded-full flex items-center justify-center">
-                  <span className="text-[#0066CC] font-semibold text-lg">
-                    2
-                  </span>
+                  <span className="text-[#0066CC] font-semibold text-lg">2</span>
                 </div>
                 <div className="flex-1">
                   <p className="text-gray-900 font-semibold text-lg mb-2">
@@ -229,17 +207,13 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
 
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0 w-10 h-10 bg-[#0066CC]/10 rounded-full flex items-center justify-center">
-                  <span className="text-[#0066CC] font-semibold text-lg">
-                    3
-                  </span>
+                  <span className="text-[#0066CC] font-semibold text-lg">3</span>
                 </div>
                 <div className="flex-1">
                   <p className="text-gray-900 font-semibold text-lg mb-2">
                     Tap "Install" to confirm
                   </p>
-                  <p className="text-base text-gray-600">
-                    The app will appear on your home screen
-                  </p>
+                  <p className="text-base text-gray-600">The app will appear on your home screen</p>
                 </div>
               </div>
             </div>
@@ -247,7 +221,7 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default PWAInstallPrompt;
+export default PWAInstallPrompt

@@ -1,54 +1,50 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { useTimer } from '@/features/timer/hooks';
+import React, { useState } from 'react'
+import { useTimer } from '@/features/timer/hooks'
 
 interface TimerControlsProps {
-  className?: string;
-  onFinish?: () => void;
+  className?: string
+  onFinish?: () => void
 }
 
-export const TimerControls: React.FC<TimerControlsProps> = ({
-  className = '',
-  onFinish,
-}) => {
-  const { timerState, startTimer, pauseTimer, resumeTimer, resetTimer } =
-    useTimer();
-  const [isLoading, setIsLoading] = useState(false);
+export const TimerControls: React.FC<TimerControlsProps> = ({ className = '', onFinish }) => {
+  const { timerState, startTimer, pauseTimer, resumeTimer, resetTimer } = useTimer()
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleStart = async () => {
     // This would typically open a modal to select project
     // For now, we'll assume a project is already selected
     if (timerState.currentProject) {
       try {
-        setIsLoading(true);
-        await startTimer(timerState.currentProject.id);
+        setIsLoading(true)
+        await startTimer(timerState.currentProject.id)
       } catch {
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
     }
-  };
+  }
 
   const handlePause = async () => {
     try {
-      setIsLoading(true);
-      await pauseTimer();
+      setIsLoading(true)
+      await pauseTimer()
     } catch {
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleResume = async () => {
     try {
-      setIsLoading(true);
-      await resumeTimer();
+      setIsLoading(true)
+      await resumeTimer()
     } catch {
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleReset = async () => {
     if (
@@ -57,22 +53,22 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
       )
     ) {
       try {
-        setIsLoading(true);
-        await resetTimer();
+        setIsLoading(true)
+        await resetTimer()
       } catch {
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
     }
-  };
+  }
 
   const handleFinish = () => {
     if (onFinish) {
-      onFinish();
+      onFinish()
     }
-  };
+  }
 
-  const isActive = timerState.isRunning || timerState.pausedDuration > 0;
+  const isActive = timerState.isRunning || timerState.pausedDuration > 0
 
   return (
     <div className={`flex items-center justify-center space-x-3 ${className}`}>
@@ -171,5 +167,5 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}

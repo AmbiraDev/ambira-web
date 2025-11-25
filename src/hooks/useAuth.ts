@@ -21,21 +21,21 @@ import {
   useSignup,
   useGoogleSignIn,
   useLogout,
-} from '@/lib/react-query/auth.queries';
-import type { LoginCredentials, SignupCredentials } from '@/types';
+} from '@/lib/react-query/auth.queries'
+import type { LoginCredentials, SignupCredentials } from '@/types'
 
 export function useAuth() {
   // Get auth state from React Query
-  const { data: user, isLoading } = useAuthQuery();
+  const { data: user, isLoading } = useAuthQuery()
 
   // Get mutations
-  const loginMutation = useLogin();
-  const signupMutation = useSignup();
-  const googleSignInMutation = useGoogleSignIn();
-  const logoutMutation = useLogout();
+  const loginMutation = useLogin()
+  const signupMutation = useSignup()
+  const googleSignInMutation = useGoogleSignIn()
+  const logoutMutation = useLogout()
 
   // Derived state
-  const isAuthenticated = !!user;
+  const isAuthenticated = !!user
 
   return {
     // State
@@ -46,19 +46,19 @@ export function useAuth() {
 
     // Mutations with Promise API (matches old context)
     login: async (credentials: LoginCredentials): Promise<void> => {
-      await loginMutation.mutateAsync(credentials);
+      await loginMutation.mutateAsync(credentials)
     },
 
     signup: async (credentials: SignupCredentials): Promise<void> => {
-      await signupMutation.mutateAsync(credentials);
+      await signupMutation.mutateAsync(credentials)
     },
 
     signInWithGoogle: async (): Promise<void> => {
-      await googleSignInMutation.mutateAsync();
+      await googleSignInMutation.mutateAsync()
     },
 
     logout: async (): Promise<void> => {
-      await logoutMutation.mutateAsync();
+      await logoutMutation.mutateAsync()
     },
 
     // Mutation states (for loading/error UI)
@@ -66,7 +66,7 @@ export function useAuth() {
     signupMutation,
     googleSignInMutation,
     logoutMutation,
-  };
+  }
 }
 
 /**
@@ -74,4 +74,4 @@ export function useAuth() {
  * Some files may import { useAuth } from '@/contexts/AuthContext'
  * This ensures they can switch to '@/hooks/useAuth' seamlessly
  */
-export { useAuth as default };
+export { useAuth as default }

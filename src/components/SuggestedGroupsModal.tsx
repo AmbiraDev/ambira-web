@@ -1,117 +1,112 @@
-'use client';
+'use client'
 
-import { useState, useEffect, useCallback } from 'react';
-import { X, Users, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
-import Link from 'next/link';
-import { firebaseApi } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
-import GroupAvatar from '@/components/GroupAvatar';
-import type { Group } from '@/types';
+import { useState, useEffect, useCallback } from 'react'
+import { X, Users, ChevronLeft, ChevronRight, MapPin } from 'lucide-react'
+import Link from 'next/link'
+import { firebaseApi } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
+import GroupAvatar from '@/components/GroupAvatar'
+import type { Group } from '@/types'
 
 interface SuggestedGroupsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen: boolean
+  onClose: () => void
 }
 
-const GROUPS_PER_PAGE = 10;
+const GROUPS_PER_PAGE = 10
 
-export default function SuggestedGroupsModal({
-  isOpen,
-  onClose,
-}: SuggestedGroupsModalProps) {
-  const { user } = useAuth();
-  const [allSuggestedGroups, setAllSuggestedGroups] = useState<Group[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
-  const [currentPage, setCurrentPage] = useState(0);
+export default function SuggestedGroupsModal({ isOpen, onClose }: SuggestedGroupsModalProps) {
+  const { user } = useAuth()
+  const [allSuggestedGroups, setAllSuggestedGroups] = useState<Group[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set())
+  const [currentPage, setCurrentPage] = useState(0)
 
   const loadGroups = useCallback(async () => {
-    if (!user) return;
+    if (!user) return
 
     try {
-      setIsLoading(true);
-      setCurrentPage(0);
+      setIsLoading(true)
+      setCurrentPage(0)
 
       // Get user's current groups to exclude them from suggestions
-      const userGroups = await firebaseApi.group.getUserGroups(user.id);
-      const userGroupIds = new Set(userGroups.map(g => g.id));
+      const userGroups = await firebaseApi.group.getUserGroups(user.id)
+      const userGroupIds = new Set(userGroups.map((g) => g.id))
 
       // Get all groups and filter out ones user is already in
-      const allGroups = await firebaseApi.group.searchGroups('');
-      const filteredGroups = allGroups.filter(
-        group => !userGroupIds.has(group.id)
-      );
-      setAllSuggestedGroups(filteredGroups);
+      const allGroups = await firebaseApi.group.searchGroups('')
+      const filteredGroups = allGroups.filter((group) => !userGroupIds.has(group.id))
+      setAllSuggestedGroups(filteredGroups)
     } catch {
-      setAllSuggestedGroups([]);
+      setAllSuggestedGroups([])
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, [user]);
+  }, [user])
 
   useEffect(() => {
     if (isOpen && user) {
-      loadGroups();
+      loadGroups()
     }
-  }, [isOpen, user, loadGroups]);
+  }, [isOpen, user, loadGroups])
 
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose();
+        onClose()
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleEscape)
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, onClose]);
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, onClose])
 
   // Calculate paginated groups
-  const totalPages = Math.ceil(allSuggestedGroups.length / GROUPS_PER_PAGE);
-  const startIndex = currentPage * GROUPS_PER_PAGE;
-  const endIndex = startIndex + GROUPS_PER_PAGE;
-  const paginatedGroups = allSuggestedGroups.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(allSuggestedGroups.length / GROUPS_PER_PAGE)
+  const startIndex = currentPage * GROUPS_PER_PAGE
+  const endIndex = startIndex + GROUPS_PER_PAGE
+  const paginatedGroups = allSuggestedGroups.slice(startIndex, endIndex)
 
   const goToNextPage = () => {
     if (currentPage < totalPages - 1) {
-      setCurrentPage(prev => prev + 1);
+      setCurrentPage((prev) => prev + 1)
     }
-  };
+  }
 
   const goToPreviousPage = () => {
     if (currentPage > 0) {
-      setCurrentPage(prev => prev - 1);
+      setCurrentPage((prev) => prev - 1)
     }
-  };
+  }
 
   const handleJoinGroup = async (groupId: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault()
+    e.stopPropagation()
 
-    if (!user || joiningGroups.has(groupId)) return;
+    if (!user || joiningGroups.has(groupId)) return
 
-    setJoiningGroups(prev => new Set(prev).add(groupId));
+    setJoiningGroups((prev) => new Set(prev).add(groupId))
     try {
-      await firebaseApi.group.joinGroup(groupId, user.id);
+      await firebaseApi.group.joinGroup(groupId, user.id)
       // Remove from suggestions after joining
-      setAllSuggestedGroups(prev => prev.filter(g => g.id !== groupId));
+      setAllSuggestedGroups((prev) => prev.filter((g) => g.id !== groupId))
     } catch {
     } finally {
-      setJoiningGroups(prev => {
-        const next = new Set(prev);
-        next.delete(groupId);
-        return next;
-      });
+      setJoiningGroups((prev) => {
+        const next = new Set(prev)
+        next.delete(groupId)
+        return next
+      })
     }
-  };
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div
@@ -120,15 +115,12 @@ export default function SuggestedGroupsModal({
     >
       <div
         className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">Suggested Groups</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <X className="w-5 h-5 text-gray-600" />
           </button>
         </div>
@@ -145,30 +137,19 @@ export default function SuggestedGroupsModal({
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-green-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No groups available
-              </h3>
-              <p className="text-gray-600">
-                Check back later for groups to join
-              </p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No groups available</h3>
+              <p className="text-gray-600">Check back later for groups to join</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
-              {paginatedGroups.map(group => {
-                const isJoining = joiningGroups.has(group.id);
+              {paginatedGroups.map((group) => {
+                const isJoining = joiningGroups.has(group.id)
                 return (
-                  <div
-                    key={group.id}
-                    className="p-4 hover:bg-gray-50 transition-colors"
-                  >
+                  <div key={group.id} className="p-4 hover:bg-gray-50 transition-colors">
                     <div className="flex items-start gap-3">
                       {/* Group Icon */}
                       <Link href={`/groups/${group.id}`}>
-                        <GroupAvatar
-                          imageUrl={group.imageUrl}
-                          name={group.name}
-                          size="md"
-                        />
+                        <GroupAvatar imageUrl={group.imageUrl} name={group.name} size="md" />
                       </Link>
 
                       {/* Group Info */}
@@ -200,7 +181,7 @@ export default function SuggestedGroupsModal({
 
                       {/* Join Button */}
                       <button
-                        onClick={e => handleJoinGroup(group.id, e)}
+                        onClick={(e) => handleJoinGroup(group.id, e)}
                         disabled={isJoining}
                         className={`text-sm font-semibold transition-colors flex-shrink-0 ${
                           isJoining
@@ -212,7 +193,7 @@ export default function SuggestedGroupsModal({
                       </button>
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
           )}
@@ -246,5 +227,5 @@ export default function SuggestedGroupsModal({
         )}
       </div>
     </div>
-  );
+  )
 }

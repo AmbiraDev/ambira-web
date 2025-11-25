@@ -8,19 +8,15 @@
  * Components → useProfile hooks (React Query) → ProfileService → Repositories → Firebase
  */
 
-import { useQuery, UseQueryOptions } from '@tanstack/react-query';
-import { ProfileService } from '../services/ProfileService';
-import { User } from '@/domain/entities/User';
-import { Session } from '@/domain/entities/Session';
-import {
-  TimePeriod,
-  ChartDataPoint,
-  ProfileStats,
-} from '../domain/ProfileStatsCalculator';
-import { STANDARD_CACHE_TIMES } from '@/lib/react-query';
+import { useQuery, UseQueryOptions } from '@tanstack/react-query'
+import { ProfileService } from '../services/ProfileService'
+import { User } from '@/domain/entities/User'
+import { Session } from '@/domain/entities/Session'
+import { TimePeriod, ChartDataPoint, ProfileStats } from '../domain/ProfileStatsCalculator'
+import { STANDARD_CACHE_TIMES } from '@/lib/react-query'
 
 // Singleton service instance
-const profileService = new ProfileService();
+const profileService = new ProfileService()
 
 // ==================== CACHE KEYS ====================
 
@@ -28,8 +24,7 @@ export const PROFILE_KEYS = {
   all: () => ['profile'] as const,
   details: () => [...PROFILE_KEYS.all(), 'detail'] as const,
   detail: (userId: string) => [...PROFILE_KEYS.details(), userId] as const,
-  byUsername: (username: string) =>
-    [...PROFILE_KEYS.all(), 'username', username] as const,
+  byUsername: (username: string) => [...PROFILE_KEYS.all(), 'username', username] as const,
   sessions: (userId: string, limit?: number) =>
     [...PROFILE_KEYS.detail(userId), 'sessions', limit] as const,
   stats: (userId: string) => [...PROFILE_KEYS.detail(userId), 'stats'] as const,
@@ -37,18 +32,11 @@ export const PROFILE_KEYS = {
     [...PROFILE_KEYS.detail(userId), 'chart', period, activityId] as const,
   topActivities: (userId: string, limit?: number) =>
     [...PROFILE_KEYS.detail(userId), 'topActivities', limit] as const,
-  followers: (userId: string) =>
-    [...PROFILE_KEYS.detail(userId), 'followers'] as const,
-  following: (userId: string) =>
-    [...PROFILE_KEYS.detail(userId), 'following'] as const,
+  followers: (userId: string) => [...PROFILE_KEYS.detail(userId), 'followers'] as const,
+  following: (userId: string) => [...PROFILE_KEYS.detail(userId), 'following'] as const,
   isFollowing: (currentUserId: string, targetUserId: string) =>
-    [
-      ...PROFILE_KEYS.all(),
-      'isFollowing',
-      currentUserId,
-      targetUserId,
-    ] as const,
-};
+    [...PROFILE_KEYS.all(), 'isFollowing', currentUserId, targetUserId] as const,
+}
 
 // ==================== QUERY HOOKS ====================
 
@@ -68,7 +56,7 @@ export function useProfileById(
     staleTime: STANDARD_CACHE_TIMES.LONG, // 15 minutes
     enabled: !!userId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -87,23 +75,23 @@ export function useProfileByUsername(
     queryKey: PROFILE_KEYS.byUsername(username),
     queryFn: async () => {
       try {
-        return await profileService.getProfileByUsername(username);
+        return await profileService.getProfileByUsername(username)
       } catch (err: unknown) {
         // Return null for not found/permission errors instead of throwing
         if (
           (err as { message?: string })?.message?.includes('not found') ||
           (err as { message?: string })?.message?.includes('private')
         ) {
-          return null;
+          return null
         }
-        throw err;
+        throw err
       }
     },
     staleTime: STANDARD_CACHE_TIMES.LONG, // 15 minutes
     retry: false, // Don't retry on permission/not found errors
     enabled: !!username,
     ...options,
-  });
+  })
 }
 
 /**
@@ -123,7 +111,7 @@ export function useUserSessions(
     staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes
     enabled: !!userId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -144,7 +132,7 @@ export function useProfileStats(
     staleTime: STANDARD_CACHE_TIMES.VERY_LONG, // 1 hour - stats change slowly
     enabled: !!userId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -167,7 +155,7 @@ export function useProfileChartData(
     staleTime: STANDARD_CACHE_TIMES.LONG, // 15 minutes
     enabled: !!userId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -181,23 +169,15 @@ export function useProfileChartData(
 export function useTopActivities(
   userId: string,
   limit: number = 5,
-  options?: Partial<
-    UseQueryOptions<
-      Array<{ id: string; hours: number; sessions: number }>,
-      Error
-    >
-  >
+  options?: Partial<UseQueryOptions<Array<{ id: string; hours: number; sessions: number }>, Error>>
 ) {
-  return useQuery<
-    Array<{ id: string; hours: number; sessions: number }>,
-    Error
-  >({
+  return useQuery<Array<{ id: string; hours: number; sessions: number }>, Error>({
     queryKey: PROFILE_KEYS.topActivities(userId, limit),
     queryFn: () => profileService.getTopActivities(userId, limit),
     staleTime: STANDARD_CACHE_TIMES.LONG, // 15 minutes
     enabled: !!userId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -206,25 +186,22 @@ export function useTopActivities(
  * @example
  * const { data: followerIds } = useFollowers(userId);
  */
-export function useFollowers(
-  userId: string,
-  options?: Partial<UseQueryOptions<string[], Error>>
-) {
+export function useFollowers(userId: string, options?: Partial<UseQueryOptions<string[], Error>>) {
   return useQuery<string[], Error>({
     queryKey: PROFILE_KEYS.followers(userId),
     queryFn: async () => {
       try {
-        return await profileService.getFollowers(userId);
+        return await profileService.getFollowers(userId)
       } catch (_err) {
         // Return empty array on permission errors
-        return [];
+        return []
       }
     },
     staleTime: STANDARD_CACHE_TIMES.LONG, // 15 minutes
     retry: false, // Don't retry on permission errors
     enabled: !!userId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -233,25 +210,22 @@ export function useFollowers(
  * @example
  * const { data: followingIds } = useFollowing(userId);
  */
-export function useFollowing(
-  userId: string,
-  options?: Partial<UseQueryOptions<string[], Error>>
-) {
+export function useFollowing(userId: string, options?: Partial<UseQueryOptions<string[], Error>>) {
   return useQuery<string[], Error>({
     queryKey: PROFILE_KEYS.following(userId),
     queryFn: async () => {
       try {
-        return await profileService.getFollowing(userId);
+        return await profileService.getFollowing(userId)
       } catch (_err) {
         // Return empty array on permission errors
-        return [];
+        return []
       }
     },
     staleTime: STANDARD_CACHE_TIMES.LONG, // 15 minutes
     retry: false, // Don't retry on permission errors
     enabled: !!userId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -269,10 +243,9 @@ export function useIsFollowing(
     queryKey: PROFILE_KEYS.isFollowing(currentUserId, targetUserId),
     queryFn: () => profileService.isFollowing(currentUserId, targetUserId),
     staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes
-    enabled:
-      !!currentUserId && !!targetUserId && currentUserId !== targetUserId,
+    enabled: !!currentUserId && !!targetUserId && currentUserId !== targetUserId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -289,18 +262,13 @@ export function useCanViewProfile(
   options?: Partial<UseQueryOptions<boolean, Error>>
 ) {
   return useQuery<boolean, Error>({
-    queryKey: [
-      ...PROFILE_KEYS.detail(profileUser?.id || ''),
-      'canView',
-      viewerId,
-      profileUser,
-    ],
+    queryKey: [...PROFILE_KEYS.detail(profileUser?.id || ''), 'canView', viewerId, profileUser],
     queryFn: () => {
-      if (!profileUser) return false;
-      return profileService.canViewProfile(profileUser, viewerId);
+      if (!profileUser) return false
+      return profileService.canViewProfile(profileUser, viewerId)
     },
     staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes
     enabled: !!profileUser,
     ...options,
-  });
+  })
 }

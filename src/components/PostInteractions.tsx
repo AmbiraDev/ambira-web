@@ -1,17 +1,17 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 
 interface PostInteractionsProps {
-  postId: string;
-  commentCount: number;
-  supportCount?: number;
-  isSupported: boolean;
-  onSupport: (postId: string) => Promise<void>;
-  onRemoveSupport: (postId: string) => Promise<void>;
-  onShare: (postId: string) => Promise<void>;
-  onCommentClick?: () => void;
-  className?: string;
+  postId: string
+  commentCount: number
+  supportCount?: number
+  isSupported: boolean
+  onSupport: (postId: string) => Promise<void>
+  onRemoveSupport: (postId: string) => Promise<void>
+  onShare: (postId: string) => Promise<void>
+  onCommentClick?: () => void
+  className?: string
 }
 
 export const PostInteractions: React.FC<PostInteractionsProps> = ({
@@ -25,36 +25,36 @@ export const PostInteractions: React.FC<PostInteractionsProps> = ({
   onCommentClick,
   className = '',
 }) => {
-  const [isSupporting, setIsSupporting] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
+  const [isSupporting, setIsSupporting] = useState(false)
+  const [isSharing, setIsSharing] = useState(false)
 
   const handleSupport = async () => {
-    if (isSupporting) return;
+    if (isSupporting) return
 
-    setIsSupporting(true);
+    setIsSupporting(true)
     try {
       if (isSupported) {
-        await onRemoveSupport(postId);
+        await onRemoveSupport(postId)
       } else {
-        await onSupport(postId);
+        await onSupport(postId)
       }
     } catch (_error) {
     } finally {
-      setIsSupporting(false);
+      setIsSupporting(false)
     }
-  };
+  }
 
   const handleShare = async () => {
-    if (isSharing) return;
+    if (isSharing) return
 
-    setIsSharing(true);
+    setIsSharing(true)
     try {
-      await onShare(postId);
+      await onShare(postId)
     } catch (_error) {
     } finally {
-      setIsSharing(false);
+      setIsSharing(false)
     }
-  };
+  }
 
   return (
     <div
@@ -85,9 +85,7 @@ export const PostInteractions: React.FC<PostInteractionsProps> = ({
               d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
             />
           </svg>
-          <span className="text-sm">
-            {isSupported ? 'Supported' : 'Give Support'}
-          </span>
+          <span className="text-sm">{isSupported ? 'Supported' : 'Give Support'}</span>
         </button>
 
         {/* Comments */}
@@ -109,8 +107,7 @@ export const PostInteractions: React.FC<PostInteractionsProps> = ({
             />
           </svg>
           <span className="text-sm">
-            {commentCount === 1 ? 'Comment' : 'Comments'}{' '}
-            {commentCount > 0 && `(${commentCount})`}
+            {commentCount === 1 ? 'Comment' : 'Comments'} {commentCount > 0 && `(${commentCount})`}
           </span>
         </button>
       </div>
@@ -139,7 +136,7 @@ export const PostInteractions: React.FC<PostInteractionsProps> = ({
         <span className="text-sm">Share</span>
       </button>
     </div>
-  );
-};
+  )
+}
 
-export default PostInteractions;
+export default PostInteractions

@@ -1,24 +1,24 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { ManualEntry } from './ManualEntry';
-import { firebaseApi } from '@/lib/api';
-import { SessionFormData } from '@/types';
+import React, { useState } from 'react'
+import Link from 'next/link'
+import { ManualEntry } from './ManualEntry'
+import { firebaseApi } from '@/lib/api'
+import { SessionFormData } from '@/types'
 
 export const FABMenu: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [showManualEntry, setShowManualEntry] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false)
+  const [showManualEntry, setShowManualEntry] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleManualEntry = () => {
-    setShowManualEntry(true);
-    setIsOpen(false);
-  };
+    setShowManualEntry(true)
+    setIsOpen(false)
+  }
 
   const handleSaveSession = async (data: SessionFormData) => {
     try {
-      setIsLoading(true);
+      setIsLoading(true)
 
       // Create session and post if visibility allows
       if (data.visibility !== 'private') {
@@ -27,19 +27,19 @@ export const FABMenu: React.FC = () => {
           data,
           data.description || `Completed ${data.title}`,
           data.visibility
-        );
+        )
       } else {
         // Create private session only
-        await firebaseApi.session.createSession(data);
+        await firebaseApi.session.createSession(data)
       }
 
-      setShowManualEntry(false);
+      setShowManualEntry(false)
     } catch (err) {
-      throw err;
+      throw err
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <>
@@ -48,9 +48,7 @@ export const FABMenu: React.FC = () => {
         {/* Menu Items */}
         <div
           className={`absolute bottom-16 right-0 mb-2 space-y-2 transition-all duration-200 ${
-            isOpen
-              ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-2 pointer-events-none'
+            isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
           }`}
         >
           {/* Manual Entry */}
@@ -135,9 +133,7 @@ export const FABMenu: React.FC = () => {
           className={`w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all duration-200 flex items-center justify-center ${
             isOpen ? 'rotate-45' : ''
           }`}
-          aria-label={
-            isOpen ? 'Close quick actions menu' : 'Open quick actions menu'
-          }
+          aria-label={isOpen ? 'Close quick actions menu' : 'Open quick actions menu'}
           aria-expanded={isOpen}
           aria-haspopup="true"
         >
@@ -167,5 +163,5 @@ export const FABMenu: React.FC = () => {
         />
       )}
     </>
-  );
-};
+  )
+}

@@ -1,32 +1,24 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { useTimer } from '@/features/timer/hooks';
-import { useAuth } from '@/hooks/useAuth';
-import { useAllActivityTypes } from '@/hooks/useActivityTypes';
-import {
-  Play,
-  Pause,
-  ChevronDown,
-  Check,
-  Flag,
-  Edit3,
-  ArrowLeft,
-} from 'lucide-react';
-import Slider from 'rc-slider';
-import 'rc-slider/assets/index.css';
-import { uploadImages } from '@/lib/imageUpload';
-import { ImageUpload } from '@/components/ImageUpload';
-import Link from 'next/link';
-import { Activity } from '@/types';
-import { IconRenderer } from '@/components/IconRenderer';
+import React, { useState, useEffect, useMemo } from 'react'
+import { useTimer } from '@/features/timer/hooks'
+import { useAuth } from '@/hooks/useAuth'
+import { useAllActivityTypes } from '@/hooks/useActivityTypes'
+import { Play, Pause, ChevronDown, Check, Flag, Edit3, ArrowLeft } from 'lucide-react'
+import Slider from 'rc-slider'
+import 'rc-slider/assets/index.css'
+import { uploadImages } from '@/lib/imageUpload'
+import { ImageUpload } from '@/components/ImageUpload'
+import Link from 'next/link'
+import { Activity } from '@/types'
+import { IconRenderer } from '@/components/IconRenderer'
 
 interface SessionTimerEnhancedProps {
-  projectId: string;
+  projectId: string
 }
 
 export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
-  const [showFinishModal, setShowFinishModal] = useState(false);
+  const [showFinishModal, setShowFinishModal] = useState(false)
 
   // Pause polling when finish modal is shown to prevent timer updates
   const {
@@ -38,42 +30,42 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     resumeTimer,
     finishTimer,
     resetTimer,
-  } = useTimer({ pausePolling: showFinishModal });
-  const { user } = useAuth();
-  const { data: activityTypes = [], isLoading: isLoadingProjects } =
-    useAllActivityTypes(user?.id || '', {
+  } = useTimer({ pausePolling: showFinishModal })
+  const { user } = useAuth()
+  const { data: activityTypes = [], isLoading: isLoadingProjects } = useAllActivityTypes(
+    user?.id || '',
+    {
       enabled: !!user?.id,
-    });
-  const [sessionTitle, setSessionTitle] = useState('');
-  const [sessionDescription, setSessionDescription] = useState('');
-  const [visibility, setVisibility] = useState<
-    'everyone' | 'followers' | 'private'
-  >('everyone');
-  const [howFelt, setHowFelt] = useState<number>(3);
-  const [privateNotes, setPrivateNotes] = useState('');
+    }
+  )
+  const [sessionTitle, setSessionTitle] = useState('')
+  const [sessionDescription, setSessionDescription] = useState('')
+  const [visibility, setVisibility] = useState<'everyone' | 'followers' | 'private'>('everyone')
+  const [howFelt, setHowFelt] = useState<number>(3)
+  const [privateNotes, setPrivateNotes] = useState('')
   // Initialize with last activity from localStorage if available
   const [selectedActivityId, setSelectedActivityId] = useState<string>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('lastSessionActivity') || '';
+      return localStorage.getItem('lastSessionActivity') || ''
     }
-    return '';
-  });
-  const [displayTime, setDisplayTime] = useState(0);
-  const [showActivityPicker, setShowActivityPicker] = useState(false);
-  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-  const [adjustedDuration, setAdjustedDuration] = useState(0);
-  const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
-  const [isUploadingImages, setIsUploadingImages] = useState(false);
-  const [startTime, setStartTime] = useState<Date>(new Date());
-  const [showActivityError, setShowActivityError] = useState(false);
-  const [customStartTime, setCustomStartTime] = useState<Date | null>(null);
-  const [showTimePickerModal, setShowTimePickerModal] = useState(false);
-  const [frozenElapsedTime, setFrozenElapsedTime] = useState(0);
+    return ''
+  })
+  const [displayTime, setDisplayTime] = useState(0)
+  const [showActivityPicker, setShowActivityPicker] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [adjustedDuration, setAdjustedDuration] = useState(0)
+  const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
+  const [isUploadingImages, setIsUploadingImages] = useState(false)
+  const [startTime, setStartTime] = useState<Date>(new Date())
+  const [showActivityError, setShowActivityError] = useState(false)
+  const [customStartTime, setCustomStartTime] = useState<Date | null>(null)
+  const [showTimePickerModal, setShowTimePickerModal] = useState(false)
+  const [frozenElapsedTime, setFrozenElapsedTime] = useState(0)
 
   // Convert ActivityType[] to Activity[] for compatibility
   const allActivities: Activity[] = useMemo(() => {
-    return activityTypes.map(type => ({
+    return activityTypes.map((type) => ({
       id: type.id,
       name: type.name,
       description: type.description || '',
@@ -83,221 +75,216 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       status: 'active' as const,
       createdAt: type.createdAt,
       updatedAt: type.updatedAt,
-    }));
-  }, [activityTypes]);
+    }))
+  }, [activityTypes])
 
   // Load last used activity from local storage on mount
   useEffect(() => {
     // Only run once when activities are first loaded
-    if (allActivities.length === 0) return;
+    if (allActivities.length === 0) return
 
-    const savedActivityId = localStorage.getItem('lastSessionActivity');
+    const savedActivityId = localStorage.getItem('lastSessionActivity')
 
     // Don't update if already set
-    if (selectedActivityId) return;
+    if (selectedActivityId) return
 
     if (savedActivityId) {
       // Validate that the saved activity still exists
-      const activityExists = allActivities.some(a => a.id === savedActivityId);
+      const activityExists = allActivities.some((a) => a.id === savedActivityId)
       if (activityExists) {
-        setSelectedActivityId(savedActivityId);
+        setSelectedActivityId(savedActivityId)
       } else {
         // Clear stale activity ID from localStorage if user has activities but saved one doesn't exist
-        localStorage.removeItem('lastSessionActivity');
+        localStorage.removeItem('lastSessionActivity')
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allActivities.length]); // Only depend on length, not the full array
+  }, [allActivities.length]) // Only depend on length, not the full array
 
   // Initialize selectedActivityId from timerState if there's an active session
   useEffect(() => {
     if (timerState.currentProject && !selectedActivityId) {
-      setSelectedActivityId(timerState.currentProject.id);
+      setSelectedActivityId(timerState.currentProject.id)
     }
-  }, [timerState.currentProject, selectedActivityId]);
+  }, [timerState.currentProject, selectedActivityId])
 
   // Save activity to local storage whenever it changes
   useEffect(() => {
     if (selectedActivityId) {
-      localStorage.setItem('lastSessionActivity', selectedActivityId);
+      localStorage.setItem('lastSessionActivity', selectedActivityId)
     }
-  }, [selectedActivityId]);
+  }, [selectedActivityId])
 
   // Initialize adjusted duration when finish modal opens
   // CRITICAL: Freeze the elapsed time snapshot when modal opens
   // This prevents the timer from continuing to tick while the user is filling out the form
   useEffect(() => {
     if (showFinishModal) {
-      const elapsed = getElapsedTime();
-      setFrozenElapsedTime(elapsed);
-      setAdjustedDuration(elapsed);
+      const elapsed = getElapsedTime()
+      setFrozenElapsedTime(elapsed)
+      setAdjustedDuration(elapsed)
 
       // Calculate start time based on elapsed duration (now - duration)
-      const now = new Date();
-      const calculatedStartTime = new Date(now.getTime() - elapsed * 1000);
-      setStartTime(calculatedStartTime);
+      const now = new Date()
+      const calculatedStartTime = new Date(now.getTime() - elapsed * 1000)
+      setStartTime(calculatedStartTime)
     }
-  }, [showFinishModal, getElapsedTime]);
+  }, [showFinishModal, getElapsedTime])
 
   // Update display time every second when timer is running
   // CRITICAL: Stop updates when finish modal is shown to prevent slider from changing
   useEffect(() => {
     // Don't update timer when finish modal is open
     if (showFinishModal) {
-      return;
+      return
     }
 
     if (!timerState.isRunning) {
-      setDisplayTime(timerState.pausedDuration);
-      return;
+      setDisplayTime(timerState.pausedDuration)
+      return
     }
 
     const interval = setInterval(() => {
-      setDisplayTime(getElapsedTime());
-    }, 1000);
+      setDisplayTime(getElapsedTime())
+    }, 1000)
 
     // Set initial time
-    setDisplayTime(getElapsedTime());
+    setDisplayTime(getElapsedTime())
 
-    return () => clearInterval(interval);
+    return () => clearInterval(interval)
   }, [
     timerState.isRunning,
     timerState.startTime,
     timerState.pausedDuration,
     getElapsedTime,
     showFinishModal,
-  ]);
+  ])
 
   // Auto-generate session title based on time of day
   useEffect(() => {
-    const hour = new Date().getHours();
-    let timeOfDay = 'Morning';
-    if (hour >= 12 && hour < 17) timeOfDay = 'Afternoon';
-    else if (hour >= 17) timeOfDay = 'Evening';
+    const hour = new Date().getHours()
+    let timeOfDay = 'Morning'
+    if (hour >= 12 && hour < 17) timeOfDay = 'Afternoon'
+    else if (hour >= 17) timeOfDay = 'Evening'
 
-    setSessionTitle(`${timeOfDay} Work Session`);
-  }, []);
+    setSessionTitle(`${timeOfDay} Work Session`)
+  }, [])
 
   const handleStartTimer = async () => {
     // Validate activity is selected and exists
-    const selectedActivity = allActivities.find(
-      a => a.id === selectedActivityId
-    );
+    const selectedActivity = allActivities.find((a) => a.id === selectedActivityId)
     if (!selectedActivityId || !selectedActivity) {
       // Show error state and open activity picker
-      setShowActivityError(true);
-      setShowActivityPicker(true);
+      setShowActivityError(true)
+      setShowActivityPicker(true)
       // Clear error after 3 seconds
-      setTimeout(() => setShowActivityError(false), 3000);
-      return;
+      setTimeout(() => setShowActivityError(false), 3000)
+      return
     }
 
     try {
-      await startTimer(selectedActivityId, customStartTime || undefined);
+      await startTimer(selectedActivityId, customStartTime || undefined)
       // Reset custom start time after starting
-      setCustomStartTime(null);
-      setShowTimePickerModal(false);
-    } catch (error) {
-      alert('Failed to start timer. Please try again.');
+      setCustomStartTime(null)
+      setShowTimePickerModal(false)
+    } catch (_error) {
+      alert('Failed to start timer. Please try again.')
     }
-  };
+  }
 
   const handlePauseTimer = async () => {
     try {
-      await pauseTimer();
+      await pauseTimer()
     } catch {
       // Silent failure
     }
-  };
+  }
 
   const handleResumeTimer = async () => {
     try {
-      await resumeTimer();
+      await resumeTimer()
     } catch {
       // Silent failure
     }
-  };
+  }
 
   const handleImagesChange = (images: File[], previewUrls: string[]) => {
-    setSelectedImages(images);
-    setImagePreviewUrls(previewUrls);
-  };
+    setSelectedImages(images)
+    setImagePreviewUrls(previewUrls)
+  }
 
   // Helper to format Date to time input value (HH:MM)
   const formatTimeForInput = (date: Date): string => {
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-  };
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    return `${hours}:${minutes}`
+  }
 
   // Handle start time change
   const handleStartTimeChange = (timeString: string) => {
-    const parts = timeString.split(':');
-    if (parts.length !== 2) return;
+    const parts = timeString.split(':')
+    if (parts.length !== 2) return
 
-    const hours = Number(parts[0]);
-    const minutes = Number(parts[1]);
+    const hours = Number(parts[0])
+    const minutes = Number(parts[1])
 
     // Validate the parsed values are valid numbers
-    if (isNaN(hours) || isNaN(minutes)) return;
-    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return;
+    if (isNaN(hours) || isNaN(minutes)) return
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return
 
-    const newStartTime = new Date(startTime);
-    newStartTime.setHours(hours, minutes, 0, 0);
+    const newStartTime = new Date(startTime)
+    newStartTime.setHours(hours, minutes, 0, 0)
 
-    setStartTime(newStartTime);
+    setStartTime(newStartTime)
     // Duration stays the same, we're just shifting when it started
-  };
+  }
 
   // Handle duration slider change
   const handleDurationSliderChange = (value: number | number[]) => {
     // Extract numeric value from slider (handle both single value and array)
-    const val = typeof value === 'number' ? value : (value[0] ?? 0);
+    const val = typeof value === 'number' ? value : (value[0] ?? 0)
     // CRITICAL: Use the frozen elapsed time, not the live value
     // This prevents the slider max from changing while the user is adjusting it
-    const max = frozenElapsedTime;
+    const max = frozenElapsedTime
 
     // Validate we have valid numeric values
-    if (isNaN(val) || isNaN(max)) return;
+    if (isNaN(val) || isNaN(max)) return
 
     // Allow snapping to max even if not divisible by 900
-    const newDuration = val >= max - 450 ? max : val;
-    setAdjustedDuration(newDuration);
+    const newDuration = val >= max - 450 ? max : val
+    setAdjustedDuration(newDuration)
     // Start time stays the same
-  };
+  }
 
   const handleFinishTimer = async () => {
     try {
       // Validate required fields
       if (!sessionTitle.trim()) {
-        alert('Please enter a session title');
-        return;
+        alert('Please enter a session title')
+        return
       }
 
       // Use the currently selected activity from UI, NOT from timerState
-      const activityToSave =
-        selectedActivityId || timerState.currentProject?.id;
+      const activityToSave = selectedActivityId || timerState.currentProject?.id
 
       // Validate activity selection
       if (!activityToSave) {
-        alert('Please select an activity before saving');
-        setShowActivityPicker(true);
-        return;
+        alert('Please select an activity before saving')
+        setShowActivityPicker(true)
+        return
       }
 
       // Upload images first if any
-      let imageUrls: string[] = [];
+      let imageUrls: string[] = []
       if (selectedImages.length > 0) {
-        setIsUploadingImages(true);
+        setIsUploadingImages(true)
         try {
-          const uploadResults = await uploadImages(selectedImages);
-          imageUrls = uploadResults.map(result => result.url);
+          const uploadResults = await uploadImages(selectedImages)
+          imageUrls = uploadResults.map((result) => result.url)
         } catch {
-          alert(
-            'Failed to upload images. Session will be saved without images.'
-          );
+          alert('Failed to upload images. Session will be saved without images.')
         } finally {
-          setIsUploadingImages(false);
+          setIsUploadingImages(false)
         }
       }
 
@@ -316,59 +303,54 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
           images: imageUrls,
           activityId: activityToSave, // Force use of selected activity
         }
-      );
+      )
 
       // Reset modal and form state
-      setShowFinishModal(false);
-      setSessionTitle('');
-      setSessionDescription('');
-      setPrivateNotes('');
-      setHowFelt(3);
-      setSelectedImages([]);
-      setImagePreviewUrls([]);
+      setShowFinishModal(false)
+      setSessionTitle('')
+      setSessionDescription('')
+      setPrivateNotes('')
+      setHowFelt(3)
+      setSelectedImages([])
+      setImagePreviewUrls([])
 
       // Wait a moment to ensure state is cleared, then navigate
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100))
 
       // Navigate to home feed with refresh parameter to trigger immediate refresh
-      window.location.href = '/?refresh=true';
+      window.location.href = '/?refresh=true'
     } catch (_error) {
       const errorMessage =
-        _error instanceof Error
-          ? _error.message
-          : 'Failed to save session. Please try again.';
-      alert(errorMessage);
+        _error instanceof Error ? _error.message : 'Failed to save session. Please try again.'
+      alert(errorMessage)
     }
-  };
+  }
 
   const handleCancelTimer = async () => {
     try {
-      await resetTimer();
-      setShowFinishModal(false);
-      setShowCancelConfirm(false);
+      await resetTimer()
+      setShowFinishModal(false)
+      setShowCancelConfirm(false)
       // Reset all state
-      setSessionTitle('');
-      setSessionDescription('');
-      setPrivateNotes('');
-      setHowFelt(3);
-      setSelectedImages([]);
-      setImagePreviewUrls([]);
+      setSessionTitle('')
+      setSessionDescription('')
+      setPrivateNotes('')
+      setHowFelt(3)
+      setSelectedImages([])
+      setImagePreviewUrls([])
       // Route to feed page
-      window.location.href = '/';
+      window.location.href = '/'
     } catch {
-      alert('Failed to cancel session. Please try again.');
+      alert('Failed to cancel session. Please try again.')
     }
-  };
+  }
 
   // Define selectedActivity before any early returns so it's available in all code paths
   const selectedActivity =
-    allActivities.find(a => a.id === selectedActivityId) ||
-    timerState.currentProject;
+    allActivities.find((a) => a.id === selectedActivityId) || timerState.currentProject
   // Only show needsActivity prompt after projects have loaded (prevent flash)
   const needsActivity =
-    !isLoadingProjects &&
-    allActivities.length === 0 &&
-    !timerState.currentProject;
+    !isLoadingProjects && allActivities.length === 0 && !timerState.currentProject
 
   // When completing a session, show ONLY the completion UI
   if (showFinishModal) {
@@ -385,9 +367,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 >
                   Resume
                 </button>
-                <h3 className="text-base font-semibold text-gray-900">
-                  Save Session
-                </h3>
+                <h3 className="text-base font-semibold text-gray-900">Save Session</h3>
                 <div className="w-16"></div> {/* Spacer for centering */}
               </div>
               {/* Reuse existing completion UI from below */}
@@ -396,7 +376,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 <input
                   type="text"
                   value={sessionTitle}
-                  onChange={e => setSessionTitle(e.target.value)}
+                  onChange={(e) => setSessionTitle(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-base"
                   placeholder="Afternoon Work Session"
                 />
@@ -404,7 +384,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 {/* Description */}
                 <textarea
                   value={sessionDescription}
-                  onChange={e => setSessionDescription(e.target.value)}
+                  onChange={(e) => setSessionDescription(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-base"
                   rows={3}
                   placeholder="How'd it go? Share more about your session."
@@ -422,14 +402,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                           iconName={selectedActivity.icon}
                           className="w-6 h-6 text-gray-700 flex-shrink-0"
                         />
-                        <span className="flex-1 text-left">
-                          {selectedActivity.name}
-                        </span>
+                        <span className="flex-1 text-left">{selectedActivity.name}</span>
                       </>
                     ) : (
-                      <span className="flex-1 text-left text-gray-500">
-                        Select an activity
-                      </span>
+                      <span className="flex-1 text-left text-gray-500">Select an activity</span>
                     )}
                     <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
                   </button>
@@ -447,11 +423,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                       <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
                         {allActivities.length === 0 ? (
                           <div className="p-4 text-center">
-                            <p className="text-sm text-gray-600 mb-3">
-                              No activities yet
-                            </p>
+                            <p className="text-sm text-gray-600 mb-3">No activities yet</p>
                             <Link
-                              href="/activities/new"
+                              href="/settings/activities"
                               className="inline-flex items-center gap-2 px-4 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
                             >
                               <svg
@@ -472,17 +446,15 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                           </div>
                         ) : (
                           <>
-                            {allActivities.map(activity => (
+                            {allActivities.map((activity) => (
                               <button
                                 key={activity.id}
                                 onClick={() => {
-                                  setSelectedActivityId(activity.id);
-                                  setShowActivityPicker(false);
+                                  setSelectedActivityId(activity.id)
+                                  setShowActivityPicker(false)
                                 }}
                                 className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
-                                  selectedActivityId === activity.id
-                                    ? 'bg-blue-50'
-                                    : ''
+                                  selectedActivityId === activity.id ? 'bg-blue-50' : ''
                                 }`}
                               >
                                 <IconRenderer
@@ -516,9 +488,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                                   d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                                 />
                               </svg>
-                              <span className="text-sm">
-                                Add custom activity
-                              </span>
+                              <span className="text-sm">Add custom activity</span>
                             </Link>
                           </>
                         )}
@@ -554,7 +524,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                       <input
                         type="time"
                         value={formatTimeForInput(startTime)}
-                        onChange={e => handleStartTimeChange(e.target.value)}
+                        onChange={(e) => handleStartTimeChange(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-sm"
                       />
                     </div>
@@ -591,15 +561,11 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
                 {/* Visibility */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Visibility
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Visibility</label>
                   <select
                     value={visibility}
-                    onChange={e =>
-                      setVisibility(
-                        e.target.value as 'everyone' | 'followers' | 'private'
-                      )
+                    onChange={(e) =>
+                      setVisibility(e.target.value as 'everyone' | 'followers' | 'private')
                     }
                     className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] appearance-none bg-white min-h-[44px]"
                     style={{
@@ -642,12 +608,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         {showCancelConfirm && (
           <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Discard Session?
-              </h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Discard Session?</h3>
               <p className="text-gray-600 mb-6">
-                Are you sure you want to discard this session? All progress will
-                be lost.
+                Are you sure you want to discard this session? All progress will be lost.
               </p>
               <div className="flex gap-3">
                 <button
@@ -667,7 +630,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
           </div>
         )}
       </>
-    );
+    )
   }
 
   // Main timer UI - only show when not completing a session
@@ -700,12 +663,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 <button
                   onClick={handleStartTimer}
                   disabled={
-                    !selectedActivityId ||
-                    !allActivities.find(a => a.id === selectedActivityId)
+                    !selectedActivityId || !allActivities.find((a) => a.id === selectedActivityId)
                   }
                   className={`inline-flex items-center justify-center gap-3 px-10 py-4 rounded-xl text-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation ${
-                    selectedActivityId &&
-                    allActivities.find(a => a.id === selectedActivityId)
+                    selectedActivityId && allActivities.find((a) => a.id === selectedActivityId)
                       ? 'bg-[#0066CC] hover:bg-[#0051D5] text-white focus-visible:ring-[#0066CC]'
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
@@ -726,12 +687,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   onClick={() => setShowTimePickerModal(true)}
                   className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors text-lg font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 focus-visible:ring-offset-2 touch-manipulation"
                 >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -742,15 +698,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   <span>
                     {customStartTime
                       ? `From ${Math.floor(
-                          (new Date().getTime() - customStartTime.getTime()) /
-                            1000 /
-                            60 /
-                            60
+                          (new Date().getTime() - customStartTime.getTime()) / 1000 / 60 / 60
                         )}h ${Math.floor(
-                          ((new Date().getTime() - customStartTime.getTime()) /
-                            1000 /
-                            60) %
-                            60
+                          ((new Date().getTime() - customStartTime.getTime()) / 1000 / 60) % 60
                         )}m ago`
                       : 'Start From'}
                   </span>
@@ -794,9 +744,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Activity{' '}
             {showActivityError && (
-              <span className="text-red-600 ml-1">
-                - Please select an activity
-              </span>
+              <span className="text-red-600 ml-1">- Please select an activity</span>
             )}
           </label>
           <button
@@ -813,14 +761,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   iconName={selectedActivity.icon}
                   className="w-6 h-6 text-gray-700 flex-shrink-0"
                 />
-                <span className="flex-1 text-left font-medium">
-                  {selectedActivity.name}
-                </span>
+                <span className="flex-1 text-left font-medium">{selectedActivity.name}</span>
               </>
             ) : (
-              <span className="flex-1 text-left text-gray-500">
-                Select an activity
-              </span>
+              <span className="flex-1 text-left text-gray-500">Select an activity</span>
             )}
             <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
           </button>
@@ -829,20 +773,15 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
           {showActivityPicker && (
             <>
               {/* Backdrop for closing */}
-              <div
-                className="fixed inset-0 z-10"
-                onClick={() => setShowActivityPicker(false)}
-              />
+              <div className="fixed inset-0 z-10" onClick={() => setShowActivityPicker(false)} />
 
               {/* Dropdown content */}
               <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-80 overflow-y-auto">
                 {allActivities.length === 0 ? (
                   <div className="p-4 text-center">
-                    <p className="text-sm text-gray-600 mb-3">
-                      No activities yet
-                    </p>
+                    <p className="text-sm text-gray-600 mb-3">No activities yet</p>
                     <Link
-                      href="/activities/new"
+                      href="/settings/activities"
                       className="inline-flex items-center gap-2 px-4 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
                     >
                       <svg
@@ -863,13 +802,13 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   </div>
                 ) : (
                   <>
-                    {allActivities.map(activity => (
+                    {allActivities.map((activity) => (
                       <button
                         key={activity.id}
                         onClick={() => {
-                          setSelectedActivityId(activity.id);
-                          setShowActivityPicker(false);
-                          setShowActivityError(false);
+                          setSelectedActivityId(activity.id)
+                          setShowActivityPicker(false)
+                          setShowActivityError(false)
                         }}
                         className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
                           selectedActivityId === activity.id ? 'bg-blue-50' : ''
@@ -880,9 +819,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                           className="w-5 h-5 text-gray-700 flex-shrink-0"
                         />
                         <div className="flex-1 text-left min-w-0">
-                          <div className="text-sm font-medium text-gray-900">
-                            {activity.name}
-                          </div>
+                          <div className="text-sm font-medium text-gray-900">{activity.name}</div>
                         </div>
                         {selectedActivityId === activity.id && (
                           <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
@@ -922,19 +859,14 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               Create your first activity to get started
             </h3>
             <p className="text-sm text-gray-600 mb-4">
-              Activities help you organize your work sessions. You'll need at
-              least one activity before you can start tracking time.
+              Activities help you organize your work sessions. You'll need at least one activity
+              before you can start tracking time.
             </p>
             <Link
-              href="/activities/new"
+              href="/settings/activities"
               className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -952,47 +884,35 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       {showTimePickerModal && (
         <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Start From Past Time
-            </h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Start From Past Time</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Set when you actually started working. Your session will begin
-              from that time.
+              Set when you actually started working. Your session will begin from that time.
             </p>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Start Time
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
                 <input
                   type="datetime-local"
                   value={
                     customStartTime
                       ? new Date(
-                          customStartTime.getTime() -
-                            customStartTime.getTimezoneOffset() * 60000
+                          customStartTime.getTime() - customStartTime.getTimezoneOffset() * 60000
                         )
                           .toISOString()
                           .slice(0, 16)
-                      : new Date(
-                          new Date().getTime() -
-                            new Date().getTimezoneOffset() * 60000
-                        )
+                      : new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000)
                           .toISOString()
                           .slice(0, 16)
                   }
-                  onChange={e => {
+                  onChange={(e) => {
                     if (e.target.value) {
-                      setCustomStartTime(new Date(e.target.value));
+                      setCustomStartTime(new Date(e.target.value))
                     } else {
-                      setCustomStartTime(null);
+                      setCustomStartTime(null)
                     }
                   }}
-                  max={new Date(
-                    new Date().getTime() -
-                      new Date().getTimezoneOffset() * 60000
-                  )
+                  max={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000)
                     .toISOString()
                     .slice(0, 16)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-base"
@@ -1004,17 +924,11 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   <p className="text-sm text-blue-900">
                     <strong>Duration:</strong>{' '}
                     {Math.floor(
-                      (new Date().getTime() - customStartTime.getTime()) /
-                        1000 /
-                        60 /
-                        60
+                      (new Date().getTime() - customStartTime.getTime()) / 1000 / 60 / 60
                     )}
                     h{' '}
                     {Math.floor(
-                      ((new Date().getTime() - customStartTime.getTime()) /
-                        1000 /
-                        60) %
-                        60
+                      ((new Date().getTime() - customStartTime.getTime()) / 1000 / 60) % 60
                     )}
                     m
                   </p>
@@ -1025,8 +939,8 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => {
-                  setCustomStartTime(null);
-                  setShowTimePickerModal(false);
+                  setCustomStartTime(null)
+                  setShowTimePickerModal(false)
                 }}
                 className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors font-medium"
               >
@@ -1043,5 +957,5 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         </div>
       )}
     </div>
-  );
-};
+  )
+}

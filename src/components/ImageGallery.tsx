@@ -1,16 +1,16 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import Image from 'next/image';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { ImageLightbox } from './ImageLightbox';
-import { isEmpty } from '@/lib/utils';
+import React, { useState } from 'react'
+import Image from 'next/image'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ImageLightbox } from './ImageLightbox'
+import { isEmpty } from '@/lib/utils'
 
 interface ImageGalleryProps {
-  images: string[];
-  className?: string;
-  variant?: 'carousel' | 'grid'; // carousel for editing, grid for feed
-  priority?: boolean; // Add priority prop for LCP optimization
+  images: string[]
+  className?: string
+  variant?: 'carousel' | 'grid' // carousel for editing, grid for feed
+  priority?: boolean // Add priority prop for LCP optimization
 }
 
 export const ImageGallery: React.FC<ImageGalleryProps> = ({
@@ -19,60 +19,60 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   variant = 'grid',
   priority = false,
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxStartIndex, setLightboxStartIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxStartIndex, setLightboxStartIndex] = useState(0)
 
-  if (isEmpty(images)) return null;
+  if (isEmpty(images)) return null
 
   const openLightbox = (index: number) => {
-    setLightboxStartIndex(index);
-    setLightboxOpen(true);
-  };
+    setLightboxStartIndex(index)
+    setLightboxOpen(true)
+  }
 
   // Carousel variant (for edit modal, etc.)
   if (variant === 'carousel') {
-    const minSwipeDistance = 50;
+    const minSwipeDistance = 50
 
     const onTouchStart = (e: React.TouchEvent) => {
-      setTouchEnd(null);
-      const touch = e.targetTouches[0];
+      setTouchEnd(null)
+      const touch = e.targetTouches[0]
       if (touch) {
-        setTouchStart(touch.clientX);
+        setTouchStart(touch.clientX)
       }
-    };
+    }
 
     const onTouchMove = (e: React.TouchEvent) => {
-      const touch = e.targetTouches[0];
+      const touch = e.targetTouches[0]
       if (touch) {
-        setTouchEnd(touch.clientX);
+        setTouchEnd(touch.clientX)
       }
-    };
+    }
 
     const onTouchEnd = () => {
-      if (!touchStart || !touchEnd) return;
+      if (!touchStart || !touchEnd) return
 
-      const distance = touchStart - touchEnd;
-      const isLeftSwipe = distance > minSwipeDistance;
-      const isRightSwipe = distance < -minSwipeDistance;
+      const distance = touchStart - touchEnd
+      const isLeftSwipe = distance > minSwipeDistance
+      const isRightSwipe = distance < -minSwipeDistance
 
       if (isLeftSwipe && currentIndex < images.length - 1) {
-        setCurrentIndex(prev => prev + 1);
+        setCurrentIndex((prev) => prev + 1)
       }
       if (isRightSwipe && currentIndex > 0) {
-        setCurrentIndex(prev => prev - 1);
+        setCurrentIndex((prev) => prev - 1)
       }
-    };
+    }
 
     const goToPrevious = () => {
-      setCurrentIndex(prev => (prev > 0 ? prev - 1 : prev));
-    };
+      setCurrentIndex((prev) => (prev > 0 ? prev - 1 : prev))
+    }
 
     const goToNext = () => {
-      setCurrentIndex(prev => (prev < images.length - 1 ? prev + 1 : prev));
-    };
+      setCurrentIndex((prev) => (prev < images.length - 1 ? prev + 1 : prev))
+    }
 
     return (
       <>
@@ -101,9 +101,9 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               <>
                 {currentIndex > 0 && (
                   <button
-                    onClick={e => {
-                      e.stopPropagation();
-                      goToPrevious();
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      goToPrevious()
                     }}
                     className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center bg-white/90 hover:bg-white rounded-full shadow-lg transition-colors duration-200 z-10"
                     aria-label="Previous image"
@@ -113,9 +113,9 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 )}
                 {currentIndex < images.length - 1 && (
                   <button
-                    onClick={e => {
-                      e.stopPropagation();
-                      goToNext();
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      goToNext()
                     }}
                     className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center bg-white/90 hover:bg-white rounded-full shadow-lg transition-colors duration-200 z-10"
                     aria-label="Next image"
@@ -135,9 +135,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                   key={index}
                   onClick={() => setCurrentIndex(index)}
                   className={`w-1.5 h-1.5 rounded-full transition-colors duration-200 ${
-                    index === currentIndex
-                      ? 'bg-[#0066CC] w-3'
-                      : 'bg-gray-300 hover:bg-gray-400'
+                    index === currentIndex ? 'bg-[#0066CC] w-3' : 'bg-gray-300 hover:bg-gray-400'
                   }`}
                   aria-label={`Go to image ${index + 1}`}
                 />
@@ -155,7 +153,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
           />
         )}
       </>
-    );
+    )
   }
 
   // Grid variant (for feed) - Strava-style geometric layouts
@@ -244,9 +242,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 {/* Show +N overlay on last visible image if there are more */}
                 {index === 1 && images.length > 3 && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <span className="text-white text-3xl font-bold">
-                      +{images.length - 3}
-                    </span>
+                    <span className="text-white text-3xl font-bold">+{images.length - 3}</span>
                   </div>
                 )}
               </div>
@@ -264,5 +260,5 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
         />
       )}
     </>
-  );
-};
+  )
+}

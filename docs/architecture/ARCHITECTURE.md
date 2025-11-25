@@ -237,14 +237,14 @@ Firebase/Firestore
 // ✅ Correct
 interface Session {
   // Session data
-  supportCount: number;
-  commentCount: number;
-  visibility: 'everyone' | 'followers' | 'private';
+  supportCount: number
+  commentCount: number
+  visibility: 'everyone' | 'followers' | 'private'
 }
 
 // ❌ Wrong - Post type is deprecated
 interface Post {
-  sessionId?: string; // Don't use this pattern
+  sessionId?: string // Don't use this pattern
 }
 ```
 
@@ -280,25 +280,25 @@ useMutation({
   mutationFn: supportSession,
   onMutate: async ({ sessionId }) => {
     // 1. Cancel ongoing queries
-    await queryClient.cancelQueries(['sessions', sessionId]);
+    await queryClient.cancelQueries(['sessions', sessionId])
 
     // 2. Snapshot previous state
-    const previous = queryClient.getQueryData(['sessions', sessionId]);
+    const previous = queryClient.getQueryData(['sessions', sessionId])
 
     // 3. Optimistically update UI
-    queryClient.setQueryData(['sessions', sessionId], old => ({
+    queryClient.setQueryData(['sessions', sessionId], (old) => ({
       ...old,
       supportCount: old.supportCount + 1,
       isSupported: true,
-    }));
+    }))
 
-    return { previous }; // For rollback
+    return { previous } // For rollback
   },
   onError: (err, vars, context) => {
     // Rollback on error
-    queryClient.setQueryData(['sessions', sessionId], context.previous);
+    queryClient.setQueryData(['sessions', sessionId], context.previous)
   },
-});
+})
 ```
 
 **Result**: User sees instant feedback (0ms), with server confirmation following.
@@ -330,20 +330,20 @@ const FEATURE_KEYS = {
   list: (filter: string) => [...FEATURE_KEYS.lists(), { filter }] as const,
   details: () => [...FEATURE_KEYS.all(), 'detail'] as const,
   detail: (id: string) => [...FEATURE_KEYS.details(), id] as const,
-};
+}
 ```
 
 **Invalidation Examples**:
 
 ```typescript
 // Invalidate everything
-queryClient.invalidateQueries({ queryKey: FEATURE_KEYS.all() });
+queryClient.invalidateQueries({ queryKey: FEATURE_KEYS.all() })
 
 // Invalidate all lists
-queryClient.invalidateQueries({ queryKey: FEATURE_KEYS.lists() });
+queryClient.invalidateQueries({ queryKey: FEATURE_KEYS.lists() })
 
 // Invalidate one item
-queryClient.invalidateQueries({ queryKey: FEATURE_KEYS.detail('123') });
+queryClient.invalidateQueries({ queryKey: FEATURE_KEYS.detail('123') })
 ```
 
 ## Technology Stack
@@ -413,31 +413,31 @@ function UserProfile({ userId }: { userId: string }) {
 
 ```typescript
 export function useCreateSession() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: data => sessionService.createSession(data),
+    mutationFn: (data) => sessionService.createSession(data),
 
-    onMutate: async newSession => {
+    onMutate: async (newSession) => {
       // Optimistic update (instant UI feedback)
-      await queryClient.cancelQueries({ queryKey: ['sessions'] });
-      const previous = queryClient.getQueryData(['sessions']);
+      await queryClient.cancelQueries({ queryKey: ['sessions'] })
+      const previous = queryClient.getQueryData(['sessions'])
 
-      queryClient.setQueryData(['sessions'], old => [newSession, ...old]);
+      queryClient.setQueryData(['sessions'], (old) => [newSession, ...old])
 
-      return { previous };
+      return { previous }
     },
 
     onError: (err, newSession, context) => {
       // Rollback on error
-      queryClient.setQueryData(['sessions'], context.previous);
+      queryClient.setQueryData(['sessions'], context.previous)
     },
 
     onSuccess: () => {
       // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['sessions'] })
     },
-  });
+  })
 }
 ```
 
@@ -446,19 +446,16 @@ export function useCreateSession() {
 ```typescript
 // services/SessionService.ts
 export class SessionService {
-  private sessionRepo: SessionRepository;
+  private sessionRepo: SessionRepository
 
   constructor() {
-    this.sessionRepo = new SessionRepository();
+    this.sessionRepo = new SessionRepository()
   }
 
-  async createSession(
-    userId: string,
-    data: CreateSessionData
-  ): Promise<Session> {
+  async createSession(userId: string, data: CreateSessionData): Promise<Session> {
     // Validation
     if (!data.projectId) {
-      throw new Error('Project ID is required');
+      throw new Error('Project ID is required')
     }
 
     // Business logic
@@ -469,16 +466,16 @@ export class SessionService {
       supportCount: 0,
       commentCount: 0,
       createdAt: new Date(),
-    };
+    }
 
     // Persist
-    await this.sessionRepo.create(session);
+    await this.sessionRepo.create(session)
 
     // Side effects
-    await this.updateProjectStats(data.projectId);
-    await this.updateUserStreak(userId);
+    await this.updateProjectStats(data.projectId)
+    await this.updateUserStreak(userId)
 
-    return session;
+    return session
   }
 
   private async updateProjectStats(projectId: string): Promise<void> {

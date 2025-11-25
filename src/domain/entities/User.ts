@@ -4,7 +4,7 @@
  * Represents a user in the Ambira system with core business logic.
  */
 
-export type ProfileVisibility = 'everyone' | 'followers' | 'private';
+export type ProfileVisibility = 'everyone' | 'followers' | 'private'
 
 export class User {
   constructor(
@@ -20,7 +20,7 @@ export class User {
     public readonly followingCount: number = 0,
     public readonly profileVisibility: ProfileVisibility = 'everyone'
   ) {
-    this.validateInvariants();
+    this.validateInvariants()
   }
 
   /**
@@ -28,23 +28,23 @@ export class User {
    */
   private validateInvariants(): void {
     if (!this.username || this.username.trim().length === 0) {
-      throw new Error('Username cannot be empty');
+      throw new Error('Username cannot be empty')
     }
 
     if (!this.name || this.name.trim().length === 0) {
-      throw new Error('Name cannot be empty');
+      throw new Error('Name cannot be empty')
     }
 
     if (!this.email || !this.isValidEmail(this.email)) {
-      throw new Error('Valid email is required');
+      throw new Error('Valid email is required')
     }
 
     if (this.followerCount < 0) {
-      throw new Error('Follower count cannot be negative');
+      throw new Error('Follower count cannot be negative')
     }
 
     if (this.followingCount < 0) {
-      throw new Error('Following count cannot be negative');
+      throw new Error('Following count cannot be negative')
     }
   }
 
@@ -52,7 +52,7 @@ export class User {
    * Simple email validation
    */
   private isValidEmail(email: string): boolean {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
   }
 
   /**
@@ -61,18 +61,18 @@ export class User {
   isVisibleTo(viewerId: string | null, isFollower: boolean = false): boolean {
     // Own profile is always visible
     if (viewerId === this.id) {
-      return true;
+      return true
     }
 
     switch (this.profileVisibility) {
       case 'everyone':
-        return true;
+        return true
       case 'followers':
-        return isFollower;
+        return isFollower
       case 'private':
-        return false;
+        return false
       default:
-        return false;
+        return false
     }
   }
 
@@ -80,7 +80,7 @@ export class User {
    * Business Logic: Get display name (name or username)
    */
   getDisplayName(): string {
-    return this.name || `@${this.username}`;
+    return this.name || `@${this.username}`
   }
 
   /**
@@ -89,10 +89,10 @@ export class User {
   getInitials(): string {
     return this.name
       .split(' ')
-      .map(part => part[0])
+      .map((part) => part[0])
       .join('')
       .slice(0, 2)
-      .toUpperCase();
+      .toUpperCase()
   }
 
   /**
@@ -100,7 +100,7 @@ export class User {
    */
   withFollowerCount(count: number): User {
     if (count < 0) {
-      throw new Error('Follower count cannot be negative');
+      throw new Error('Follower count cannot be negative')
     }
 
     return new User(
@@ -115,7 +115,7 @@ export class User {
       count,
       this.followingCount,
       this.profileVisibility
-    );
+    )
   }
 
   /**
@@ -123,7 +123,7 @@ export class User {
    */
   withFollowingCount(count: number): User {
     if (count < 0) {
-      throw new Error('Following count cannot be negative');
+      throw new Error('Following count cannot be negative')
     }
 
     return new User(
@@ -138,7 +138,7 @@ export class User {
       this.followerCount,
       count,
       this.profileVisibility
-    );
+    )
   }
 
   /**
@@ -157,6 +157,6 @@ export class User {
       followerCount: this.followerCount,
       followingCount: this.followingCount,
       profileVisibility: this.profileVisibility,
-    };
+    }
   }
 }

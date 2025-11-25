@@ -40,8 +40,8 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
        */
 
       // The logic is in the component
-      expect(true).toBe(true);
-    });
+      expect(true).toBe(true)
+    })
 
     it('should have useTimer dependency on showFinishModal', () => {
       /**
@@ -57,9 +57,9 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
        */
 
       // The logic is in the component's useEffect dependency array
-      expect(true).toBe(true);
-    });
-  });
+      expect(true).toBe(true)
+    })
+  })
 
   /**
    * Test 2: Time capture and freezing
@@ -94,8 +94,8 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
        */
 
       // The logic is implemented in the component
-      expect(true).toBe(true);
-    });
+      expect(true).toBe(true)
+    })
 
     it('should freeze slider max value during finish flow', () => {
       /**
@@ -116,9 +116,9 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
        */
 
       // The logic is in the component's pausePolling mechanism
-      expect(true).toBe(true);
-    });
-  });
+      expect(true).toBe(true)
+    })
+  })
 
   /**
    * Test 3: Display time effect doesn't run during modal
@@ -165,8 +165,8 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
        */
 
       // The logic is implemented in the component
-      expect(true).toBe(true);
-    });
+      expect(true).toBe(true)
+    })
 
     it('should have showFinishModal in displayTime effect dependencies', () => {
       /**
@@ -176,9 +176,9 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
        */
 
       // The logic is in the component's useEffect hook
-      expect(true).toBe(true);
-    });
-  });
+      expect(true).toBe(true)
+    })
+  })
 
   /**
    * Test 4: Modal interactions don't affect frozen values
@@ -201,8 +201,8 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
        */
 
       // The logic is protected by pausePolling and the effect dependency array
-      expect(true).toBe(true);
-    });
+      expect(true).toBe(true)
+    })
 
     it('should allow user to manually adjust duration without time-based changes', () => {
       /**
@@ -223,9 +223,9 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
        */
 
       // The logic is controlled by pausePolling
-      expect(true).toBe(true);
-    });
-  });
+      expect(true).toBe(true)
+    })
+  })
 
   /**
    * Test 5: Closing and reopening modal
@@ -248,9 +248,9 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
        */
 
       // The logic is in the effect dependency array
-      expect(true).toBe(true);
-    });
-  });
+      expect(true).toBe(true)
+    })
+  })
 
   /**
    * Test 6: Regression - Original bug prevention
@@ -280,8 +280,8 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
        */
 
       // The fix is in place at line 41
-      expect(true).toBe(true);
-    });
+      expect(true).toBe(true)
+    })
 
     it('should prevent displayTime updates during modal due to early return', () => {
       /**
@@ -302,9 +302,9 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
        */
 
       // The fix is in place at lines 122-124
-      expect(true).toBe(true);
-    });
-  });
+      expect(true).toBe(true)
+    })
+  })
 
   /**
    * Test 7: Code structure verification
@@ -323,8 +323,8 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
        */
 
       // These are verified by component working correctly
-      expect(true).toBe(true);
-    });
+      expect(true).toBe(true)
+    })
 
     it('should have effect to initialize adjustedDuration when modal opens', () => {
       /**
@@ -334,8 +334,8 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
        */
 
       // This is verified by the initialization behavior
-      expect(true).toBe(true);
-    });
+      expect(true).toBe(true)
+    })
 
     it('should have effect to stop displayTime updates during modal', () => {
       /**
@@ -345,8 +345,8 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
        */
 
       // This is verified by the display time behavior
-      expect(true).toBe(true);
-    });
+      expect(true).toBe(true)
+    })
 
     it('should show modal UI with frozen duration values', () => {
       /**
@@ -361,9 +361,9 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
        */
 
       // These are verified by the modal rendering behavior
-      expect(true).toBe(true);
-    });
-  });
+      expect(true).toBe(true)
+    })
+  })
 
   /**
    * Summary of Critical Code Paths
@@ -393,4 +393,4 @@ describe('Unit: SessionTimerEnhanced - Finish Modal Time Freeze', () => {
    *    - Works correctly because pausePolling makes getElapsedTime() stable
    *    - No change propagates to the slider during modal
    */
-});
+})

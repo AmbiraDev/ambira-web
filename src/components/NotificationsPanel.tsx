@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   useNotifications,
   useUnreadCount,
@@ -8,9 +8,9 @@ import {
   useMarkAllNotificationsRead,
   useDeleteNotification,
   useClearAllNotifications,
-} from '@/hooks/useNotifications';
-import { useRouter } from 'next/navigation';
-import { formatDistanceToNow } from 'date-fns';
+} from '@/hooks/useNotifications'
+import { useRouter } from 'next/navigation'
+import { formatDistanceToNow } from 'date-fns'
 import {
   Bell,
   Heart,
@@ -22,121 +22,114 @@ import {
   AtSign,
   Check,
   Trash2,
-} from 'lucide-react';
-import { Notification } from '@/types';
-import ConfirmDialog from '@/components/ConfirmDialog';
+} from 'lucide-react'
+import { Notification } from '@/types'
+import ConfirmDialog from '@/components/ConfirmDialog'
 
 interface NotificationsPanelProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen: boolean
+  onClose: () => void
 }
 
 const getNotificationIcon = (type: Notification['type']) => {
-  const iconClass = 'w-5 h-5 text-gray-600';
+  const iconClass = 'w-5 h-5 text-gray-600'
 
   switch (type) {
     case 'follow':
-      return <UserPlus className={iconClass} />;
+      return <UserPlus className={iconClass} />
     case 'support':
-      return <Heart className={iconClass} />;
+      return <Heart className={iconClass} />
     case 'comment':
-      return <MessageCircle className={iconClass} />;
+      return <MessageCircle className={iconClass} />
     case 'reply':
-      return <Reply className={iconClass} />;
+      return <Reply className={iconClass} />
     case 'mention':
-      return <AtSign className={iconClass} />;
+      return <AtSign className={iconClass} />
     case 'group':
-      return <Users className={iconClass} />;
+      return <Users className={iconClass} />
     case 'challenge':
-      return <Trophy className={iconClass} />;
+      return <Trophy className={iconClass} />
     default:
-      return <Bell className={iconClass} />;
+      return <Bell className={iconClass} />
   }
-};
+}
 
-export default function NotificationsPanel({
-  isOpen,
-  onClose,
-}: NotificationsPanelProps) {
+export default function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps) {
   // Enable real-time updates for notifications panel
   const { data: notifications = [] } = useNotifications({
     realtime: true,
-  });
-  const unreadCount = useUnreadCount();
-  const markAsReadMutation = useMarkNotificationRead();
-  const markAllAsReadMutation = useMarkAllNotificationsRead();
-  const deleteNotificationMutation = useDeleteNotification();
-  const clearAllNotificationsMutation = useClearAllNotifications();
-  const router = useRouter();
-  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  })
+  const unreadCount = useUnreadCount()
+  const markAsReadMutation = useMarkNotificationRead()
+  const markAllAsReadMutation = useMarkAllNotificationsRead()
+  const deleteNotificationMutation = useDeleteNotification()
+  const clearAllNotificationsMutation = useClearAllNotifications()
+  const router = useRouter()
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set())
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
 
   const handleNotificationClick = (notification: Notification) => {
     // Close panel and navigate immediately for better UX
-    onClose();
+    onClose()
 
     // Navigate to the link
     if (notification.linkUrl) {
-      router.push(notification.linkUrl);
+      router.push(notification.linkUrl)
     }
 
     // Mark as read in the background (don't await) - using React Query mutation
     if (!notification.isRead) {
-      markAsReadMutation.mutate(notification.id);
+      markAsReadMutation.mutate(notification.id)
     }
-  };
+  }
 
   const handleDelete = async (e: React.MouseEvent, notificationId: string) => {
-    e.stopPropagation();
+    e.stopPropagation()
 
     // Get the current mouse position
-    const mouseY = e.clientY;
+    const mouseY = e.clientY
 
-    setDeletingIds(prev => new Set(prev).add(notificationId));
+    setDeletingIds((prev) => new Set(prev).add(notificationId))
 
     // Use React Query mutation with optimistic updates
-    await deleteNotificationMutation.mutateAsync(notificationId);
+    await deleteNotificationMutation.mutateAsync(notificationId)
 
-    setDeletingIds(prev => {
-      const next = new Set(prev);
-      next.delete(notificationId);
-      return next;
-    });
+    setDeletingIds((prev) => {
+      const next = new Set(prev)
+      next.delete(notificationId)
+      return next
+    })
 
     // After deletion, check which notification is now under the mouse cursor
-    const elementAtPoint = document.elementFromPoint(e.clientX, mouseY);
-    const notificationElement = elementAtPoint?.closest(
-      '[data-notification-id]'
-    );
+    const elementAtPoint = document.elementFromPoint(e.clientX, mouseY)
+    const notificationElement = elementAtPoint?.closest('[data-notification-id]')
     if (notificationElement) {
-      const newNotificationId = notificationElement.getAttribute(
-        'data-notification-id'
-      );
+      const newNotificationId = notificationElement.getAttribute('data-notification-id')
       if (newNotificationId) {
-        setHoveredId(newNotificationId);
+        setHoveredId(newNotificationId)
       }
     }
-  };
+  }
 
   const handleMarkAllRead = async () => {
-    await markAllAsReadMutation.mutateAsync();
-  };
+    await markAllAsReadMutation.mutateAsync()
+  }
 
   const handleClearAllClick = () => {
-    setShowClearConfirm(true);
-  };
+    setShowClearConfirm(true)
+  }
 
   const handleClearAllConfirm = async () => {
-    await clearAllNotificationsMutation.mutateAsync();
-    setShowClearConfirm(false);
-  };
+    await clearAllNotificationsMutation.mutateAsync()
+    setShowClearConfirm(false)
+  }
 
   const handleClearAllCancel = () => {
-    setShowClearConfirm(false);
-  };
+    setShowClearConfirm(false)
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <>
@@ -148,9 +141,7 @@ export default function NotificationsPanel({
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-semibold text-gray-900">
-              Notifications
-            </h3>
+            <h3 className="text-base font-semibold text-gray-900">Notifications</h3>
             {unreadCount > 0 && (
               <span className="bg-[#0066CC] text-white text-xs font-semibold px-2 py-0.5 rounded-full">
                 {unreadCount}
@@ -196,7 +187,7 @@ export default function NotificationsPanel({
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
-              {notifications.map(notification => (
+              {notifications.map((notification) => (
                 <div
                   key={notification.id}
                   data-notification-id={notification.id}
@@ -215,12 +206,8 @@ export default function NotificationsPanel({
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900">
-                        {notification.title}
-                      </p>
-                      <p className="text-sm text-gray-700 mt-0.5">
-                        {notification.message}
-                      </p>
+                      <p className="text-sm font-semibold text-gray-900">{notification.title}</p>
+                      <p className="text-sm text-gray-700 mt-0.5">{notification.message}</p>
                       <p className="text-xs text-gray-500 mt-1">
                         {formatDistanceToNow(notification.createdAt, {
                           addSuffix: true,
@@ -232,7 +219,7 @@ export default function NotificationsPanel({
                     <div className="flex-shrink-0">
                       {hoveredId === notification.id ? (
                         <button
-                          onClick={e => handleDelete(e, notification.id)}
+                          onClick={(e) => handleDelete(e, notification.id)}
                           className="text-gray-400 hover:text-gray-600 transition-colors"
                           disabled={deletingIds.has(notification.id)}
                         >
@@ -265,5 +252,5 @@ export default function NotificationsPanel({
         isLoading={clearAllNotificationsMutation.isPending}
       />
     </>
-  );
+  )
 }

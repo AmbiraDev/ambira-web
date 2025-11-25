@@ -8,18 +8,18 @@
  * 4. Query deduplication to prevent duplicate concurrent requests
  */
 
-import { debug } from './debug';
-import { CACHE_TIMES } from '@/config/constants';
+import { debug } from './debug'
+import { CACHE_TIMES } from '@/config/constants'
 
 // ==================== STORAGE UTILITIES ====================
 
-const STORAGE_PREFIX = 'ambira_';
-const CACHE_VERSION = 'v1';
+const STORAGE_PREFIX = 'ambira_'
+const CACHE_VERSION = 'v1'
 
 interface CacheItem<T> {
-  data: T;
-  timestamp: number;
-  version: string;
+  data: T
+  timestamp: number
+  version: string
 }
 
 /**
@@ -27,15 +27,15 @@ interface CacheItem<T> {
  */
 function getStorage(type: 'local' | 'session'): Storage | null {
   try {
-    const storage = type === 'local' ? localStorage : sessionStorage;
+    const storage = type === 'local' ? localStorage : sessionStorage
     // Test if storage is accessible
-    const testKey = `${STORAGE_PREFIX}test`;
-    storage.setItem(testKey, 'test');
-    storage.removeItem(testKey);
-    return storage;
+    const testKey = `${STORAGE_PREFIX}test`
+    storage.setItem(testKey, 'test')
+    storage.removeItem(testKey)
+    return storage
   } catch (_error) {
-    debug.warn(`${type}Storage is not available:`, _error);
-    return null;
+    debug.warn(`${type}Storage is not available:`, _error)
+    return null
   }
 }
 
@@ -43,118 +43,114 @@ function getStorage(type: 'local' | 'session'): Storage | null {
  * LocalStorage cache with TTL support
  */
 export class LocalCache {
-  private static readonly PREFIX = `${STORAGE_PREFIX}${CACHE_VERSION}_`;
+  private static readonly PREFIX = `${STORAGE_PREFIX}${CACHE_VERSION}_`
 
-  static set<T>(
-    key: string,
-    data: T,
-    _ttlMs: number = CACHE_TIMES.DAILY
-  ): void {
-    const storage = getStorage('local');
-    if (!storage) return;
+  static set<T>(key: string, data: T, _ttlMs: number = CACHE_TIMES.DAILY): void {
+    const storage = getStorage('local')
+    if (!storage) return
 
     try {
       const item: CacheItem<T> = {
         data,
         timestamp: Date.now(),
         version: CACHE_VERSION,
-      };
-      storage.setItem(`${this.PREFIX}${key}`, JSON.stringify(item));
+      }
+      storage.setItem(`${this.PREFIX}${key}`, JSON.stringify(item))
     } catch (_error) {
       // Storage might be full, try to clear old items
-      this.clearExpired();
+      this.clearExpired()
       try {
         const item: CacheItem<T> = {
           data,
           timestamp: Date.now(),
           version: CACHE_VERSION,
-        };
-        storage.setItem(`${this.PREFIX}${key}`, JSON.stringify(item));
+        }
+        storage.setItem(`${this.PREFIX}${key}`, JSON.stringify(item))
       } catch (e2) {
-        debug.warn('Failed to cache data:', e2);
+        debug.warn('Failed to cache data:', e2)
       }
     }
   }
 
   static get<T>(key: string, _ttlMs: number = CACHE_TIMES.DAILY): T | null {
-    const storage = getStorage('local');
-    if (!storage) return null;
+    const storage = getStorage('local')
+    if (!storage) return null
 
     try {
-      const itemStr = storage.getItem(`${this.PREFIX}${key}`);
-      if (!itemStr) return null;
+      const itemStr = storage.getItem(`${this.PREFIX}${key}`)
+      if (!itemStr) return null
 
-      const item: CacheItem<T> = JSON.parse(itemStr);
+      const item: CacheItem<T> = JSON.parse(itemStr)
 
       // Check version
       if (item.version !== CACHE_VERSION) {
-        storage.removeItem(`${this.PREFIX}${key}`);
-        return null;
+        storage.removeItem(`${this.PREFIX}${key}`)
+        return null
       }
 
       // Check TTL
-      const age = Date.now() - item.timestamp;
+      const age = Date.now() - item.timestamp
       if (age > _ttlMs) {
-        storage.removeItem(`${this.PREFIX}${key}`);
-        return null;
+        storage.removeItem(`${this.PREFIX}${key}`)
+        return null
       }
 
-      return item.data;
+      return item.data
     } catch (_error) {
-      debug.warn('Failed to retrieve cached data:', _error);
-      return null;
+      debug.warn('Failed to retrieve cached data:', _error)
+      return null
     }
   }
 
   static remove(key: string): void {
-    const storage = getStorage('local');
-    if (!storage) return;
-    storage.removeItem(`${this.PREFIX}${key}`);
+    const storage = getStorage('local')
+    if (!storage) return
+    storage.removeItem(`${this.PREFIX}${key}`)
   }
 
   static clear(): void {
-    const storage = getStorage('local');
-    if (!storage) return;
+    const storage = getStorage('local')
+    if (!storage) return
 
     try {
-      const keys = Object.keys(storage);
-      keys.forEach(key => {
+      const keys = Object.keys(storage)
+      keys.forEach((key) => {
         if (key.startsWith(this.PREFIX)) {
-          storage.removeItem(key);
+          storage.removeItem(key)
         }
-      });
+      })
     } catch (_error) {
-      debug.warn('Failed to clear cache:', _error);
+      debug.warn('Failed to clear cache:', _error)
     }
   }
 
   static clearExpired(): void {
-    const storage = getStorage('local');
-    if (!storage) return;
+    const storage = getStorage('local')
+    if (!storage) return
 
     try {
-      const keys = Object.keys(storage);
-      const now = Date.now();
+      const keys = Object.keys(storage)
+      const now = Date.now()
 
-      keys.forEach(key => {
-        if (!key.startsWith(this.PREFIX)) return;
+      keys.forEach((key) => {
+        if (!key.startsWith(this.PREFIX)) return
 
         try {
-          const itemStr = storage.getItem(key);
-          if (!itemStr) return;
+          const itemStr = storage.getItem(key)
+          if (!itemStr) return
 
-          const item: CacheItem<unknown> = JSON.parse(itemStr);
+          const item: CacheItem<unknown> = JSON.parse(itemStr)
           // Remove items older than 7 days
           if (now - item.timestamp > CACHE_TIMES.WEEKLY) {
-            storage.removeItem(key);
+            storage.removeItem(key)
           }
         } catch (_error) {
           // Invalid item, remove it
-          storage.removeItem(key);
+          storage.removeItem(key)
         }
-      });
+      })
     } catch (_error) {
-      debug.warn('Failed to clear expired cache:', _error);
+      debug.warn('Failed to clear expired cache:', _error)
     }
   }
 }
@@ -163,66 +159,66 @@ export class LocalCache {
  * SessionStorage cache (cleared when browser tab closes)
  */
 export class SessionCache {
-  private static readonly PREFIX = `${STORAGE_PREFIX}${CACHE_VERSION}_`;
+  private static readonly PREFIX = `${STORAGE_PREFIX}${CACHE_VERSION}_`
 
   static set<T>(key: string, data: T): void {
-    const storage = getStorage('session');
-    if (!storage) return;
+    const storage = getStorage('session')
+    if (!storage) return
 
     try {
       const item: CacheItem<T> = {
         data,
         timestamp: Date.now(),
         version: CACHE_VERSION,
-      };
-      storage.setItem(`${this.PREFIX}${key}`, JSON.stringify(item));
+      }
+      storage.setItem(`${this.PREFIX}${key}`, JSON.stringify(item))
     } catch (_error) {
-      debug.warn('Failed to cache data in session:', _error);
+      debug.warn('Failed to cache data in session:', _error)
     }
   }
 
   static get<T>(key: string): T | null {
-    const storage = getStorage('session');
-    if (!storage) return null;
+    const storage = getStorage('session')
+    if (!storage) return null
 
     try {
-      const itemStr = storage.getItem(`${this.PREFIX}${key}`);
-      if (!itemStr) return null;
+      const itemStr = storage.getItem(`${this.PREFIX}${key}`)
+      if (!itemStr) return null
 
-      const item: CacheItem<T> = JSON.parse(itemStr);
+      const item: CacheItem<T> = JSON.parse(itemStr)
 
       // Check version
       if (item.version !== CACHE_VERSION) {
-        storage.removeItem(`${this.PREFIX}${key}`);
-        return null;
+        storage.removeItem(`${this.PREFIX}${key}`)
+        return null
       }
 
-      return item.data;
+      return item.data
     } catch (_error) {
-      debug.warn('Failed to retrieve cached data from session:', _error);
-      return null;
+      debug.warn('Failed to retrieve cached data from session:', _error)
+      return null
     }
   }
 
   static remove(key: string): void {
-    const storage = getStorage('session');
-    if (!storage) return;
-    storage.removeItem(`${this.PREFIX}${key}`);
+    const storage = getStorage('session')
+    if (!storage) return
+    storage.removeItem(`${this.PREFIX}${key}`)
   }
 
   static clear(): void {
-    const storage = getStorage('session');
-    if (!storage) return;
+    const storage = getStorage('session')
+    if (!storage) return
 
     try {
-      const keys = Object.keys(storage);
-      keys.forEach(key => {
+      const keys = Object.keys(storage)
+      keys.forEach((key) => {
         if (key.startsWith(this.PREFIX)) {
-          storage.removeItem(key);
+          storage.removeItem(key)
         }
-      });
+      })
     } catch (_error) {
-      debug.warn('Failed to clear session cache:', _error);
+      debug.warn('Failed to clear session cache:', _error)
     }
   }
 }
@@ -230,62 +226,58 @@ export class SessionCache {
 // ==================== MEMORY CACHE ====================
 
 interface MemoryCacheItem<T> {
-  data: T;
-  timestamp: number;
+  data: T
+  timestamp: number
 }
 
 /**
  * In-memory cache for ultra-fast access (cleared on page refresh)
  */
 export class MemoryCache {
-  private static cache = new Map<string, MemoryCacheItem<unknown>>();
-  private static readonly MAX_SIZE = 100; // Prevent memory leaks
+  private static cache = new Map<string, MemoryCacheItem<unknown>>()
+  private static readonly MAX_SIZE = 100 // Prevent memory leaks
 
-  static set<T>(
-    key: string,
-    data: T,
-    _ttlMs: number = CACHE_TIMES.MEDIUM
-  ): void {
+  static set<T>(key: string, data: T, _ttlMs: number = CACHE_TIMES.MEDIUM): void {
     // If cache is too large, remove oldest items
     if (this.cache.size >= this.MAX_SIZE) {
-      const oldestKey = this.cache.keys().next().value as string | undefined;
+      const oldestKey = this.cache.keys().next().value as string | undefined
       if (oldestKey) {
-        this.cache.delete(oldestKey);
+        this.cache.delete(oldestKey)
       }
     }
 
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
-    });
+    })
   }
 
   static get<T>(key: string, _ttlMs: number = CACHE_TIMES.MEDIUM): T | null {
-    const item = this.cache.get(key);
-    if (!item) return null;
+    const item = this.cache.get(key)
+    if (!item) return null
 
-    const age = Date.now() - item.timestamp;
+    const age = Date.now() - item.timestamp
     if (age > _ttlMs) {
-      this.cache.delete(key);
-      return null;
+      this.cache.delete(key)
+      return null
     }
 
-    return item.data as T;
+    return item.data as T
   }
 
   static remove(key: string): void {
-    this.cache.delete(key);
+    this.cache.delete(key)
   }
 
   static clear(): void {
-    this.cache.clear();
+    this.cache.clear()
   }
 
   static clearExpired(_ttlMs: number = CACHE_TIMES.MEDIUM): void {
-    const now = Date.now();
+    const now = Date.now()
     for (const [key, item] of this.cache.entries()) {
       if (now - item.timestamp > _ttlMs) {
-        this.cache.delete(key);
+        this.cache.delete(key)
       }
     }
   }
@@ -294,15 +286,15 @@ export class MemoryCache {
 // ==================== QUERY DEDUPLICATION ====================
 
 interface PendingQuery<T> {
-  promise: Promise<T>;
-  timestamp: number;
+  promise: Promise<T>
+  timestamp: number
 }
 
 /**
  * Prevents duplicate concurrent requests for the same data
  */
 export class QueryDeduplicator {
-  private static pending = new Map<string, PendingQuery<unknown>>();
+  private static pending = new Map<string, PendingQuery<unknown>>()
 
   static async dedupe<T>(
     key: string,
@@ -310,31 +302,31 @@ export class QueryDeduplicator {
     _ttlMs: number = 1000
   ): Promise<T> {
     // Check if there's a pending request for this key
-    const existing = this.pending.get(key);
+    const existing = this.pending.get(key)
     if (existing) {
-      const age = Date.now() - existing.timestamp;
+      const age = Date.now() - existing.timestamp
       if (age < _ttlMs) {
         // Return the existing promise
-        return existing.promise as Promise<T>;
+        return existing.promise as Promise<T>
       }
     }
 
     // Create new request
     const promise = queryFn().finally(() => {
       // Clean up after request completes
-      this.pending.delete(key);
-    });
+      this.pending.delete(key)
+    })
 
     this.pending.set(key, {
       promise,
       timestamp: Date.now(),
-    });
+    })
 
-    return promise;
+    return promise
   }
 
   static clear(): void {
-    this.pending.clear();
+    this.pending.clear()
   }
 }
 
@@ -353,10 +345,10 @@ export async function cachedQuery<T>(
   key: string,
   queryFn: () => Promise<T>,
   options: {
-    memoryTtl?: number;
-    sessionCache?: boolean;
-    localTtl?: number;
-    dedupe?: boolean;
+    memoryTtl?: number
+    sessionCache?: boolean
+    localTtl?: number
+    dedupe?: boolean
   } = {}
 ): Promise<T> {
   const {
@@ -364,57 +356,57 @@ export async function cachedQuery<T>(
     sessionCache = false,
     localTtl = 0, // 0 = no localStorage caching
     dedupe = true,
-  } = options;
+  } = options
 
   // Check memory cache first
-  const memoryData = MemoryCache.get<T>(key, memoryTtl);
+  const memoryData = MemoryCache.get<T>(key, memoryTtl)
   if (memoryData !== null) {
-    return memoryData;
+    return memoryData
   }
 
   // Check session cache
   if (sessionCache) {
-    const sessionData = SessionCache.get<T>(key);
+    const sessionData = SessionCache.get<T>(key)
     if (sessionData !== null) {
       // Store in memory for even faster next access
-      MemoryCache.set(key, sessionData, memoryTtl);
-      return sessionData;
+      MemoryCache.set(key, sessionData, memoryTtl)
+      return sessionData
     }
   }
 
   // Check local cache
   if (localTtl > 0) {
-    const localData = LocalCache.get<T>(key, localTtl);
+    const localData = LocalCache.get<T>(key, localTtl)
     if (localData !== null) {
       // Store in higher-level caches
-      MemoryCache.set(key, localData, memoryTtl);
+      MemoryCache.set(key, localData, memoryTtl)
       if (sessionCache) {
-        SessionCache.set(key, localData);
+        SessionCache.set(key, localData)
       }
-      return localData;
+      return localData
     }
   }
 
   // Execute query (with optional deduplication)
   const executeQuery = async (): Promise<T> => {
-    const data = await queryFn();
+    const data = await queryFn()
 
     // Store in all caches
-    MemoryCache.set(key, data, memoryTtl);
+    MemoryCache.set(key, data, memoryTtl)
     if (sessionCache) {
-      SessionCache.set(key, data);
+      SessionCache.set(key, data)
     }
     if (localTtl > 0) {
-      LocalCache.set(key, data, localTtl);
+      LocalCache.set(key, data, localTtl)
     }
 
-    return data;
-  };
+    return data
+  }
 
   if (dedupe) {
-    return QueryDeduplicator.dedupe(key, executeQuery);
+    return QueryDeduplicator.dedupe(key, executeQuery)
   } else {
-    return executeQuery();
+    return executeQuery()
   }
 }
 
@@ -422,9 +414,9 @@ export async function cachedQuery<T>(
  * Invalidate cached data across all layers
  */
 export function invalidateCache(key: string): void {
-  MemoryCache.remove(key);
-  SessionCache.remove(key);
-  LocalCache.remove(key);
+  MemoryCache.remove(key)
+  SessionCache.remove(key)
+  LocalCache.remove(key)
 }
 
 /**
@@ -432,7 +424,7 @@ export function invalidateCache(key: string): void {
  */
 export function invalidateCachePrefix(_prefix: string): void {
   // Memory cache
-  MemoryCache.clear(); // Simple clear for now
+  MemoryCache.clear() // Simple clear for now
 
   // Session and local storage would need iteration
   // This is a simplified version
@@ -442,18 +434,18 @@ export function invalidateCachePrefix(_prefix: string): void {
  * Clear all caches (useful on logout)
  */
 export function clearAllCaches(): void {
-  MemoryCache.clear();
-  SessionCache.clear();
-  LocalCache.clear();
-  QueryDeduplicator.clear();
+  MemoryCache.clear()
+  SessionCache.clear()
+  LocalCache.clear()
+  QueryDeduplicator.clear()
 }
 
 // Clear expired items periodically
 if (typeof window !== 'undefined') {
   setInterval(() => {
-    MemoryCache.clearExpired();
-    LocalCache.clearExpired();
-  }, CACHE_TIMES.MEDIUM); // Every 5 minutes
+    MemoryCache.clearExpired()
+    LocalCache.clearExpired()
+  }, CACHE_TIMES.MEDIUM) // Every 5 minutes
 }
 
 // ==================== SIMPLE CACHE API ====================
@@ -461,32 +453,32 @@ if (typeof window !== 'undefined') {
 /**
  * Simple in-memory cache operations for testing and convenience
  */
-const simpleCache = new Map<string, unknown>();
+const simpleCache = new Map<string, unknown>()
 
 /**
  * Get a value from the simple in-memory cache
  */
 export function getFromCache<T = unknown>(key: string): T | undefined {
-  return simpleCache.get(key) as T | undefined;
+  return simpleCache.get(key) as T | undefined
 }
 
 /**
  * Set a value in the simple in-memory cache
  */
 export function setInCache<T = unknown>(key: string, value: T): void {
-  simpleCache.set(key, value);
+  simpleCache.set(key, value)
 }
 
 /**
  * Check if a key exists in the simple in-memory cache
  */
 export function cacheHasKey(key: string): boolean {
-  return simpleCache.has(key);
+  return simpleCache.has(key)
 }
 
 /**
  * Clear all values from the simple in-memory cache
  */
 export function clearCache(): void {
-  simpleCache.clear();
+  simpleCache.clear()
 }

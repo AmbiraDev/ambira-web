@@ -141,7 +141,7 @@ export const GROUPS_KEYS = {
   detail: (id: string) => [...GROUPS_KEYS.details(), id] as const,
   leaderboard: (groupId: string, period: TimePeriod) =>
     [...GROUPS_KEYS.detail(groupId), 'leaderboard', period] as const,
-};
+}
 ```
 
 **Benefits**:
@@ -156,47 +156,41 @@ Example from `useGroupMutations.ts`:
 
 ```typescript
 export function useJoinGroup() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ groupId, userId }) =>
-      groupService.joinGroup(groupId, userId),
+    mutationFn: ({ groupId, userId }) => groupService.joinGroup(groupId, userId),
 
     onMutate: async ({ groupId, userId }) => {
       // 1. Cancel outgoing queries
       await queryClient.cancelQueries({
         queryKey: GROUPS_KEYS.detail(groupId),
-      });
+      })
 
       // 2. Snapshot for rollback
-      const previousGroup = queryClient.getQueryData(
-        GROUPS_KEYS.detail(groupId)
-      );
+      const previousGroup = queryClient.getQueryData(GROUPS_KEYS.detail(groupId))
 
       // 3. Optimistic update
       queryClient.setQueryData(GROUPS_KEYS.detail(groupId), (old: any) => ({
         ...old,
         memberIds: [...old.memberIds, userId],
-      }));
+      }))
 
-      return { previousGroup };
+      return { previousGroup }
     },
 
     onError: (_, { groupId }, context) => {
       // 4. Rollback on error
       if (context?.previousGroup) {
-        queryClient.setQueryData(
-          GROUPS_KEYS.detail(groupId),
-          context.previousGroup
-        );
+        queryClient.setQueryData(GROUPS_KEYS.detail(groupId), context.previousGroup)
       }
     },
 
     onSuccess: (_, { groupId }) => {
       // 5. Invalidate for fresh data
-      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) });
+      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) })
     },
-  });
+  })
 }
 ```
 
@@ -210,7 +204,7 @@ const CACHE_TIMES = {
   MEDIUM: 5 * 60 * 1000, // 5m  - Sessions, comments
   LONG: 15 * 60 * 1000, // 15m - Groups, user profiles
   VERY_LONG: 60 * 60 * 1000, // 1h  - Stats, analytics
-};
+}
 ```
 
 ### 4. Backwards Compatibility
@@ -222,14 +216,14 @@ Old `useGroupDetails` hook updated to wrap new implementation:
  * @deprecated Use the new React Query hooks from './useGroups' instead
  */
 export function useGroupDetails(groupId: string) {
-  const { data, isLoading, error, refetch } = useGroupDetailsNew(groupId);
+  const { data, isLoading, error, refetch } = useGroupDetailsNew(groupId)
 
   return {
     group: data, // Old API
     isLoading,
     error,
     refetch,
-  };
+  }
 }
 ```
 
@@ -275,23 +269,23 @@ This allows gradual migration without breaking existing code.
 
 ```typescript
 // Component with direct React Query ❌
-import { useQuery } from '@tanstack/react-query';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { useQuery } from '@tanstack/react-query'
+import { firebaseApi } from '@/lib/firebaseApi'
 
 function GroupPage({ groupId }) {
   const { data } = useQuery({
     queryKey: ['group', groupId],
     queryFn: () => firebaseApi.group.getGroup(groupId),
-  });
+  })
 }
 ```
 
 ```typescript
 // Component with centralized hook ❌
-import { useGroup } from '@/hooks/useCache';
+import { useGroup } from '@/hooks/useCache'
 
 function GroupPage({ groupId }) {
-  const { data: group } = useGroup(groupId);
+  const { data: group } = useGroup(groupId)
 }
 ```
 
@@ -330,29 +324,29 @@ function GroupPage({ groupId, userId }) {
 ```typescript
 describe('GroupService', () => {
   it('prevents duplicate membership', async () => {
-    const service = new GroupService();
-    await expect(
-      service.joinGroup('group-123', 'existing-member')
-    ).rejects.toThrow('Already a member');
-  });
-});
+    const service = new GroupService()
+    await expect(service.joinGroup('group-123', 'existing-member')).rejects.toThrow(
+      'Already a member'
+    )
+  })
+})
 ```
 
 ### 2. Hook Tests (With React Query)
 
 ```typescript
-import { renderHook, waitFor } from '@testing-library/react';
-import { useGroupDetails } from '@/features/groups/hooks';
+import { renderHook, waitFor } from '@testing-library/react'
+import { useGroupDetails } from '@/features/groups/hooks'
 
 test('useGroupDetails fetches and caches data', async () => {
   const { result } = renderHook(() => useGroupDetails('group-123'), {
     wrapper: QueryClientProvider,
-  });
+  })
 
   await waitFor(() => {
-    expect(result.current.data).toBeDefined();
-  });
-});
+    expect(result.current.data).toBeDefined()
+  })
+})
 ```
 
 ### 3. Component Tests (With Mocked Hooks)

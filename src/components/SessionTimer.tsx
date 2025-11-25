@@ -1,75 +1,71 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { useTimer } from '@/features/timer/hooks';
-import { useAuth } from '@/hooks/useAuth';
-import { Project, CreateSessionData } from '@/types';
-import { TimerDisplay } from './TimerDisplay';
-import { SaveSession } from './SaveSession';
-import { firebaseApi } from '@/lib/api';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from 'react'
+import { useTimer } from '@/features/timer/hooks'
+import { useAuth } from '@/hooks/useAuth'
+import { Project, CreateSessionData } from '@/types'
+import { TimerDisplay } from './TimerDisplay'
+import { SaveSession } from './SaveSession'
+import { firebaseApi } from '@/lib/api'
+import { cn } from '@/lib/utils'
 
 interface SessionTimerProps {
-  className?: string;
+  className?: string
 }
 
-export const SessionTimer: React.FC<SessionTimerProps> = ({
-  className = '',
-}) => {
-  const { timerState, startTimer } = useTimer();
-  const { user } = useAuth();
+export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) => {
+  const { timerState, startTimer } = useTimer()
+  const { user } = useAuth()
 
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [showFinishModal, setShowFinishModal] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([])
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [showFinishModal, setShowFinishModal] = useState(false)
 
   // Load projects on mount
   useEffect(() => {
     const loadProjects = async () => {
       try {
         // TODO: Load projects from Firebase
-        const projectList: Project[] = []; // await mockProjectApi.getProjects(token);
-        setProjects(projectList);
+        const projectList: Project[] = [] // await mockProjectApi.getProjects(token);
+        setProjects(projectList)
 
         // If timer already has a project selected, use it
         if (timerState.currentProject) {
-          setSelectedProjectId(timerState.currentProject.id);
+          setSelectedProjectId(timerState.currentProject.id)
         }
       } catch {}
-    };
+    }
 
     if (user) {
-      loadProjects();
+      loadProjects()
     }
-  }, [user, timerState.currentProject]);
+  }, [user, timerState.currentProject])
 
   const handleStartTimer = async () => {
-    if (!selectedProjectId) return;
+    if (!selectedProjectId) return
 
     try {
-      setIsLoading(true);
-      await startTimer(selectedProjectId);
+      setIsLoading(true)
+      await startTimer(selectedProjectId)
     } catch {
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleFinishModalOpen = () => {
-    setShowFinishModal(true);
-  };
+    setShowFinishModal(true)
+  }
 
-  const isActive = timerState.isRunning || timerState.pausedDuration > 0;
+  const isActive = timerState.isRunning || timerState.pausedDuration > 0
 
   return (
     <div className={cn('max-w-4xl mx-auto p-6', className)}>
       <div className="bg-white rounded-lg shadow-lg p-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Focus Session
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Focus Session</h1>
           <p className="text-gray-600">Track your work and stay productive</p>
         </div>
 
@@ -81,17 +77,15 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
         {/* Project Selection */}
         {!isActive && (
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Project
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Select Project</label>
             <select
               value={selectedProjectId}
-              onChange={e => setSelectedProjectId(e.target.value)}
+              onChange={(e) => setSelectedProjectId(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isLoading}
             >
               <option value="">Choose a project...</option>
-              {projects.map(project => (
+              {projects.map((project) => (
                 <option key={project.id} value={project.id}>
                   {project.name}
                 </option>
@@ -110,12 +104,8 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
                 </span>
               </div>
               <div>
-                <h3 className="font-medium text-gray-900">
-                  {timerState.currentProject.name}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {timerState.currentProject.description}
-                </p>
+                <h3 className="font-medium text-gray-900">{timerState.currentProject.name}</h3>
+                <p className="text-sm text-gray-600">{timerState.currentProject.description}</p>
               </div>
             </div>
           </div>
@@ -144,8 +134,7 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
               <span className="text-sm font-medium">You're offline</span>
             </div>
             <p className="text-sm text-orange-700 mt-1">
-              Your timer will continue running. Changes will sync when you
-              reconnect.
+              Your timer will continue running. Changes will sync when you reconnect.
             </p>
           </div>
         )}
@@ -154,12 +143,12 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
       {/* Finish Session Modal */}
       {showFinishModal && (
         <SaveSession
-          onSave={async data => {
+          onSave={async (data) => {
             try {
               // Create session data
               const sessionData: CreateSessionData = {
                 ...data,
-              };
+              }
 
               // Create session and post if visibility allows
               if (data.visibility !== 'private') {
@@ -169,16 +158,16 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
                   sessionData,
                   data.description || `Completed ${data.title}`,
                   data.visibility
-                );
+                )
               } else {
                 // Create private session only
-                await firebaseApi.session.createSession(sessionData);
+                await firebaseApi.session.createSession(sessionData)
               }
 
-              setShowFinishModal(false);
+              setShowFinishModal(false)
               // Timer will be finished by the context
             } catch (error) {
-              throw error;
+              throw error
             }
           }}
           onCancel={() => setShowFinishModal(false)}
@@ -198,14 +187,14 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
         />
       )}
     </div>
-  );
-};
+  )
+}
 
 // Custom Timer Controls for SessionTimer
 interface CustomTimerControlsProps {
-  onFinish: () => void;
-  onStart: () => void;
-  className?: string;
+  onFinish: () => void
+  onStart: () => void
+  className?: string
 }
 
 const CustomTimerControls: React.FC<CustomTimerControlsProps> = ({
@@ -213,38 +202,38 @@ const CustomTimerControls: React.FC<CustomTimerControlsProps> = ({
   onStart,
   className = '',
 }) => {
-  const { timerState, pauseTimer, resumeTimer, resetTimer } = useTimer();
-  const [isLoading, setIsLoading] = useState(false);
+  const { timerState, pauseTimer, resumeTimer, resetTimer } = useTimer()
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleStart = async () => {
     try {
-      setIsLoading(true);
-      await onStart();
+      setIsLoading(true)
+      await onStart()
     } catch {
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handlePause = async () => {
     try {
-      setIsLoading(true);
-      await pauseTimer();
+      setIsLoading(true)
+      await pauseTimer()
     } catch {
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleResume = async () => {
     try {
-      setIsLoading(true);
-      await resumeTimer();
+      setIsLoading(true)
+      await resumeTimer()
     } catch {
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleReset = async () => {
     if (
@@ -253,21 +242,19 @@ const CustomTimerControls: React.FC<CustomTimerControlsProps> = ({
       )
     ) {
       try {
-        setIsLoading(true);
-        await resetTimer();
+        setIsLoading(true)
+        await resetTimer()
       } catch {
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
     }
-  };
+  }
 
-  const isActive = timerState.isRunning || timerState.pausedDuration > 0;
+  const isActive = timerState.isRunning || timerState.pausedDuration > 0
 
   return (
-    <div
-      className={cn('flex items-center justify-center space-x-3', className)}
-    >
+    <div className={cn('flex items-center justify-center space-x-3', className)}>
       {!isActive ? (
         <button
           onClick={handleStart}
@@ -363,5 +350,5 @@ const CustomTimerControls: React.FC<CustomTimerControlsProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}

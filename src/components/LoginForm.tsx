@@ -1,104 +1,98 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import { LoginCredentials } from '@/types';
+import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
+import { LoginCredentials } from '@/types'
 
 export const LoginForm: React.FC = () => {
   const [formData, setFormData] = useState<LoginCredentials>({
     email: '',
     password: '',
-  });
-  const [errors, setErrors] = useState<Partial<LoginCredentials>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string>('');
+  })
+  const [errors, setErrors] = useState<Partial<LoginCredentials>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string>('')
 
-  const { login } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { login } = useAuth()
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
 
     // Clear field-specific error when user starts typing
     if (errors[name as keyof LoginCredentials]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
+      setErrors((prev) => ({ ...prev, [name]: undefined }))
     }
 
     // Clear submit error
     if (submitError) {
-      setSubmitError('');
+      setSubmitError('')
     }
-  };
+  }
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<LoginCredentials> = {};
+    const newErrors: Partial<LoginCredentials> = {}
 
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'Email is required'
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = 'Email is invalid'
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = 'Password is required'
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = 'Password must be at least 6 characters'
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!validateForm()) {
-      return;
+      return
     }
 
-    setIsSubmitting(true);
-    setSubmitError('');
+    setIsSubmitting(true)
+    setSubmitError('')
 
     try {
-      await login(formData);
+      await login(formData)
 
       // Check for invite context in sessionStorage
       const inviteContextStr =
-        typeof window !== 'undefined'
-          ? sessionStorage.getItem('inviteContext')
-          : null;
+        typeof window !== 'undefined' ? sessionStorage.getItem('inviteContext') : null
 
       if (inviteContextStr) {
         try {
-          const inviteContext = JSON.parse(inviteContextStr);
+          const inviteContext = JSON.parse(inviteContextStr)
 
           // Clear the invite context
-          sessionStorage.removeItem('inviteContext');
+          sessionStorage.removeItem('inviteContext')
 
           // Redirect based on invite type
           if (inviteContext.type === 'group' && inviteContext.groupId) {
-            router.push(`/invite/group/${inviteContext.groupId}`);
-            return;
+            router.push(`/invite/group/${inviteContext.groupId}`)
+            return
           }
-        } catch (error) {}
+        } catch (_error) {}
       }
 
       // Get redirect URL from query params
-      const redirectTo = searchParams.get('redirect') || '/';
-      router.push(redirectTo);
-    } catch (error) {
-      setSubmitError(
-        error instanceof Error
-          ? error.message
-          : 'Login failed. Please try again.'
-      );
+      const redirectTo = searchParams.get('redirect') || '/'
+      router.push(redirectTo)
+    } catch (_error) {
+      setSubmitError(error instanceof Error ? error.message : 'Login failed. Please try again.')
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -110,10 +104,7 @@ export const LoginForm: React.FC = () => {
 
       <div className="space-y-6">
         <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-foreground mb-2"
-          >
+          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
             Email address
           </label>
           <input
@@ -128,16 +119,11 @@ export const LoginForm: React.FC = () => {
             }`}
             placeholder="Enter your email"
           />
-          {errors.email && (
-            <p className="mt-2 text-sm text-destructive">{errors.email}</p>
-          )}
+          {errors.email && <p className="mt-2 text-sm text-destructive">{errors.email}</p>}
         </div>
 
         <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-foreground mb-2"
-          >
+          <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
             Password
           </label>
           <input
@@ -152,9 +138,7 @@ export const LoginForm: React.FC = () => {
             }`}
             placeholder="Enter your password"
           />
-          {errors.password && (
-            <p className="mt-2 text-sm text-destructive">{errors.password}</p>
-          )}
+          {errors.password && <p className="mt-2 text-sm text-destructive">{errors.password}</p>}
         </div>
       </div>
 
@@ -187,5 +171,5 @@ export const LoginForm: React.FC = () => {
         </div>
       </div>
     </form>
-  );
-};
+  )
+}

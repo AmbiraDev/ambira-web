@@ -10,155 +10,130 @@
  * - Progressive disclosure of actions
  */
 
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  Clock,
-  Activity as ActivityIcon,
-} from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { useUserCustomActivityTypes } from '@/hooks/useActivityTypes';
-import { getAllActivitiesWithUsage } from '@/lib/api/userActivityPreferences';
-import { IconRenderer } from '@/components/IconRenderer';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from '@/components/ui/card';
-import Header from '@/components/HeaderComponent';
-import MobileHeader from '@/components/MobileHeader';
-import BottomNavigation from '@/components/BottomNavigation';
-import Footer from '@/components/Footer';
-import { CreateCustomActivityModal } from './CreateCustomActivityModal';
-import { EditCustomActivityModal } from './EditCustomActivityModal';
-import { DeleteCustomActivityModal } from './DeleteCustomActivityModal';
-import { ActivityType } from '@/types';
+import React, { useState } from 'react'
+import { Plus, Pencil, Trash2, Clock, Activity as ActivityIcon } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
+import { useUserCustomActivityTypes } from '@/hooks/useActivityTypes'
+import { getAllActivitiesWithUsage } from '@/lib/api/userActivityPreferences'
+import { IconRenderer } from '@/components/IconRenderer'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import Header from '@/components/HeaderComponent'
+import MobileHeader from '@/components/MobileHeader'
+import BottomNavigation from '@/components/BottomNavigation'
+import Footer from '@/components/Footer'
+import { CreateCustomActivityModal } from './CreateCustomActivityModal'
+import { EditCustomActivityModal } from './EditCustomActivityModal'
+import { DeleteCustomActivityModal } from './DeleteCustomActivityModal'
+import { ActivityType } from '@/types'
 
-const MAX_CUSTOM_ACTIVITIES = 10;
+const MAX_CUSTOM_ACTIVITIES = 10
 
 interface ActivityWithStats extends ActivityType {
-  lastUsed?: Date;
-  sessionCount: number;
-  totalHours: number;
+  lastUsed?: Date
+  sessionCount: number
+  totalHours: number
 }
 
 export function ActivitiesSettingsPageContent() {
-  const { user } = useAuth();
-  const { data: customActivities = [], isLoading } = useUserCustomActivityTypes(
-    user?.id || ''
-  );
+  const { user } = useAuth()
+  const { data: customActivities = [], isLoading } = useUserCustomActivityTypes(user?.id || '')
 
   // Modal states
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(
-    null
-  );
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null)
 
   // Activity stats (session count, hours)
-  const [activitiesWithStats, setActivitiesWithStats] = useState<
-    ActivityWithStats[]
-  >([]);
-  const [statsLoading, setStatsLoading] = useState(false);
+  const [activitiesWithStats, setActivitiesWithStats] = useState<ActivityWithStats[]>([])
 
   // Load activity stats when custom activities change
   React.useEffect(() => {
     if (!user?.id || customActivities.length === 0) {
-      setActivitiesWithStats([]);
-      return;
+      setActivitiesWithStats([])
+      return
     }
 
-    setStatsLoading(true);
     getAllActivitiesWithUsage(user.id)
-      .then(allActivitiesWithUsage => {
+      .then((allActivitiesWithUsage) => {
         // Filter to only custom activities and map to ActivityWithStats
-        const customWithStats = customActivities.map(activity => {
-          const usageData = allActivitiesWithUsage.find(
-            a => a.id === activity.id
-          );
+        const customWithStats = customActivities.map((activity) => {
+          const usageData = allActivitiesWithUsage.find((a) => a.id === activity.id)
           return {
             ...activity,
             lastUsed: usageData?.lastUsed,
             sessionCount: usageData?.useCount || 0,
             totalHours: 0, // TODO: Calculate from sessions (not available in useCount)
-          };
-        });
+          }
+        })
 
         // Sort by last used descending (most recent first)
         customWithStats.sort((a, b) => {
-          if (!a.lastUsed && !b.lastUsed) return 0;
-          if (!a.lastUsed) return 1;
-          if (!b.lastUsed) return -1;
-          return b.lastUsed.getTime() - a.lastUsed.getTime();
-        });
+          if (!a.lastUsed && !b.lastUsed) return 0
+          if (!a.lastUsed) return 1
+          if (!b.lastUsed) return -1
+          return b.lastUsed.getTime() - a.lastUsed.getTime()
+        })
 
-        setActivitiesWithStats(customWithStats);
+        setActivitiesWithStats(customWithStats)
       })
-      .catch(error => {
+      .catch((_error) => {
         // Fallback: Use activities without stats
         setActivitiesWithStats(
-          customActivities.map(activity => ({
+          customActivities.map((activity) => ({
             ...activity,
             sessionCount: 0,
             totalHours: 0,
           }))
-        );
+        )
       })
-      .finally(() => {
-        setStatsLoading(false);
-      });
-  }, [user?.id, customActivities]);
+  }, [user?.id, customActivities])
 
   // Get existing activity names for duplicate validation
-  const existingNames = customActivities.map(a => a.name);
+  const existingNames = customActivities.map((a) => a.name)
 
   // Handlers for opening modals
   const handleEditClick = (activity: ActivityType) => {
-    setSelectedActivity(activity);
-    setShowEditModal(true);
-  };
+    setSelectedActivity(activity)
+    setShowEditModal(true)
+  }
 
   const handleDeleteClick = (activity: ActivityType) => {
-    setSelectedActivity(activity);
-    setShowDeleteModal(true);
-  };
+    setSelectedActivity(activity)
+    setShowDeleteModal(true)
+  }
 
   // Handler for modal success (refresh data)
   const handleModalSuccess = () => {
     // React Query will automatically refetch
     // No manual refresh needed thanks to cache invalidation in hooks
-  };
+  }
 
   // Check if at limit
-  const isAtLimit = customActivities.length >= MAX_CUSTOM_ACTIVITIES;
+  const isAtLimit = customActivities.length >= MAX_CUSTOM_ACTIVITIES
 
   // Format relative time
   const formatRelativeTime = (date: Date | undefined): string => {
-    if (!date) return 'Never';
+    if (!date) return 'Never'
 
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
 
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays}d ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`;
-    return `${Math.floor(diffDays / 365)}y ago`;
-  };
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays === 1) return 'Yesterday'
+    if (diffDays < 7) return `${diffDays}d ago`
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`
+    return `${Math.floor(diffDays / 365)}y ago`
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -175,12 +150,9 @@ export function ActivitiesSettingsPageContent() {
         {/* Page Header with Action */}
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Custom Activities
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Custom Activities</h1>
             <p className="text-gray-600">
-              Create and manage custom activity types for unique projects or
-              hobbies.
+              Create and manage custom activity types for unique projects or hobbies.
             </p>
           </div>
           <Button
@@ -197,25 +169,20 @@ export function ActivitiesSettingsPageContent() {
         {isAtLimit ? (
           <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg flex items-start gap-3">
             <div className="flex-shrink-0 w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center mt-0.5">
-              <span className="text-white text-xs font-bold">
-                {MAX_CUSTOM_ACTIVITIES}
-              </span>
+              <span className="text-white text-xs font-bold">{MAX_CUSTOM_ACTIVITIES}</span>
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium text-orange-900">
-                Maximum activities reached
-              </p>
+              <p className="text-sm font-medium text-orange-900">Maximum activities reached</p>
               <p className="text-sm text-orange-700 mt-0.5">
-                Delete an activity to create a new one. You can have up to{' '}
-                {MAX_CUSTOM_ACTIVITIES} custom activities.
+                Delete an activity to create a new one. You can have up to {MAX_CUSTOM_ACTIVITIES}{' '}
+                custom activities.
               </p>
             </div>
           </div>
         ) : (
           <div className="mb-6 p-3 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-between">
             <span className="text-sm text-blue-900 font-medium">
-              {customActivities.length} of {MAX_CUSTOM_ACTIVITIES} custom
-              activities
+              {customActivities.length} of {MAX_CUSTOM_ACTIVITIES} custom activities
             </span>
             <span className="text-xs text-blue-600 font-semibold px-2 py-1 bg-blue-100 rounded">
               {MAX_CUSTOM_ACTIVITIES - customActivities.length} remaining
@@ -228,7 +195,7 @@ export function ActivitiesSettingsPageContent() {
           <Card>
             <CardContent className="p-0">
               <div className="divide-y divide-gray-200">
-                {[1, 2, 3].map(i => (
+                {[1, 2, 3].map((i) => (
                   <div key={i} className="p-4 animate-pulse">
                     <div className="flex items-center gap-4">
                       <div className="h-10 w-10 bg-gray-200 rounded-lg" />
@@ -255,17 +222,12 @@ export function ActivitiesSettingsPageContent() {
               <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center mx-auto mb-4">
                 <ActivityIcon className="h-8 w-8 text-[#0066CC]" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No custom activities yet
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No custom activities yet</h3>
               <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                Create custom activities to track time on unique projects,
-                hobbies, or goals beyond the 10 default activities.
+                Create custom activities to track time on unique projects, hobbies, or goals beyond
+                the 10 default activities.
               </p>
-              <Button
-                onClick={() => setShowCreateModal(true)}
-                className="min-h-[44px]"
-              >
+              <Button onClick={() => setShowCreateModal(true)} className="min-h-[44px]">
                 <Plus className="h-4 w-4 mr-2" />
                 Create Your First Activity
               </Button>
@@ -279,8 +241,7 @@ export function ActivitiesSettingsPageContent() {
             {activitiesWithStats.map((activity, index) => {
               const isRecentlyUsed =
                 activity.lastUsed &&
-                new Date().getTime() - activity.lastUsed.getTime() <
-                  7 * 24 * 60 * 60 * 1000; // 7 days
+                new Date().getTime() - activity.lastUsed.getTime() < 7 * 24 * 60 * 60 * 1000 // 7 days
 
               return (
                 <div
@@ -294,10 +255,7 @@ export function ActivitiesSettingsPageContent() {
                     className="h-12 w-12 rounded-lg flex items-center justify-center flex-shrink-0"
                     style={{ backgroundColor: activity.defaultColor }}
                   >
-                    <IconRenderer
-                      iconName={activity.icon}
-                      className="w-6 h-6 text-white"
-                    />
+                    <IconRenderer iconName={activity.icon} className="w-6 h-6 text-white" />
                   </div>
 
                   {/* Activity Details */}
@@ -313,17 +271,13 @@ export function ActivitiesSettingsPageContent() {
                       )}
                     </div>
                     {activity.description && (
-                      <p className="text-sm text-gray-600 truncate">
-                        {activity.description}
-                      </p>
+                      <p className="text-sm text-gray-600 truncate">{activity.description}</p>
                     )}
                     <div className="flex items-center gap-4 mt-2">
                       <div className="flex items-center gap-1.5 text-xs text-gray-500">
                         <Clock className="h-3.5 w-3.5" />
                         <span>
-                          {activity.lastUsed
-                            ? formatRelativeTime(activity.lastUsed)
-                            : 'Never used'}
+                          {activity.lastUsed ? formatRelativeTime(activity.lastUsed) : 'Never used'}
                         </span>
                       </div>
                       {activity.sessionCount > 0 && (
@@ -331,9 +285,7 @@ export function ActivitiesSettingsPageContent() {
                           <ActivityIcon className="h-3.5 w-3.5" />
                           <span>
                             {activity.sessionCount}{' '}
-                            {activity.sessionCount === 1
-                              ? 'session'
-                              : 'sessions'}
+                            {activity.sessionCount === 1 ? 'session' : 'sessions'}
                           </span>
                         </div>
                       )}
@@ -362,7 +314,7 @@ export function ActivitiesSettingsPageContent() {
                     </Button>
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
         )}
@@ -401,17 +353,15 @@ export function ActivitiesSettingsPageContent() {
         activity={selectedActivity}
         sessionCount={
           selectedActivity
-            ? activitiesWithStats.find(a => a.id === selectedActivity.id)
-                ?.sessionCount || 0
+            ? activitiesWithStats.find((a) => a.id === selectedActivity.id)?.sessionCount || 0
             : 0
         }
         totalHours={
           selectedActivity
-            ? activitiesWithStats.find(a => a.id === selectedActivity.id)
-                ?.totalHours || 0
+            ? activitiesWithStats.find((a) => a.id === selectedActivity.id)?.totalHours || 0
             : 0
         }
       />
     </div>
-  );
+  )
 }

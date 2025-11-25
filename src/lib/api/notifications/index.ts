@@ -22,19 +22,19 @@ import {
   limit as limitFn,
   serverTimestamp,
   writeBatch,
-} from 'firebase/firestore';
+} from 'firebase/firestore'
 
 // Local Firebase config
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase'
 
 // Error handling
-import { handleError, ErrorSeverity } from '@/lib/errorHandler';
+import { handleError, ErrorSeverity } from '@/lib/errorHandler'
 
 // Shared utilities
-import { convertTimestamp } from '../shared/utils';
+import { convertTimestamp } from '../shared/utils'
 
 // Types
-import type { Notification } from '@/types';
+import type { Notification } from '@/types'
 
 // ============================================================================
 // PUBLIC API
@@ -49,23 +49,20 @@ export const firebaseNotificationApi = {
       const notificationData = {
         ...notification,
         createdAt: serverTimestamp(),
-      };
+      }
 
-      const docRef = await addDoc(
-        collection(db, 'notifications'),
-        notificationData
-      );
+      const docRef = await addDoc(collection(db, 'notifications'), notificationData)
 
       return {
         id: docRef.id,
         ...notification,
         createdAt: new Date(),
-      };
+      }
     } catch (_error) {
       const apiError = handleError(_error, 'Create notification', {
         defaultMessage: 'Failed to create notification',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -80,13 +77,13 @@ export const firebaseNotificationApi = {
         where('userId', '==', userId),
         orderBy('createdAt', 'desc'),
         limitFn(limitCount > 0 ? limitCount : 50)
-      );
+      )
 
-      const snapshot = await getDocs(notificationsQuery);
-      const notifications: Notification[] = [];
+      const snapshot = await getDocs(notificationsQuery)
+      const notifications: Notification[] = []
 
-      snapshot.forEach(doc => {
-        const data = doc.data();
+      snapshot.forEach((doc) => {
+        const data = doc.data()
         notifications.push({
           id: doc.id,
           userId: data.userId,
@@ -104,15 +101,15 @@ export const firebaseNotificationApi = {
           commentId: data.commentId,
           groupId: data.groupId,
           challengeId: data.challengeId,
-        });
-      });
+        })
+      })
 
-      return notifications;
+      return notifications
     } catch (_error) {
       const apiError = handleError(_error, 'Get notifications', {
         defaultMessage: 'Failed to get notifications',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -122,12 +119,12 @@ export const firebaseNotificationApi = {
       await updateDoc(doc(db, 'notifications', notificationId), {
         isRead: true,
         updatedAt: serverTimestamp(),
-      });
+      })
     } catch (_error) {
       const apiError = handleError(_error, 'Mark notification as read', {
         defaultMessage: 'Failed to mark notification as read',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -138,36 +135,36 @@ export const firebaseNotificationApi = {
         collection(db, 'notifications'),
         where('userId', '==', userId),
         where('isRead', '==', false)
-      );
+      )
 
-      const snapshot = await getDocs(notificationsQuery);
-      const batch = writeBatch(db);
+      const snapshot = await getDocs(notificationsQuery)
+      const batch = writeBatch(db)
 
-      snapshot.forEach(doc => {
+      snapshot.forEach((doc) => {
         batch.update(doc.ref, {
           isRead: true,
           updatedAt: serverTimestamp(),
-        });
-      });
+        })
+      })
 
-      await batch.commit();
+      await batch.commit()
     } catch (_error) {
       const apiError = handleError(_error, 'Mark all notifications as read', {
         defaultMessage: 'Failed to mark all notifications as read',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
   // Delete a notification
   deleteNotification: async (notificationId: string): Promise<void> => {
     try {
-      await deleteDoc(doc(db, 'notifications', notificationId));
+      await deleteDoc(doc(db, 'notifications', notificationId))
     } catch (_error) {
       const apiError = handleError(_error, 'Delete notification', {
         defaultMessage: 'Failed to delete notification',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -177,21 +174,21 @@ export const firebaseNotificationApi = {
       const notificationsQuery = query(
         collection(db, 'notifications'),
         where('userId', '==', userId)
-      );
+      )
 
-      const snapshot = await getDocs(notificationsQuery);
-      const batch = writeBatch(db);
+      const snapshot = await getDocs(notificationsQuery)
+      const batch = writeBatch(db)
 
-      snapshot.forEach(doc => {
-        batch.delete(doc.ref);
-      });
+      snapshot.forEach((doc) => {
+        batch.delete(doc.ref)
+      })
 
-      await batch.commit();
+      await batch.commit()
     } catch (_error) {
       const apiError = handleError(_error, 'Clear all notifications', {
         defaultMessage: 'Failed to clear all notifications',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -202,18 +199,18 @@ export const firebaseNotificationApi = {
         collection(db, 'notifications'),
         where('userId', '==', userId),
         where('isRead', '==', false)
-      );
+      )
 
-      const snapshot = await getDocs(notificationsQuery);
-      return snapshot.size;
+      const snapshot = await getDocs(notificationsQuery)
+      return snapshot.size
     } catch (_error) {
       const apiError = handleError(_error, 'Get unread count', {
         defaultMessage: 'Failed to get unread count',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
-};
+}
 
 // Challenge Notification Helper Functions
 export const challengeNotifications = {
@@ -231,13 +228,13 @@ export const challengeNotifications = {
         message: `Congratulations! You've completed the "${challengeName}" challenge.`,
         challengeId,
         isRead: false,
-      };
+      }
 
-      await firebaseNotificationApi.createNotification(notification);
+      await firebaseNotificationApi.createNotification(notification)
     } catch (_error) {
       handleError(_error, 'send completion notification', {
         severity: ErrorSeverity.ERROR,
-      });
+      })
     }
   },
 
@@ -253,17 +250,17 @@ export const challengeNotifications = {
       const participantsQuery = query(
         collection(db, 'challengeParticipants'),
         where('challengeId', '==', challengeId)
-      );
+      )
 
-      const participantsSnapshot = await getDocs(participantsQuery);
-      const batch = writeBatch(db);
+      const participantsSnapshot = await getDocs(participantsQuery)
+      const batch = writeBatch(db)
 
-      participantsSnapshot.forEach(participantDoc => {
-        const participantData = participantDoc.data();
+      participantsSnapshot.forEach((participantDoc) => {
+        const participantData = participantDoc.data()
 
         // Don't notify the person who just joined
         if (participantData.userId !== newParticipantId) {
-          const notificationRef = doc(collection(db, 'notifications'));
+          const notificationRef = doc(collection(db, 'notifications'))
           batch.set(notificationRef, {
             userId: participantData.userId,
             type: 'challenge',
@@ -273,15 +270,15 @@ export const challengeNotifications = {
             actorName: newParticipantName,
             isRead: false,
             createdAt: serverTimestamp(),
-          });
+          })
         }
-      });
+      })
 
-      await batch.commit();
+      await batch.commit()
     } catch (_error) {
       handleError(_error, 'send participant joined notifications', {
         severity: ErrorSeverity.ERROR,
-      });
+      })
     }
   },
 
@@ -296,15 +293,15 @@ export const challengeNotifications = {
       const participantsQuery = query(
         collection(db, 'challengeParticipants'),
         where('challengeId', '==', challengeId)
-      );
+      )
 
-      const participantsSnapshot = await getDocs(participantsQuery);
-      const batch = writeBatch(db);
+      const participantsSnapshot = await getDocs(participantsQuery)
+      const batch = writeBatch(db)
 
-      participantsSnapshot.forEach(participantDoc => {
-        const participantData = participantDoc.data();
+      participantsSnapshot.forEach((participantDoc) => {
+        const participantData = participantDoc.data()
 
-        const notificationRef = doc(collection(db, 'notifications'));
+        const notificationRef = doc(collection(db, 'notifications'))
         batch.set(notificationRef, {
           userId: participantData.userId,
           type: 'challenge',
@@ -313,14 +310,14 @@ export const challengeNotifications = {
           challengeId,
           isRead: false,
           createdAt: serverTimestamp(),
-        });
-      });
+        })
+      })
 
-      await batch.commit();
+      await batch.commit()
     } catch (_error) {
       handleError(_error, 'send ending soon notifications', {
         severity: ErrorSeverity.ERROR,
-      });
+      })
     }
   },
 
@@ -334,17 +331,17 @@ export const challengeNotifications = {
   ): Promise<void> => {
     try {
       // Get all group members
-      const groupDoc = await getDoc(doc(db, 'groups', groupId));
-      if (!groupDoc.exists()) return;
+      const groupDoc = await getDoc(doc(db, 'groups', groupId))
+      if (!groupDoc.exists()) return
 
-      const groupData = groupDoc.data();
-      const memberIds = groupData.memberUserIds || [];
-      const batch = writeBatch(db);
+      const groupData = groupDoc.data()
+      const memberIds = groupData.memberUserIds || []
+      const batch = writeBatch(db)
 
       memberIds.forEach((memberId: string) => {
         // Don't notify the creator
         if (memberId !== groupData.createdByUserId) {
-          const notificationRef = doc(collection(db, 'notifications'));
+          const notificationRef = doc(collection(db, 'notifications'))
           batch.set(notificationRef, {
             userId: memberId,
             type: 'challenge',
@@ -355,15 +352,15 @@ export const challengeNotifications = {
             actorName: creatorName,
             isRead: false,
             createdAt: serverTimestamp(),
-          });
+          })
         }
-      });
+      })
 
-      await batch.commit();
+      await batch.commit()
     } catch (_error) {
       handleError(_error, 'send new challenge notifications', {
         severity: ErrorSeverity.ERROR,
-      });
+      })
     }
   },
 
@@ -385,14 +382,14 @@ export const challengeNotifications = {
           message: `You moved up to #${newRank} in the "${challengeName}" challenge!`,
           challengeId,
           isRead: false,
-        };
+        }
 
-        await firebaseNotificationApi.createNotification(notification);
+        await firebaseNotificationApi.createNotification(notification)
       }
     } catch (_error) {
       handleError(_error, 'send rank change notification', {
         severity: ErrorSeverity.ERROR,
-      });
+      })
     }
   },
 
@@ -405,8 +402,8 @@ export const challengeNotifications = {
     goalValue: number
   ): Promise<void> => {
     try {
-      const percentage = (progress / goalValue) * 100;
-      const milestones = [25, 50, 75, 90];
+      const percentage = (progress / goalValue) * 100
+      const milestones = [25, 50, 75, 90]
 
       for (const milestone of milestones) {
         if (percentage >= milestone && percentage < milestone + 5) {
@@ -418,18 +415,18 @@ export const challengeNotifications = {
             message: `You're ${milestone}% of the way through the "${challengeName}" challenge. Keep going!`,
             challengeId,
             isRead: false,
-          };
+          }
 
-          await firebaseNotificationApi.createNotification(notification);
-          break; // Only send one milestone notification at a time
+          await firebaseNotificationApi.createNotification(notification)
+          break // Only send one milestone notification at a time
         }
       }
     } catch (_error) {
       handleError(_error, 'send milestone notification', {
         severity: ErrorSeverity.ERROR,
-      });
+      })
     }
   },
-};
+}
 
 // Activity API (alias for Project API for new naming convention)

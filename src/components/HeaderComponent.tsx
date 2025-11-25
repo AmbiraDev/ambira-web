@@ -9,4 +9,4 @@
  * - New: import Header from '@/components/header'
  */
 
-export { default } from './header/Header';
+export { default } from './header/Header'

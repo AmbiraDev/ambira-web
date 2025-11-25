@@ -1,13 +1,13 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 
 interface ImageLightboxProps {
-  images: string[];
-  initialIndex?: number;
-  onClose: () => void;
+  images: string[]
+  initialIndex?: number
+  onClose: () => void
 }
 
 export const ImageLightbox: React.FC<ImageLightboxProps> = ({
@@ -15,43 +15,43 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
   initialIndex = 0,
   onClose,
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [currentIndex, setCurrentIndex] = useState(initialIndex)
 
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        onClose()
       } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
-        setCurrentIndex(prev => prev - 1);
+        setCurrentIndex((prev) => prev - 1)
       } else if (e.key === 'ArrowRight' && currentIndex < images.length - 1) {
-        setCurrentIndex(prev => prev + 1);
+        setCurrentIndex((prev) => prev + 1)
       }
-    };
+    }
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentIndex, images.length, onClose]);
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [currentIndex, images.length, onClose])
 
   // Prevent body scroll when lightbox is open
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden'
     return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, []);
+      document.body.style.overflow = 'unset'
+    }
+  }, [])
 
   const goToPrevious = () => {
     if (currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1);
+      setCurrentIndex((prev) => prev - 1)
     }
-  };
+  }
 
   const goToNext = () => {
     if (currentIndex < images.length - 1) {
-      setCurrentIndex(prev => prev + 1);
+      setCurrentIndex((prev) => prev + 1)
     }
-  };
+  }
 
   return (
     <div
@@ -60,9 +60,9 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
     >
       {/* Close button */}
       <button
-        onClick={e => {
-          e.stopPropagation();
-          onClose();
+        onClick={(e) => {
+          e.stopPropagation()
+          onClose()
         }}
         className="absolute top-4 right-4 z-10 p-2 text-white hover:text-gray-300 transition-colors"
         aria-label="Close lightbox"
@@ -94,9 +94,9 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
         {/* Left arrow */}
         {currentIndex > 0 && (
           <button
-            onClick={e => {
-              e.stopPropagation();
-              goToPrevious();
+            onClick={(e) => {
+              e.stopPropagation()
+              goToPrevious()
             }}
             className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full transition-all text-white"
             aria-label="Previous image"
@@ -108,9 +108,9 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
         {/* Right arrow */}
         {currentIndex < images.length - 1 && (
           <button
-            onClick={e => {
-              e.stopPropagation();
-              goToNext();
+            onClick={(e) => {
+              e.stopPropagation()
+              goToNext()
             }}
             className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full transition-all text-white"
             aria-label="Next image"
@@ -127,5 +127,5 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
         )}
       </div>
     </div>
-  );
-};
+  )
+}

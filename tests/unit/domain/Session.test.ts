@@ -1,4 +1,4 @@
-import { Session } from '@/domain/entities/Session';
+import { Session } from '@/domain/entities/Session'
 
 function createSession() {
   return new Session(
@@ -28,17 +28,17 @@ function createSession() {
     'energized',
     'notes',
     false
-  );
+  )
 }
 
 describe('domain/entities/Session', () => {
   it('computes human readable durations', () => {
-    const session = createSession();
+    const session = createSession()
 
-    expect(session.getDurationInHours()).toBeCloseTo(1.5);
-    expect(session.getDurationInMinutes()).toBe(90);
-    expect(session.getFormattedDuration()).toBe('1h 30m');
-  });
+    expect(session.getDurationInHours()).toBeCloseTo(1.5)
+    expect(session.getDurationInMinutes()).toBe(90)
+    expect(session.getFormattedDuration()).toBe('1h 30m')
+  })
 
   it.each`
     visibility     | viewerId    | isFollower | expected
@@ -60,21 +60,21 @@ describe('domain/entities/Session', () => {
         undefined,
         undefined,
         visibility as 'everyone'
-      );
+      )
 
-      expect(session.isVisibleTo(viewerId, isFollower)).toBe(expected);
+      expect(session.isVisibleTo(viewerId, isFollower)).toBe(expected)
     }
-  );
+  )
 
   it('increments and decrements social counters immutably', () => {
-    const original = createSession();
+    const original = createSession()
 
-    const withSupport = original.withIncrementedSupport();
-    expect(withSupport.supportCount).toBe(original.supportCount + 1);
-    expect(withSupport).not.toBe(original);
+    const withSupport = original.withIncrementedSupport()
+    expect(withSupport.supportCount).toBe(original.supportCount + 1)
+    expect(withSupport).not.toBe(original)
 
-    const withComments = original.withIncrementedComments();
-    expect(withComments.commentCount).toBe(original.commentCount + 1);
+    const withComments = original.withIncrementedComments()
+    expect(withComments.commentCount).toBe(original.commentCount + 1)
 
     expect(() => {
       new Session(
@@ -88,13 +88,13 @@ describe('domain/entities/Session', () => {
         undefined,
         'everyone',
         0
-      ).withDecrementedSupport();
-    }).toThrow('Support count cannot be negative');
-  });
+      ).withDecrementedSupport()
+    }).toThrow('Support count cannot be negative')
+  })
 
   it('serializes core fields with toJSON', () => {
-    const session = createSession();
-    const json = session.toJSON();
+    const session = createSession()
+    const json = session.toJSON()
 
     expect(json).toMatchObject({
       id: 'session-1',
@@ -105,7 +105,7 @@ describe('domain/entities/Session', () => {
       visibility: 'everyone',
       supportCount: 3,
       commentCount: 2,
-    });
-    expect(Array.isArray(json.groupIds)).toBe(true);
-  });
-});
+    })
+    expect(Array.isArray(json.groupIds)).toBe(true)
+  })
+})

@@ -29,26 +29,23 @@ import {
   QueryDocumentSnapshot,
   QuerySnapshot,
   DocumentData,
-} from 'firebase/firestore';
+} from 'firebase/firestore'
 
 // Local Firebase config
-import { db, auth } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase'
 
 // Error handling
-import { handleError, isPermissionError } from '@/lib/errorHandler';
-import { checkRateLimit } from '@/lib/rateLimit';
+import { handleError, isPermissionError } from '@/lib/errorHandler'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 // Error messages
-import { ERROR_MESSAGES } from '@/config/errorMessages';
+import { ERROR_MESSAGES } from '@/config/errorMessages'
 
 // Shared utilities
-import { convertTimestamp } from '../shared/utils';
+import { convertTimestamp } from '../shared/utils'
 
 // Social helpers
-import {
-  fetchUserDataForSocialContext,
-  buildCommentUserDetails,
-} from './helpers';
+import { fetchUserDataForSocialContext, buildCommentUserDetails } from './helpers'
 
 // Types
 import type {
@@ -57,7 +54,7 @@ import type {
   CreateCommentData,
   UpdateCommentData,
   CommentsResponse,
-} from '@/types';
+} from '@/types'
 
 // ============================================================================
 // PUBLIC API
@@ -72,24 +69,20 @@ export const firebaseCommentApi = {
    * @returns Promise resolving to the created comment with user details
    * @throws Error if user is not authenticated, rate limit exceeded, or creation fails
    */
-  createComment: async (
-    data: CreateCommentData
-  ): Promise<CommentWithDetails> => {
+  createComment: async (data: CreateCommentData): Promise<CommentWithDetails> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
       // Rate limitFn comment creation
-      checkRateLimit(auth.currentUser.uid, 'COMMENT');
+      checkRateLimit(auth.currentUser.uid, 'COMMENT')
 
-      const userId = auth.currentUser.uid;
+      const userId = auth.currentUser.uid
 
       // Extract mentions from content
-      const mentionRegex = /@(\w+)/g;
-      const mentions = [...data.content.matchAll(mentionRegex)].map(
-        match => match[1]
-      );
+      const mentionRegex = /@(\w+)/g
+      const mentions = [...data.content.matchAll(mentionRegex)].map((match) => match[1])
 
       const commentData: Record<string, unknown> = {
         sessionId: data.sessionId,
@@ -100,44 +93,41 @@ export const firebaseCommentApi = {
         isEdited: false,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      };
+      }
 
       // Only add parentId if it exists
       if (data.parentId) {
-        commentData.parentId = data.parentId;
+        commentData.parentId = data.parentId
       }
 
-      const docRef = await addDoc(collection(db, 'comments'), commentData);
+      const docRef = await addDoc(collection(db, 'comments'), commentData)
 
       // Increment comment count on session
-      const sessionRef = doc(db, 'sessions', data.sessionId);
+      const sessionRef = doc(db, 'sessions', data.sessionId)
       await updateDoc(sessionRef, {
         commentCount: increment(1),
-      });
+      })
 
       // If this is a reply, increment reply count on parent comment
       if (data.parentId) {
-        const parentCommentRef = doc(db, 'comments', data.parentId);
+        const parentCommentRef = doc(db, 'comments', data.parentId)
         await updateDoc(parentCommentRef, {
           replyCount: increment(1),
-        });
+        })
       }
 
       // Get user data
-      const userDoc = await getDoc(doc(db, 'users', userId));
-      const userData = userDoc.data();
+      const userDoc = await getDoc(doc(db, 'users', userId))
+      const userData = userDoc.data()
 
       // Create notifications for mentions
       if (mentions.length > 0) {
         // Get users by username
-        const usersQuery = query(
-          collection(db, 'users'),
-          where('username', 'in', mentions)
-        );
-        const usersSnapshot = await getDocs(usersQuery);
+        const usersQuery = query(collection(db, 'users'), where('username', 'in', mentions))
+        const usersSnapshot = await getDocs(usersQuery)
 
-        const notificationPromises = usersSnapshot.docs.map(async userDoc => {
-          const mentionedUserId = userDoc.id;
+        const notificationPromises = usersSnapshot.docs.map(async (userDoc) => {
+          const mentionedUserId = userDoc.id
           if (mentionedUserId !== userId) {
             // Create notification
             await addDoc(collection(db, 'notifications'), {
@@ -154,17 +144,17 @@ export const firebaseCommentApi = {
               commentId: docRef.id,
               isRead: false,
               createdAt: serverTimestamp(),
-            });
+            })
           }
-        });
+        })
 
-        await Promise.all(notificationPromises);
+        await Promise.all(notificationPromises)
       }
 
       // Create notification for session owner (if not commenting on own session)
       if (!data.parentId) {
-        const sessionDoc = await getDoc(sessionRef);
-        const sessionData = sessionDoc.data();
+        const sessionDoc = await getDoc(sessionRef)
+        const sessionData = sessionDoc.data()
 
         if (sessionData && sessionData.userId !== userId) {
           await addDoc(collection(db, 'notifications'), {
@@ -181,14 +171,12 @@ export const firebaseCommentApi = {
             commentId: docRef.id,
             isRead: false,
             createdAt: serverTimestamp(),
-          });
+          })
         }
       } else {
         // Create notification for parent comment owner (if replying to someone else)
-        const parentCommentDoc = await getDoc(
-          doc(db, 'comments', data.parentId)
-        );
-        const parentCommentData = parentCommentDoc.data();
+        const parentCommentDoc = await getDoc(doc(db, 'comments', data.parentId))
+        const parentCommentData = parentCommentDoc.data()
 
         if (parentCommentData && parentCommentData.userId !== userId) {
           await addDoc(collection(db, 'notifications'), {
@@ -205,7 +193,7 @@ export const firebaseCommentApi = {
             commentId: docRef.id,
             isRead: false,
             createdAt: serverTimestamp(),
-          });
+          })
         }
       }
 
@@ -222,12 +210,12 @@ export const firebaseCommentApi = {
         createdAt: new Date(),
         updatedAt: new Date(),
         user: buildCommentUserDetails(userId, userData || null),
-      };
+      }
     } catch (_error) {
       const apiError = handleError(_error, 'Create comment', {
         defaultMessage: ERROR_MESSAGES.COMMENT_POST_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -239,33 +227,30 @@ export const firebaseCommentApi = {
    * @returns Promise resolving to the updated comment
    * @throws Error if user is not authenticated, comment not found, or not authorized
    */
-  updateComment: async (
-    commentId: string,
-    data: UpdateCommentData
-  ): Promise<Comment> => {
+  updateComment: async (commentId: string, data: UpdateCommentData): Promise<Comment> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const commentRef = doc(db, 'comments', commentId);
-      const commentDoc = await getDoc(commentRef);
+      const commentRef = doc(db, 'comments', commentId)
+      const commentDoc = await getDoc(commentRef)
 
       if (!commentDoc.exists()) {
-        throw new Error('Comment not found');
+        throw new Error('Comment not found')
       }
 
-      const commentData = commentDoc.data();
+      const commentData = commentDoc.data()
 
       if (commentData.userId !== auth.currentUser.uid) {
-        throw new Error('Not authorized to edit this comment');
+        throw new Error('Not authorized to edit this comment')
       }
 
       await updateDoc(commentRef, {
         content: data.content,
         isEdited: true,
         updatedAt: serverTimestamp(),
-      });
+      })
 
       return {
         id: commentId,
@@ -274,12 +259,12 @@ export const firebaseCommentApi = {
         isEdited: true,
         createdAt: convertTimestamp(commentData.createdAt),
         updatedAt: new Date(),
-      } as Comment;
+      } as Comment
     } catch (_error) {
       const apiError = handleError(_error, 'Update comment', {
         defaultMessage: ERROR_MESSAGES.COMMENT_POST_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -293,57 +278,54 @@ export const firebaseCommentApi = {
   deleteComment: async (commentId: string): Promise<void> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const commentRef = doc(db, 'comments', commentId);
-      const commentDoc = await getDoc(commentRef);
+      const commentRef = doc(db, 'comments', commentId)
+      const commentDoc = await getDoc(commentRef)
 
       if (!commentDoc.exists()) {
-        throw new Error('Comment not found');
+        throw new Error('Comment not found')
       }
 
-      const commentData = commentDoc.data();
+      const commentData = commentDoc.data()
 
       if (commentData.userId !== auth.currentUser.uid) {
-        throw new Error('Not authorized to delete this comment');
+        throw new Error('Not authorized to delete this comment')
       }
 
       // Delete all replies to this comment
-      const repliesQuery = query(
-        collection(db, 'comments'),
-        where('parentId', '==', commentId)
-      );
-      const repliesSnapshot = await getDocs(repliesQuery);
+      const repliesQuery = query(collection(db, 'comments'), where('parentId', '==', commentId))
+      const repliesSnapshot = await getDocs(repliesQuery)
 
-      const batch = writeBatch(db);
+      const batch = writeBatch(db)
 
-      repliesSnapshot.docs.forEach(doc => {
-        batch.delete(doc.ref);
-      });
+      repliesSnapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref)
+      })
 
-      batch.delete(commentRef);
+      batch.delete(commentRef)
 
-      await batch.commit();
+      await batch.commit()
 
       // Decrement comment count on session
-      const sessionRef = doc(db, 'sessions', commentData.sessionId);
+      const sessionRef = doc(db, 'sessions', commentData.sessionId)
       await updateDoc(sessionRef, {
         commentCount: increment(-1 - repliesSnapshot.size), // -1 for the comment itself, and -repliesSnapshot.size for replies
-      });
+      })
 
       // If this is a reply, decrement reply count on parent comment
       if (commentData.parentId) {
-        const parentCommentRef = doc(db, 'comments', commentData.parentId);
+        const parentCommentRef = doc(db, 'comments', commentData.parentId)
         await updateDoc(parentCommentRef, {
           replyCount: increment(-1),
-        });
+        })
       }
     } catch (_error) {
       const apiError = handleError(_error, 'Delete comment', {
         defaultMessage: ERROR_MESSAGES.COMMENT_DELETE_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -357,35 +339,35 @@ export const firebaseCommentApi = {
   likeComment: async (commentId: string): Promise<void> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const userId = auth.currentUser.uid;
-      const likeId = `${userId}_${commentId}`;
-      const likeRef = doc(db, 'commentLikes', likeId);
+      const userId = auth.currentUser.uid
+      const likeId = `${userId}_${commentId}`
+      const likeRef = doc(db, 'commentLikes', likeId)
 
-      const likeDoc = await getDoc(likeRef);
+      const likeDoc = await getDoc(likeRef)
 
       if (likeDoc.exists()) {
-        throw new Error('Already liked this comment');
+        throw new Error('Already liked this comment')
       }
 
       await setDoc(likeRef, {
         commentId,
         userId,
         createdAt: serverTimestamp(),
-      });
+      })
 
       // Increment like count on comment
-      const commentRef = doc(db, 'comments', commentId);
+      const commentRef = doc(db, 'comments', commentId)
       await updateDoc(commentRef, {
         likeCount: increment(1),
-      });
+      })
     } catch (_error) {
       const apiError = handleError(_error, 'Like comment', {
         defaultMessage: 'Failed to like comment',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -399,31 +381,31 @@ export const firebaseCommentApi = {
   unlikeComment: async (commentId: string): Promise<void> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const userId = auth.currentUser.uid;
-      const likeId = `${userId}_${commentId}`;
-      const likeRef = doc(db, 'commentLikes', likeId);
+      const userId = auth.currentUser.uid
+      const likeId = `${userId}_${commentId}`
+      const likeRef = doc(db, 'commentLikes', likeId)
 
-      const likeDoc = await getDoc(likeRef);
+      const likeDoc = await getDoc(likeRef)
 
       if (!likeDoc.exists()) {
-        throw new Error('Comment not liked');
+        throw new Error('Comment not liked')
       }
 
-      await deleteDoc(likeRef);
+      await deleteDoc(likeRef)
 
       // Decrement like count on comment
-      const commentRef = doc(db, 'comments', commentId);
+      const commentRef = doc(db, 'comments', commentId)
       await updateDoc(commentRef, {
         likeCount: increment(-1),
-      });
+      })
     } catch (_error) {
       const apiError = handleError(_error, 'Unlike comment', {
         defaultMessage: 'Failed to unlike comment',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -443,13 +425,13 @@ export const firebaseCommentApi = {
   ): Promise<CommentsResponse> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const userId = auth.currentUser.uid;
+      const userId = auth.currentUser.uid
 
       // Get top-level comments (no parentId)
-      let q;
+      let q
 
       if (lastDoc) {
         q = query(
@@ -458,52 +440,47 @@ export const firebaseCommentApi = {
           orderBy('createdAt', 'desc'),
           startAfter(lastDoc),
           limitFn(limitCount + 1)
-        );
+        )
       } else {
         q = query(
           collection(db, 'comments'),
           where('sessionId', '==', sessionId),
           orderBy('createdAt', 'desc'),
           limitFn(limitCount + 1)
-        );
+        )
       }
 
-      const snapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+      const snapshot: QuerySnapshot<DocumentData> = await getDocs(q)
 
       // Filter for top-level comments only (no parentId)
-      const topLevelDocs: QueryDocumentSnapshot<DocumentData>[] =
-        snapshot.docs.filter(
-          (doc: QueryDocumentSnapshot<DocumentData>) => !doc.data().parentId
-        );
+      const topLevelDocs: QueryDocumentSnapshot<DocumentData>[] = snapshot.docs.filter(
+        (doc: QueryDocumentSnapshot<DocumentData>) => !doc.data().parentId
+      )
 
-      const hasMore: boolean = topLevelDocs.length > limitCount;
+      const hasMore: boolean = topLevelDocs.length > limitCount
       const docs: QueryDocumentSnapshot<DocumentData>[] = hasMore
         ? topLevelDocs.slice(0, -1)
-        : topLevelDocs;
+        : topLevelDocs
 
       // Get all comment likes for current user in one query
-      const commentIds: string[] = docs.map(
-        (d: QueryDocumentSnapshot<DocumentData>) => d.id
-      );
-      let likedCommentIds = new Set<string>();
+      const commentIds: string[] = docs.map((d: QueryDocumentSnapshot<DocumentData>) => d.id)
+      let likedCommentIds = new Set<string>()
       if (commentIds.length > 0) {
         const likesQuery = query(
           collection(db, 'commentLikes'),
           where('userId', '==', userId),
           where('commentId', 'in', commentIds)
-        );
-        const likesSnapshot = await getDocs(likesQuery);
-        likedCommentIds = new Set(
-          likesSnapshot.docs.map(d => d.data().commentId)
-        );
+        )
+        const likesSnapshot = await getDocs(likesQuery)
+        likedCommentIds = new Set(likesSnapshot.docs.map((d) => d.data().commentId))
       }
 
       // Build comments with user details
       const comments: CommentWithDetails[] = await Promise.all(
         docs.map(async (docSnapshot: QueryDocumentSnapshot<DocumentData>) => {
-          const data = docSnapshot.data();
+          const data = docSnapshot.data()
 
-          const userData = await fetchUserDataForSocialContext(data.userId);
+          const userData = await fetchUserDataForSocialContext(data.userId)
 
           return {
             id: docSnapshot.id,
@@ -518,14 +495,14 @@ export const firebaseCommentApi = {
             createdAt: convertTimestamp(data.createdAt),
             updatedAt: convertTimestamp(data.updatedAt),
             user: buildCommentUserDetails(data.userId, userData),
-          };
+          }
         })
-      );
+      )
 
       return {
         comments,
         hasMore,
-      };
+      }
     } catch (error: unknown) {
       // Handle permission errors gracefully - return empty comments
       if (isPermissionError(error)) {
@@ -533,14 +510,14 @@ export const firebaseCommentApi = {
         return {
           comments: [],
           hasMore: false,
-        };
+        }
       }
 
       // For other errors, log and throw with appropriate message
       const apiError = handleError(error, 'Get session comments', {
         defaultMessage: ERROR_MESSAGES.COMMENT_LOAD_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -561,14 +538,14 @@ export const firebaseCommentApi = {
   ): Promise<CommentsResponse> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const userId = auth.currentUser.uid;
+      const userId = auth.currentUser.uid
 
       // Get top-level comments (no parentId)
       // Note: Firestore doesn't support querying for undefined, so we check for both null and absence
-      let q;
+      let q
 
       if (lastDoc) {
         q = query(
@@ -577,52 +554,47 @@ export const firebaseCommentApi = {
           orderBy('createdAt', 'desc'),
           startAfter(lastDoc),
           limitFn(limitCount + 1)
-        );
+        )
       } else {
         q = query(
           collection(db, 'comments'),
           where('sessionId', '==', sessionId),
           orderBy('createdAt', 'desc'),
           limitFn(limitCount + 1)
-        );
+        )
       }
 
-      const snapshot: QuerySnapshot<DocumentData> = await getDocs(q);
+      const snapshot: QuerySnapshot<DocumentData> = await getDocs(q)
 
       // Filter for top-level comments only (no parentId)
-      const topLevelDocs: QueryDocumentSnapshot<DocumentData>[] =
-        snapshot.docs.filter(
-          (doc: QueryDocumentSnapshot<DocumentData>) => !doc.data().parentId
-        );
+      const topLevelDocs: QueryDocumentSnapshot<DocumentData>[] = snapshot.docs.filter(
+        (doc: QueryDocumentSnapshot<DocumentData>) => !doc.data().parentId
+      )
 
-      const hasMore: boolean = topLevelDocs.length > limitCount;
+      const hasMore: boolean = topLevelDocs.length > limitCount
       const docs: QueryDocumentSnapshot<DocumentData>[] = hasMore
         ? topLevelDocs.slice(0, -1)
-        : topLevelDocs;
+        : topLevelDocs
 
       // Get all comment likes for current user in one query
-      const commentIds: string[] = docs.map(
-        (d: QueryDocumentSnapshot<DocumentData>) => d.id
-      );
-      let likedCommentIds = new Set<string>();
+      const commentIds: string[] = docs.map((d: QueryDocumentSnapshot<DocumentData>) => d.id)
+      let likedCommentIds = new Set<string>()
       if (commentIds.length > 0) {
         const likesQuery = query(
           collection(db, 'commentLikes'),
           where('userId', '==', userId),
           where('commentId', 'in', commentIds)
-        );
-        const likesSnapshot = await getDocs(likesQuery);
-        likedCommentIds = new Set(
-          likesSnapshot.docs.map(d => d.data().commentId)
-        );
+        )
+        const likesSnapshot = await getDocs(likesQuery)
+        likedCommentIds = new Set(likesSnapshot.docs.map((d) => d.data().commentId))
       }
 
       // Build comments with user details
       const comments: CommentWithDetails[] = await Promise.all(
         docs.map(async (docSnapshot: QueryDocumentSnapshot<DocumentData>) => {
-          const data = docSnapshot.data();
+          const data = docSnapshot.data()
 
-          const userData = await fetchUserDataForSocialContext(data.userId);
+          const userData = await fetchUserDataForSocialContext(data.userId)
 
           return {
             id: docSnapshot.id,
@@ -637,22 +609,21 @@ export const firebaseCommentApi = {
             createdAt: convertTimestamp(data.createdAt),
             updatedAt: convertTimestamp(data.updatedAt),
             user: buildCommentUserDetails(data.userId, userData),
-          };
+          }
         })
-      );
+      )
 
-      const lastDocInResult: QueryDocumentSnapshot<DocumentData> | undefined =
-        docs[docs.length - 1];
+      const lastDocInResult: QueryDocumentSnapshot<DocumentData> | undefined = docs[docs.length - 1]
       return {
         comments,
         hasMore,
         nextCursor: hasMore && lastDocInResult ? lastDocInResult.id : undefined,
-      };
+      }
     } catch (_error) {
       const apiError = handleError(_error, 'Get comments', {
         defaultMessage: ERROR_MESSAGES.COMMENT_LOAD_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -666,39 +637,37 @@ export const firebaseCommentApi = {
   getReplies: async (commentId: string): Promise<CommentWithDetails[]> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const userId = auth.currentUser.uid;
+      const userId = auth.currentUser.uid
 
       const q = query(
         collection(db, 'comments'),
         where('parentId', '==', commentId),
         orderBy('createdAt', 'asc')
-      );
+      )
 
-      const snapshot = await getDocs(q);
+      const snapshot = await getDocs(q)
 
       // Get all comment likes for current user in one query
-      const commentIds = snapshot.docs.map(d => d.id);
-      let likedCommentIds = new Set<string>();
+      const commentIds = snapshot.docs.map((d) => d.id)
+      let likedCommentIds = new Set<string>()
       if (commentIds.length > 0) {
         const likesQuery = query(
           collection(db, 'commentLikes'),
           where('userId', '==', userId),
           where('commentId', 'in', commentIds)
-        );
-        const likesSnapshot = await getDocs(likesQuery);
-        likedCommentIds = new Set(
-          likesSnapshot.docs.map(d => d.data().commentId)
-        );
+        )
+        const likesSnapshot = await getDocs(likesQuery)
+        likedCommentIds = new Set(likesSnapshot.docs.map((d) => d.data().commentId))
       }
 
       const replies: CommentWithDetails[] = await Promise.all(
-        snapshot.docs.map(async docSnapshot => {
-          const data = docSnapshot.data();
+        snapshot.docs.map(async (docSnapshot) => {
+          const data = docSnapshot.data()
 
-          const userData = await fetchUserDataForSocialContext(data.userId);
+          const userData = await fetchUserDataForSocialContext(data.userId)
 
           return {
             id: docSnapshot.id,
@@ -713,16 +682,16 @@ export const firebaseCommentApi = {
             createdAt: convertTimestamp(data.createdAt),
             updatedAt: convertTimestamp(data.updatedAt),
             user: buildCommentUserDetails(data.userId, userData),
-          };
+          }
         })
-      );
+      )
 
-      return replies;
+      return replies
     } catch (_error) {
       const apiError = handleError(_error, 'Get replies', {
         defaultMessage: ERROR_MESSAGES.COMMENT_LOAD_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -740,10 +709,10 @@ export const firebaseCommentApi = {
   ): Promise<CommentWithDetails[]> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const userId = auth.currentUser.uid;
+      const userId = auth.currentUser.uid
 
       // Get top-level comments sorted by likeCount
       const q = query(
@@ -751,34 +720,32 @@ export const firebaseCommentApi = {
         where('sessionId', '==', sessionId),
         orderBy('likeCount', 'desc'),
         limitFn(limitCount)
-      );
+      )
 
-      const snapshot = await getDocs(q);
+      const snapshot = await getDocs(q)
 
       // Filter for top-level comments only (no parentId)
-      const topLevelDocs = snapshot.docs.filter(doc => !doc.data().parentId);
+      const topLevelDocs = snapshot.docs.filter((doc) => !doc.data().parentId)
 
       // Get all comment likes for current user in one query
-      const commentIds = topLevelDocs.map(d => d.id);
-      let likedCommentIds = new Set<string>();
+      const commentIds = topLevelDocs.map((d) => d.id)
+      let likedCommentIds = new Set<string>()
       if (commentIds.length > 0) {
         const likesQuery = query(
           collection(db, 'commentLikes'),
           where('userId', '==', userId),
           where('commentId', 'in', commentIds)
-        );
-        const likesSnapshot = await getDocs(likesQuery);
-        likedCommentIds = new Set(
-          likesSnapshot.docs.map(d => d.data().commentId)
-        );
+        )
+        const likesSnapshot = await getDocs(likesQuery)
+        likedCommentIds = new Set(likesSnapshot.docs.map((d) => d.data().commentId))
       }
 
       // Build comments with user details
       const comments: CommentWithDetails[] = await Promise.all(
-        topLevelDocs.map(async docSnapshot => {
-          const data = docSnapshot.data();
+        topLevelDocs.map(async (docSnapshot) => {
+          const data = docSnapshot.data()
 
-          const userData = await fetchUserDataForSocialContext(data.userId);
+          const userData = await fetchUserDataForSocialContext(data.userId)
 
           return {
             id: docSnapshot.id,
@@ -793,24 +760,24 @@ export const firebaseCommentApi = {
             createdAt: convertTimestamp(data.createdAt),
             updatedAt: convertTimestamp(data.updatedAt),
             user: buildCommentUserDetails(data.userId, userData),
-          };
+          }
         })
-      );
+      )
 
-      return comments;
+      return comments
     } catch (error: unknown) {
       // Handle permission errors gracefully - return empty array
       if (isPermissionError(error)) {
-        return [];
+        return []
       }
 
       // For other errors, throw with appropriate message
       const apiError = handleError(error, 'Get top comments', {
         defaultMessage: ERROR_MESSAGES.COMMENT_LOAD_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
-};
+}
 
 // ==================== GROUP API ====================

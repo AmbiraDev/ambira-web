@@ -210,9 +210,9 @@ sequenceDiagram
 
 ```typescript
 onMutate: async ({ sessionId }) => {
-  await queryClient.cancelQueries({ queryKey: ['sessions', sessionId] });
-  await queryClient.cancelQueries({ queryKey: ['feed'] });
-};
+  await queryClient.cancelQueries({ queryKey: ['sessions', sessionId] })
+  await queryClient.cancelQueries({ queryKey: ['feed'] })
+}
 ```
 
 - Prevents race conditions
@@ -221,9 +221,9 @@ onMutate: async ({ sessionId }) => {
 **Step 2: Snapshot Previous State**
 
 ```typescript
-const previousSession = queryClient.getQueryData(['sessions', sessionId]);
-const previousFeed = queryClient.getQueryData(['feed', userId, 'following']);
-return { previousSession, previousFeed };
+const previousSession = queryClient.getQueryData(['sessions', sessionId])
+const previousFeed = queryClient.getQueryData(['feed', userId, 'following'])
+return { previousSession, previousFeed }
 ```
 
 - Store for rollback on error
@@ -231,23 +231,21 @@ return { previousSession, previousFeed };
 **Step 3: Optimistic Update**
 
 ```typescript
-queryClient.setQueryData(['sessions', sessionId], old => ({
+queryClient.setQueryData(['sessions', sessionId], (old) => ({
   ...old,
   supportCount: old.supportCount + 1,
   isSupported: true,
-}));
+}))
 
-queryClient.setQueryData(['feed', userId, 'following'], old => ({
+queryClient.setQueryData(['feed', userId, 'following'], (old) => ({
   ...old,
-  pages: old.pages.map(page => ({
+  pages: old.pages.map((page) => ({
     ...page,
-    sessions: page.sessions.map(s =>
-      s.id === sessionId
-        ? { ...s, supportCount: s.supportCount + 1, isSupported: true }
-        : s
+    sessions: page.sessions.map((s) =>
+      s.id === sessionId ? { ...s, supportCount: s.supportCount + 1, isSupported: true } : s
     ),
   })),
-}));
+}))
 ```
 
 - UI updates instantly (0ms)
@@ -257,7 +255,7 @@ queryClient.setQueryData(['feed', userId, 'following'], old => ({
 
 ```typescript
 // SocialService.supportSession()
-const batch = firestore.batch();
+const batch = firestore.batch()
 
 // Create support document
 batch.set(firestore.collection('supports').doc(supportId), {
@@ -265,14 +263,14 @@ batch.set(firestore.collection('supports').doc(supportId), {
   sessionId,
   userId,
   createdAt: serverTimestamp(),
-});
+})
 
 // Increment session support count
 batch.update(firestore.collection('sessions').doc(sessionId), {
   supportCount: increment(1),
-});
+})
 
-await batch.commit();
+await batch.commit()
 ```
 
 - Atomic operation (both or neither)
@@ -283,12 +281,12 @@ await batch.commit();
 ```typescript
 onError: (err, variables, context) => {
   // Rollback optimistic update
-  queryClient.setQueryData(['sessions', sessionId], context.previousSession);
-  queryClient.setQueryData(['feed', userId, 'following'], context.previousFeed);
+  queryClient.setQueryData(['sessions', sessionId], context.previousSession)
+  queryClient.setQueryData(['feed', userId, 'following'], context.previousFeed)
 
   // Show error message
-  toast.error('Failed to support session');
-};
+  toast.error('Failed to support session')
+}
 ```
 
 - Restore previous state
@@ -300,9 +298,9 @@ onError: (err, variables, context) => {
 ```typescript
 onSuccess: () => {
   // Invalidate to refetch and confirm
-  queryClient.invalidateQueries({ queryKey: ['sessions', sessionId] });
-  queryClient.invalidateQueries({ queryKey: ['feed'] });
-};
+  queryClient.invalidateQueries({ queryKey: ['sessions', sessionId] })
+  queryClient.invalidateQueries({ queryKey: ['feed'] })
+}
 ```
 
 - Refetch to ensure consistency
@@ -331,9 +329,9 @@ const tempComment = {
   user: currentUser,
   createdAt: new Date(),
   status: 'pending',
-};
+}
 
-queryClient.setQueryData(['comments', sessionId], old => [tempComment, ...old]);
+queryClient.setQueryData(['comments', sessionId], (old) => [tempComment, ...old])
 ```
 
 - Temporary ID for tracking
@@ -343,39 +341,35 @@ queryClient.setQueryData(['comments', sessionId], old => [tempComment, ...old]);
 **Server Creation**:
 
 ```typescript
-const batch = firestore.batch();
+const batch = firestore.batch()
 
 // Create comment document
-const commentRef = firestore.collection('comments').doc();
+const commentRef = firestore.collection('comments').doc()
 batch.set(commentRef, {
   id: commentRef.id,
   sessionId,
   userId,
   content: sanitizeContent(content),
   createdAt: serverTimestamp(),
-});
+})
 
 // Increment comment count
 batch.update(firestore.collection('sessions').doc(sessionId), {
   commentCount: increment(1),
-});
+})
 
-await batch.commit();
-return commentRef.id;
+await batch.commit()
+return commentRef.id
 ```
 
 **Replace Temporary Comment**:
 
 ```typescript
-onSuccess: realCommentId => {
-  queryClient.setQueryData(['comments', sessionId], old =>
-    old.map(c =>
-      c.id === tempComment.id
-        ? { ...c, id: realCommentId, status: 'confirmed' }
-        : c
-    )
-  );
-};
+onSuccess: (realCommentId) => {
+  queryClient.setQueryData(['comments', sessionId], (old) =>
+    old.map((c) => (c.id === tempComment.id ? { ...c, id: realCommentId, status: 'confirmed' } : c))
+  )
+}
 ```
 
 - Replace temp ID with real Firestore ID
@@ -387,14 +381,14 @@ onSuccess: realCommentId => {
 ```typescript
 onError: () => {
   // Remove temp comment
-  queryClient.setQueryData(['comments', sessionId], old =>
-    old.filter(c => c.id !== tempComment.id)
-  );
+  queryClient.setQueryData(['comments', sessionId], (old) =>
+    old.filter((c) => c.id !== tempComment.id)
+  )
 
   toast.error('Failed to post comment. Try again?', {
     action: { label: 'Retry', onClick: () => retry() },
-  });
-};
+  })
+}
 ```
 
 ### 4. Deleting a Comment
@@ -404,9 +398,9 @@ onError: () => {
 **Optimistic Delete**:
 
 ```typescript
-queryClient.setQueryData(['comments', sessionId], old =>
-  old.map(c => (c.id === commentId ? { ...c, status: 'deleting' } : c))
-);
+queryClient.setQueryData(['comments', sessionId], (old) =>
+  old.map((c) => (c.id === commentId ? { ...c, status: 'deleting' } : c))
+)
 ```
 
 - Mark as "deleting" (grayed out)
@@ -415,17 +409,17 @@ queryClient.setQueryData(['comments', sessionId], old =>
 **Server Delete**:
 
 ```typescript
-const batch = firestore.batch();
+const batch = firestore.batch()
 
 // Delete comment
-batch.delete(firestore.collection('comments').doc(commentId));
+batch.delete(firestore.collection('comments').doc(commentId))
 
 // Decrement count
 batch.update(firestore.collection('sessions').doc(sessionId), {
   commentCount: increment(-1),
-});
+})
 
-await batch.commit();
+await batch.commit()
 ```
 
 ### 5. Loading Comments
@@ -439,7 +433,7 @@ export function useComments(sessionId: string) {
     queryFn: () => socialService.getComments(sessionId, 20),
     staleTime: 5 * 60 * 1000, // 5 minutes
     enabled: !!sessionId,
-  });
+  })
 }
 ```
 
@@ -474,10 +468,9 @@ async getComments(sessionId: string, limit = 20) {
 ```typescript
 useInfiniteQuery({
   queryKey: ['comments', sessionId],
-  queryFn: ({ pageParam }) =>
-    socialService.getComments(sessionId, 20, pageParam),
-  getNextPageParam: lastPage => lastPage.lastVisible,
-});
+  queryFn: ({ pageParam }) => socialService.getComments(sessionId, 20, pageParam),
+  getNextPageParam: (lastPage) => lastPage.lastVisible,
+})
 ```
 
 ## Data Models
@@ -488,10 +481,10 @@ useInfiniteQuery({
 // /supports/{supportId}
 // Composite ID: {sessionId}_{userId}
 interface Support {
-  id: string; // sessionId_userId
-  sessionId: string;
-  userId: string;
-  createdAt: Timestamp;
+  id: string // sessionId_userId
+  sessionId: string
+  userId: string
+  createdAt: Timestamp
 }
 ```
 
@@ -500,11 +493,11 @@ interface Support {
 ```typescript
 // /comments/{commentId}
 interface Comment {
-  id: string;
-  sessionId: string;
-  userId: string;
-  content: string; // Max 500 chars
-  createdAt: Timestamp;
+  id: string
+  sessionId: string
+  userId: string
+  content: string // Max 500 chars
+  createdAt: Timestamp
 }
 ```
 
@@ -513,11 +506,11 @@ interface Comment {
 ```typescript
 interface CommentWithUser extends Comment {
   user: {
-    id: string;
-    username: string;
-    name: string;
-    profilePicture?: string;
-  };
+    id: string
+    username: string
+    name: string
+    profilePicture?: string
+  }
 }
 ```
 
@@ -539,7 +532,7 @@ interface CommentWithUser extends Comment {
 
 ```typescript
 export function useSupport() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: ({ sessionId, userId, action = 'add' }) =>
@@ -548,28 +541,28 @@ export function useSupport() {
         : socialService.unsupportSession(sessionId, userId),
 
     onMutate: async ({ sessionId, action }) => {
-      await queryClient.cancelQueries({ queryKey: ['sessions', sessionId] });
+      await queryClient.cancelQueries({ queryKey: ['sessions', sessionId] })
 
-      const previous = queryClient.getQueryData(['sessions', sessionId]);
+      const previous = queryClient.getQueryData(['sessions', sessionId])
 
-      queryClient.setQueryData(['sessions', sessionId], old => ({
+      queryClient.setQueryData(['sessions', sessionId], (old) => ({
         ...old,
         supportCount: old.supportCount + (action === 'add' ? 1 : -1),
         isSupported: action === 'add',
-      }));
+      }))
 
-      return { previous };
+      return { previous }
     },
 
     onError: (err, { sessionId }, context) => {
-      queryClient.setQueryData(['sessions', sessionId], context.previous);
-      toast.error('Action failed');
+      queryClient.setQueryData(['sessions', sessionId], context.previous)
+      toast.error('Action failed')
     },
 
     onSettled: (_, __, { sessionId }) => {
-      queryClient.invalidateQueries({ queryKey: ['sessions', sessionId] });
+      queryClient.invalidateQueries({ queryKey: ['sessions', sessionId] })
     },
-  });
+  })
 }
 ```
 
@@ -577,17 +570,17 @@ export function useSupport() {
 
 ```typescript
 export function useCreateComment() {
-  const queryClient = useQueryClient();
-  const currentUser = useAuth();
+  const queryClient = useQueryClient()
+  const currentUser = useAuth()
 
   return useMutation({
     mutationFn: ({ sessionId, content }) =>
       socialService.createComment(sessionId, currentUser.id, content),
 
     onMutate: async ({ sessionId, content }) => {
-      await queryClient.cancelQueries({ queryKey: ['comments', sessionId] });
+      await queryClient.cancelQueries({ queryKey: ['comments', sessionId] })
 
-      const previous = queryClient.getQueryData(['comments', sessionId]);
+      const previous = queryClient.getQueryData(['comments', sessionId])
 
       const tempComment = {
         id: `temp-${Date.now()}`,
@@ -597,33 +590,28 @@ export function useCreateComment() {
         content,
         createdAt: new Date(),
         status: 'pending',
-      };
+      }
 
-      queryClient.setQueryData(['comments', sessionId], old => [
-        tempComment,
-        ...(old || []),
-      ]);
+      queryClient.setQueryData(['comments', sessionId], (old) => [tempComment, ...(old || [])])
 
-      return { previous, tempComment };
+      return { previous, tempComment }
     },
 
     onSuccess: (realCommentId, { sessionId }, context) => {
-      queryClient.setQueryData(['comments', sessionId], old =>
-        old.map(c =>
-          c.id === context.tempComment.id
-            ? { ...c, id: realCommentId, status: 'confirmed' }
-            : c
+      queryClient.setQueryData(['comments', sessionId], (old) =>
+        old.map((c) =>
+          c.id === context.tempComment.id ? { ...c, id: realCommentId, status: 'confirmed' } : c
         )
-      );
+      )
 
-      queryClient.invalidateQueries({ queryKey: ['sessions', sessionId] });
+      queryClient.invalidateQueries({ queryKey: ['sessions', sessionId] })
     },
 
     onError: (err, { sessionId }, context) => {
-      queryClient.setQueryData(['comments', sessionId], context.previous);
-      toast.error('Failed to post comment');
+      queryClient.setQueryData(['comments', sessionId], context.previous)
+      toast.error('Failed to post comment')
     },
-  });
+  })
 }
 ```
 
@@ -632,14 +620,14 @@ export function useCreateComment() {
 ### 1. Debounce Double-Clicks
 
 ```typescript
-const [isSupporting, setIsSupporting] = useState(false);
+const [isSupporting, setIsSupporting] = useState(false)
 
 const handleSupport = async () => {
-  if (isSupporting) return; // Prevent double-click
-  setIsSupporting(true);
-  await supportMutation.mutate({ sessionId, userId });
-  setTimeout(() => setIsSupporting(false), 300);
-};
+  if (isSupporting) return // Prevent double-click
+  setIsSupporting(true)
+  await supportMutation.mutate({ sessionId, userId })
+  setTimeout(() => setIsSupporting(false), 300)
+}
 ```
 
 ### 2. Batch User Fetches
@@ -670,19 +658,16 @@ useEffect(() => {
     .collection('comments')
     .where('sessionId', '==', sessionId)
     .orderBy('createdAt', 'desc')
-    .onSnapshot(snapshot => {
-      snapshot.docChanges().forEach(change => {
+    .onSnapshot((snapshot) => {
+      snapshot.docChanges().forEach((change) => {
         if (change.type === 'added') {
-          queryClient.setQueryData(['comments', sessionId], old => [
-            change.doc.data(),
-            ...old,
-          ]);
+          queryClient.setQueryData(['comments', sessionId], (old) => [change.doc.data(), ...old])
         }
-      });
-    });
+      })
+    })
 
-  return () => unsubscribe();
-}, [sessionId]);
+  return () => unsubscribe()
+}, [sessionId])
 ```
 
 ### Comment Reactions

@@ -4,32 +4,28 @@
  * All write operations for projects (create, update, delete, archive).
  */
 
-import {
-  useMutation,
-  useQueryClient,
-  UseMutationOptions,
-} from '@tanstack/react-query';
-import { ProjectService } from '../services/ProjectService';
-import { PROJECT_KEYS } from './useProjects';
-import { Project, CreateProjectData, UpdateProjectData } from '@/types';
+import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query'
+import { ProjectService } from '../services/ProjectService'
+import { PROJECT_KEYS } from './useProjects'
+import { Project, CreateProjectData, UpdateProjectData } from '@/types'
 
-const projectService = new ProjectService();
+const projectService = new ProjectService()
 
 // Context types for mutation rollbacks
-type CreateProjectContext = { previousProjects: unknown };
+type CreateProjectContext = { previousProjects: unknown }
 type UpdateProjectContext = {
-  previousProject: unknown;
-  previousProjects: unknown;
-};
-type DeleteProjectContext = { previousProjects: unknown };
+  previousProject: unknown
+  previousProjects: unknown
+}
+type DeleteProjectContext = { previousProjects: unknown }
 type ArchiveProjectContext = {
-  previousProject: unknown;
-  previousProjects: unknown;
-};
+  previousProject: unknown
+  previousProjects: unknown
+}
 type RestoreProjectContext = {
-  previousProject: unknown;
-  previousProjects: unknown;
-};
+  previousProject: unknown
+  previousProjects: unknown
+}
 
 /**
  * Create a new project
@@ -45,23 +41,21 @@ type RestoreProjectContext = {
  * });
  */
 export function useCreateProject(
-  options?: Partial<
-    UseMutationOptions<Project, Error, CreateProjectData, CreateProjectContext>
-  >
+  options?: Partial<UseMutationOptions<Project, Error, CreateProjectData, CreateProjectContext>>
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation<Project, Error, CreateProjectData, CreateProjectContext>({
-    mutationFn: data => projectService.createProject(data),
+    mutationFn: (data) => projectService.createProject(data),
 
-    onMutate: async newProject => {
-      await queryClient.cancelQueries({ queryKey: PROJECT_KEYS.list() });
+    onMutate: async (newProject) => {
+      await queryClient.cancelQueries({ queryKey: PROJECT_KEYS.list() })
 
-      const previousProjects = queryClient.getQueryData(PROJECT_KEYS.list());
+      const previousProjects = queryClient.getQueryData(PROJECT_KEYS.list())
 
       // Optimistically add to the list
-      queryClient.setQueryData<Project[]>(PROJECT_KEYS.list(), old => {
-        if (!old) return old;
+      queryClient.setQueryData<Project[]>(PROJECT_KEYS.list(), (old) => {
+        if (!old) return old
 
         const optimisticProject: Project = {
           id: `temp-${Date.now()}`,
@@ -75,30 +69,26 @@ export function useCreateProject(
           status: 'active',
           createdAt: new Date(),
           updatedAt: new Date(),
-        };
+        }
 
-        return [...old, optimisticProject];
-      });
+        return [...old, optimisticProject]
+      })
 
-      return { previousProjects };
+      return { previousProjects }
     },
 
     onError: (error, variables, context) => {
-      if (
-        context &&
-        'previousProjects' in context &&
-        context.previousProjects
-      ) {
-        queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects);
+      if (context && 'previousProjects' in context && context.previousProjects) {
+        queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects)
       }
     },
 
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.list() });
+      queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.list() })
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -121,7 +111,7 @@ export function useUpdateProject(
     >
   >
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation<
     Project,
@@ -129,70 +119,55 @@ export function useUpdateProject(
     { projectId: string; data: UpdateProjectData },
     UpdateProjectContext
   >({
-    mutationFn: ({ projectId, data }) =>
-      projectService.updateProject(projectId, data),
+    mutationFn: ({ projectId, data }) => projectService.updateProject(projectId, data),
 
     onMutate: async ({ projectId, data }) => {
       await queryClient.cancelQueries({
         queryKey: PROJECT_KEYS.detail(projectId),
-      });
-      await queryClient.cancelQueries({ queryKey: PROJECT_KEYS.list() });
+      })
+      await queryClient.cancelQueries({ queryKey: PROJECT_KEYS.list() })
 
-      const previousProject = queryClient.getQueryData(
-        PROJECT_KEYS.detail(projectId)
-      );
-      const previousProjects = queryClient.getQueryData(PROJECT_KEYS.list());
+      const previousProject = queryClient.getQueryData(PROJECT_KEYS.detail(projectId))
+      const previousProjects = queryClient.getQueryData(PROJECT_KEYS.list())
 
       // Optimistically update project detail
-      queryClient.setQueryData<Project | null>(
-        PROJECT_KEYS.detail(projectId),
-        old => {
-          if (!old) return old;
-          return { ...old, ...data, updatedAt: new Date() };
-        }
-      );
+      queryClient.setQueryData<Project | null>(PROJECT_KEYS.detail(projectId), (old) => {
+        if (!old) return old
+        return { ...old, ...data, updatedAt: new Date() }
+      })
 
       // Optimistically update in project list
-      queryClient.setQueryData<Project[]>(PROJECT_KEYS.list(), old => {
-        if (!old) return old;
-        return old.map(project =>
-          project.id === projectId
-            ? { ...project, ...data, updatedAt: new Date() }
-            : project
-        );
-      });
+      queryClient.setQueryData<Project[]>(PROJECT_KEYS.list(), (old) => {
+        if (!old) return old
+        return old.map((project) =>
+          project.id === projectId ? { ...project, ...data, updatedAt: new Date() } : project
+        )
+      })
 
-      return { previousProject, previousProjects };
+      return { previousProject, previousProjects }
     },
 
     onError: (error, { projectId }, context) => {
       if (context && 'previousProject' in context && context.previousProject) {
-        queryClient.setQueryData(
-          PROJECT_KEYS.detail(projectId),
-          context.previousProject
-        );
+        queryClient.setQueryData(PROJECT_KEYS.detail(projectId), context.previousProject)
       }
-      if (
-        context &&
-        'previousProjects' in context &&
-        context.previousProjects
-      ) {
-        queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects);
+      if (context && 'previousProjects' in context && context.previousProjects) {
+        queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects)
       }
     },
 
     onSuccess: (_, { projectId }) => {
       queryClient.invalidateQueries({
         queryKey: PROJECT_KEYS.detail(projectId),
-      });
-      queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.list() });
+      })
+      queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.list() })
       queryClient.invalidateQueries({
         queryKey: PROJECT_KEYS.stats(projectId),
-      });
+      })
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -203,51 +178,45 @@ export function useUpdateProject(
  * deleteMutation.mutate('project-123');
  */
 export function useDeleteProject(
-  options?: Partial<
-    UseMutationOptions<void, Error, string, DeleteProjectContext>
-  >
+  options?: Partial<UseMutationOptions<void, Error, string, DeleteProjectContext>>
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation<void, Error, string, DeleteProjectContext>({
-    mutationFn: projectId => projectService.deleteProject(projectId),
+    mutationFn: (projectId) => projectService.deleteProject(projectId),
 
-    onMutate: async projectId => {
-      await queryClient.cancelQueries({ queryKey: PROJECT_KEYS.list() });
+    onMutate: async (projectId) => {
+      await queryClient.cancelQueries({ queryKey: PROJECT_KEYS.list() })
 
-      const previousProjects = queryClient.getQueryData(PROJECT_KEYS.list());
+      const previousProjects = queryClient.getQueryData(PROJECT_KEYS.list())
 
       // Optimistically remove from list
-      queryClient.setQueryData<Project[]>(PROJECT_KEYS.list(), old => {
-        if (!old) return old;
-        return old.filter(project => project.id !== projectId);
-      });
+      queryClient.setQueryData<Project[]>(PROJECT_KEYS.list(), (old) => {
+        if (!old) return old
+        return old.filter((project) => project.id !== projectId)
+      })
 
-      return { previousProjects };
+      return { previousProjects }
     },
 
     onError: (error, projectId, context) => {
-      if (
-        context &&
-        'previousProjects' in context &&
-        context.previousProjects
-      ) {
-        queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects);
+      if (context && 'previousProjects' in context && context.previousProjects) {
+        queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects)
       }
     },
 
     onSuccess: (_, projectId) => {
-      queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.list() });
+      queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.list() })
       queryClient.invalidateQueries({
         queryKey: PROJECT_KEYS.detail(projectId),
-      });
+      })
       queryClient.invalidateQueries({
         queryKey: PROJECT_KEYS.stats(projectId),
-      });
+      })
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -258,74 +227,62 @@ export function useDeleteProject(
  * archiveMutation.mutate('project-123');
  */
 export function useArchiveProject(
-  options?: Partial<
-    UseMutationOptions<Project, Error, string, ArchiveProjectContext>
-  >
+  options?: Partial<UseMutationOptions<Project, Error, string, ArchiveProjectContext>>
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation<Project, Error, string, ArchiveProjectContext>({
-    mutationFn: projectId => projectService.archiveProject(projectId),
+    mutationFn: (projectId) => projectService.archiveProject(projectId),
 
-    onMutate: async projectId => {
+    onMutate: async (projectId) => {
       await queryClient.cancelQueries({
         queryKey: PROJECT_KEYS.detail(projectId),
-      });
-      await queryClient.cancelQueries({ queryKey: PROJECT_KEYS.list() });
+      })
+      await queryClient.cancelQueries({ queryKey: PROJECT_KEYS.list() })
 
-      const previousProject = queryClient.getQueryData(
-        PROJECT_KEYS.detail(projectId)
-      );
-      const previousProjects = queryClient.getQueryData(PROJECT_KEYS.list());
+      const previousProject = queryClient.getQueryData(PROJECT_KEYS.detail(projectId))
+      const previousProjects = queryClient.getQueryData(PROJECT_KEYS.list())
 
       // Optimistically update status
       const updateStatus = (project: Project) => {
-        if (project.id !== projectId) return project;
+        if (project.id !== projectId) return project
         return {
           ...project,
           status: 'archived' as const,
           updatedAt: new Date(),
-        };
-      };
+        }
+      }
 
-      queryClient.setQueryData<Project | null>(
-        PROJECT_KEYS.detail(projectId),
-        old => (old ? updateStatus(old) : old)
-      );
+      queryClient.setQueryData<Project | null>(PROJECT_KEYS.detail(projectId), (old) =>
+        old ? updateStatus(old) : old
+      )
 
-      queryClient.setQueryData<Project[]>(PROJECT_KEYS.list(), old => {
-        if (!old) return old;
-        return old.map(updateStatus);
-      });
+      queryClient.setQueryData<Project[]>(PROJECT_KEYS.list(), (old) => {
+        if (!old) return old
+        return old.map(updateStatus)
+      })
 
-      return { previousProject, previousProjects };
+      return { previousProject, previousProjects }
     },
 
     onError: (error, projectId, context) => {
       if (context && 'previousProject' in context && context.previousProject) {
-        queryClient.setQueryData(
-          PROJECT_KEYS.detail(projectId),
-          context.previousProject
-        );
+        queryClient.setQueryData(PROJECT_KEYS.detail(projectId), context.previousProject)
       }
-      if (
-        context &&
-        'previousProjects' in context &&
-        context.previousProjects
-      ) {
-        queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects);
+      if (context && 'previousProjects' in context && context.previousProjects) {
+        queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects)
       }
     },
 
     onSuccess: (_, projectId) => {
       queryClient.invalidateQueries({
         queryKey: PROJECT_KEYS.detail(projectId),
-      });
-      queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.list() });
+      })
+      queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.list() })
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -336,70 +293,58 @@ export function useArchiveProject(
  * restoreMutation.mutate('project-123');
  */
 export function useRestoreProject(
-  options?: Partial<
-    UseMutationOptions<Project, Error, string, RestoreProjectContext>
-  >
+  options?: Partial<UseMutationOptions<Project, Error, string, RestoreProjectContext>>
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation<Project, Error, string, RestoreProjectContext>({
-    mutationFn: projectId => projectService.restoreProject(projectId),
+    mutationFn: (projectId) => projectService.restoreProject(projectId),
 
-    onMutate: async projectId => {
+    onMutate: async (projectId) => {
       await queryClient.cancelQueries({
         queryKey: PROJECT_KEYS.detail(projectId),
-      });
-      await queryClient.cancelQueries({ queryKey: PROJECT_KEYS.list() });
+      })
+      await queryClient.cancelQueries({ queryKey: PROJECT_KEYS.list() })
 
-      const previousProject = queryClient.getQueryData(
-        PROJECT_KEYS.detail(projectId)
-      );
-      const previousProjects = queryClient.getQueryData(PROJECT_KEYS.list());
+      const previousProject = queryClient.getQueryData(PROJECT_KEYS.detail(projectId))
+      const previousProjects = queryClient.getQueryData(PROJECT_KEYS.list())
 
       // Optimistically update status
       const updateStatus = (project: Project) => {
-        if (project.id !== projectId) return project;
-        return { ...project, status: 'active' as const, updatedAt: new Date() };
-      };
+        if (project.id !== projectId) return project
+        return { ...project, status: 'active' as const, updatedAt: new Date() }
+      }
 
-      queryClient.setQueryData<Project | null>(
-        PROJECT_KEYS.detail(projectId),
-        old => (old ? updateStatus(old) : old)
-      );
+      queryClient.setQueryData<Project | null>(PROJECT_KEYS.detail(projectId), (old) =>
+        old ? updateStatus(old) : old
+      )
 
-      queryClient.setQueryData<Project[]>(PROJECT_KEYS.list(), old => {
-        if (!old) return old;
-        return old.map(updateStatus);
-      });
+      queryClient.setQueryData<Project[]>(PROJECT_KEYS.list(), (old) => {
+        if (!old) return old
+        return old.map(updateStatus)
+      })
 
-      return { previousProject, previousProjects };
+      return { previousProject, previousProjects }
     },
 
     onError: (error, projectId, context) => {
       if (context && 'previousProject' in context && context.previousProject) {
-        queryClient.setQueryData(
-          PROJECT_KEYS.detail(projectId),
-          context.previousProject
-        );
+        queryClient.setQueryData(PROJECT_KEYS.detail(projectId), context.previousProject)
       }
-      if (
-        context &&
-        'previousProjects' in context &&
-        context.previousProjects
-      ) {
-        queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects);
+      if (context && 'previousProjects' in context && context.previousProjects) {
+        queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects)
       }
     },
 
     onSuccess: (_, projectId) => {
       queryClient.invalidateQueries({
         queryKey: PROJECT_KEYS.detail(projectId),
-      });
-      queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.list() });
+      })
+      queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.list() })
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -410,12 +355,12 @@ export function useRestoreProject(
  * invalidateProject(projectId);
  */
 export function useInvalidateProject() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return (projectId: string) => {
-    queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.detail(projectId) });
-    queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.stats(projectId) });
-  };
+    queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.detail(projectId) })
+    queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.stats(projectId) })
+  }
 }
 
 /**
@@ -426,9 +371,9 @@ export function useInvalidateProject() {
  * invalidateAllProjects();
  */
 export function useInvalidateAllProjects() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return () => {
-    queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.all() });
-  };
+    queryClient.invalidateQueries({ queryKey: PROJECT_KEYS.all() })
+  }
 }

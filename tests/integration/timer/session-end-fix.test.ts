@@ -17,65 +17,65 @@ import {
   createTestProject,
   createActiveSessionData,
   resetFactoryCounters,
-} from '../__helpers__';
+} from '../__helpers__'
 
 // Mock Firebase API
-const mockFirebaseApi = createMockFirebaseApi(testFirebaseStore);
+const mockFirebaseApi = createMockFirebaseApi(testFirebaseStore)
 
 // Track clearActiveSession calls
-let clearActiveSessionCallCount = 0;
-const originalClearActiveSession = mockFirebaseApi.activeSession.clear;
+let clearActiveSessionCallCount = 0
+const originalClearActiveSession = mockFirebaseApi.activeSession.clear
 
 jest.mock('@/lib/api', () => ({
   firebaseSessionApi: {
     saveActiveSession: mockFirebaseApi.activeSession.save,
     getActiveSession: mockFirebaseApi.activeSession.get,
     clearActiveSession: jest.fn(async (userId?: string) => {
-      clearActiveSessionCallCount++;
+      clearActiveSessionCallCount++
       // Mock clears the active session for the current user
       // In real implementation, userId is obtained from auth.currentUser
       // For tests, we need to pass the userId explicitly
       if (userId) {
-        return originalClearActiveSession(userId);
+        return originalClearActiveSession(userId)
       }
     }),
     createSession: mockFirebaseApi.sessions.create,
   },
-}));
+}))
 
 describe('Integration: Session Ending Fix', () => {
-  let queryClient: any;
-  let user: any;
-  let project: any;
+  let queryClient: any
+  let user: any
+  let project: any
 
   beforeEach(() => {
-    queryClient = createTestQueryClient();
-    resetFirebaseStore();
-    resetFactoryCounters();
-    jest.clearAllMocks();
-    clearActiveSessionCallCount = 0;
+    queryClient = createTestQueryClient()
+    resetFirebaseStore()
+    resetFactoryCounters()
+    jest.clearAllMocks()
+    clearActiveSessionCallCount = 0
 
     // Setup test data
-    user = createTestUser({ email: 'test@example.com' });
-    project = createTestProject(user.id, { name: 'Test Project' });
+    user = createTestUser({ email: 'test@example.com' })
+    project = createTestProject(user.id, { name: 'Test Project' })
 
-    testFirebaseStore.createUser(user);
-    testFirebaseStore.createProject(project);
-  });
+    testFirebaseStore.createUser(user)
+    testFirebaseStore.createProject(project)
+  })
 
   afterEach(() => {
-    queryClient.clear();
-  });
+    queryClient.clear()
+  })
 
   describe('Active Session Clearing', () => {
     it('should NOT clear active session when creating a session', async () => {
       // Arrange: Start timer
-      const startTime = new Date();
-      const timerData = createActiveSessionData(project.id, { startTime });
-      await mockFirebaseApi.activeSession.save(user.id, timerData);
+      const startTime = new Date()
+      const timerData = createActiveSessionData(project.id, { startTime })
+      await mockFirebaseApi.activeSession.save(user.id, timerData)
 
       // Reset call count after setup
-      clearActiveSessionCallCount = 0;
+      clearActiveSessionCallCount = 0
 
       // Act: Create session (this should NOT call clearActiveSession)
       await mockFirebaseApi.sessions.create({
@@ -86,24 +86,24 @@ describe('Integration: Session Ending Fix', () => {
         description: 'Test description',
         duration: 3600,
         startTime: startTime,
-      });
+      })
 
       // Assert: clearActiveSession was NOT called during createSession
       // (It should only be called by the finish mutation's onSuccess handler)
-      expect(clearActiveSessionCallCount).toBe(0);
-    });
+      expect(clearActiveSessionCallCount).toBe(0)
+    })
 
     it('should clear active session ONLY ONCE when finishing timer', async () => {
       // Arrange: Start timer
-      const startTime = new Date();
-      const timerData = createActiveSessionData(project.id, { startTime });
-      await mockFirebaseApi.activeSession.save(user.id, timerData);
+      const startTime = new Date()
+      const timerData = createActiveSessionData(project.id, { startTime })
+      await mockFirebaseApi.activeSession.save(user.id, timerData)
 
       // Reset call count after setup
-      clearActiveSessionCallCount = 0;
+      clearActiveSessionCallCount = 0
 
       // Act: Finish timer (create session + clear active session)
-      const { firebaseSessionApi } = jest.requireMock('@/lib/api');
+      const { firebaseSessionApi } = jest.requireMock('@/lib/api')
 
       // Create session
       await mockFirebaseApi.sessions.create({
@@ -114,52 +114,52 @@ describe('Integration: Session Ending Fix', () => {
         description: 'Test description',
         duration: 3600,
         startTime: startTime,
-      });
+      })
 
       // Simulate the finish mutation's onSuccess handler
-      await firebaseSessionApi.clearActiveSession(user.id);
+      await firebaseSessionApi.clearActiveSession(user.id)
 
       // Assert: clearActiveSession was called exactly ONCE
-      expect(clearActiveSessionCallCount).toBe(1);
+      expect(clearActiveSessionCallCount).toBe(1)
 
       // Assert: Active session is cleared
-      const activeSession = await mockFirebaseApi.activeSession.get(user.id);
-      expect(activeSession).toBeUndefined();
-    });
+      const activeSession = await mockFirebaseApi.activeSession.get(user.id)
+      expect(activeSession).toBeUndefined()
+    })
 
     it('should clear active session when canceling timer', async () => {
       // Arrange: Start timer
-      const startTime = new Date();
-      const timerData = createActiveSessionData(project.id, { startTime });
-      await mockFirebaseApi.activeSession.save(user.id, timerData);
+      const startTime = new Date()
+      const timerData = createActiveSessionData(project.id, { startTime })
+      await mockFirebaseApi.activeSession.save(user.id, timerData)
 
       // Reset call count after setup
-      clearActiveSessionCallCount = 0;
+      clearActiveSessionCallCount = 0
 
       // Act: Cancel timer - use mockFirebaseApi directly
-      const { firebaseSessionApi } = jest.requireMock('@/lib/api');
-      await firebaseSessionApi.clearActiveSession(user.id);
+      const { firebaseSessionApi } = jest.requireMock('@/lib/api')
+      await firebaseSessionApi.clearActiveSession(user.id)
 
       // Assert: clearActiveSession was called exactly once
-      expect(clearActiveSessionCallCount).toBe(1);
+      expect(clearActiveSessionCallCount).toBe(1)
 
       // Assert: Active session is cleared
-      const activeSession = await mockFirebaseApi.activeSession.get(user.id);
-      expect(activeSession).toBeUndefined();
-    });
-  });
+      const activeSession = await mockFirebaseApi.activeSession.get(user.id)
+      expect(activeSession).toBeUndefined()
+    })
+  })
 
   describe('Race Condition Prevention', () => {
     it('should handle rapid finish/cancel operations without orphaning sessions', async () => {
       // Arrange: Start timer
-      const startTime = new Date();
-      const timerData = createActiveSessionData(project.id, { startTime });
-      await mockFirebaseApi.activeSession.save(user.id, timerData);
+      const startTime = new Date()
+      const timerData = createActiveSessionData(project.id, { startTime })
+      await mockFirebaseApi.activeSession.save(user.id, timerData)
 
-      const { firebaseSessionApi } = jest.requireMock('@/lib/api');
+      const { firebaseSessionApi } = jest.requireMock('@/lib/api')
 
       // Reset call count
-      clearActiveSessionCallCount = 0;
+      clearActiveSessionCallCount = 0
 
       // Act: Simulate user rapidly clicking finish multiple times
       const finishPromises = [
@@ -173,28 +173,28 @@ describe('Integration: Session Ending Fix', () => {
           startTime: startTime,
         }),
         firebaseSessionApi.clearActiveSession(user.id),
-      ];
+      ]
 
-      await Promise.all(finishPromises);
+      await Promise.all(finishPromises)
 
       // Assert: Active session is cleared (idempotent)
-      const activeSession = await mockFirebaseApi.activeSession.get(user.id);
-      expect(activeSession).toBeUndefined();
+      const activeSession = await mockFirebaseApi.activeSession.get(user.id)
+      expect(activeSession).toBeUndefined()
 
       // Assert: Multiple clears are safe (Firebase deleteDoc is idempotent)
-      expect(clearActiveSessionCallCount).toBeGreaterThan(0);
-    });
+      expect(clearActiveSessionCallCount).toBeGreaterThan(0)
+    })
 
     it('should handle navigation away during session creation', async () => {
       // Arrange: Start timer
-      const startTime = new Date();
-      const timerData = createActiveSessionData(project.id, { startTime });
-      await mockFirebaseApi.activeSession.save(user.id, timerData);
+      const startTime = new Date()
+      const timerData = createActiveSessionData(project.id, { startTime })
+      await mockFirebaseApi.activeSession.save(user.id, timerData)
 
-      const { firebaseSessionApi } = jest.requireMock('@/lib/api');
+      const { firebaseSessionApi } = jest.requireMock('@/lib/api')
 
       // Reset call count
-      clearActiveSessionCallCount = 0;
+      clearActiveSessionCallCount = 0
 
       // Act: Create session (using mockFirebaseApi directly)
       await mockFirebaseApi.sessions.create({
@@ -205,37 +205,37 @@ describe('Integration: Session Ending Fix', () => {
         description: 'Test description',
         duration: 3600,
         startTime: startTime,
-      });
+      })
 
       // Simulate user navigating away before clearActiveSession
       // Active session should still exist at this point
-      let activeSession = await mockFirebaseApi.activeSession.get(user.id);
-      expect(activeSession).toBeDefined();
+      let activeSession = await mockFirebaseApi.activeSession.get(user.id)
+      expect(activeSession).toBeDefined()
 
       // Now simulate the finish mutation's onSuccess
-      await firebaseSessionApi.clearActiveSession(user.id);
+      await firebaseSessionApi.clearActiveSession(user.id)
 
       // Assert: Active session is now cleared
-      activeSession = await mockFirebaseApi.activeSession.get(user.id);
-      expect(activeSession).toBeUndefined();
-    });
-  });
+      activeSession = await mockFirebaseApi.activeSession.get(user.id)
+      expect(activeSession).toBeUndefined()
+    })
+  })
 
   describe('Session Lifecycle Integrity', () => {
     it('should have complete lifecycle: start → finish → clear', async () => {
-      const { firebaseSessionApi } = jest.requireMock('@/lib/api');
+      const { firebaseSessionApi } = jest.requireMock('@/lib/api')
 
       // 1. Start timer
-      const startTime = new Date();
-      const timerData = createActiveSessionData(project.id, { startTime });
-      await mockFirebaseApi.activeSession.save(user.id, timerData);
+      const startTime = new Date()
+      const timerData = createActiveSessionData(project.id, { startTime })
+      await mockFirebaseApi.activeSession.save(user.id, timerData)
 
-      let activeSession = await mockFirebaseApi.activeSession.get(user.id);
-      expect(activeSession).toBeDefined();
-      expect(activeSession.projectId).toBe(project.id);
+      let activeSession = await mockFirebaseApi.activeSession.get(user.id)
+      expect(activeSession).toBeDefined()
+      expect(activeSession.projectId).toBe(project.id)
 
       // Reset call count
-      clearActiveSessionCallCount = 0;
+      clearActiveSessionCallCount = 0
 
       // 2. Finish timer (create session)
       const session = await mockFirebaseApi.sessions.create({
@@ -246,45 +246,45 @@ describe('Integration: Session Ending Fix', () => {
         description: 'Test description',
         duration: 3600,
         startTime: startTime,
-      });
+      })
 
-      expect(session).toBeDefined();
-      expect(session.title).toBe('Test Session');
+      expect(session).toBeDefined()
+      expect(session.title).toBe('Test Session')
 
       // 3. Clear active session (simulating finish mutation onSuccess)
-      await firebaseSessionApi.clearActiveSession(user.id);
+      await firebaseSessionApi.clearActiveSession(user.id)
 
       // Assert: Active session is cleared
-      activeSession = await mockFirebaseApi.activeSession.get(user.id);
-      expect(activeSession).toBeUndefined();
+      activeSession = await mockFirebaseApi.activeSession.get(user.id)
+      expect(activeSession).toBeUndefined()
 
       // Assert: clearActiveSession called exactly once
-      expect(clearActiveSessionCallCount).toBe(1);
-    });
+      expect(clearActiveSessionCallCount).toBe(1)
+    })
 
     it('should have complete lifecycle: start → discard → clear', async () => {
-      const { firebaseSessionApi } = jest.requireMock('@/lib/api');
+      const { firebaseSessionApi } = jest.requireMock('@/lib/api')
 
       // 1. Start timer
-      const startTime = new Date();
-      const timerData = createActiveSessionData(project.id, { startTime });
-      await mockFirebaseApi.activeSession.save(user.id, timerData);
+      const startTime = new Date()
+      const timerData = createActiveSessionData(project.id, { startTime })
+      await mockFirebaseApi.activeSession.save(user.id, timerData)
 
-      let activeSession = await mockFirebaseApi.activeSession.get(user.id);
-      expect(activeSession).toBeDefined();
+      let activeSession = await mockFirebaseApi.activeSession.get(user.id)
+      expect(activeSession).toBeDefined()
 
       // Reset call count
-      clearActiveSessionCallCount = 0;
+      clearActiveSessionCallCount = 0
 
       // 2. Discard timer (clear without creating session)
-      await firebaseSessionApi.clearActiveSession(user.id);
+      await firebaseSessionApi.clearActiveSession(user.id)
 
       // Assert: Active session is cleared
-      activeSession = await mockFirebaseApi.activeSession.get(user.id);
-      expect(activeSession).toBeUndefined();
+      activeSession = await mockFirebaseApi.activeSession.get(user.id)
+      expect(activeSession).toBeUndefined()
 
       // Assert: clearActiveSession called exactly once
-      expect(clearActiveSessionCallCount).toBe(1);
-    });
-  });
-});
+      expect(clearActiveSessionCallCount).toBe(1)
+    })
+  })
+})

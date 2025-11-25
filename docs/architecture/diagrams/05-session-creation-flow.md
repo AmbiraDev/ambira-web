@@ -167,7 +167,7 @@ const session = {
   visibility: 'followers', // Default
   supportCount: 0,
   commentCount: 0,
-};
+}
 ```
 
 **Persistence**:
@@ -197,10 +197,10 @@ const session = {
 
 ```typescript
 // Every second
-const elapsed = Math.floor((Date.now() - startTime) / 1000);
-const hours = Math.floor(elapsed / 3600);
-const minutes = Math.floor((elapsed % 3600) / 60);
-const seconds = elapsed % 60;
+const elapsed = Math.floor((Date.now() - startTime) / 1000)
+const hours = Math.floor(elapsed / 3600)
+const minutes = Math.floor((elapsed % 3600) / 60)
+const seconds = elapsed % 60
 // Display: HH:MM:SS
 ```
 
@@ -234,7 +234,7 @@ const seconds = elapsed % 60;
 **Duration Calculation**:
 
 ```typescript
-const duration = (endTime - startTime) / (1000 * 60 * 60); // Hours
+const duration = (endTime - startTime) / (1000 * 60 * 60) // Hours
 ```
 
 **Create Session Document**:
@@ -289,11 +289,11 @@ const duration = (endTime - startTime) / (1000 * 60 * 60); // Hours
 **Cache Invalidation**:
 
 ```typescript
-queryClient.invalidateQueries({ queryKey: ['timer', userId] });
-queryClient.invalidateQueries({ queryKey: ['feed'] });
-queryClient.invalidateQueries({ queryKey: ['sessions', userId] });
-queryClient.invalidateQueries({ queryKey: ['projects', userId] });
-queryClient.invalidateQueries({ queryKey: ['streaks', userId] });
+queryClient.invalidateQueries({ queryKey: ['timer', userId] })
+queryClient.invalidateQueries({ queryKey: ['feed'] })
+queryClient.invalidateQueries({ queryKey: ['sessions', userId] })
+queryClient.invalidateQueries({ queryKey: ['projects', userId] })
+queryClient.invalidateQueries({ queryKey: ['streaks', userId] })
 ```
 
 **UI Updates**:
@@ -327,14 +327,14 @@ queryClient.invalidateQueries({ queryKey: ['streaks', userId] });
 ```typescript
 // /users/{userId}/activeSession/{sessionId}
 interface ActiveSession {
-  id: string;
-  userId: string;
-  projectId: string;
-  projectName: string;
-  projectIcon: string;
-  projectColor: string;
-  startTime: Timestamp;
-  lastHeartbeat: Timestamp; // Updated every 30s
+  id: string
+  userId: string
+  projectId: string
+  projectName: string
+  projectIcon: string
+  projectColor: string
+  startTime: Timestamp
+  lastHeartbeat: Timestamp // Updated every 30s
 }
 ```
 
@@ -343,22 +343,22 @@ interface ActiveSession {
 ```typescript
 // /sessions/{sessionId}
 interface Session {
-  id: string;
-  userId: string;
-  projectId: string;
-  projectName: string;
-  projectIcon: string;
-  projectColor: string;
-  startTime: Timestamp;
-  endTime: Timestamp;
-  duration: number; // hours
-  notes: string;
-  visibility: 'everyone' | 'followers' | 'private';
-  status: 'completed';
-  supportCount: number;
-  commentCount: number;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  id: string
+  userId: string
+  projectId: string
+  projectName: string
+  projectIcon: string
+  projectColor: string
+  startTime: Timestamp
+  endTime: Timestamp
+  duration: number // hours
+  notes: string
+  visibility: 'everyone' | 'followers' | 'private'
+  status: 'completed'
+  supportCount: number
+  commentCount: number
+  createdAt: Timestamp
+  updatedAt: Timestamp
 }
 ```
 

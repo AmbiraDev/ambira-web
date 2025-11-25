@@ -1,82 +1,82 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import { Session } from '@/types';
-import { firebaseApi } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
-import { EditSessionModal } from '@/components/EditSessionModal';
-import Header from '@/components/HeaderComponent';
-import MobileHeader from '@/components/MobileHeader';
+import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
+import { Session } from '@/types'
+import { firebaseApi } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
+import { EditSessionModal } from '@/components/EditSessionModal'
+import Header from '@/components/HeaderComponent'
+import MobileHeader from '@/components/MobileHeader'
 
 interface SessionEditPageProps {
   params: Promise<{
-    id: string;
-  }>;
+    id: string
+  }>
 }
 
 function SessionEditContent({ sessionId }: { sessionId: string }) {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter()
+  const { user } = useAuth()
+  const [session, setSession] = useState<Session | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (sessionId) {
-      loadSession();
+      loadSession()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionId]);
+  }, [sessionId])
 
   const loadSession = async () => {
     try {
-      setIsLoading(true);
-      setError(null);
+      setIsLoading(true)
+      setError(null)
 
       // Fetch the session
-      const sessionData = await firebaseApi.session.getSession(sessionId);
+      const sessionData = await firebaseApi.session.getSession(sessionId)
 
       // Check if user owns this session
       if (!user || sessionData.userId !== user.id) {
-        setError('You do not have permission to edit this session');
-        return;
+        setError('You do not have permission to edit this session')
+        return
       }
 
-      setSession(sessionData);
+      setSession(sessionData)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Failed to load session');
+      setError(err instanceof Error ? err.message : 'Failed to load session')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleSave = async (
     sessionId: string,
     data: {
-      title: string;
-      description?: string;
-      projectId?: string;
-      tags?: string[];
-      visibility?: 'everyone' | 'followers' | 'private';
-      images?: string[];
-      startTime?: Date;
-      duration?: number;
+      title: string
+      description?: string
+      projectId?: string
+      tags?: string[]
+      visibility?: 'everyone' | 'followers' | 'private'
+      images?: string[]
+      startTime?: Date
+      duration?: number
     }
   ) => {
     try {
-      await firebaseApi.session.updateSession(sessionId, data);
+      await firebaseApi.session.updateSession(sessionId, data)
       // Navigate back to the session detail page
-      router.push(`/sessions/${sessionId}`);
+      router.push(`/sessions/${sessionId}`)
     } catch (err: unknown) {
-      throw err; // Let the modal handle the error
+      throw err // Let the modal handle the error
     }
-  };
+  }
 
   const handleClose = () => {
-    router.back();
-  };
+    router.back()
+  }
 
   if (isLoading) {
     return (
@@ -96,7 +96,7 @@ function SessionEditContent({ sessionId }: { sessionId: string }) {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   if (error || !session) {
@@ -138,7 +138,7 @@ function SessionEditContent({ sessionId }: { sessionId: string }) {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -167,17 +167,15 @@ function SessionEditContent({ sessionId }: { sessionId: string }) {
         />
       </div>
     </div>
-  );
+  )
 }
 
-export default function SessionEditPageWrapper({
-  params,
-}: SessionEditPageProps) {
-  const [sessionId, setSessionId] = React.useState<string>('');
+export default function SessionEditPageWrapper({ params }: SessionEditPageProps) {
+  const [sessionId, setSessionId] = React.useState<string>('')
 
   React.useEffect(() => {
-    params.then(({ id }) => setSessionId(id));
-  }, [params]);
+    params.then(({ id }) => setSessionId(id))
+  }, [params])
 
   return (
     <>
@@ -198,5 +196,5 @@ export default function SessionEditPageWrapper({
         <SessionEditContent sessionId={sessionId} />
       )}
     </>
-  );
+  )
 }

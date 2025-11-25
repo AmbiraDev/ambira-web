@@ -10,7 +10,16 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { collection, query, where, getDocs, getDoc, doc, documentId } from 'firebase/firestore'
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  getDoc,
+  doc,
+  documentId,
+  DocumentData,
+} from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { debug } from '@/lib/debug'
 import { STANDARD_CACHE_TIMES } from '@/lib/react-query'
@@ -109,7 +118,7 @@ export function useGroupLeaderboard(
       const allSessionDocs = sessionDocsArrays.flat()
 
       // Group sessions by userId for aggregation
-      const sessionsByUser = new Map<string, any[]>()
+      const sessionsByUser = new Map<string, DocumentData[]>()
       allSessionDocs.forEach((doc) => {
         const sessionData = doc.data()
         const userId = sessionData.userId

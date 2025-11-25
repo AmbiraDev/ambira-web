@@ -53,7 +53,7 @@ export function use[Feature](id: string) {
 ### Basic Query
 
 ```typescript
-const { data, isLoading, error } = useSession(sessionId);
+const { data, isLoading, error } = useSession(sessionId)
 ```
 
 ### With Options
@@ -62,7 +62,7 @@ const { data, isLoading, error } = useSession(sessionId);
 const { data } = useProfile(userId, {
   staleTime: STANDARD_CACHE_TIMES.LONG,
   enabled: !!userId,
-});
+})
 ```
 
 ### Conditional Query
@@ -70,7 +70,7 @@ const { data } = useProfile(userId, {
 ```typescript
 const { data } = useGroupDetails(groupId, {
   enabled: !!groupId && userCanView,
-});
+})
 ```
 
 ---
@@ -81,16 +81,16 @@ const { data } = useGroupDetails(groupId, {
 
 ```typescript
 export function useDeleteSession() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (id: string) => service.deleteSession(id),
 
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(id) });
-      queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() });
+      queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(id) })
+      queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() })
     },
-  });
+  })
 }
 ```
 
@@ -98,37 +98,34 @@ export function useDeleteSession() {
 
 ```typescript
 export function useLikeSession() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (sessionId: string) => service.likeSession(sessionId),
 
-    onMutate: async sessionId => {
+    onMutate: async (sessionId) => {
       // 1. Cancel queries
       await queryClient.cancelQueries({
         queryKey: SESSION_KEYS.detail(sessionId),
-      });
+      })
 
       // 2. Snapshot
-      const previous = queryClient.getQueryData(SESSION_KEYS.detail(sessionId));
+      const previous = queryClient.getQueryData(SESSION_KEYS.detail(sessionId))
 
       // 3. Optimistically update
       queryClient.setQueryData(SESSION_KEYS.detail(sessionId), (old: any) => ({
         ...old,
         likeCount: (old.likeCount || 0) + 1,
         isLiked: true,
-      }));
+      }))
 
-      return { previous };
+      return { previous }
     },
 
     onError: (error, sessionId, context) => {
       // 4. Rollback
       if (context?.previous) {
-        queryClient.setQueryData(
-          SESSION_KEYS.detail(sessionId),
-          context.previous
-        );
+        queryClient.setQueryData(SESSION_KEYS.detail(sessionId), context.previous)
       }
     },
 
@@ -136,9 +133,9 @@ export function useLikeSession() {
       // 5. Refetch
       queryClient.invalidateQueries({
         queryKey: SESSION_KEYS.detail(sessionId),
-      });
+      })
     },
-  });
+  })
 }
 ```
 
@@ -146,11 +143,11 @@ export function useLikeSession() {
 
 ```typescript
 export function useInvalidateSession() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return (sessionId: string) => {
-    queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(sessionId) });
-  };
+    queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(sessionId) })
+  }
 }
 ```
 
@@ -162,18 +159,16 @@ export function useInvalidateSession() {
 export function useFeedInfinite(userId: string) {
   return useInfiniteQuery({
     queryKey: FEED_KEYS.list(userId),
-    queryFn: ({ pageParam }) =>
-      feedService.getFeed(userId, { cursor: pageParam }),
-    getNextPageParam: lastPage =>
-      lastPage.hasMore ? lastPage.nextCursor : undefined,
+    queryFn: ({ pageParam }) => feedService.getFeed(userId, { cursor: pageParam }),
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextCursor : undefined),
     initialPageParam: undefined as string | undefined,
     staleTime: STANDARD_CACHE_TIMES.SHORT,
-  });
+  })
 }
 
 // Usage
-const { data, fetchNextPage, hasNextPage } = useFeedInfinite(userId);
-const allItems = data?.pages.flatMap(page => page.items) || [];
+const { data, fetchNextPage, hasNextPage } = useFeedInfinite(userId)
+const allItems = data?.pages.flatMap((page) => page.items) || []
 ```
 
 ---
@@ -199,16 +194,16 @@ retry: false, // Don't retry expected errors
 ### Idempotent Operations
 
 ```typescript
-mutationFn: async id => {
+mutationFn: async (id) => {
   try {
-    await service.like(id);
+    await service.like(id)
   } catch (error: any) {
     if (error.message.includes('Already liked')) {
-      return; // Idempotent - treat as success
+      return // Idempotent - treat as success
     }
-    throw error;
+    throw error
   }
-};
+}
 ```
 
 ---
@@ -219,34 +214,34 @@ mutationFn: async id => {
 
 ```typescript
 // Single entity
-['sessions', 'detail', sessionId][
+;['sessions', 'detail', sessionId][
   // Entity with subresource
   ('profile', 'detail', userId, 'stats')
 ][
   // Entity with populated data
   ('sessions', 'detail', sessionId, 'with-details')
-];
+]
 ```
 
 ### List Keys
 
 ```typescript
 // Simple list
-['projects', 'list'][
+;['projects', 'list'][
   // List with filters
   ('feed', 'list', userId, { type: 'following' })
 ][
   // Scoped list
   ('sessions', 'user', userId)
-];
+]
 ```
 
 ### Relationship Keys
 
 ```typescript
-['profile', 'followers', userId][('profile', 'following', userId)][
+;['profile', 'followers', userId][('profile', 'following', userId)][
   ('profile', 'isFollowing', currentUserId, targetUserId)
-];
+]
 ```
 
 ---
@@ -257,15 +252,15 @@ mutationFn: async id => {
 
 ```typescript
 // Invalidate everything
-queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() });
+queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() })
 // Matches: ['sessions', ...]
 
 // Invalidate all lists
-queryClient.invalidateQueries({ queryKey: SESSION_KEYS.lists() });
+queryClient.invalidateQueries({ queryKey: SESSION_KEYS.lists() })
 // Matches: ['sessions', 'list', ...]
 
 // Invalidate specific item
-queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(id) });
+queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(id) })
 // Matches: ['sessions', 'detail', id]
 ```
 
@@ -273,10 +268,10 @@ queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(id) });
 
 ```typescript
 onSuccess: () => {
-  queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() });
-  queryClient.invalidateQueries({ queryKey: ['feed'] });
-  queryClient.invalidateQueries({ queryKey: PROFILE_KEYS.detail(userId) });
-};
+  queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() })
+  queryClient.invalidateQueries({ queryKey: ['feed'] })
+  queryClient.invalidateQueries({ queryKey: PROFILE_KEYS.detail(userId) })
+}
 ```
 
 ---
@@ -287,46 +282,46 @@ onSuccess: () => {
 
 ```typescript
 // BAD
-const count = session.likeCount;
-queryClient.setQueryData(key, old => ({
+const count = session.likeCount
+queryClient.setQueryData(key, (old) => ({
   ...old,
   likeCount: count + 1, // Uses stale value!
-}));
+}))
 
 // GOOD
-queryClient.setQueryData(key, old => ({
+queryClient.setQueryData(key, (old) => ({
   ...old,
   likeCount: (old.likeCount || 0) + 1,
-}));
+}))
 ```
 
 ### ❌ Missing Cancel Queries
 
 ```typescript
 // BAD
-onMutate: async id => {
-  const previous = queryClient.getQueryData(KEY);
-  queryClient.setQueryData(KEY, newData);
-  return { previous };
-};
+onMutate: async (id) => {
+  const previous = queryClient.getQueryData(KEY)
+  queryClient.setQueryData(KEY, newData)
+  return { previous }
+}
 
 // GOOD
-onMutate: async id => {
-  await queryClient.cancelQueries({ queryKey: KEY }); // Add this!
-  const previous = queryClient.getQueryData(KEY);
-  queryClient.setQueryData(KEY, newData);
-  return { previous };
-};
+onMutate: async (id) => {
+  await queryClient.cancelQueries({ queryKey: KEY }) // Add this!
+  const previous = queryClient.getQueryData(KEY)
+  queryClient.setQueryData(KEY, newData)
+  return { previous }
+}
 ```
 
 ### ❌ Hardcoded Keys
 
 ```typescript
 // BAD
-queryClient.invalidateQueries({ queryKey: ['sessions', 'detail', id] });
+queryClient.invalidateQueries({ queryKey: ['sessions', 'detail', id] })
 
 // GOOD
-queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(id) });
+queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(id) })
 ```
 
 ---
@@ -382,8 +377,8 @@ const queryClient = useQueryClient();
 ```typescript
 // Only re-render when name changes
 const { data: name } = useProfile(userId, {
-  select: profile => profile.name,
-});
+  select: (profile) => profile.name,
+})
 ```
 
 ### Appropriate Stale Times
@@ -394,7 +389,7 @@ useQuery({
   queryKey,
   queryFn,
   staleTime: STANDARD_CACHE_TIMES.MEDIUM, // Let it stay fresh
-});
+})
 ```
 
 ---

@@ -17,49 +17,43 @@
 // ============================================================================
 
 // Auth Module
-export { firebaseAuthApi } from './auth';
+export { firebaseAuthApi } from './auth'
 
 // User Module
-export { firebaseUserApi } from './users';
+export { firebaseUserApi } from './users'
 
 // Projects Module
-export { firebaseProjectApi } from './projects';
+export { firebaseProjectApi } from './projects'
 
 // Sessions Module
-export { firebaseSessionApi } from './sessions';
-export { populateSessionsWithDetails } from './sessions/helpers';
+export { firebaseSessionApi } from './sessions'
+export { populateSessionsWithDetails } from './sessions/helpers'
 
 // Posts Module (Legacy - sessions ARE posts)
-export { firebasePostApi } from './sessions/posts';
+export { firebasePostApi } from './sessions/posts'
 
 // Social Modules
 export {
   updateSocialGraph,
   fetchUserDataForSocialContext,
   buildCommentUserDetails,
-} from './social/helpers';
-export { firebaseCommentApi } from './social/comments';
+} from './social/helpers'
+export { firebaseCommentApi } from './social/comments'
 
 // Challenges Module
-export { firebaseChallengeApi } from './challenges';
+export { firebaseChallengeApi } from './challenges'
 
 // Streaks Module
-export { firebaseStreakApi } from './streaks';
+export { firebaseStreakApi } from './streaks'
 
 // Achievements Module
-export {
-  firebaseAchievementApi,
-  ACHIEVEMENT_DEFINITIONS,
-} from './achievements';
+export { firebaseAchievementApi, ACHIEVEMENT_DEFINITIONS } from './achievements'
 
 // Notifications Module
-export {
-  firebaseNotificationApi,
-  challengeNotifications,
-} from './notifications';
+export { firebaseNotificationApi, challengeNotifications } from './notifications'
 
 // Groups Module
-export { firebaseGroupApi } from './groups';
+export { firebaseGroupApi } from './groups'
 
 // Shared Utilities
 export {
@@ -69,32 +63,29 @@ export {
   getErrorMessage, // Legacy - deprecated
   PRIVATE_USER_FALLBACK_NAME,
   PRIVATE_USER_USERNAME_PREFIX,
-} from './shared/utils';
+} from './shared/utils'
 
 // ============================================================================
 // ACTIVITY API (Alias for Projects)
 // ============================================================================
 
-import { firebaseProjectApi } from './projects';
-export const firebaseActivityApi = firebaseProjectApi;
+import { firebaseProjectApi } from './projects'
+export const firebaseActivityApi = firebaseProjectApi
 
 // ============================================================================
 // LEGACY COMBINED API OBJECT
 // ============================================================================
 
-import { firebaseAuthApi } from './auth';
-import { firebaseUserApi } from './users';
-import { firebaseSessionApi } from './sessions';
-import { firebasePostApi } from './sessions/posts';
-import { firebaseCommentApi } from './social/comments';
-import { firebaseChallengeApi } from './challenges';
-import { firebaseStreakApi } from './streaks';
-import { firebaseAchievementApi } from './achievements';
-import {
-  firebaseNotificationApi,
-  challengeNotifications,
-} from './notifications';
-import { firebaseGroupApi } from './groups';
+import { firebaseAuthApi } from './auth'
+import { firebaseUserApi } from './users'
+import { firebaseSessionApi } from './sessions'
+import { firebasePostApi } from './sessions/posts'
+import { firebaseCommentApi } from './social/comments'
+import { firebaseChallengeApi } from './challenges'
+import { firebaseStreakApi } from './streaks'
+import { firebaseAchievementApi } from './achievements'
+import { firebaseNotificationApi, challengeNotifications } from './notifications'
+import { firebaseGroupApi } from './groups'
 
 /**
  * Combined API object for backward compatibility
@@ -121,7 +112,7 @@ export const firebaseApi = {
   notification: firebaseNotificationApi,
   group: firebaseGroupApi,
   challengeNotifications,
-} as const;
+} as const
 
 // ============================================================================
 // TYPE EXPORTS
@@ -200,4 +191,4 @@ export type {
   ChallengeLeaderboard,
   ChallengeLeaderboardEntry,
   ChallengeStats,
-} from '@/types';
+} from '@/types'

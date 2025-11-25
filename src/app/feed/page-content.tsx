@@ -1,22 +1,19 @@
-'use client';
+'use client'
 
-import { useAuth } from '@/hooks/useAuth';
-import LeftSidebar from '@/components/LeftSidebar';
-import RightSidebar from '@/components/RightSidebar';
-import Feed from '@/components/Feed';
-import {
-  FeedFilterDropdown,
-  FeedFilterOption,
-} from '@/components/FeedFilterDropdown';
-import { StreakCard } from '@/components/StreakCard';
-import React, { useState, Suspense } from 'react';
+import { useAuth } from '@/hooks/useAuth'
+import LeftSidebar from '@/components/LeftSidebar'
+import RightSidebar from '@/components/RightSidebar'
+import Feed from '@/components/Feed'
+import { FeedFilterDropdown, FeedFilterOption } from '@/components/FeedFilterDropdown'
+import { StreakCard } from '@/components/StreakCard'
+import React, { useState, Suspense } from 'react'
 
 export default function FeedPageContent() {
-  const { user } = useAuth();
+  const { user } = useAuth()
   const [selectedFilter, setSelectedFilter] = useState<FeedFilterOption>({
     type: 'all',
     label: 'All',
-  });
+  })
 
   return (
     <div className="flex-1 overflow-hidden">
@@ -33,18 +30,14 @@ export default function FeedPageContent() {
             <div className="hidden md:block px-4 md:px-0 pt-3 pb-2 sticky top-0 z-10 bg-gray-50">
               <FeedFilterDropdown
                 selectedFilter={selectedFilter}
-                onFilterChange={filter => setSelectedFilter(filter)}
+                onFilterChange={(filter) => setSelectedFilter(filter)}
               />
             </div>
 
             {/* Streak Card - Mobile Only */}
             {user && (
               <div className="md:hidden px-4 mb-4">
-                <StreakCard
-                  userId={user.id}
-                  variant="compact"
-                  showProgress={false}
-                />
+                <StreakCard userId={user.id} variant="compact" showProgress={false} />
               </div>
             )}
 
@@ -100,13 +93,9 @@ export default function FeedPageContent() {
                             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
                           />
                         </svg>
-                        <h2 className="text-base font-semibold text-gray-900">
-                          From Your Groups
-                        </h2>
+                        <h2 className="text-base font-semibold text-gray-900">From Your Groups</h2>
                       </div>
-                      <p className="text-sm text-gray-500">
-                        Sessions from members in your groups
-                      </p>
+                      <p className="text-sm text-gray-500">Sessions from members in your groups</p>
                     </div>
                     <Feed
                       filters={{ type: 'group-members-unfollowed' }}
@@ -122,11 +111,7 @@ export default function FeedPageContent() {
               {/* Desktop: Show based on selected filter */}
               <div className="hidden md:block">
                 {selectedFilter.type === 'all' && (
-                  <Feed
-                    filters={{ type: 'all' }}
-                    key="all-feed"
-                    showEndMessage={true}
-                  />
+                  <Feed filters={{ type: 'all' }} key="all-feed" showEndMessage={true} />
                 )}
 
                 {selectedFilter.type === 'following' && (
@@ -154,9 +139,7 @@ export default function FeedPageContent() {
                               d="M13 10V3L4 14h7v7l9-11h-7z"
                             />
                           </svg>
-                          <h2 className="text-base font-semibold text-gray-900">
-                            Suggested Posts
-                          </h2>
+                          <h2 className="text-base font-semibold text-gray-900">Suggested Posts</h2>
                         </div>
                         <p className="text-sm text-gray-500">
                           Discover productive sessions from the community
@@ -198,5 +181,5 @@ export default function FeedPageContent() {
         </div>
       </div>
     </div>
-  );
+  )
 }

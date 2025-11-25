@@ -11,35 +11,35 @@
  * - Type-safe form submission
  */
 
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { validate, SessionFormSchema } from '@/lib/validation';
+import { useState } from 'react'
+import { validate, SessionFormSchema } from '@/lib/validation'
 
 interface SessionFormData {
-  activityId: string;
-  title: string;
-  duration: string;
-  startTime: string;
-  description?: string;
-  visibility?: 'everyone' | 'followers' | 'private';
-  tags?: string;
-  howFelt?: string;
-  privateNotes?: string;
-  allowComments?: boolean;
+  activityId: string
+  title: string
+  duration: string
+  startTime: string
+  description?: string
+  visibility?: 'everyone' | 'followers' | 'private'
+  tags?: string
+  howFelt?: string
+  privateNotes?: string
+  allowComments?: boolean
 }
 
 interface SessionFormErrors {
-  activityId?: string;
-  title?: string;
-  duration?: string;
-  startTime?: string;
-  description?: string;
-  visibility?: string;
-  tags?: string;
-  howFelt?: string;
-  privateNotes?: string;
-  allowComments?: string;
+  activityId?: string
+  title?: string
+  duration?: string
+  startTime?: string
+  description?: string
+  visibility?: string
+  tags?: string
+  howFelt?: string
+  privateNotes?: string
+  allowComments?: string
 }
 
 export function SessionFormExample() {
@@ -50,65 +50,63 @@ export function SessionFormExample() {
     startTime: new Date().toISOString().slice(0, 16), // datetime-local format
     visibility: 'everyone',
     allowComments: true,
-  });
+  })
 
-  const [errors, setErrors] = useState<SessionFormErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string>('');
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [errors, setErrors] = useState<SessionFormErrors>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string>('')
+  const [submitSuccess, setSubmitSuccess] = useState(false)
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    const { name, value, type } = e.target;
-    const checked = (e.target as HTMLInputElement).checked;
+    const { name, value, type } = e.target
+    const checked = (e.target as HTMLInputElement).checked
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
-    }));
+    }))
 
     // Clear field-specific error when user starts typing
     if (errors[name as keyof SessionFormErrors]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
+      setErrors((prev) => ({ ...prev, [name]: undefined }))
     }
 
     // Clear submit error
     if (submitError) {
-      setSubmitError('');
+      setSubmitError('')
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-    setSubmitError('');
-    setSubmitSuccess(false);
+    e.preventDefault()
+    setErrors({})
+    setSubmitError('')
+    setSubmitSuccess(false)
 
     // Validate form data with SessionFormSchema
-    const result = validate(SessionFormSchema, formData);
+    const result = validate(SessionFormSchema, formData)
 
     if (!result.success) {
       // Map validation errors to form fields
-      const newErrors: SessionFormErrors = {};
-      result.errors.forEach(error => {
+      const newErrors: SessionFormErrors = {}
+      result.errors.forEach((error) => {
         if (error.path) {
-          newErrors[error.path as keyof SessionFormErrors] = error.message;
+          newErrors[error.path as keyof SessionFormErrors] = error.message
         } else {
           // Generic errors go to submit error
-          setSubmitError(error.message);
+          setSubmitError(error.message)
         }
-      });
-      setErrors(newErrors);
-      return;
+      })
+      setErrors(newErrors)
+      return
     }
 
     // Type-safe validated data
-    const validatedData = result.data;
+    const validatedData = result.data
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
 
     try {
       // Submit to API
@@ -116,13 +114,13 @@ export function SessionFormExample() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(validatedData),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error('Failed to create session');
+        throw new Error('Failed to create session')
       }
 
-      setSubmitSuccess(true);
+      setSubmitSuccess(true)
       // Reset form
       setFormData({
         activityId: '',
@@ -131,15 +129,13 @@ export function SessionFormExample() {
         startTime: new Date().toISOString().slice(0, 16),
         visibility: 'everyone',
         allowComments: true,
-      });
+      })
     } catch (error) {
-      setSubmitError(
-        error instanceof Error ? error.message : 'Failed to create session'
-      );
+      setSubmitError(error instanceof Error ? error.message : 'Failed to create session')
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
@@ -159,10 +155,7 @@ export function SessionFormExample() {
 
       {/* Activity ID */}
       <div>
-        <label
-          htmlFor="activityId"
-          className="block text-sm font-medium text-foreground mb-2"
-        >
+        <label htmlFor="activityId" className="block text-sm font-medium text-foreground mb-2">
           Project/Activity <span className="text-destructive">*</span>
         </label>
         <input
@@ -176,17 +169,12 @@ export function SessionFormExample() {
           }`}
           placeholder="Select project..."
         />
-        {errors.activityId && (
-          <p className="mt-2 text-sm text-destructive">{errors.activityId}</p>
-        )}
+        {errors.activityId && <p className="mt-2 text-sm text-destructive">{errors.activityId}</p>}
       </div>
 
       {/* Title */}
       <div>
-        <label
-          htmlFor="title"
-          className="block text-sm font-medium text-foreground mb-2"
-        >
+        <label htmlFor="title" className="block text-sm font-medium text-foreground mb-2">
           Session Title <span className="text-destructive">*</span>
         </label>
         <input
@@ -201,18 +189,13 @@ export function SessionFormExample() {
           placeholder="What did you work on?"
           maxLength={200}
         />
-        {errors.title && (
-          <p className="mt-2 text-sm text-destructive">{errors.title}</p>
-        )}
+        {errors.title && <p className="mt-2 text-sm text-destructive">{errors.title}</p>}
       </div>
 
       {/* Duration & Start Time */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label
-            htmlFor="duration"
-            className="block text-sm font-medium text-foreground mb-2"
-          >
+          <label htmlFor="duration" className="block text-sm font-medium text-foreground mb-2">
             Duration (minutes) <span className="text-destructive">*</span>
           </label>
           <input
@@ -227,16 +210,11 @@ export function SessionFormExample() {
             }`}
             placeholder="60"
           />
-          {errors.duration && (
-            <p className="mt-2 text-sm text-destructive">{errors.duration}</p>
-          )}
+          {errors.duration && <p className="mt-2 text-sm text-destructive">{errors.duration}</p>}
         </div>
 
         <div>
-          <label
-            htmlFor="startTime"
-            className="block text-sm font-medium text-foreground mb-2"
-          >
+          <label htmlFor="startTime" className="block text-sm font-medium text-foreground mb-2">
             Start Time <span className="text-destructive">*</span>
           </label>
           <input
@@ -249,18 +227,13 @@ export function SessionFormExample() {
               errors.startTime ? 'border-destructive' : 'border-border'
             }`}
           />
-          {errors.startTime && (
-            <p className="mt-2 text-sm text-destructive">{errors.startTime}</p>
-          )}
+          {errors.startTime && <p className="mt-2 text-sm text-destructive">{errors.startTime}</p>}
         </div>
       </div>
 
       {/* Description */}
       <div>
-        <label
-          htmlFor="description"
-          className="block text-sm font-medium text-foreground mb-2"
-        >
+        <label htmlFor="description" className="block text-sm font-medium text-foreground mb-2">
           Description
         </label>
         <textarea
@@ -282,10 +255,7 @@ export function SessionFormExample() {
 
       {/* Visibility */}
       <div>
-        <label
-          htmlFor="visibility"
-          className="block text-sm font-medium text-foreground mb-2"
-        >
+        <label htmlFor="visibility" className="block text-sm font-medium text-foreground mb-2">
           Visibility
         </label>
         <select
@@ -301,17 +271,12 @@ export function SessionFormExample() {
           <option value="followers">Followers only</option>
           <option value="private">Private</option>
         </select>
-        {errors.visibility && (
-          <p className="mt-2 text-sm text-destructive">{errors.visibility}</p>
-        )}
+        {errors.visibility && <p className="mt-2 text-sm text-destructive">{errors.visibility}</p>}
       </div>
 
       {/* Tags */}
       <div>
-        <label
-          htmlFor="tags"
-          className="block text-sm font-medium text-foreground mb-2"
-        >
+        <label htmlFor="tags" className="block text-sm font-medium text-foreground mb-2">
           Tags (comma-separated)
         </label>
         <input
@@ -325,17 +290,12 @@ export function SessionFormExample() {
           }`}
           placeholder="coding, learning, project"
         />
-        {errors.tags && (
-          <p className="mt-2 text-sm text-destructive">{errors.tags}</p>
-        )}
+        {errors.tags && <p className="mt-2 text-sm text-destructive">{errors.tags}</p>}
       </div>
 
       {/* How Felt */}
       <div>
-        <label
-          htmlFor="howFelt"
-          className="block text-sm font-medium text-foreground mb-2"
-        >
+        <label htmlFor="howFelt" className="block text-sm font-medium text-foreground mb-2">
           How did you feel? (1-5)
         </label>
         <input
@@ -351,17 +311,12 @@ export function SessionFormExample() {
           }`}
           placeholder="1-5"
         />
-        {errors.howFelt && (
-          <p className="mt-2 text-sm text-destructive">{errors.howFelt}</p>
-        )}
+        {errors.howFelt && <p className="mt-2 text-sm text-destructive">{errors.howFelt}</p>}
       </div>
 
       {/* Private Notes */}
       <div>
-        <label
-          htmlFor="privateNotes"
-          className="block text-sm font-medium text-foreground mb-2"
-        >
+        <label htmlFor="privateNotes" className="block text-sm font-medium text-foreground mb-2">
           Private Notes (only visible to you)
         </label>
         <textarea
@@ -405,5 +360,5 @@ export function SessionFormExample() {
         {isSubmitting ? 'Creating...' : 'Create Session'}
       </button>
     </form>
-  );
+  )
 }

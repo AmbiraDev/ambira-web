@@ -11,34 +11,30 @@
  * @returns Formatted date string
  */
 export function formatSessionDate(date: Date | string): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const dateObj = typeof date === 'string' ? new Date(date) : date
 
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
 
-  const sessionDate = new Date(
-    dateObj.getFullYear(),
-    dateObj.getMonth(),
-    dateObj.getDate()
-  );
+  const sessionDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate())
 
   // Format time as "h:mm am/pm"
   const timeStr = dateObj.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
-  });
+  })
 
   // Check if today
   if (sessionDate.getTime() === today.getTime()) {
-    return `Today at ${timeStr}`;
+    return `Today at ${timeStr}`
   }
 
   // Check if yesterday
   if (sessionDate.getTime() === yesterday.getTime()) {
-    return `Yesterday at ${timeStr}`;
+    return `Yesterday at ${timeStr}`
   }
 
   // Otherwise show full date: "Month Day, Year at h:mm am/pm"
@@ -46,9 +42,9 @@ export function formatSessionDate(date: Date | string): string {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
-  });
+  })
 
-  return `${dateStr} at ${timeStr}`;
+  return `${dateStr} at ${timeStr}`
 }
 
 /**
@@ -58,12 +54,12 @@ export function formatSessionDate(date: Date | string): string {
  * @returns Time string in HH:MM format
  */
 export function formatTime(date: Date | string): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const dateObj = typeof date === 'string' ? new Date(date) : date
 
-  const hours = dateObj.getHours().toString().padStart(2, '0');
-  const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+  const hours = dateObj.getHours().toString().padStart(2, '0')
+  const minutes = dateObj.getMinutes().toString().padStart(2, '0')
 
-  return `${hours}:${minutes}`;
+  return `${hours}:${minutes}`
 }
 
 /**
@@ -73,13 +69,13 @@ export function formatTime(date: Date | string): string {
  * @returns Time string like "3:45 pm"
  */
 export function formatTime12Hour(date: Date | string): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const dateObj = typeof date === 'string' ? new Date(date) : date
 
   return dateObj.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
-  });
+  })
 }
 
 /**
@@ -90,16 +86,16 @@ export function formatTime12Hour(date: Date | string): string {
  * @returns Formatted time string in HH:MM:SS format
  */
 export function formatElapsedTime(seconds: number): string {
-  const absSeconds = Math.abs(seconds);
-  const hours = Math.floor(absSeconds / 3600);
-  const minutes = Math.floor((absSeconds % 3600) / 60);
-  const secs = Math.floor(absSeconds % 60);
+  const absSeconds = Math.abs(seconds)
+  const hours = Math.floor(absSeconds / 3600)
+  const minutes = Math.floor((absSeconds % 3600) / 60)
+  const secs = Math.floor(absSeconds % 60)
 
-  const hoursStr = hours.toString().padStart(2, '0');
-  const minutesStr = minutes.toString().padStart(2, '0');
-  const secsStr = secs.toString().padStart(2, '0');
+  const hoursStr = hours.toString().padStart(2, '0')
+  const minutesStr = minutes.toString().padStart(2, '0')
+  const secsStr = secs.toString().padStart(2, '0')
 
-  return `${hoursStr}:${minutesStr}:${secsStr}`;
+  return `${hoursStr}:${minutesStr}:${secsStr}`
 }
 
 /**
@@ -110,11 +106,11 @@ export function formatElapsedTime(seconds: number): string {
  * @returns Formatted duration string in hours
  */
 export function formatDurationHours(seconds: number): string {
-  const hours = seconds / 3600;
+  const hours = seconds / 3600
   if (hours >= 1) {
-    return `${hours.toFixed(1)}h`;
+    return `${hours.toFixed(1)}h`
   }
-  return `${(seconds / 60).toFixed(0)}m`;
+  return `${(seconds / 60).toFixed(0)}m`
 }
 
 /**
@@ -125,11 +121,11 @@ export function formatDurationHours(seconds: number): string {
  * @returns Formatted duration string in minutes
  */
 export function formatDurationMinutes(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
+  const minutes = Math.floor(seconds / 60)
   if (minutes === 0) {
-    return `${seconds}s`;
+    return `${seconds}s`
   }
-  return `${minutes}m`;
+  return `${minutes}m`
 }
 
 /**
@@ -140,13 +136,13 @@ export function formatDurationMinutes(seconds: number): string {
  * @returns Formatted duration string
  */
 export function formatDuration(seconds: number): string {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
 
   if (hours > 0) {
-    return `${hours}h ${minutes}m`;
+    return `${hours}h ${minutes}m`
   }
-  return `${minutes}m`;
+  return `${minutes}m`
 }
 
 /**
@@ -157,17 +153,17 @@ export function formatDuration(seconds: number): string {
  * @returns Formatted duration string with seconds
  */
 export function formatDurationDetailed(seconds: number): string {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const secs = seconds % 60
 
-  const parts: string[] = [];
+  const parts: string[] = []
 
-  if (hours > 0) parts.push(`${hours}h`);
-  if (minutes > 0) parts.push(`${minutes}m`);
-  if (secs > 0 || parts.length === 0) parts.push(`${secs}s`);
+  if (hours > 0) parts.push(`${hours}h`)
+  if (minutes > 0) parts.push(`${minutes}m`)
+  if (secs > 0 || parts.length === 0) parts.push(`${secs}s`)
 
-  return parts.join(' ');
+  return parts.join(' ')
 }
 
 /**
@@ -179,48 +175,48 @@ export function formatDurationDetailed(seconds: number): string {
  * @returns Relative time string
  */
 export function formatTimeAgo(date: Date | string): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  const now = new Date()
+  const diffInSeconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000)
 
   // Less than 1 minute
   if (diffInSeconds < 60) {
-    return 'just now';
+    return 'just now'
   }
 
   // Less than 1 hour
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  const diffInMinutes = Math.floor(diffInSeconds / 60)
   if (diffInMinutes < 60) {
-    return `${diffInMinutes}m`;
+    return `${diffInMinutes}m`
   }
 
   // Less than 1 day
-  const diffInHours = Math.floor(diffInMinutes / 60);
+  const diffInHours = Math.floor(diffInMinutes / 60)
   if (diffInHours < 24) {
-    return `${diffInHours}h`;
+    return `${diffInHours}h`
   }
 
   // Less than 7 days
-  const diffInDays = Math.floor(diffInHours / 24);
+  const diffInDays = Math.floor(diffInHours / 24)
   if (diffInDays < 7) {
-    return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
+    return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`
   }
 
   // Less than 4 weeks
-  const diffInWeeks = Math.floor(diffInDays / 7);
+  const diffInWeeks = Math.floor(diffInDays / 7)
   if (diffInWeeks < 4) {
-    return `${diffInWeeks}w`;
+    return `${diffInWeeks}w`
   }
 
   // Less than 1 year
-  const diffInMonths = Math.floor(diffInDays / 30);
+  const diffInMonths = Math.floor(diffInDays / 30)
   if (diffInMonths < 12) {
-    return `${diffInMonths}mo`;
+    return `${diffInMonths}mo`
   }
 
   // More than a year
-  const diffInYears = Math.floor(diffInDays / 365);
-  return `${diffInYears}y`;
+  const diffInYears = Math.floor(diffInDays / 365)
+  return `${diffInYears}y`
 }
 
 /**
@@ -239,8 +235,8 @@ export function formatDate(
     year: 'numeric',
   }
 ): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleDateString('en-US', options);
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return dateObj.toLocaleDateString('en-US', options)
 }
 
 /**
@@ -251,12 +247,12 @@ export function formatDate(
  * @returns Short date string
  */
 export function formatDateShort(date: Date | string): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  const dateObj = typeof date === 'string' ? new Date(date) : date
   return dateObj.toLocaleDateString('en-US', {
     month: 'numeric',
     day: 'numeric',
     year: '2-digit',
-  });
+  })
 }
 
 /**
@@ -267,11 +263,11 @@ export function formatDateShort(date: Date | string): string {
  * @returns ISO date string
  */
 export function formatDateISO(date: Date | string): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  const year = dateObj.getFullYear();
-  const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
-  const day = dateObj.getDate().toString().padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  const year = dateObj.getFullYear()
+  const month = (dateObj.getMonth() + 1).toString().padStart(2, '0')
+  const day = dateObj.getDate().toString().padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 /**
@@ -281,14 +277,14 @@ export function formatDateISO(date: Date | string): string {
  * @returns True if the date is today
  */
 export function isToday(date: Date | string): boolean {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  const today = new Date();
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  const today = new Date()
 
   return (
     dateObj.getDate() === today.getDate() &&
     dateObj.getMonth() === today.getMonth() &&
     dateObj.getFullYear() === today.getFullYear()
-  );
+  )
 }
 
 /**
@@ -298,15 +294,15 @@ export function isToday(date: Date | string): boolean {
  * @returns True if the date is yesterday
  */
 export function isYesterday(date: Date | string): boolean {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
 
   return (
     dateObj.getDate() === yesterday.getDate() &&
     dateObj.getMonth() === yesterday.getMonth() &&
     dateObj.getFullYear() === yesterday.getFullYear()
-  );
+  )
 }
 
 /**
@@ -316,8 +312,8 @@ export function isYesterday(date: Date | string): boolean {
  * @returns Date object at 00:00:00
  */
 export function startOfDay(date: Date | string): Date {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate())
 }
 
 /**
@@ -327,16 +323,8 @@ export function startOfDay(date: Date | string): Date {
  * @returns Date object at 23:59:59.999
  */
 export function endOfDay(date: Date | string): Date {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return new Date(
-    dateObj.getFullYear(),
-    dateObj.getMonth(),
-    dateObj.getDate(),
-    23,
-    59,
-    59,
-    999
-  );
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate(), 23, 59, 59, 999)
 }
 
 /**
@@ -347,5 +335,5 @@ export function endOfDay(date: Date | string): Date {
  * @returns Relative time string
  */
 export function formatDateRelative(date: Date | string): string {
-  return formatTimeAgo(date);
+  return formatTimeAgo(date)
 }

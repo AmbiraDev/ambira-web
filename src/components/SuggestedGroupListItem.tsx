@@ -1,17 +1,17 @@
-'use client';
+'use client'
 
-import React from 'react';
-import Link from 'next/link';
-import { Group } from '@/types';
-import GroupAvatar from './GroupAvatar';
-import { Users, MapPin } from 'lucide-react';
-import { truncateText } from '@/lib/utils/text';
-import { GROUP_DISPLAY_CONFIG } from '@/lib/constants/groupDisplay';
+import React from 'react'
+import Link from 'next/link'
+import { Group } from '@/types'
+import GroupAvatar from './GroupAvatar'
+import { Users, MapPin } from 'lucide-react'
+import { truncateText } from '@/lib/utils/text'
+import { GROUP_DISPLAY_CONFIG } from '@/lib/constants/groupDisplay'
 
 interface SuggestedGroupListItemProps {
-  group: Group;
-  onJoin: (groupId: string, e: React.MouseEvent) => Promise<void>;
-  isJoining: boolean;
+  group: Group
+  onJoin: (groupId: string, e: React.MouseEvent) => Promise<void>
+  isJoining: boolean
 }
 
 export const SuggestedGroupListItem = React.memo<SuggestedGroupListItemProps>(
@@ -20,28 +20,28 @@ export const SuggestedGroupListItem = React.memo<SuggestedGroupListItemProps>(
     const displayNameMobile = truncateText(
       group.name,
       GROUP_DISPLAY_CONFIG.TRUNCATE_LENGTHS.NAME_MOBILE
-    );
+    )
 
     // Desktop: Truncate group name if longer than configured length
     const displayNameDesktop = truncateText(
       group.name,
       GROUP_DISPLAY_CONFIG.TRUNCATE_LENGTHS.NAME_DESKTOP
-    );
+    )
 
     // Mobile: Truncate location if longer than configured length
     const displayLocationMobile = truncateText(
       group.location,
       GROUP_DISPLAY_CONFIG.TRUNCATE_LENGTHS.LOCATION_MOBILE
-    );
+    )
 
     // Desktop: Don't truncate location
-    const displayLocationDesktop = group.location;
+    const displayLocationDesktop = group.location
 
     // Desktop: Truncate description if longer than configured length
     const displayDescription = truncateText(
       group.description,
       GROUP_DISPLAY_CONFIG.TRUNCATE_LENGTHS.DESCRIPTION_DESKTOP
-    );
+    )
 
     return (
       <div className="py-5 px-6 md:px-8 border-b border-gray-200 hover:bg-gray-50 transition-all duration-200">
@@ -52,18 +52,10 @@ export const SuggestedGroupListItem = React.memo<SuggestedGroupListItemProps>(
             className="flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 rounded-xl"
           >
             <div className="md:hidden">
-              <GroupAvatar
-                imageUrl={group.imageUrl}
-                name={group.name}
-                size="lg"
-              />
+              <GroupAvatar imageUrl={group.imageUrl} name={group.name} size="lg" />
             </div>
             <div className="hidden md:block">
-              <GroupAvatar
-                imageUrl={group.imageUrl}
-                name={group.name}
-                size="xl"
-              />
+              <GroupAvatar imageUrl={group.imageUrl} name={group.name} size="xl" />
             </div>
           </Link>
 
@@ -96,8 +88,7 @@ export const SuggestedGroupListItem = React.memo<SuggestedGroupListItemProps>(
               <div className="flex items-center gap-1.5 text-sm text-gray-600">
                 <Users className="w-4 h-4" aria-hidden="true" />
                 <span>
-                  {group.memberCount || 0}{' '}
-                  {group.memberCount === 1 ? 'Member' : 'Members'}
+                  {group.memberCount || 0} {group.memberCount === 1 ? 'Member' : 'Members'}
                 </span>
               </div>
 
@@ -122,7 +113,7 @@ export const SuggestedGroupListItem = React.memo<SuggestedGroupListItemProps>(
           {/* Join Button - aligned to the right */}
           <div className="flex-shrink-0">
             <button
-              onClick={e => onJoin(group.id, e)}
+              onClick={(e) => onJoin(group.id, e)}
               disabled={isJoining}
               className={`min-h-[44px] px-6 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
                 isJoining
@@ -136,6 +127,6 @@ export const SuggestedGroupListItem = React.memo<SuggestedGroupListItemProps>(
           </div>
         </div>
       </div>
-    );
+    )
   }
-);
+)

@@ -6,16 +6,16 @@
 /**
  * Search filter types for filtering search results
  */
-export type SearchFilter = 'people' | 'groups' | 'challenges';
+export type SearchFilter = 'people' | 'groups' | 'challenges'
 
 /**
  * Props for SearchBar component
  */
 export interface SearchBarProps {
   /** Whether the search bar is currently open/expanded */
-  isOpen: boolean;
+  isOpen: boolean
   /** Callback to toggle search bar open/closed state */
-  onToggle: () => void;
+  onToggle: () => void
 }
 
 /**
@@ -23,7 +23,7 @@ export interface SearchBarProps {
  */
 export interface NavigationProps {
   /** Current pathname for active link highlighting */
-  pathname: string;
+  pathname: string
 }
 
 /**
@@ -31,7 +31,7 @@ export interface NavigationProps {
  */
 export interface TimerStatusProps {
   /** Current pathname to determine display mode */
-  pathname: string;
+  pathname: string
 }
 
 /**
@@ -40,9 +40,9 @@ export interface TimerStatusProps {
 export interface ProfileMenuProps {
   /** Currently authenticated user */
   user: {
-    name: string;
-    profilePicture?: string;
-  };
+    name: string
+    profilePicture?: string
+  }
 }
 
 /**
@@ -50,11 +50,11 @@ export interface ProfileMenuProps {
  */
 export interface MobileMenuProps {
   /** Whether the mobile menu is currently open */
-  isOpen: boolean;
+  isOpen: boolean
   /** Callback to toggle mobile menu open/closed state */
-  onToggle: () => void;
+  onToggle: () => void
   /** Current pathname for active link highlighting */
-  pathname: string;
+  pathname: string
 }
 
 /**
@@ -62,7 +62,7 @@ export interface MobileMenuProps {
  */
 export interface LogoProps {
   /** Optional className for styling overrides */
-  className?: string;
+  className?: string
 }
 
 /**
@@ -70,7 +70,7 @@ export interface LogoProps {
  */
 export interface AuthButtonsProps {
   /** Whether to show in mobile view */
-  isMobile?: boolean;
+  isMobile?: boolean
 }
 
 /**
@@ -78,9 +78,9 @@ export interface AuthButtonsProps {
  */
 export interface NavLink {
   /** Link href */
-  href: string;
+  href: string
   /** Display label */
-  label: string;
+  label: string
   /** Icon component (optional) */
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: React.ComponentType<{ className?: string }>
 }

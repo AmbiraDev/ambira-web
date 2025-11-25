@@ -7,13 +7,13 @@
  * Note: Cannot export metadata because ProtectedRoute is a client component
  */
 
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { ActivitiesSettingsPageContent } from '@/features/settings/components/ActivitiesSettingsPageContent';
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { ActivitiesSettingsPageContent } from '@/features/settings/components/ActivitiesSettingsPageContent'
 
 export default function ActivitiesSettingsPage() {
   return (
     <ProtectedRoute>
       <ActivitiesSettingsPageContent />
     </ProtectedRoute>
-  );
+  )
 }

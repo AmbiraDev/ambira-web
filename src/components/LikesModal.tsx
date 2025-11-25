@@ -1,130 +1,121 @@
-'use client';
+'use client'
 
-import React, { useEffect, useState, useCallback } from 'react';
-import Image from 'next/image';
-import { X } from 'lucide-react';
-import { User } from '@/types';
-import { firebaseApi } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
+import React, { useEffect, useState, useCallback } from 'react'
+import Image from 'next/image'
+import { X } from 'lucide-react'
+import { User } from '@/types'
+import { firebaseApi } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
 
 interface LikesModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  userIds: string[];
-  totalLikes: number;
+  isOpen: boolean
+  onClose: () => void
+  userIds: string[]
+  totalLikes: number
 }
 
 interface UserWithFollowStatus extends User {
-  isFollowing?: boolean;
+  isFollowing?: boolean
 }
 
-export const LikesModal: React.FC<LikesModalProps> = ({
-  isOpen,
-  onClose,
-  userIds,
-}) => {
-  const { user: currentUser } = useAuth();
-  const [users, setUsers] = useState<UserWithFollowStatus[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [followingStates, setFollowingStates] = useState<
-    Record<string, boolean>
-  >({});
+export const LikesModal: React.FC<LikesModalProps> = ({ isOpen, onClose, userIds }) => {
+  const { user: currentUser } = useAuth()
+  const [users, setUsers] = useState<UserWithFollowStatus[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [followingStates, setFollowingStates] = useState<Record<string, boolean>>({})
 
   // Extract complex expression to separate variable
-  const userIdsKey = userIds.join(',');
+  const userIdsKey = userIds.join(',')
 
   const loadUsers = useCallback(async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       // Fetch user data for each user ID
-      const userPromises = userIds.map(userId =>
+      const userPromises = userIds.map((userId) =>
         firebaseApi.user.getUserById(userId).catch(() => null)
-      );
-      const loadedUsers = await Promise.all(userPromises);
-      const validUsers = loadedUsers.filter((u): u is User => u !== null);
+      )
+      const loadedUsers = await Promise.all(userPromises)
+      const validUsers = loadedUsers.filter((u): u is User => u !== null)
 
       // Check follow status for each user
       if (currentUser) {
-        const followStatuses: Record<string, boolean> = {};
+        const followStatuses: Record<string, boolean> = {}
         await Promise.all(
-          validUsers.map(async user => {
+          validUsers.map(async (user) => {
             try {
-              const isFollowing = await firebaseApi.user.isFollowing(
-                currentUser.id,
-                user.id
-              );
-              followStatuses[user.id] = isFollowing;
+              const isFollowing = await firebaseApi.user.isFollowing(currentUser.id, user.id)
+              followStatuses[user.id] = isFollowing
             } catch {
-              followStatuses[user.id] = false;
+              followStatuses[user.id] = false
             }
           })
-        );
-        setFollowingStates(followStatuses);
+        )
+        setFollowingStates(followStatuses)
       }
 
-      setUsers(validUsers);
-    } catch (error) {
+      setUsers(validUsers)
+    } catch (_error) {
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userIdsKey, currentUser]);
+  }, [userIdsKey, currentUser])
 
   useEffect(() => {
     if (isOpen && userIds.length > 0) {
-      loadUsers();
+      loadUsers()
     } else if (!isOpen) {
       // Reset state when modal closes
-      setUsers([]);
-      setFollowingStates({});
+      setUsers([])
+      setFollowingStates({})
     }
-  }, [isOpen, userIdsKey, userIds.length, loadUsers]); // Include all dependencies
+  }, [isOpen, userIdsKey, userIds.length, loadUsers]) // Include all dependencies
 
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose();
+        onClose()
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleEscape)
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, onClose]);
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, onClose])
 
   const handleFollowToggle = async (userId: string) => {
-    if (!currentUser) return;
+    if (!currentUser) return
 
-    const isCurrentlyFollowing = followingStates[userId] || false;
+    const isCurrentlyFollowing = followingStates[userId] || false
 
     // Optimistic update
-    setFollowingStates(prev => ({
+    setFollowingStates((prev) => ({
       ...prev,
       [userId]: !isCurrentlyFollowing,
-    }));
+    }))
 
     try {
       if (isCurrentlyFollowing) {
-        await firebaseApi.user.unfollowUser(userId);
+        await firebaseApi.user.unfollowUser(userId)
       } else {
-        await firebaseApi.user.followUser(userId);
+        await firebaseApi.user.followUser(userId)
       }
-    } catch (error) {
+    } catch (_error) {
       // Revert on error
-      setFollowingStates(prev => {
-        const newState: Record<string, boolean> = { ...prev };
-        newState[userId] = isCurrentlyFollowing ?? false;
-        return newState;
-      });
+      setFollowingStates((prev) => {
+        const newState: Record<string, boolean> = { ...prev }
+        newState[userId] = isCurrentlyFollowing ?? false
+        return newState
+      })
     }
-  };
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div
@@ -133,13 +124,11 @@ export const LikesModal: React.FC<LikesModalProps> = ({
     >
       <div
         className="bg-white rounded-2xl w-full max-w-md max-h-[70vh] flex flex-col"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-gray-900 font-semibold text-center flex-1">
-            Likes
-          </h2>
+          <h2 className="text-gray-900 font-semibold text-center flex-1">Likes</h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-900 transition-colors"
@@ -159,9 +148,9 @@ export const LikesModal: React.FC<LikesModalProps> = ({
             <div className="text-center py-8 text-gray-500">No likes yet</div>
           ) : (
             <div className="divide-y divide-gray-100">
-              {users.map(user => {
-                const isOwnProfile = currentUser?.id === user.id;
-                const isFollowing = followingStates[user.id] ?? false;
+              {users.map((user) => {
+                const isOwnProfile = currentUser?.id === user.id
+                const isFollowing = followingStates[user.id] ?? false
 
                 return (
                   <div
@@ -185,12 +174,8 @@ export const LikesModal: React.FC<LikesModalProps> = ({
 
                     {/* User info */}
                     <div className="flex-1 min-w-0">
-                      <div className="text-gray-900 font-medium truncate">
-                        {user.username}
-                      </div>
-                      <div className="text-gray-500 text-sm truncate">
-                        {user.name}
-                      </div>
+                      <div className="text-gray-900 font-medium truncate">{user.username}</div>
+                      <div className="text-gray-500 text-sm truncate">{user.name}</div>
                     </div>
 
                     {/* Follow button */}
@@ -207,14 +192,14 @@ export const LikesModal: React.FC<LikesModalProps> = ({
                       </button>
                     )}
                   </div>
-                );
+                )
               })}
             </div>
           )}
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default LikesModal;
+export default LikesModal

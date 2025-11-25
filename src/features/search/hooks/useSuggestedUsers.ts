@@ -7,21 +7,21 @@
  * - Proper loading and error states
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { firebaseUserApi } from '@/lib/api';
-import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
-import type { SuggestedUser } from '@/types';
+import { useQuery } from '@tanstack/react-query'
+import { firebaseUserApi } from '@/lib/api'
+import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient'
+import type { SuggestedUser } from '@/types'
 
 interface UseSuggestedUsersOptions {
-  enabled?: boolean;
-  limit?: number;
+  enabled?: boolean
+  limit?: number
 }
 
 interface UseSuggestedUsersReturn {
-  suggestedUsers: SuggestedUser[];
-  isLoading: boolean;
-  isError: boolean;
-  error: Error | null;
+  suggestedUsers: SuggestedUser[]
+  isLoading: boolean
+  isError: boolean
+  error: Error | null
 }
 
 export function useSuggestedUsers({
@@ -35,12 +35,12 @@ export function useSuggestedUsers({
     staleTime: CACHE_TIMES.LONG, // 15 minutes
     gcTime: CACHE_TIMES.VERY_LONG, // 1 hour
     refetchOnWindowFocus: false,
-  });
+  })
 
   return {
     suggestedUsers: data ?? [],
     isLoading,
     isError,
     error: error as Error | null,
-  };
+  }
 }

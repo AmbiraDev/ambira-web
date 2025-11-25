@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 /**
  * DataPrefetcher Component
@@ -7,18 +7,18 @@
  * This component doesn't render anything - it just triggers data fetching.
  */
 
-import { useAuth } from '@/hooks/useAuth';
-import { useFollowingList } from '@/features/search/hooks/useFollowingList';
+import { useAuth } from '@/hooks/useAuth'
+import { useFollowingList } from '@/features/search/hooks/useFollowingList'
 
 export function DataPrefetcher() {
-  const { user } = useAuth();
+  const { user } = useAuth()
 
   // Prefetch following list immediately when user is authenticated
   // This ensures it's available instantly when they navigate to search
   useFollowingList({
     userId: user?.id,
     enabled: !!user,
-  });
+  })
 
-  return null; // This component doesn't render anything
+  return null // This component doesn't render anything
 }

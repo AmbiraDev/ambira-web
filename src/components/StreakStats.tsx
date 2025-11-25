@@ -1,31 +1,31 @@
-'use client';
+'use client'
 
-import React, { useEffect, useState } from 'react';
-import { Flame, TrendingUp, Calendar, Target } from 'lucide-react';
-import { firebaseApi } from '@/lib/api';
-import { StreakStats as StreakStatsType } from '@/types';
+import React, { useEffect, useState } from 'react'
+import { Flame, TrendingUp, Calendar, Target } from 'lucide-react'
+import { firebaseApi } from '@/lib/api'
+import { StreakStats as StreakStatsType } from '@/types'
 
 interface StreakStatsProps {
-  userId: string;
+  userId: string
 }
 
 export const StreakStats: React.FC<StreakStatsProps> = ({ userId }) => {
-  const [streakStats, setStreakStats] = useState<StreakStatsType | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [streakStats, setStreakStats] = useState<StreakStatsType | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const loadStreak = async () => {
       try {
-        const stats = await firebaseApi.streak.getStreakStats(userId);
-        setStreakStats(stats);
+        const stats = await firebaseApi.streak.getStreakStats(userId)
+        setStreakStats(stats)
       } catch {
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    loadStreak();
-  }, [userId]);
+    loadStreak()
+  }, [userId])
 
   if (isLoading) {
     return (
@@ -38,21 +38,21 @@ export const StreakStats: React.FC<StreakStatsProps> = ({ userId }) => {
           </div>
         ))}
       </div>
-    );
+    )
   }
 
-  if (!streakStats) return null;
+  if (!streakStats) return null
 
   const getStreakColor = () => {
-    if (streakStats.currentStreak >= 100) return 'text-purple-600 bg-purple-50';
-    if (streakStats.currentStreak >= 30) return 'text-blue-600 bg-blue-50';
-    if (streakStats.currentStreak >= 7) return 'text-orange-600 bg-orange-50';
-    return 'text-orange-500 bg-orange-50';
-  };
+    if (streakStats.currentStreak >= 100) return 'text-purple-600 bg-purple-50'
+    if (streakStats.currentStreak >= 30) return 'text-blue-600 bg-blue-50'
+    if (streakStats.currentStreak >= 7) return 'text-orange-600 bg-orange-50'
+    return 'text-orange-500 bg-orange-50'
+  }
 
   const progressToNextMilestone = streakStats.nextMilestone
     ? (streakStats.currentStreak / streakStats.nextMilestone) * 100
-    : 0;
+    : 0
 
   return (
     <div className="space-y-4">
@@ -64,9 +64,7 @@ export const StreakStats: React.FC<StreakStatsProps> = ({ userId }) => {
             <span className="text-sm font-medium">Current Streak</span>
           </div>
           <div className="text-3xl font-bold">{streakStats.currentStreak}</div>
-          <div className="text-xs mt-1">
-            {streakStats.currentStreak === 1 ? 'day' : 'days'}
-          </div>
+          <div className="text-xs mt-1">{streakStats.currentStreak === 1 ? 'day' : 'days'}</div>
         </div>
 
         {/* Best Streak */}
@@ -87,9 +85,7 @@ export const StreakStats: React.FC<StreakStatsProps> = ({ userId }) => {
             <Calendar className="w-5 h-5" />
             <span className="text-sm font-medium">Total Days</span>
           </div>
-          <div className="text-3xl font-bold">
-            {streakStats.totalStreakDays}
-          </div>
+          <div className="text-3xl font-bold">{streakStats.totalStreakDays}</div>
           <div className="text-xs text-gray-500 mt-1">active days</div>
         </div>
 
@@ -134,11 +130,10 @@ export const StreakStats: React.FC<StreakStatsProps> = ({ userId }) => {
             <span className="font-medium">Streak at risk!</span>
           </div>
           <p className="text-sm text-red-600 mt-1">
-            Complete a session today to maintain your{' '}
-            {streakStats.currentStreak} day streak.
+            Complete a session today to maintain your {streakStats.currentStreak} day streak.
           </p>
         </div>
       )}
     </div>
-  );
-};
+  )
+}

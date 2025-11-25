@@ -195,7 +195,6 @@ Use a focus trap library or implement manually:
 
 ```tsx
 import FocusTrap from 'focus-trap-react'
-
 ;<FocusTrap active={isOpen}>
   <div role="dialog" aria-modal="true" aria-labelledby="modal-title">
     {/* Modal content */}

@@ -2,32 +2,30 @@
  * Challenge Query Hooks - React Query Boundary
  */
 
-import { useQuery, UseQueryOptions } from '@tanstack/react-query';
-import { ChallengeService } from '../services/ChallengeService';
+import { useQuery, UseQueryOptions } from '@tanstack/react-query'
+import { ChallengeService } from '../services/ChallengeService'
 import {
   Challenge,
   ChallengeFilters,
   ChallengeLeaderboard,
   ChallengeProgress,
   ChallengeStats,
-} from '@/types';
-import { STANDARD_CACHE_TIMES } from '@/lib/react-query';
+} from '@/types'
+import { STANDARD_CACHE_TIMES } from '@/lib/react-query'
 
-const challengeService = new ChallengeService();
+const challengeService = new ChallengeService()
 
 export const CHALLENGE_KEYS = {
   all: () => ['challenges'] as const,
   lists: () => [...CHALLENGE_KEYS.all(), 'list'] as const,
-  list: (filters?: ChallengeFilters) =>
-    [...CHALLENGE_KEYS.lists(), filters] as const,
+  list: (filters?: ChallengeFilters) => [...CHALLENGE_KEYS.lists(), filters] as const,
   details: () => [...CHALLENGE_KEYS.all(), 'detail'] as const,
   detail: (id: string) => [...CHALLENGE_KEYS.details(), id] as const,
-  leaderboard: (id: string) =>
-    [...CHALLENGE_KEYS.detail(id), 'leaderboard'] as const,
+  leaderboard: (id: string) => [...CHALLENGE_KEYS.detail(id), 'leaderboard'] as const,
   progress: (challengeId: string, userId: string) =>
     [...CHALLENGE_KEYS.detail(challengeId), 'progress', userId] as const,
   stats: (id: string) => [...CHALLENGE_KEYS.detail(id), 'stats'] as const,
-};
+}
 
 export function useChallenges(
   filters?: ChallengeFilters,
@@ -38,7 +36,7 @@ export function useChallenges(
     queryFn: () => challengeService.getChallenges(filters),
     staleTime: STANDARD_CACHE_TIMES.MEDIUM,
     ...options,
-  });
+  })
 }
 
 export function useChallenge(
@@ -51,7 +49,7 @@ export function useChallenge(
     staleTime: STANDARD_CACHE_TIMES.MEDIUM,
     enabled: !!challengeId,
     ...options,
-  });
+  })
 }
 
 export function useChallengeLeaderboard(
@@ -64,7 +62,7 @@ export function useChallengeLeaderboard(
     staleTime: STANDARD_CACHE_TIMES.SHORT,
     enabled: !!challengeId,
     ...options,
-  });
+  })
 }
 
 export function useChallengeProgress(
@@ -78,7 +76,7 @@ export function useChallengeProgress(
     staleTime: STANDARD_CACHE_TIMES.SHORT,
     enabled: !!challengeId && !!userId,
     ...options,
-  });
+  })
 }
 
 export function useChallengeStats(
@@ -91,5 +89,5 @@ export function useChallengeStats(
     staleTime: STANDARD_CACHE_TIMES.MEDIUM,
     enabled: !!challengeId,
     ...options,
-  });
+  })
 }

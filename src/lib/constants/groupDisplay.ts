@@ -27,7 +27,7 @@ export const GROUP_DISPLAY_CONFIG = {
   },
   /** Maximum number of suggested groups to display (5 per design) */
   SUGGESTED_GROUPS_LIMIT: 5,
-} as const;
+} as const
 
 /**
  * Type definition for the GROUP_DISPLAY_CONFIG constant.
@@ -37,4 +37,4 @@ export const GROUP_DISPLAY_CONFIG = {
  * import type { GroupDisplayConfig } from '@/lib/constants/groupDisplay';
  * const config: GroupDisplayConfig = GROUP_DISPLAY_CONFIG;
  */
-export type GroupDisplayConfig = typeof GROUP_DISPLAY_CONFIG;
+export type GroupDisplayConfig = typeof GROUP_DISPLAY_CONFIG

@@ -4,52 +4,48 @@
  * Displays group members ranked by activity hours.
  */
 
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useGroupLeaderboard } from '../hooks/useGroupLeaderboard';
-import { Trophy, Loader2, Medal, Award } from 'lucide-react';
+import React, { useState } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useGroupLeaderboard } from '../hooks/useGroupLeaderboard'
+import { Trophy, Loader2, Medal, Award } from 'lucide-react'
 
 interface GroupLeaderboardProps {
-  groupId: string;
+  groupId: string
 }
 
-type Timeframe = 'week' | 'month' | 'allTime';
+type Timeframe = 'week' | 'month' | 'allTime'
 
 export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
-  const [timeframe, setTimeframe] = useState<Timeframe>('allTime');
-  const {
-    data: leaderboard,
-    isLoading,
-    error,
-  } = useGroupLeaderboard(groupId, timeframe);
+  const [timeframe, setTimeframe] = useState<Timeframe>('allTime')
+  const { data: leaderboard, isLoading, error } = useGroupLeaderboard(groupId, timeframe)
 
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Trophy className="w-6 h-6 text-yellow-500" />;
+        return <Trophy className="w-6 h-6 text-yellow-500" />
       case 2:
-        return <Medal className="w-6 h-6 text-gray-400" />;
+        return <Medal className="w-6 h-6 text-gray-400" />
       case 3:
-        return <Award className="w-6 h-6 text-amber-700" />;
+        return <Award className="w-6 h-6 text-amber-700" />
       default:
         return (
           <div className="w-6 h-6 flex items-center justify-center">
             <span className="text-gray-600 font-semibold">{rank}</span>
           </div>
-        );
+        )
     }
-  };
+  }
 
   const formatHours = (hours: number) => {
     if (hours < 1) {
-      const minutes = Math.round(hours * 60);
-      return `${minutes}m`;
+      const minutes = Math.round(hours * 60)
+      return `${minutes}m`
     }
-    return `${hours.toFixed(1)}h`;
-  };
+    return `${hours.toFixed(1)}h`
+  }
 
   return (
     <div className="space-y-4">
@@ -113,7 +109,7 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
 
       {!isLoading && !error && leaderboard && leaderboard.length > 0 && (
         <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
-          {leaderboard.map(entry => (
+          {leaderboard.map((entry) => (
             <Link
               key={entry.userId}
               href={`/profile/${entry.username}`}
@@ -143,12 +139,8 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
 
               {/* Member Info */}
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 truncate">
-                  {entry.name}
-                </h3>
-                <p className="text-sm text-gray-600 truncate">
-                  @{entry.username}
-                </p>
+                <h3 className="font-semibold text-gray-900 truncate">{entry.name}</h3>
+                <p className="text-sm text-gray-600 truncate">@{entry.username}</p>
               </div>
 
               {/* Stats */}
@@ -181,5 +173,5 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
         </div>
       )}
     </div>
-  );
+  )
 }

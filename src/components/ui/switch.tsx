@@ -1,16 +1,15 @@
-import * as React from 'react';
-import { cn } from '@/lib/utils';
+import * as React from 'react'
+import { cn } from '@/lib/utils'
 
-export interface SwitchProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
-  onCheckedChange?: (checked: boolean) => void;
+export interface SwitchProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+  onCheckedChange?: (checked: boolean) => void
 }
 
 const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
   ({ className, onCheckedChange, checked, ...props }, ref) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      onCheckedChange?.(e.target.checked);
-    };
+      onCheckedChange?.(e.target.checked)
+    }
 
     return (
       <label className="relative inline-flex items-center cursor-pointer">
@@ -29,9 +28,9 @@ const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
           )}
         />
       </label>
-    );
+    )
   }
-);
-Switch.displayName = 'Switch';
+)
+Switch.displayName = 'Switch'
 
-export { Switch };
+export { Switch }

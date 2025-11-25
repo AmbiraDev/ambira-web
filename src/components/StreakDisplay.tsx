@@ -1,14 +1,14 @@
-'use client';
+'use client'
 
-import React, { useEffect, useState } from 'react';
-import { Flame } from 'lucide-react';
-import { firebaseApi } from '@/lib/api';
-import { StreakStats } from '@/types';
+import React, { useEffect, useState } from 'react'
+import { Flame } from 'lucide-react'
+import { firebaseApi } from '@/lib/api'
+import { StreakStats } from '@/types'
 
 interface StreakDisplayProps {
-  userId: string;
-  size?: 'small' | 'medium' | 'large';
-  showLabel?: boolean;
+  userId: string
+  size?: 'small' | 'medium' | 'large'
+  showLabel?: boolean
 }
 
 export const StreakDisplay: React.FC<StreakDisplayProps> = ({
@@ -16,22 +16,22 @@ export const StreakDisplay: React.FC<StreakDisplayProps> = ({
   size = 'medium',
   showLabel = true,
 }) => {
-  const [streakStats, setStreakStats] = useState<StreakStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [streakStats, setStreakStats] = useState<StreakStats | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const loadStreak = async () => {
       try {
-        const stats = await firebaseApi.streak.getStreakStats(userId);
-        setStreakStats(stats);
+        const stats = await firebaseApi.streak.getStreakStats(userId)
+        setStreakStats(stats)
       } catch {
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    loadStreak();
-  }, [userId]);
+    loadStreak()
+  }, [userId])
 
   if (isLoading) {
     return (
@@ -39,30 +39,30 @@ export const StreakDisplay: React.FC<StreakDisplayProps> = ({
         <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
         {showLabel && <div className="w-16 h-4 bg-gray-200 rounded"></div>}
       </div>
-    );
+    )
   }
 
-  if (!streakStats) return null;
+  if (!streakStats) return null
 
   const sizeClasses = {
     small: 'text-lg',
     medium: 'text-2xl',
     large: 'text-4xl',
-  };
+  }
 
   const iconSizeClasses = {
     small: 'w-5 h-5',
     medium: 'w-8 h-8',
     large: 'w-12 h-12',
-  };
+  }
 
   const getFlameColor = () => {
-    if (streakStats.streakAtRisk) return 'text-gray-400';
-    if (streakStats.currentStreak >= 100) return 'text-purple-500';
-    if (streakStats.currentStreak >= 30) return 'text-blue-500';
-    if (streakStats.currentStreak >= 7) return 'text-orange-500';
-    return 'text-orange-400';
-  };
+    if (streakStats.streakAtRisk) return 'text-gray-400'
+    if (streakStats.currentStreak >= 100) return 'text-purple-500'
+    if (streakStats.currentStreak >= 30) return 'text-blue-500'
+    if (streakStats.currentStreak >= 7) return 'text-orange-500'
+    return 'text-orange-400'
+  }
 
   return (
     <div className="flex items-center gap-2">
@@ -83,5 +83,5 @@ export const StreakDisplay: React.FC<StreakDisplayProps> = ({
         )}
       </div>
     </div>
-  );
-};
+  )
+}

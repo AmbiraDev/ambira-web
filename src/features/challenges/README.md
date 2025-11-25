@@ -10,20 +10,20 @@ import {
   useChallenge,
   useChallengeLeaderboard,
   useJoinChallenge,
-} from '@/features/challenges/hooks';
+} from '@/features/challenges/hooks'
 
 // Get active challenges
-const { data: challenges } = useChallenges({ status: 'active' });
+const { data: challenges } = useChallenges({ status: 'active' })
 
 // Get challenge details
-const { data: challenge } = useChallenge(challengeId);
+const { data: challenge } = useChallenge(challengeId)
 
 // Get leaderboard (1 min cache - updates frequently)
-const { data: leaderboard } = useChallengeLeaderboard(challengeId);
+const { data: leaderboard } = useChallengeLeaderboard(challengeId)
 
 // Join a challenge
-const joinMutation = useJoinChallenge();
-joinMutation.mutate(challengeId);
+const joinMutation = useJoinChallenge()
+joinMutation.mutate(challengeId)
 ```
 
 ## Available Hooks
@@ -57,11 +57,11 @@ joinMutation.mutate(challengeId);
 **Before:**
 
 ```typescript
-import { useChallenges, useChallenge } from '@/hooks/useCache';
+import { useChallenges, useChallenge } from '@/hooks/useCache'
 ```
 
 **After:**
 
 ```typescript
-import { useChallenges, useChallenge } from '@/features/challenges/hooks';
+import { useChallenges, useChallenge } from '@/features/challenges/hooks'
 ```

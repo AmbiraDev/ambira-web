@@ -65,19 +65,16 @@ import {
   getDoc,
   getDocs,
   // ... other Firestore imports needed
-} from 'firebase/firestore';
+} from 'firebase/firestore'
 
-import { db, auth, storage } from '@/lib/firebase';
-import { handleError, ErrorSeverity } from '@/lib/errorHandler';
-import { checkRateLimit } from '@/lib/rateLimit';
+import { db, auth, storage } from '@/lib/firebase'
+import { handleError, ErrorSeverity } from '@/lib/errorHandler'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 // Import from our new shared modules
-import { convertTimestamp, removeUndefinedFields } from '../shared/utils';
+import { convertTimestamp, removeUndefinedFields } from '../shared/utils'
 
-import {
-  updateSocialGraph,
-  fetchUserDataForSocialContext,
-} from '../social/helpers';
+import { updateSocialGraph, fetchUserDataForSocialContext } from '../social/helpers'
 
 // Import types
 import type {
@@ -85,7 +82,7 @@ import type {
   UserProfile,
   UserStats,
   // ... other types needed
-} from '@/types';
+} from '@/types'
 ```
 
 #### 1.4 Add module documentation
@@ -98,7 +95,7 @@ import type {
 
 export const firebaseUserApi = {
   // ... methods
-};
+}
 ```
 
 #### 1.5 Export from main index
@@ -288,7 +285,7 @@ Cannot find name 'convertTimestamp'
 Add the import from shared utils:
 
 ```typescript
-import { convertTimestamp } from '../shared/utils';
+import { convertTimestamp } from '../shared/utils'
 ```
 
 ### Issue 2: Circular Dependencies
@@ -317,7 +314,7 @@ Cannot find type 'UserProfile'
 Import from types file:
 
 ```typescript
-import type { UserProfile } from '@/types';
+import type { UserProfile } from '@/types'
 ```
 
 ### Issue 4: Firebase Not Initialized
@@ -332,7 +329,7 @@ Firebase app not initialized
 Ensure you're importing from the correct config:
 
 ```typescript
-import { db, auth, storage } from '@/lib/firebase';
+import { db, auth, storage } from '@/lib/firebase'
 // NOT from 'firebase/app' directly
 ```
 

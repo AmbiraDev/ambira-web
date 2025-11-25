@@ -20,44 +20,39 @@ import {
   where,
   orderBy,
   serverTimestamp,
-} from 'firebase/firestore';
+} from 'firebase/firestore'
 
 // Local Firebase config
-import { db, auth } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase'
 
 // Error handling
-import { handleError } from '@/lib/errorHandler';
-import { checkRateLimit } from '@/lib/rateLimit';
+import { handleError } from '@/lib/errorHandler'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 // Shared utilities
-import { convertTimestamp, removeUndefinedFields } from '../shared/utils';
+import { convertTimestamp, removeUndefinedFields } from '../shared/utils'
 
 // Types
-import type {
-  Project,
-  CreateProjectData,
-  UpdateProjectData,
-  ProjectStats,
-} from '@/types';
+import type { Project, CreateProjectData, UpdateProjectData, ProjectStats } from '@/types'
 
 export const firebaseProjectApi = {
   // Get all user's projects
   getProjects: async (): Promise<Project[]> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
       const projectsQuery = query(
         collection(db, 'projects', auth.currentUser.uid, 'userProjects'),
         orderBy('createdAt', 'desc')
-      );
+      )
 
-      const querySnapshot = await getDocs(projectsQuery);
-      const projects: Project[] = [];
+      const querySnapshot = await getDocs(projectsQuery)
+      const projects: Project[] = []
 
-      querySnapshot.forEach(doc => {
-        const data = doc.data();
+      querySnapshot.forEach((doc) => {
+        const data = doc.data()
         projects.push({
           id: doc.id,
           userId: auth.currentUser!.uid,
@@ -70,15 +65,15 @@ export const firebaseProjectApi = {
           status: data.status || 'active',
           createdAt: convertTimestamp(data.createdAt),
           updatedAt: convertTimestamp(data.updatedAt),
-        });
-      });
+        })
+      })
 
-      return projects;
+      return projects
     } catch (_error) {
       const apiError = handleError(_error, 'Get projects', {
         defaultMessage: 'Failed to get projects',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -86,23 +81,23 @@ export const firebaseProjectApi = {
   createProject: async (data: CreateProjectData): Promise<Project> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
       // Rate limitFn project creation
-      checkRateLimit(auth.currentUser.uid, 'PROJECT_CREATE');
+      checkRateLimit(auth.currentUser.uid, 'PROJECT_CREATE')
 
       const projectData = removeUndefinedFields({
         ...data,
         status: 'active',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      });
+      })
 
       const docRef = await addDoc(
         collection(db, 'projects', auth.currentUser.uid, 'userProjects'),
         projectData
-      );
+      )
 
       return {
         id: docRef.id,
@@ -116,50 +111,42 @@ export const firebaseProjectApi = {
         status: 'active',
         createdAt: new Date(),
         updatedAt: new Date(),
-      };
+      }
     } catch (_error) {
       const apiError = handleError(_error, 'Create project', {
         defaultMessage: 'Failed to create project',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
   // Update project
-  updateProject: async (
-    id: string,
-    data: UpdateProjectData
-  ): Promise<Project> => {
+  updateProject: async (id: string, data: UpdateProjectData): Promise<Project> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
       const updateData = removeUndefinedFields({
         ...data,
         updatedAt: serverTimestamp(),
-      });
+      })
 
-      await updateDoc(
-        doc(db, 'projects', auth.currentUser.uid, 'userProjects', id),
-        updateData
-      );
+      await updateDoc(doc(db, 'projects', auth.currentUser.uid, 'userProjects', id), updateData)
 
       // Get updated project
-      const projectDoc = await getDoc(
-        doc(db, 'projects', auth.currentUser.uid, 'userProjects', id)
-      );
+      const projectDoc = await getDoc(doc(db, 'projects', auth.currentUser.uid, 'userProjects', id))
       const projectData = projectDoc.data() as {
-        name: string;
-        description: string;
-        icon: string;
-        color: string;
-        weeklyTarget?: number;
-        totalTarget?: number;
-        status?: string;
-        createdAt: unknown;
-        updatedAt: unknown;
-      };
+        name: string
+        description: string
+        icon: string
+        color: string
+        weeklyTarget?: number
+        totalTarget?: number
+        status?: string
+        createdAt: unknown
+        updatedAt: unknown
+      }
 
       return {
         id,
@@ -170,17 +157,15 @@ export const firebaseProjectApi = {
         color: projectData.color,
         weeklyTarget: projectData.weeklyTarget,
         totalTarget: projectData.totalTarget,
-        status:
-          (projectData.status as 'active' | 'completed' | 'archived') ||
-          'active',
+        status: (projectData.status as 'active' | 'completed' | 'archived') || 'active',
         createdAt: convertTimestamp(projectData.createdAt),
         updatedAt: convertTimestamp(projectData.updatedAt),
-      };
+      }
     } catch (_error) {
       const apiError = handleError(_error, 'Update project', {
         defaultMessage: 'Failed to update project',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -188,17 +173,15 @@ export const firebaseProjectApi = {
   deleteProject: async (id: string): Promise<void> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      await deleteDoc(
-        doc(db, 'projects', auth.currentUser.uid, 'userProjects', id)
-      );
+      await deleteDoc(doc(db, 'projects', auth.currentUser.uid, 'userProjects', id))
     } catch (_error) {
       const apiError = handleError(_error, 'Delete project', {
         defaultMessage: 'Failed to delete project',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -206,18 +189,16 @@ export const firebaseProjectApi = {
   getProjectById: async (id: string): Promise<Project | null> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const projectDoc = await getDoc(
-        doc(db, 'projects', auth.currentUser.uid, 'userProjects', id)
-      );
+      const projectDoc = await getDoc(doc(db, 'projects', auth.currentUser.uid, 'userProjects', id))
 
       if (!projectDoc.exists()) {
-        return null;
+        return null
       }
 
-      const data = projectDoc.data();
+      const data = projectDoc.data()
       return {
         id: projectDoc.id,
         userId: auth.currentUser.uid,
@@ -230,12 +211,12 @@ export const firebaseProjectApi = {
         status: data.status || 'active',
         createdAt: convertTimestamp(data.createdAt),
         updatedAt: convertTimestamp(data.updatedAt),
-      };
+      }
     } catch (_error) {
       const apiError = handleError(_error, 'Get project by ID', {
         defaultMessage: 'Failed to get project',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -243,7 +224,7 @@ export const firebaseProjectApi = {
   getProjectStats: async (id: string): Promise<ProjectStats | null> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
       // Get all sessions for this project
@@ -251,57 +232,53 @@ export const firebaseProjectApi = {
         collection(db, 'sessions'),
         where('userId', '==', auth.currentUser.uid),
         where('activityId', '==', id)
-      );
+      )
 
-      const querySnapshot = await getDocs(sessionsQuery);
+      const querySnapshot = await getDocs(sessionsQuery)
 
-      let totalHours = 0;
-      let weeklyHours = 0;
-      let sessionCount = 0;
-      let longestSession = 0;
-      let lastSessionDate: Date | undefined;
+      let totalHours = 0
+      let weeklyHours = 0
+      let sessionCount = 0
+      let longestSession = 0
+      let lastSessionDate: Date | undefined
 
-      const now = new Date();
-      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const now = new Date()
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
 
-      querySnapshot.forEach(doc => {
-        const data = doc.data();
-        const duration = data.duration || 0; // in seconds
-        const startTime = convertTimestamp(data.startTime);
+      querySnapshot.forEach((doc) => {
+        const data = doc.data()
+        const duration = data.duration || 0 // in seconds
+        const startTime = convertTimestamp(data.startTime)
 
-        totalHours += duration / 3600; // Convert to hours
-        sessionCount++;
+        totalHours += duration / 3600 // Convert to hours
+        sessionCount++
 
         if (duration > longestSession) {
-          longestSession = duration;
+          longestSession = duration
         }
 
         if (startTime >= oneWeekAgo) {
-          weeklyHours += duration / 3600;
+          weeklyHours += duration / 3600
         }
 
         if (!lastSessionDate || startTime > lastSessionDate) {
-          lastSessionDate = startTime;
+          lastSessionDate = startTime
         }
-      });
+      })
 
-      const averageSessionDuration =
-        sessionCount > 0 ? totalHours / sessionCount : 0;
+      const averageSessionDuration = sessionCount > 0 ? totalHours / sessionCount : 0
 
       // Calculate streak (simplified - just checks if there was activity in the last 2 days)
-      const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
-      const currentStreak =
-        lastSessionDate && lastSessionDate >= twoDaysAgo ? 1 : 0;
+      const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)
+      const currentStreak = lastSessionDate && lastSessionDate >= twoDaysAgo ? 1 : 0
 
       // Get project to check targets
-      const project = await firebaseProjectApi.getProjectById(id);
-      const weeklyTarget = project?.weeklyTarget || 0;
-      const totalTarget = project?.totalTarget || 0;
+      const project = await firebaseProjectApi.getProjectById(id)
+      const weeklyTarget = project?.weeklyTarget || 0
+      const totalTarget = project?.totalTarget || 0
 
-      const weeklyProgressPercentage =
-        weeklyTarget > 0 ? (weeklyHours / weeklyTarget) * 100 : 0;
-      const totalProgressPercentage =
-        totalTarget > 0 ? (totalHours / totalTarget) * 100 : 0;
+      const weeklyProgressPercentage = weeklyTarget > 0 ? (weeklyHours / weeklyTarget) * 100 : 0
+      const totalProgressPercentage = totalTarget > 0 ? (totalHours / totalTarget) * 100 : 0
 
       return {
         totalHours,
@@ -312,14 +289,14 @@ export const firebaseProjectApi = {
         totalProgressPercentage,
         averageSessionDuration,
         lastSessionDate,
-      };
+      }
     } catch (_error) {
       const apiError = handleError(_error, 'Get project stats', {
         defaultMessage: 'Failed to get project stats',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
-};
+}
 
 // Firebase Session API

@@ -1,11 +1,11 @@
-import React from 'react';
+import React from 'react'
 
 interface GoogleAuthButtonProps {
-  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  disabled?: boolean;
-  isLoading?: boolean;
-  buttonText?: string;
-  className?: string;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void
+  disabled?: boolean
+  isLoading?: boolean
+  buttonText?: string
+  className?: string
 }
 
 export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
@@ -48,5 +48,5 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
         </>
       )}
     </button>
-  );
-};
+  )
+}

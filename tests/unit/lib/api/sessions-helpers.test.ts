@@ -2,10 +2,10 @@
  * Tests for sessions helpers - activity population
  */
 
-import { populateSessionsWithDetails } from '@/lib/api/sessions/helpers';
-import { getAllActivityTypes } from '@/lib/api/activityTypes';
-import { doc, getDoc } from 'firebase/firestore';
-import type { DocumentSnapshot, DocumentData } from 'firebase/firestore';
+import { populateSessionsWithDetails } from '@/lib/api/sessions/helpers'
+import { getAllActivityTypes } from '@/lib/api/activityTypes'
+import { doc, getDoc } from 'firebase/firestore'
+import type { DocumentSnapshot, DocumentData } from 'firebase/firestore'
 
 // Mock Firebase
 jest.mock('@/lib/firebase', () => ({
@@ -15,10 +15,10 @@ jest.mock('@/lib/firebase', () => ({
       uid: 'test-user-id',
     },
   },
-}));
+}))
 
 // Mock activityTypes
-jest.mock('@/lib/api/activityTypes');
+jest.mock('@/lib/api/activityTypes')
 
 // Mock Firestore functions
 jest.mock('firebase/firestore', () => ({
@@ -35,17 +35,17 @@ jest.mock('firebase/firestore', () => ({
     fromDate: jest.fn((date: Date) => date),
     now: jest.fn(() => new Date()),
   },
-}));
+}))
 
 const mockGetAllActivityTypes = getAllActivityTypes as jest.MockedFunction<
   typeof getAllActivityTypes
->;
-const mockGetDoc = getDoc as jest.MockedFunction<typeof getDoc>;
+>
+const mockGetDoc = getDoc as jest.MockedFunction<typeof getDoc>
 
 describe('populateSessionsWithDetails', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-  });
+    jest.clearAllMocks()
+  })
 
   it('should populate sessions with default activity names (e.g., Coding)', async () => {
     // Arrange: Mock activity types including "Coding"
@@ -74,7 +74,7 @@ describe('populateSessionsWithDetails', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
-    ]);
+    ])
 
     // Mock user document
     const mockUserDoc = {
@@ -86,9 +86,9 @@ describe('populateSessionsWithDetails', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       }),
-    } as unknown as DocumentSnapshot<DocumentData>;
+    } as unknown as DocumentSnapshot<DocumentData>
 
-    mockGetDoc.mockResolvedValue(mockUserDoc);
+    mockGetDoc.mockResolvedValue(mockUserDoc)
 
     // Mock session document
     const mockSessionDoc = {
@@ -108,19 +108,19 @@ describe('populateSessionsWithDetails', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       }),
-    } as unknown as DocumentSnapshot<DocumentData>;
+    } as unknown as DocumentSnapshot<DocumentData>
 
     // Act: Populate sessions
-    const result = await populateSessionsWithDetails([mockSessionDoc]);
+    const result = await populateSessionsWithDetails([mockSessionDoc])
 
     // Assert: Check that activity is properly populated
-    expect(result).toHaveLength(1);
-    expect(result[0]?.activity).toBeDefined();
-    expect(result[0]?.activity.name).toBe('Coding');
-    expect(result[0]?.activity.id).toBe('coding');
-    expect(result[0]?.activity.icon).toBe('flat-color-icons:electronics');
-    expect(result[0]?.activity.color).toBe('#5856D6');
-  });
+    expect(result).toHaveLength(1)
+    expect(result[0]?.activity).toBeDefined()
+    expect(result[0]?.activity.name).toBe('Coding')
+    expect(result[0]?.activity.id).toBe('coding')
+    expect(result[0]?.activity.icon).toBe('flat-color-icons:electronics')
+    expect(result[0]?.activity.color).toBe('#5856D6')
+  })
 
   it('should populate sessions with Work activity', async () => {
     // Arrange
@@ -137,7 +137,7 @@ describe('populateSessionsWithDetails', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
-    ]);
+    ])
 
     const mockUserDoc = {
       exists: () => true,
@@ -148,9 +148,9 @@ describe('populateSessionsWithDetails', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       }),
-    } as unknown as DocumentSnapshot<DocumentData>;
+    } as unknown as DocumentSnapshot<DocumentData>
 
-    mockGetDoc.mockResolvedValue(mockUserDoc);
+    mockGetDoc.mockResolvedValue(mockUserDoc)
 
     const mockSessionDoc = {
       id: 'session-2',
@@ -169,16 +169,16 @@ describe('populateSessionsWithDetails', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       }),
-    } as unknown as DocumentSnapshot<DocumentData>;
+    } as unknown as DocumentSnapshot<DocumentData>
 
     // Act
-    const result = await populateSessionsWithDetails([mockSessionDoc]);
+    const result = await populateSessionsWithDetails([mockSessionDoc])
 
     // Assert
-    expect(result).toHaveLength(1);
-    expect(result[0]?.activity.name).toBe('Work');
-    expect(result[0]?.activity.id).toBe('work');
-  });
+    expect(result).toHaveLength(1)
+    expect(result[0]?.activity.name).toBe('Work')
+    expect(result[0]?.activity.id).toBe('work')
+  })
 
   it('should use projectId as fallback when activityId is not present', async () => {
     // Arrange
@@ -195,7 +195,7 @@ describe('populateSessionsWithDetails', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
-    ]);
+    ])
 
     const mockUserDoc = {
       exists: () => true,
@@ -206,9 +206,9 @@ describe('populateSessionsWithDetails', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       }),
-    } as unknown as DocumentSnapshot<DocumentData>;
+    } as unknown as DocumentSnapshot<DocumentData>
 
-    mockGetDoc.mockResolvedValue(mockUserDoc);
+    mockGetDoc.mockResolvedValue(mockUserDoc)
 
     // Session with projectId but no activityId (backward compatibility)
     const mockSessionDoc = {
@@ -228,14 +228,14 @@ describe('populateSessionsWithDetails', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       }),
-    } as unknown as DocumentSnapshot<DocumentData>;
+    } as unknown as DocumentSnapshot<DocumentData>
 
     // Act
-    const result = await populateSessionsWithDetails([mockSessionDoc]);
+    const result = await populateSessionsWithDetails([mockSessionDoc])
 
     // Assert
-    expect(result).toHaveLength(1);
-    expect(result[0]?.activity.name).toBe('Coding');
-    expect(result[0]?.activity.id).toBe('coding');
-  });
-});
+    expect(result).toHaveLength(1)
+    expect(result[0]?.activity.name).toBe('Coding')
+    expect(result[0]?.activity.id).toBe('coding')
+  })
+})

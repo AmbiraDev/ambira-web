@@ -16,9 +16,9 @@ export {
   useFollowingFeedInfinite,
   usePublicFeedInfinite,
   FEED_KEYS,
-} from './useFeed';
+} from './useFeed'
 
-export type { FeedResult, FeedPage } from './useFeed';
+export type { FeedResult, FeedPage } from './useFeed'
 
 // Mutation hooks and helpers
 export {
@@ -28,4 +28,4 @@ export {
   useInvalidateGroupFeed,
   useAddToFeedCache,
   useRemoveFromFeedCache,
-} from './useFeedMutations';
+} from './useFeedMutations'

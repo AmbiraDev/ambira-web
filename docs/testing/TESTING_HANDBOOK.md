@@ -175,8 +175,8 @@ npm run test:watch
 describe('ComponentName', () => {
   it('should [expected behavior]', () => {
     // test implementation
-  });
-});
+  })
+})
 ```
 
 ### Common Patterns
@@ -206,17 +206,17 @@ it('should handle click events', async () => {
 #### Testing Hooks
 
 ```typescript
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react'
 
 it('should increment counter', () => {
-  const { result } = renderHook(() => useCounter());
+  const { result } = renderHook(() => useCounter())
 
   act(() => {
-    result.current.increment();
-  });
+    result.current.increment()
+  })
 
-  expect(result.current.count).toBe(1);
-});
+  expect(result.current.count).toBe(1)
+})
 ```
 
 #### Testing with Mocks
@@ -327,21 +327,19 @@ npm test -- --testPathPattern="integration/auth"
 ### Firebase Integration Pattern
 
 ```typescript
-import { firebaseMock } from '@/__tests__/__mocks__/firebaseMock';
+import { firebaseMock } from '@/__tests__/__mocks__/firebaseMock'
 
-jest.mock('firebase/firestore');
+jest.mock('firebase/firestore')
 
 it('should save data to Firestore', async () => {
-  firebaseMock.db
-    .collection('sessions')
-    .add.mockResolvedValue({ id: 'session-1' });
+  firebaseMock.db.collection('sessions').add.mockResolvedValue({ id: 'session-1' })
 
   // Test code
-  await performAction();
+  await performAction()
 
-  expect(firebaseMock.db.collection).toHaveBeenCalledWith('sessions');
-  expect(firebaseMock.db.collection().add).toHaveBeenCalled();
-});
+  expect(firebaseMock.db.collection).toHaveBeenCalledWith('sessions')
+  expect(firebaseMock.db.collection().add).toHaveBeenCalled()
+})
 ```
 
 ### React Query Pattern
@@ -388,30 +386,27 @@ Write contract tests for:
 ```typescript
 describe('Challenges API Contract', () => {
   it('should return challenges with correct structure', async () => {
-    const response = await getChallenges();
+    const response = await getChallenges()
 
-    expect(Array.isArray(response)).toBe(true);
+    expect(Array.isArray(response)).toBe(true)
 
-    response.forEach(challenge => {
+    response.forEach((challenge) => {
       // Verify required fields
-      expect(challenge).toHaveProperty('id');
-      expect(challenge).toHaveProperty('title');
-      expect(challenge).toHaveProperty('type');
+      expect(challenge).toHaveProperty('id')
+      expect(challenge).toHaveProperty('title')
+      expect(challenge).toHaveProperty('type')
 
       // Verify types
-      expect(typeof challenge.id).toBe('string');
-      expect(typeof challenge.title).toBe('string');
+      expect(typeof challenge.id).toBe('string')
+      expect(typeof challenge.title).toBe('string')
 
       // Verify enum values
-      expect([
-        'most-activity',
-        'fastest-effort',
-        'longest-session',
-        'group-goal',
-      ]).toContain(challenge.type);
-    });
-  });
-});
+      expect(['most-activity', 'fastest-effort', 'longest-session', 'group-goal']).toContain(
+        challenge.type
+      )
+    })
+  })
+})
 ```
 
 ### Test File Location
@@ -436,21 +431,21 @@ npm test -- --testPathPattern="contract/api"
 ### Advanced: Schema Validation
 
 ```typescript
-import { z } from 'zod';
+import { z } from 'zod'
 
 const ChallengeSchema = z.object({
   id: z.string(),
   title: z.string().min(1).max(100),
   type: z.enum(['most-activity', 'fastest-effort', 'longest-session']),
   goal: z.number().positive(),
-});
+})
 
 it('should validate against schema', async () => {
-  const response = await getChallenges();
-  const result = z.array(ChallengeSchema).safeParse(response);
+  const response = await getChallenges()
+  const result = z.array(ChallengeSchema).safeParse(response)
 
-  expect(result.success).toBe(true);
-});
+  expect(result.success).toBe(true)
+})
 ```
 
 For complete contract testing guide, see [Contract Tests Guide](../../src/__tests__/contract/README.md).
@@ -466,7 +461,7 @@ Mocks replace real implementations for testing. They let you test code in isolat
 ### Firebase Mocks
 
 ```typescript
-import { firebaseMock } from '@/__tests__/__mocks__/firebaseMock';
+import { firebaseMock } from '@/__tests__/__mocks__/firebaseMock'
 
 // Mock Firestore read
 firebaseMock.db
@@ -475,37 +470,33 @@ firebaseMock.db
   .get.mockResolvedValue({
     exists: true,
     data: () => ({ id: 'user-1', name: 'John' }),
-  });
+  })
 
 // Mock Firestore write
 firebaseMock.db.collection('sessions').add.mockResolvedValue({
   id: 'session-1',
-});
+})
 ```
 
 ### Test Data Factories
 
 ```typescript
-import {
-  createMockUser,
-  createMockSession,
-  createMockProject,
-} from '@/__tests__/__mocks__/mocks';
+import { createMockUser, createMockSession, createMockProject } from '@/__tests__/__mocks__/mocks'
 
 // Default data
-const user = createMockUser();
+const user = createMockUser()
 
 // Custom data
 const customUser = createMockUser({
   name: 'Jane Doe',
   email: 'jane@example.com',
-});
+})
 
 // Mix default and custom
 const session = createMockSession({
   userId: user.id,
   duration: 7200,
-});
+})
 ```
 
 ### Available Factories
@@ -533,28 +524,28 @@ createMockChallengeParticipant(overrides?)
 // Good - use factories
 describe('UserProfile', () => {
   it('test 1', () => {
-    const user = createMockUser();
+    const user = createMockUser()
     // test
-  });
+  })
 
   it('test 2', () => {
-    const user = createMockUser();
+    const user = createMockUser()
     // test
-  });
-});
+  })
+})
 
 // Bad - data duplicated
 describe('UserProfile', () => {
   it('test 1', () => {
-    const user = { id: 'user-1', name: 'John', email: 'john@example.com' };
+    const user = { id: 'user-1', name: 'John', email: 'john@example.com' }
     // test
-  });
+  })
 
   it('test 2', () => {
-    const user = { id: 'user-1', name: 'John', email: 'john@example.com' };
+    const user = { id: 'user-1', name: 'John', email: 'john@example.com' }
     // test
-  });
-});
+  })
+})
 ```
 
 For complete mocks guide, see [Mocks Guide](../../src/__tests__/__mocks__/README.md).
@@ -633,22 +624,22 @@ For complete CI/CD guide, see [Playwright CI Setup](./playwright-ci-setup.md).
 
    ```typescript
    // Good - tests what user sees
-   await userEvent.click(screen.getByRole('button', { name: 'Submit' }));
+   await userEvent.click(screen.getByRole('button', { name: 'Submit' }))
 
    // Avoid - tests implementation details
-   expect(component.state.isLoading).toBe(false);
+   expect(component.state.isLoading).toBe(false)
    ```
 
 2. **Use semantic queries**
 
    ```typescript
    // Good - accessible, semantic
-   screen.getByRole('button', { name: /submit/i });
-   screen.getByLabelText(/email/i);
+   screen.getByRole('button', { name: /submit/i })
+   screen.getByLabelText(/email/i)
 
    // Avoid - brittle, CSS-dependent
-   screen.getByClassName('btn-submit');
-   screen.getByTestId('email-input');
+   screen.getByClassName('btn-submit')
+   screen.getByTestId('email-input')
    ```
 
 3. **One behavior per test**
@@ -657,12 +648,12 @@ For complete CI/CD guide, see [Playwright CI Setup](./playwright-ci-setup.md).
    // Good - focused
    it('should display error when email is invalid', () => {
      // test
-   });
+   })
 
    // Avoid - testing multiple behaviors
    it('should render and submit', () => {
      // test
-   });
+   })
    ```
 
 4. **Use AAA pattern** (Arrange-Act-Assert)
@@ -670,16 +661,16 @@ For complete CI/CD guide, see [Playwright CI Setup](./playwright-ci-setup.md).
    ```typescript
    it('should increment counter', () => {
      // Arrange: Set up test data
-     const { result } = renderHook(() => useCounter());
+     const { result } = renderHook(() => useCounter())
 
      // Act: Perform action
      act(() => {
-       result.current.increment();
-     });
+       result.current.increment()
+     })
 
      // Assert: Verify results
-     expect(result.current.count).toBe(1);
-   });
+     expect(result.current.count).toBe(1)
+   })
    ```
 
 5. **Keep tests DRY** (Don't Repeat Yourself)
@@ -778,11 +769,11 @@ describe('ComponentName', () => {
 **Solutions**:
 
 ```typescript
-import { act } from '@testing-library/react';
+import { act } from '@testing-library/react'
 
 act(() => {
-  result.current.setState(newValue);
-});
+  result.current.setState(newValue)
+})
 ```
 
 ### Coverage Gaps
@@ -1021,11 +1012,11 @@ npm run test:watch
 **A:** Use `waitFor` for assertions:
 
 ```typescript
-import { waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react'
 
 await waitFor(() => {
-  expect(screen.getByText('Loaded')).toBeInTheDocument();
-});
+  expect(screen.getByText('Loaded')).toBeInTheDocument()
+})
 ```
 
 ### Q: How do I mock an API call?
@@ -1033,12 +1024,11 @@ await waitFor(() => {
 **A:** Use Jest mocks:
 
 ```typescript
-jest.mock('@/services/userService');
-
-(userService.getUser as jest.Mock).mockResolvedValue({
+jest.mock('@/services/userService')
+;(userService.getUser as jest.Mock).mockResolvedValue({
   id: '1',
   name: 'John',
-});
+})
 ```
 
 ### Q: How do I test keyboard navigation?
@@ -1046,12 +1036,12 @@ jest.mock('@/services/userService');
 **A:** Use `userEvent`:
 
 ```typescript
-import userEvent from '@testing-library/user-event';
+import userEvent from '@testing-library/user-event'
 
-await userEvent.tab();
-expect(element).toHaveFocus();
+await userEvent.tab()
+expect(element).toHaveFocus()
 
-await userEvent.keyboard('{Enter}');
+await userEvent.keyboard('{Enter}')
 ```
 
 ### Q: How do I test accessibility?
@@ -1059,10 +1049,10 @@ await userEvent.keyboard('{Enter}');
 **A:** Use axe-core with Playwright:
 
 ```typescript
-import { makeAxeBuilder } from '@axe-core/playwright';
+import { makeAxeBuilder } from '@axe-core/playwright'
 
-const results = await makeAxeBuilder().analyze();
-expect(results.violations).toHaveLength(0);
+const results = await makeAxeBuilder().analyze()
+expect(results.violations).toHaveLength(0)
 ```
 
 ### Q: My test is flaky, what do I do?

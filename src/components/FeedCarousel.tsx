@@ -1,14 +1,14 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 
 export const FeedCarousel: React.FC = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const totalSlides = 3;
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const totalSlides = 3
 
   const handleDotClick = (index: number) => {
-    setCurrentSlide(index);
-  };
+    setCurrentSlide(index)
+  }
 
   return (
     <div className="mb-6">
@@ -22,9 +22,7 @@ export const FeedCarousel: React.FC = () => {
           <div className="w-full flex-shrink-0 px-4 md:px-0">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900">
-                  Your Weekly Snapshot
-                </h3>
+                <h3 className="text-lg font-bold text-gray-900">Your Weekly Snapshot</h3>
                 <button className="text-[#0066CC] text-sm font-medium hover:text-[#0056D6]">
                   View Details
                 </button>
@@ -57,13 +55,9 @@ export const FeedCarousel: React.FC = () => {
                 </div>
 
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-                    Time
-                  </div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Time</div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-gray-900">
-                      24h
-                    </span>
+                    <span className="text-2xl font-bold text-gray-900">24h</span>
                     <span className="text-sm text-green-600 flex items-center">
                       <svg
                         className="w-3 h-3 mr-0.5"
@@ -84,9 +78,7 @@ export const FeedCarousel: React.FC = () => {
                 </div>
 
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
-                    Projects
-                  </div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Projects</div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-gray-900">5</span>
                     <span className="text-sm text-gray-500 flex items-center">
@@ -138,9 +130,7 @@ export const FeedCarousel: React.FC = () => {
           <div className="w-full flex-shrink-0 px-4 md:px-0">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900">
-                  Suggested Goal
-                </h3>
+                <h3 className="text-lg font-bold text-gray-900">Suggested Goal</h3>
                 <button className="text-[#0066CC] text-sm font-medium hover:text-[#0056D6]">
                   Customize
                 </button>
@@ -152,12 +142,8 @@ export const FeedCarousel: React.FC = () => {
                     🎯
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-900">
-                      25 Hours This Week
-                    </h4>
-                    <p className="text-xs text-gray-600">
-                      Track 25 hours of focused work
-                    </p>
+                    <h4 className="font-bold text-gray-900">25 Hours This Week</h4>
+                    <p className="text-xs text-gray-600">Track 25 hours of focused work</p>
                   </div>
                 </div>
 
@@ -197,7 +183,7 @@ export const FeedCarousel: React.FC = () => {
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default FeedCarousel;
+export default FeedCarousel

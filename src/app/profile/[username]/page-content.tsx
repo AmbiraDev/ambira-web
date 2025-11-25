@@ -1,12 +1,12 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Image from 'next/image';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { UserX, ChevronDown, MapPin } from 'lucide-react';
-import Link from 'next/link';
+import React, { useState, useEffect, useMemo } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
+import { useAuth } from '@/hooks/useAuth'
+import { Button } from '@/components/ui/button'
+import { UserX, ChevronDown, MapPin } from 'lucide-react'
+import Link from 'next/link'
 import {
   XAxis,
   YAxis,
@@ -16,7 +16,7 @@ import {
   ComposedChart,
   BarChart,
   Bar,
-} from 'recharts';
+} from 'recharts'
 import {
   useProfileByUsername,
   useProfileStats,
@@ -25,35 +25,33 @@ import {
   useFollowUser,
   useUnfollowUser,
   useIsFollowing,
-} from '@/features/profile/hooks';
-import { useUserSessions } from '@/features/sessions/hooks';
-import { useProjects } from '@/features/projects/hooks';
-import Feed from '@/components/Feed';
-import { FollowersList } from '@/features/social/components/FollowersList';
-import { FollowingList } from '@/features/social/components/FollowingList';
+} from '@/features/profile/hooks'
+import { useUserSessions } from '@/features/sessions/hooks'
+import { useProjects } from '@/features/projects/hooks'
+import Feed from '@/components/Feed'
+import { FollowersList } from '@/features/social/components/FollowersList'
+import { FollowingList } from '@/features/social/components/FollowingList'
 
-type YouTab = 'progress' | 'sessions' | 'followers' | 'following';
-type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
-type ChartType = 'bar' | 'line';
+type YouTab = 'progress' | 'sessions' | 'followers' | 'following'
+type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y'
+type ChartType = 'bar' | 'line'
 
 interface ChartDataPoint {
-  name: string;
-  hours: number;
-  sessions: number;
-  avgDuration: number;
+  name: string
+  hours: number
+  sessions: number
+  avgDuration: number
 }
 
 interface ProfilePageContentProps {
-  username: string;
+  username: string
 }
 
-export default function ProfilePageContent({
-  username,
-}: ProfilePageContentProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { user: currentUser } = useAuth();
-  const tabParam = searchParams?.get('tab') as YouTab | null;
+export default function ProfilePageContent({ username }: ProfilePageContentProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { user: currentUser } = useAuth()
+  const tabParam = searchParams?.get('tab') as YouTab | null
 
   const [activeTab, setActiveTab] = useState<YouTab>(
     tabParam === 'sessions'
@@ -63,106 +61,92 @@ export default function ProfilePageContent({
         : tabParam === 'following'
           ? 'following'
           : 'progress'
-  );
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
-  const [chartType, setChartType] = useState<ChartType>('line');
-  const [showChartTypeDropdown, setShowChartTypeDropdown] = useState(false);
-  const [selectedActivityId, setSelectedActivityId] = useState<string>('all');
-  const [showActivityDropdown, setShowActivityDropdown] = useState(false);
+  )
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D')
+  const [chartType, setChartType] = useState<ChartType>('line')
+  const [showChartTypeDropdown, setShowChartTypeDropdown] = useState(false)
+  const [selectedActivityId, setSelectedActivityId] = useState<string>('all')
+  const [showActivityDropdown, setShowActivityDropdown] = useState(false)
 
   // Use new profile and session hooks for all data fetching
   const {
     data: profile,
     isLoading: isLoadingProfile,
     error: profileError,
-  } = useProfileByUsername(username);
+  } = useProfileByUsername(username)
 
-  const isOwnProfile = currentUser?.username === username;
+  const isOwnProfile = currentUser?.username === username
 
   // Dynamic metadata using useEffect for client component
   React.useEffect(() => {
     if (profile) {
-      document.title = `${profile.name} (@${profile.username}) - Ambira`;
+      document.title = `${profile.name} (@${profile.username}) - Ambira`
 
-      const description =
-        profile.bio || `View ${profile.name}'s productivity profile on Ambira`;
+      const description = profile.bio || `View ${profile.name}'s productivity profile on Ambira`
 
-      let metaDescription = document.querySelector('meta[name="description"]');
+      let metaDescription = document.querySelector('meta[name="description"]')
       if (!metaDescription) {
-        metaDescription = document.createElement('meta');
-        metaDescription.setAttribute('name', 'description');
-        document.head.appendChild(metaDescription);
+        metaDescription = document.createElement('meta')
+        metaDescription.setAttribute('name', 'description')
+        document.head.appendChild(metaDescription)
       }
-      metaDescription.setAttribute('content', description);
+      metaDescription.setAttribute('content', description)
 
       // Open Graph tags
-      let ogTitle = document.querySelector('meta[property="og:title"]');
+      let ogTitle = document.querySelector('meta[property="og:title"]')
       if (!ogTitle) {
-        ogTitle = document.createElement('meta');
-        ogTitle.setAttribute('property', 'og:title');
-        document.head.appendChild(ogTitle);
+        ogTitle = document.createElement('meta')
+        ogTitle.setAttribute('property', 'og:title')
+        document.head.appendChild(ogTitle)
       }
-      ogTitle.setAttribute(
-        'content',
-        `${profile.name} (@${profile.username}) - Ambira`
-      );
+      ogTitle.setAttribute('content', `${profile.name} (@${profile.username}) - Ambira`)
 
-      let ogDescription = document.querySelector(
-        'meta[property="og:description"]'
-      );
+      let ogDescription = document.querySelector('meta[property="og:description"]')
       if (!ogDescription) {
-        ogDescription = document.createElement('meta');
-        ogDescription.setAttribute('property', 'og:description');
-        document.head.appendChild(ogDescription);
+        ogDescription = document.createElement('meta')
+        ogDescription.setAttribute('property', 'og:description')
+        document.head.appendChild(ogDescription)
       }
-      ogDescription.setAttribute('content', description);
+      ogDescription.setAttribute('content', description)
 
-      let ogType = document.querySelector('meta[property="og:type"]');
+      let ogType = document.querySelector('meta[property="og:type"]')
       if (!ogType) {
-        ogType = document.createElement('meta');
-        ogType.setAttribute('property', 'og:type');
-        document.head.appendChild(ogType);
+        ogType = document.createElement('meta')
+        ogType.setAttribute('property', 'og:type')
+        document.head.appendChild(ogType)
       }
-      ogType.setAttribute('content', 'profile');
+      ogType.setAttribute('content', 'profile')
 
       // Twitter card tags
-      let twitterCard = document.querySelector('meta[name="twitter:card"]');
+      let twitterCard = document.querySelector('meta[name="twitter:card"]')
       if (!twitterCard) {
-        twitterCard = document.createElement('meta');
-        twitterCard.setAttribute('name', 'twitter:card');
-        document.head.appendChild(twitterCard);
+        twitterCard = document.createElement('meta')
+        twitterCard.setAttribute('name', 'twitter:card')
+        document.head.appendChild(twitterCard)
       }
-      twitterCard.setAttribute('content', 'summary');
+      twitterCard.setAttribute('content', 'summary')
 
-      let twitterTitle = document.querySelector('meta[name="twitter:title"]');
+      let twitterTitle = document.querySelector('meta[name="twitter:title"]')
       if (!twitterTitle) {
-        twitterTitle = document.createElement('meta');
-        twitterTitle.setAttribute('name', 'twitter:title');
-        document.head.appendChild(twitterTitle);
+        twitterTitle = document.createElement('meta')
+        twitterTitle.setAttribute('name', 'twitter:title')
+        document.head.appendChild(twitterTitle)
       }
-      twitterTitle.setAttribute(
-        'content',
-        `${profile.name} (@${profile.username}) - Ambira`
-      );
+      twitterTitle.setAttribute('content', `${profile.name} (@${profile.username}) - Ambira`)
 
-      let twitterDescription = document.querySelector(
-        'meta[name="twitter:description"]'
-      );
+      let twitterDescription = document.querySelector('meta[name="twitter:description"]')
       if (!twitterDescription) {
-        twitterDescription = document.createElement('meta');
-        twitterDescription.setAttribute('name', 'twitter:description');
-        document.head.appendChild(twitterDescription);
+        twitterDescription = document.createElement('meta')
+        twitterDescription.setAttribute('name', 'twitter:description')
+        document.head.appendChild(twitterDescription)
       }
-      twitterDescription.setAttribute('content', description);
+      twitterDescription.setAttribute('content', description)
     }
-  }, [profile]);
+  }, [profile])
 
-  const { data: stats, isLoading: isLoadingStats } = useProfileStats(
-    profile?.id || '',
-    {
-      enabled: !!profile?.id,
-    }
-  );
+  const { data: stats, isLoading: isLoadingStats } = useProfileStats(profile?.id || '', {
+    enabled: !!profile?.id,
+  })
 
   const { data: sessions = [], isLoading: isLoadingSessions } = useUserSessions(
     profile?.id || '',
@@ -170,35 +154,31 @@ export default function ProfilePageContent({
     {
       enabled: !!profile?.id,
     }
-  );
+  )
 
   const { data: followers = [] } = useFollowers(profile?.id || '', {
     enabled: !!profile?.id,
-  });
+  })
 
   const { data: following = [] } = useFollowing(profile?.id || '', {
     enabled: !!profile?.id,
-  });
+  })
 
   const { data: activities = [] } = useProjects({
     enabled: !!profile?.id,
-  });
+  })
 
   // Check if current user is following this profile
-  const { data: isFollowing = false } = useIsFollowing(
-    currentUser?.id || '',
-    profile?.id || '',
-    {
-      enabled: !isOwnProfile && !!currentUser?.id && !!profile?.id,
-    }
-  );
+  const { data: isFollowing = false } = useIsFollowing(currentUser?.id || '', profile?.id || '', {
+    enabled: !isOwnProfile && !!currentUser?.id && !!profile?.id,
+  })
 
   // Use follow/unfollow mutations
-  const followUserMutation = useFollowUser();
-  const unfollowUserMutation = useUnfollowUser();
+  const followUserMutation = useFollowUser()
+  const unfollowUserMutation = useUnfollowUser()
 
   // Compute loading and error states
-  const isLoading = isLoadingProfile || isLoadingStats || isLoadingSessions;
+  const isLoading = isLoadingProfile || isLoadingStats || isLoadingSessions
   const error = profileError
     ? (profileError.message as string | undefined)?.includes('not found')
       ? 'User not found'
@@ -207,17 +187,15 @@ export default function ProfilePageContent({
         : (profileError.message as string | undefined)?.includes('followers')
           ? 'This profile is only visible to followers'
           : 'Failed to load profile'
-    : null;
+    : null
 
   // Filter sessions based on selected activity
   const filteredSessions = useMemo(() => {
-    if (selectedActivityId === 'all') return sessions;
+    if (selectedActivityId === 'all') return sessions
     return sessions.filter(
-      s =>
-        s.activityId === selectedActivityId ||
-        s.projectId === selectedActivityId
-    );
-  }, [sessions, selectedActivityId]);
+      (s) => s.activityId === selectedActivityId || s.projectId === selectedActivityId
+    )
+  }, [sessions, selectedActivityId])
 
   // Update tab when URL changes
   useEffect(() => {
@@ -227,110 +205,95 @@ export default function ProfilePageContent({
       tabParam === 'followers' ||
       tabParam === 'following'
     ) {
-      setActiveTab(tabParam);
+      setActiveTab(tabParam)
     }
-  }, [tabParam]);
+  }, [tabParam])
 
   // Show error toast when profile fails to load
   useEffect(() => {
     if (error && profileError) {
     }
-  }, [error, profileError]);
+  }, [error, profileError])
 
   // Calculate chart data using useMemo to prevent infinite loop
   const chartData = useMemo(() => {
-    if (!filteredSessions) return [];
+    if (!filteredSessions) return []
 
-    const now = new Date();
-    const data: ChartDataPoint[] = [];
+    const now = new Date()
+    const data: ChartDataPoint[] = []
 
     if (timePeriod === '7D') {
       // Last 7 days
-      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
       for (let i = 6; i >= 0; i--) {
-        const day = new Date(now);
-        day.setDate(day.getDate() - i);
+        const day = new Date(now)
+        day.setDate(day.getDate() - i)
 
         const daySessions = filteredSessions.filter(
-          s => new Date(s.createdAt).toDateString() === day.toDateString()
-        );
-        const hoursWorked = daySessions.reduce(
-          (sum, s) => sum + s.duration / 3600,
-          0
-        );
+          (s) => new Date(s.createdAt).toDateString() === day.toDateString()
+        )
+        const hoursWorked = daySessions.reduce((sum, s) => sum + s.duration / 3600, 0)
         const avgDuration =
           daySessions.length > 0
-            ? daySessions.reduce((sum, s) => sum + s.duration, 0) /
-              daySessions.length /
-              60
-            : 0;
+            ? daySessions.reduce((sum, s) => sum + s.duration, 0) / daySessions.length / 60
+            : 0
 
-        const dayName = dayNames[day.getDay()] || 'Day';
+        const dayName = dayNames[day.getDay()] || 'Day'
         data.push({
           name: `${dayName.slice(0, 3)} ${day.getDate()}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration),
-        });
+        })
       }
     } else if (timePeriod === '2W') {
       // Last 14 days
-      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
       for (let i = 13; i >= 0; i--) {
-        const day = new Date(now);
-        day.setDate(day.getDate() - i);
+        const day = new Date(now)
+        day.setDate(day.getDate() - i)
 
         const daySessions = filteredSessions.filter(
-          s => new Date(s.createdAt).toDateString() === day.toDateString()
-        );
-        const hoursWorked = daySessions.reduce(
-          (sum, s) => sum + s.duration / 3600,
-          0
-        );
+          (s) => new Date(s.createdAt).toDateString() === day.toDateString()
+        )
+        const hoursWorked = daySessions.reduce((sum, s) => sum + s.duration / 3600, 0)
         const avgDuration =
           daySessions.length > 0
-            ? daySessions.reduce((sum, s) => sum + s.duration, 0) /
-              daySessions.length /
-              60
-            : 0;
+            ? daySessions.reduce((sum, s) => sum + s.duration, 0) / daySessions.length / 60
+            : 0
 
-        const dayName = dayNames[day.getDay()] || 'Day';
+        const dayName = dayNames[day.getDay()] || 'Day'
         data.push({
           name: `${dayName.slice(0, 3)} ${day.getDate()}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration),
-        });
+        })
       }
     } else if (timePeriod === '4W') {
       // Last 4 weeks
       for (let i = 3; i >= 0; i--) {
-        const weekStart = new Date(now);
-        weekStart.setDate(weekStart.getDate() - (i * 7 + 6));
-        const weekEnd = new Date(now);
-        weekEnd.setDate(weekEnd.getDate() - i * 7);
+        const weekStart = new Date(now)
+        weekStart.setDate(weekStart.getDate() - (i * 7 + 6))
+        const weekEnd = new Date(now)
+        weekEnd.setDate(weekEnd.getDate() - i * 7)
 
-        const weekSessions = filteredSessions.filter(s => {
-          const sessionDate = new Date(s.createdAt);
-          return sessionDate >= weekStart && sessionDate <= weekEnd;
-        });
-        const hoursWorked = weekSessions.reduce(
-          (sum, s) => sum + s.duration / 3600,
-          0
-        );
+        const weekSessions = filteredSessions.filter((s) => {
+          const sessionDate = new Date(s.createdAt)
+          return sessionDate >= weekStart && sessionDate <= weekEnd
+        })
+        const hoursWorked = weekSessions.reduce((sum, s) => sum + s.duration / 3600, 0)
         const avgDuration =
           weekSessions.length > 0
-            ? weekSessions.reduce((sum, s) => sum + s.duration, 0) /
-              weekSessions.length /
-              60
-            : 0;
+            ? weekSessions.reduce((sum, s) => sum + s.duration, 0) / weekSessions.length / 60
+            : 0
 
         data.push({
           name: `Week ${4 - i}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: weekSessions.length,
           avgDuration: Math.round(avgDuration),
-        });
+        })
       }
     } else if (timePeriod === '3M') {
       // Last 3 months
@@ -347,35 +310,30 @@ export default function ProfilePageContent({
         'Oct',
         'Nov',
         'Dec',
-      ];
+      ]
       for (let i = 2; i >= 0; i--) {
-        const month = new Date(now);
-        month.setMonth(month.getMonth() - i);
+        const month = new Date(now)
+        month.setMonth(month.getMonth() - i)
 
-        const monthSessions = filteredSessions.filter(s => {
-          const sessionDate = new Date(s.createdAt);
+        const monthSessions = filteredSessions.filter((s) => {
+          const sessionDate = new Date(s.createdAt)
           return (
             sessionDate.getMonth() === month.getMonth() &&
             sessionDate.getFullYear() === month.getFullYear()
-          );
-        });
-        const hoursWorked = monthSessions.reduce(
-          (sum, s) => sum + s.duration / 3600,
-          0
-        );
+          )
+        })
+        const hoursWorked = monthSessions.reduce((sum, s) => sum + s.duration / 3600, 0)
         const avgDuration =
           monthSessions.length > 0
-            ? monthSessions.reduce((sum, s) => sum + s.duration, 0) /
-              monthSessions.length /
-              60
-            : 0;
+            ? monthSessions.reduce((sum, s) => sum + s.duration, 0) / monthSessions.length / 60
+            : 0
 
         data.push({
           name: monthNames[month.getMonth()] || 'Month',
           hours: Number(hoursWorked.toFixed(2)),
           sessions: monthSessions.length,
           avgDuration: Math.round(avgDuration),
-        });
+        })
       }
     } else if (timePeriod === '1Y') {
       // Last 12 months
@@ -392,148 +350,118 @@ export default function ProfilePageContent({
         'Oct',
         'Nov',
         'Dec',
-      ];
+      ]
       for (let i = 11; i >= 0; i--) {
-        const month = new Date(now);
-        month.setMonth(month.getMonth() - i);
+        const month = new Date(now)
+        month.setMonth(month.getMonth() - i)
 
-        const monthSessions = filteredSessions.filter(s => {
-          const sessionDate = new Date(s.createdAt);
+        const monthSessions = filteredSessions.filter((s) => {
+          const sessionDate = new Date(s.createdAt)
           return (
             sessionDate.getMonth() === month.getMonth() &&
             sessionDate.getFullYear() === month.getFullYear()
-          );
-        });
-        const hoursWorked = monthSessions.reduce(
-          (sum, s) => sum + s.duration / 3600,
-          0
-        );
+          )
+        })
+        const hoursWorked = monthSessions.reduce((sum, s) => sum + s.duration / 3600, 0)
         const avgDuration =
           monthSessions.length > 0
-            ? monthSessions.reduce((sum, s) => sum + s.duration, 0) /
-              monthSessions.length /
-              60
-            : 0;
+            ? monthSessions.reduce((sum, s) => sum + s.duration, 0) / monthSessions.length / 60
+            : 0
 
         data.push({
           name: monthNames[month.getMonth()] || 'Month',
           hours: Number(hoursWorked.toFixed(2)),
           sessions: monthSessions.length,
           avgDuration: Math.round(avgDuration),
-        });
+        })
       }
     }
 
-    return data;
-  }, [filteredSessions, timePeriod]);
+    return data
+  }, [filteredSessions, timePeriod])
 
   // Calculate stats with percentage changes
   const calculatedStats = useMemo(() => {
-    const now = new Date();
+    const now = new Date()
 
     // Helper to get date range based on time period
     const getDateRange = (period: TimePeriod) => {
-      const end = new Date(now);
-      const start = new Date(now);
+      const end = new Date(now)
+      const start = new Date(now)
 
       switch (period) {
         case '7D':
-          start.setDate(now.getDate() - 7);
-          break;
+          start.setDate(now.getDate() - 7)
+          break
         case '2W':
-          start.setDate(now.getDate() - 14);
-          break;
+          start.setDate(now.getDate() - 14)
+          break
         case '4W':
-          start.setDate(now.getDate() - 28);
-          break;
+          start.setDate(now.getDate() - 28)
+          break
         case '3M':
-          start.setMonth(now.getMonth() - 3);
-          break;
+          start.setMonth(now.getMonth() - 3)
+          break
         case '1Y':
-          start.setFullYear(now.getFullYear() - 1);
-          break;
+          start.setFullYear(now.getFullYear() - 1)
+          break
       }
 
-      return { start, end };
-    };
+      return { start, end }
+    }
 
     // Get current and previous period ranges
-    const currentRange = getDateRange(timePeriod);
-    const previousStart = new Date(currentRange.start);
-    const periodLength =
-      currentRange.end.getTime() - currentRange.start.getTime();
-    previousStart.setTime(previousStart.getTime() - periodLength);
+    const currentRange = getDateRange(timePeriod)
+    const previousStart = new Date(currentRange.start)
+    const periodLength = currentRange.end.getTime() - currentRange.start.getTime()
+    previousStart.setTime(previousStart.getTime() - periodLength)
 
     // Filter sessions for current period
-    const currentPeriodSessions = filteredSessions.filter(s => {
-      const sessionDate = new Date(s.createdAt);
-      return (
-        sessionDate >= currentRange.start && sessionDate <= currentRange.end
-      );
-    });
+    const currentPeriodSessions = filteredSessions.filter((s) => {
+      const sessionDate = new Date(s.createdAt)
+      return sessionDate >= currentRange.start && sessionDate <= currentRange.end
+    })
 
     // Filter sessions for previous period
-    const previousPeriodSessions = filteredSessions.filter(s => {
-      const sessionDate = new Date(s.createdAt);
-      return sessionDate >= previousStart && sessionDate < currentRange.start;
-    });
+    const previousPeriodSessions = filteredSessions.filter((s) => {
+      const sessionDate = new Date(s.createdAt)
+      return sessionDate >= previousStart && sessionDate < currentRange.start
+    })
 
     // Calculate current period stats
-    const currentHours = currentPeriodSessions.reduce(
-      (sum, s) => sum + s.duration / 3600,
-      0
-    );
-    const currentSessionCount = currentPeriodSessions.length;
+    const currentHours = currentPeriodSessions.reduce((sum, s) => sum + s.duration / 3600, 0)
+    const currentSessionCount = currentPeriodSessions.length
     const currentAvgDuration =
       currentSessionCount > 0
-        ? currentPeriodSessions.reduce((sum, s) => sum + s.duration, 0) /
-          currentSessionCount /
-          60
-        : 0;
+        ? currentPeriodSessions.reduce((sum, s) => sum + s.duration, 0) / currentSessionCount / 60
+        : 0
 
     const currentActiveDays = new Set(
-      currentPeriodSessions.map(s => new Date(s.createdAt).toDateString())
-    ).size;
+      currentPeriodSessions.map((s) => new Date(s.createdAt).toDateString())
+    ).size
 
     // Calculate previous period stats
-    const previousHours = previousPeriodSessions.reduce(
-      (sum, s) => sum + s.duration / 3600,
-      0
-    );
-    const previousSessionCount = previousPeriodSessions.length;
+    const previousHours = previousPeriodSessions.reduce((sum, s) => sum + s.duration / 3600, 0)
+    const previousSessionCount = previousPeriodSessions.length
     const previousAvgDuration =
       previousSessionCount > 0
-        ? previousPeriodSessions.reduce((sum, s) => sum + s.duration, 0) /
-          previousSessionCount /
-          60
-        : 0;
+        ? previousPeriodSessions.reduce((sum, s) => sum + s.duration, 0) / previousSessionCount / 60
+        : 0
 
     const previousActiveDays = new Set(
-      previousPeriodSessions.map(s => new Date(s.createdAt).toDateString())
-    ).size;
+      previousPeriodSessions.map((s) => new Date(s.createdAt).toDateString())
+    ).size
 
     // Calculate percentage changes
-    const calculateChange = (
-      current: number,
-      previous: number
-    ): number | null => {
-      if (previous === 0) return null; // No previous data
-      return ((current - previous) / previous) * 100;
-    };
+    const calculateChange = (current: number, previous: number): number | null => {
+      if (previous === 0) return null // No previous data
+      return ((current - previous) / previous) * 100
+    }
 
-    const hoursChange = calculateChange(currentHours, previousHours);
-    const sessionsChange = calculateChange(
-      currentSessionCount,
-      previousSessionCount
-    );
-    const avgDurationChange = calculateChange(
-      currentAvgDuration,
-      previousAvgDuration
-    );
-    const activeDaysChange = calculateChange(
-      currentActiveDays,
-      previousActiveDays
-    );
+    const hoursChange = calculateChange(currentHours, previousHours)
+    const sessionsChange = calculateChange(currentSessionCount, previousSessionCount)
+    const avgDurationChange = calculateChange(currentAvgDuration, previousAvgDuration)
+    const activeDaysChange = calculateChange(currentActiveDays, previousActiveDays)
 
     return {
       totalHours: currentHours,
@@ -551,29 +479,27 @@ export default function ProfilePageContent({
       activeDaysChange,
       activitiesChange: null, // Activities count doesn't have time-based comparison
       streakChange: null, // Streaks don't have meaningful percentage changes
-    };
-  }, [filteredSessions, stats, activities, timePeriod]);
+    }
+  }, [filteredSessions, stats, activities, timePeriod])
 
   // Average duration over time data - extract from chartData
   const avgDurationData = useMemo(() => {
-    return chartData.map(d => ({ name: d.name, value: d.avgDuration }));
-  }, [chartData]);
+    return chartData.map((d) => ({ name: d.name, value: d.avgDuration }))
+  }, [chartData])
 
   // Helper to render percentage change
   const renderPercentageChange = (change: number | null) => {
-    if (change === null) return null;
+    if (change === null) return null
 
-    const isPositive = change >= 0;
-    const formattedChange = Math.abs(change).toFixed(0);
+    const isPositive = change >= 0
+    const formattedChange = Math.abs(change).toFixed(0)
 
     return (
-      <div
-        className={`text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}
-      >
+      <div className={`text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
         {isPositive ? '↑' : '↓'} {formattedChange}%
       </div>
-    );
-  };
+    )
+  }
 
   // Custom tooltip formatter
   const CustomTooltip = ({
@@ -581,9 +507,9 @@ export default function ProfilePageContent({
     payload,
     label,
   }: {
-    active?: boolean;
-    payload?: Array<{ name: string; value: number; color: string }>;
-    label?: string;
+    active?: boolean
+    payload?: Array<{ name: string; value: number; color: string }>
+    label?: string
   }) => {
     if (active && payload && payload.length) {
       return (
@@ -595,10 +521,10 @@ export default function ProfilePageContent({
             </p>
           ))}
         </div>
-      );
+      )
     }
-    return null;
-  };
+    return null
+  }
 
   if (isLoading) {
     return (
@@ -613,7 +539,7 @@ export default function ProfilePageContent({
                 <div className="h-4 bg-muted rounded w-1/4" />
                 <div className="h-4 bg-muted rounded w-1/2" />
                 <div className="grid grid-cols-3 gap-4 mt-6">
-                  {[1, 2, 3].map(i => (
+                  {[1, 2, 3].map((i) => (
                     <div key={i} className="text-center">
                       <div className="h-6 bg-muted rounded w-16 mx-auto mb-2" />
                       <div className="h-4 bg-muted rounded w-20 mx-auto" />
@@ -627,7 +553,7 @@ export default function ProfilePageContent({
           {/* Loading skeleton for tabs */}
           <div className="border-b border-border animate-pulse">
             <div className="flex space-x-1">
-              {[1, 2, 3, 4].map(i => (
+              {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="h-10 bg-muted rounded w-24" />
               ))}
             </div>
@@ -643,7 +569,7 @@ export default function ProfilePageContent({
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   if (error || !profile) {
@@ -654,8 +580,7 @@ export default function ProfilePageContent({
           <h1 className="text-2xl font-bold text-foreground mb-2">
             {error === 'User not found' && 'User Not Found'}
             {error === 'This profile is private' && 'Private Profile'}
-            {error === 'This profile is only visible to followers' &&
-              'Followers Only'}
+            {error === 'This profile is only visible to followers' && 'Followers Only'}
             {error &&
               ![
                 'User not found',
@@ -665,8 +590,7 @@ export default function ProfilePageContent({
               'Error Loading Profile'}
           </h1>
           <p className="text-muted-foreground mb-6">
-            {error === 'User not found' &&
-              `The user "${username}" doesn't exist.`}
+            {error === 'User not found' && `The user "${username}" doesn't exist.`}
             {error === 'This profile is private' &&
               `@${username}'s profile is private. Only they can view their profile.`}
             {error === 'This profile is only visible to followers' &&
@@ -684,7 +608,7 @@ export default function ProfilePageContent({
           </Button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -717,9 +641,7 @@ export default function ProfilePageContent({
                 )}
 
                 {/* Name and Username */}
-                <h1 className="text-lg md:text-2xl font-bold text-gray-900">
-                  {profile.name}
-                </h1>
+                <h1 className="text-lg md:text-2xl font-bold text-gray-900">{profile.name}</h1>
                 <p className="text-gray-600 text-sm md:text-base mb-2 md:mb-3">
                   @{profile.username}
                 </p>
@@ -734,10 +656,7 @@ export default function ProfilePageContent({
                 {/* Location */}
                 {profile.location && (
                   <p className="text-gray-500 text-xs md:text-sm mb-3 md:mb-4 flex items-center gap-1">
-                    <MapPin
-                      className="w-3 h-3 md:w-4 md:h-4"
-                      aria-hidden="true"
-                    />
+                    <MapPin className="w-3 h-3 md:w-4 md:h-4" aria-hidden="true" />
                     {profile.location}
                   </p>
                 )}
@@ -751,28 +670,24 @@ export default function ProfilePageContent({
                           await unfollowUserMutation.mutateAsync({
                             currentUserId: currentUser.id,
                             targetUserId: profile.id,
-                          });
+                          })
                         } else {
                           await followUserMutation.mutateAsync({
                             currentUserId: currentUser.id,
                             targetUserId: profile.id,
-                          });
+                          })
                         }
                         // Automatic cache invalidation handled by mutations
                       } catch {}
                     }}
-                    disabled={
-                      followUserMutation.isPending ||
-                      unfollowUserMutation.isPending
-                    }
+                    disabled={followUserMutation.isPending || unfollowUserMutation.isPending}
                     className={`inline-flex items-center gap-2 mb-3 md:mb-4 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-colors font-semibold text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
                       isFollowing
                         ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         : 'bg-[#0066CC] text-white hover:bg-[#0051D5]'
                     }`}
                   >
-                    {followUserMutation.isPending ||
-                    unfollowUserMutation.isPending
+                    {followUserMutation.isPending || unfollowUserMutation.isPending
                       ? 'Loading...'
                       : isFollowing
                         ? 'Following'
@@ -784,93 +699,29 @@ export default function ProfilePageContent({
                 <div className="flex gap-4 md:gap-6 mb-4 md:mb-0">
                   <button
                     onClick={() => {
-                      setActiveTab('followers');
-                      router.push(`/profile/${username}?tab=followers`);
+                      setActiveTab('followers')
+                      router.push(`/profile/${username}?tab=followers`)
                     }}
                     className="hover:underline"
                   >
                     <span className="font-bold text-gray-900 text-sm md:text-base">
                       {followers.length}
                     </span>{' '}
-                    <span className="text-gray-600 text-xs md:text-sm">
-                      Followers
-                    </span>
+                    <span className="text-gray-600 text-xs md:text-sm">Followers</span>
                   </button>
                   <button
                     onClick={() => {
-                      setActiveTab('following');
-                      router.push(`/profile/${username}?tab=following`);
+                      setActiveTab('following')
+                      router.push(`/profile/${username}?tab=following`)
                     }}
                     className="hover:underline"
                   >
                     <span className="font-bold text-gray-900 text-sm md:text-base">
                       {following.length}
                     </span>{' '}
-                    <span className="text-gray-600 text-xs md:text-sm">
-                      Following
-                    </span>
+                    <span className="text-gray-600 text-xs md:text-sm">Following</span>
                   </button>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Tabs */}
-          <div className="bg-white md:bg-gray-50 -mx-4 md:mx-0">
-            <div className="bg-white md:bg-gray-50 border-b border-gray-200">
-              <div className="flex md:gap-8 px-4 md:px-0 overflow-x-auto scrollbar-hide">
-                <button
-                  onClick={() => {
-                    setActiveTab('progress');
-                    router.push(`/profile/${username}?tab=progress`);
-                  }}
-                  className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
-                    activeTab === 'progress'
-                      ? 'border-[#0066CC] text-[#0066CC]'
-                      : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
-                  }`}
-                >
-                  Progress
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveTab('sessions');
-                    router.push(`/profile/${username}?tab=sessions`);
-                  }}
-                  className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
-                    activeTab === 'sessions'
-                      ? 'border-[#0066CC] text-[#0066CC]'
-                      : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
-                  }`}
-                >
-                  Sessions
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveTab('followers');
-                    router.push(`/profile/${username}?tab=followers`);
-                  }}
-                  className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
-                    activeTab === 'followers'
-                      ? 'border-[#0066CC] text-[#0066CC]'
-                      : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
-                  }`}
-                >
-                  Followers
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveTab('following');
-                    router.push(`/profile/${username}?tab=following`);
-                  }}
-                  className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
-                    activeTab === 'following'
-                      ? 'border-[#0066CC] text-[#0066CC]'
-                      : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
-                  }`}
-                >
-                  Following
-                </button>
               </div>
             </div>
           </div>
@@ -886,16 +737,14 @@ export default function ProfilePageContent({
                     {/* Activity Selector */}
                     <div className="relative flex-shrink-0">
                       <button
-                        onClick={() =>
-                          setShowActivityDropdown(!showActivityDropdown)
-                        }
+                        onClick={() => setShowActivityDropdown(!showActivityDropdown)}
                         className="flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 min-w-[140px] max-w-[200px]"
                       >
                         <span className="truncate">
                           {selectedActivityId === 'all'
                             ? 'All activities'
-                            : activities?.find(p => p.id === selectedActivityId)
-                                ?.name || 'All activities'}
+                            : activities?.find((p) => p.id === selectedActivityId)?.name ||
+                              'All activities'}
                         </span>
                         <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
                       </button>
@@ -908,8 +757,8 @@ export default function ProfilePageContent({
                           <div className="absolute left-0 top-full mt-2 w-full max-w-xs bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
                             <button
                               onClick={() => {
-                                setSelectedActivityId('all');
-                                setShowActivityDropdown(false);
+                                setSelectedActivityId('all')
+                                setShowActivityDropdown(false)
                               }}
                               className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedActivityId === 'all' ? 'bg-blue-50 text-blue-600' : ''}`}
                             >
@@ -920,12 +769,12 @@ export default function ProfilePageContent({
                                 No activities yet
                               </div>
                             )}
-                            {activities?.map(activity => (
+                            {activities?.map((activity) => (
                               <button
                                 key={activity.id}
                                 onClick={() => {
-                                  setSelectedActivityId(activity.id);
-                                  setShowActivityDropdown(false);
+                                  setSelectedActivityId(activity.id)
+                                  setShowActivityDropdown(false)
                                 }}
                                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-3 ${selectedActivityId === activity.id ? 'bg-blue-50 text-blue-600' : ''}`}
                               >
@@ -935,13 +784,9 @@ export default function ProfilePageContent({
                                     backgroundColor: activity.color + '20',
                                   }}
                                 >
-                                  <span style={{ color: activity.color }}>
-                                    ●
-                                  </span>
+                                  <span style={{ color: activity.color }}>●</span>
                                 </div>
-                                <span className="truncate">
-                                  {activity.name}
-                                </span>
+                                <span className="truncate">{activity.name}</span>
                               </button>
                             ))}
                           </div>
@@ -952,9 +797,7 @@ export default function ProfilePageContent({
                     {/* Chart Type Selector */}
                     <div className="relative flex-shrink-0">
                       <button
-                        onClick={() =>
-                          setShowChartTypeDropdown(!showChartTypeDropdown)
-                        }
+                        onClick={() => setShowChartTypeDropdown(!showChartTypeDropdown)}
                         className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50"
                       >
                         <svg
@@ -965,20 +808,8 @@ export default function ProfilePageContent({
                           {chartType === 'bar' ? (
                             <>
                               <rect x="2" y="8" width="3" height="6" rx="0.5" />
-                              <rect
-                                x="6.5"
-                                y="4"
-                                width="3"
-                                height="10"
-                                rx="0.5"
-                              />
-                              <rect
-                                x="11"
-                                y="6"
-                                width="3"
-                                height="8"
-                                rx="0.5"
-                              />
+                              <rect x="6.5" y="4" width="3" height="10" rx="0.5" />
+                              <rect x="11" y="6" width="3" height="8" rx="0.5" />
                             </>
                           ) : (
                             <path
@@ -1003,44 +834,22 @@ export default function ProfilePageContent({
                           <div className="absolute right-0 top-full mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                             <button
                               onClick={() => {
-                                setChartType('bar');
-                                setShowChartTypeDropdown(false);
+                                setChartType('bar')
+                                setShowChartTypeDropdown(false)
                               }}
                               className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${chartType === 'bar' ? 'bg-blue-50 text-blue-600' : ''}`}
                             >
-                              <svg
-                                className="w-4 h-4"
-                                viewBox="0 0 16 16"
-                                fill="currentColor"
-                              >
-                                <rect
-                                  x="2"
-                                  y="8"
-                                  width="3"
-                                  height="6"
-                                  rx="0.5"
-                                />
-                                <rect
-                                  x="6.5"
-                                  y="4"
-                                  width="3"
-                                  height="10"
-                                  rx="0.5"
-                                />
-                                <rect
-                                  x="11"
-                                  y="6"
-                                  width="3"
-                                  height="8"
-                                  rx="0.5"
-                                />
+                              <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
+                                <rect x="2" y="8" width="3" height="6" rx="0.5" />
+                                <rect x="6.5" y="4" width="3" height="10" rx="0.5" />
+                                <rect x="11" y="6" width="3" height="8" rx="0.5" />
                               </svg>
                               Bar
                             </button>
                             <button
                               onClick={() => {
-                                setChartType('line');
-                                setShowChartTypeDropdown(false);
+                                setChartType('line')
+                                setShowChartTypeDropdown(false)
                               }}
                               className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${chartType === 'line' ? 'bg-blue-50 text-blue-600' : ''}`}
                             >
@@ -1067,21 +876,19 @@ export default function ProfilePageContent({
 
                   {/* Row 2: Time Period Buttons - Scrollable on mobile */}
                   <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-                    {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map(
-                      period => (
-                        <button
-                          key={period}
-                          onClick={() => setTimePeriod(period)}
-                          className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors ${
-                            timePeriod === period
-                              ? 'bg-gray-900 text-white'
-                              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-                          }`}
-                        >
-                          {period}
-                        </button>
-                      )
-                    )}
+                    {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
+                      <button
+                        key={period}
+                        onClick={() => setTimePeriod(period)}
+                        className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors ${
+                          timePeriod === period
+                            ? 'bg-gray-900 text-white'
+                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                        }`}
+                      >
+                        {period}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -1089,9 +896,7 @@ export default function ProfilePageContent({
                   {/* Main Chart */}
                   <div className="bg-white border border-gray-200 rounded-xl p-6">
                     <div className="mb-4">
-                      <h3 className="font-semibold text-gray-900">
-                        Hours completed
-                      </h3>
+                      <h3 className="font-semibold text-gray-900">Hours completed</h3>
                     </div>
                     <div className="h-72">
                       {isLoading ? (
@@ -1139,23 +944,9 @@ export default function ProfilePageContent({
                               }}
                             >
                               <defs>
-                                <linearGradient
-                                  id="colorHours"
-                                  x1="0"
-                                  y1="0"
-                                  x2="0"
-                                  y2="1"
-                                >
-                                  <stop
-                                    offset="5%"
-                                    stopColor="#0066CC"
-                                    stopOpacity={0.3}
-                                  />
-                                  <stop
-                                    offset="95%"
-                                    stopColor="#0066CC"
-                                    stopOpacity={0}
-                                  />
+                                <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#0066CC" stopOpacity={0.3} />
+                                  <stop offset="95%" stopColor="#0066CC" stopOpacity={0} />
                                 </linearGradient>
                               </defs>
                               <XAxis
@@ -1191,9 +982,7 @@ export default function ProfilePageContent({
                     {/* Average Session Duration */}
                     <div className="bg-white border border-gray-200 rounded-xl p-6">
                       <div className="mb-4">
-                        <h3 className="font-semibold text-gray-900">
-                          Average session duration
-                        </h3>
+                        <h3 className="font-semibold text-gray-900">Average session duration</h3>
                       </div>
                       <div className="h-48">
                         <ResponsiveContainer width="100%" height="100%">
@@ -1237,23 +1026,9 @@ export default function ProfilePageContent({
                               }}
                             >
                               <defs>
-                                <linearGradient
-                                  id="colorAvgDuration"
-                                  x1="0"
-                                  y1="0"
-                                  x2="0"
-                                  y2="1"
-                                >
-                                  <stop
-                                    offset="5%"
-                                    stopColor="#34C759"
-                                    stopOpacity={0.3}
-                                  />
-                                  <stop
-                                    offset="95%"
-                                    stopColor="#34C759"
-                                    stopOpacity={0}
-                                  />
+                                <linearGradient id="colorAvgDuration" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#34C759" stopOpacity={0.3} />
+                                  <stop offset="95%" stopColor="#34C759" stopOpacity={0} />
                                 </linearGradient>
                               </defs>
                               <XAxis
@@ -1285,9 +1060,7 @@ export default function ProfilePageContent({
                     {/* Sessions */}
                     <div className="bg-white border border-gray-200 rounded-xl p-6">
                       <div className="mb-4">
-                        <h3 className="font-semibold text-gray-900">
-                          Sessions completed
-                        </h3>
+                        <h3 className="font-semibold text-gray-900">Sessions completed</h3>
                       </div>
                       <div className="h-48">
                         <ResponsiveContainer width="100%" height="100%">
@@ -1331,23 +1104,9 @@ export default function ProfilePageContent({
                               }}
                             >
                               <defs>
-                                <linearGradient
-                                  id="colorSessionsSmall"
-                                  x1="0"
-                                  y1="0"
-                                  x2="0"
-                                  y2="1"
-                                >
-                                  <stop
-                                    offset="5%"
-                                    stopColor="#34C759"
-                                    stopOpacity={0.3}
-                                  />
-                                  <stop
-                                    offset="95%"
-                                    stopColor="#34C759"
-                                    stopOpacity={0}
-                                  />
+                                <linearGradient id="colorSessionsSmall" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#34C759" stopOpacity={0.3} />
+                                  <stop offset="95%" stopColor="#34C759" stopOpacity={0} />
                                 </linearGradient>
                               </defs>
                               <XAxis
@@ -1393,21 +1152,15 @@ export default function ProfilePageContent({
                       <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
                         Avg Duration
                       </div>
-                      <div className="text-2xl font-bold mb-1">
-                        {calculatedStats.avgDuration}m
-                      </div>
-                      {renderPercentageChange(
-                        calculatedStats.avgDurationChange
-                      )}
+                      <div className="text-2xl font-bold mb-1">{calculatedStats.avgDuration}m</div>
+                      {renderPercentageChange(calculatedStats.avgDurationChange)}
                     </div>
 
                     <div className="bg-white border border-gray-200 rounded-xl p-4">
                       <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
                         Sessions
                       </div>
-                      <div className="text-2xl font-bold mb-1">
-                        {calculatedStats.sessions}
-                      </div>
+                      <div className="text-2xl font-bold mb-1">{calculatedStats.sessions}</div>
                       {renderPercentageChange(calculatedStats.sessionsChange)}
                     </div>
 
@@ -1415,9 +1168,7 @@ export default function ProfilePageContent({
                       <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
                         Active Days
                       </div>
-                      <div className="text-2xl font-bold mb-1">
-                        {calculatedStats.activeDays}
-                      </div>
+                      <div className="text-2xl font-bold mb-1">{calculatedStats.activeDays}</div>
                       {renderPercentageChange(calculatedStats.activeDaysChange)}
                     </div>
 
@@ -1425,9 +1176,7 @@ export default function ProfilePageContent({
                       <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
                         Activities
                       </div>
-                      <div className="text-2xl font-bold mb-1">
-                        {calculatedStats.activities}
-                      </div>
+                      <div className="text-2xl font-bold mb-1">{calculatedStats.activities}</div>
                       {renderPercentageChange(calculatedStats.activitiesChange)}
                     </div>
                   </div>
@@ -1438,9 +1187,7 @@ export default function ProfilePageContent({
                       <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
                         Current Streak
                       </div>
-                      <div className="text-2xl font-bold mb-1">
-                        {calculatedStats.currentStreak}
-                      </div>
+                      <div className="text-2xl font-bold mb-1">{calculatedStats.currentStreak}</div>
                       {renderPercentageChange(calculatedStats.streakChange)}
                     </div>
 
@@ -1448,9 +1195,7 @@ export default function ProfilePageContent({
                       <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
                         Longest Streak
                       </div>
-                      <div className="text-2xl font-bold mb-1">
-                        {calculatedStats.longestStreak}
-                      </div>
+                      <div className="text-2xl font-bold mb-1">{calculatedStats.longestStreak}</div>
                       {renderPercentageChange(calculatedStats.streakChange)}
                     </div>
                   </div>
@@ -1460,10 +1205,7 @@ export default function ProfilePageContent({
 
             {activeTab === 'sessions' && (
               <div className="max-w-4xl mx-auto">
-                <Feed
-                  filters={{ type: 'user', userId: profile.id }}
-                  showEndMessage={true}
-                />
+                <Feed filters={{ type: 'user', userId: profile.id }} showEndMessage={true} />
               </div>
             )}
 
@@ -1482,5 +1224,5 @@ export default function ProfilePageContent({
         </div>
       </div>
     </div>
-  );
+  )
 }

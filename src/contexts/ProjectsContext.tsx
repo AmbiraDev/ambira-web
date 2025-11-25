@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 /**
  * DEPRECATED: Context API has been migrated to React Query hooks
@@ -16,7 +16,4 @@
  */
 
 // Re-export the hooks for backward compatibility
-export {
-  useActivities as useProjects,
-  useActivity as useProject,
-} from '@/hooks/useActivitiesQuery';
+export { useActivities as useProjects, useActivity as useProject } from '@/hooks/useActivitiesQuery'

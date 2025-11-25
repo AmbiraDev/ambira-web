@@ -1,20 +1,14 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { MessageSquare, Users, Trophy, Target, BarChart3 } from 'lucide-react';
+import React from 'react'
+import { MessageSquare, Users, Trophy, Target, BarChart3 } from 'lucide-react'
 
-export type GroupTab =
-  | 'posts'
-  | 'members'
-  | 'challenges'
-  | 'leaderboard'
-  | 'analytics'
-  | 'about';
+export type GroupTab = 'posts' | 'members' | 'challenges' | 'leaderboard' | 'analytics' | 'about'
 
 interface GroupTabsProps {
-  activeTab: GroupTab;
-  onTabChange: (tab: GroupTab) => void;
-  memberCount: number;
+  activeTab: GroupTab
+  onTabChange: (tab: GroupTab) => void
+  memberCount: number
 }
 
 const tabConfig = {
@@ -48,30 +42,20 @@ const tabConfig = {
     icon: MessageSquare,
     description: 'Group information and details',
   },
-};
+}
 
-export default function GroupTabs({
-  activeTab,
-  onTabChange,
-  memberCount,
-}: GroupTabsProps) {
-  const tabs = Object.entries(tabConfig) as [
-    GroupTab,
-    (typeof tabConfig)[GroupTab],
-  ][];
+export default function GroupTabs({ activeTab, onTabChange, memberCount }: GroupTabsProps) {
+  const tabs = Object.entries(tabConfig) as [GroupTab, (typeof tabConfig)[GroupTab]][]
 
   return (
     <div className="sticky top-12 md:top-0 bg-white border-b border-gray-200 z-30">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
         {/* Tabs - Responsive */}
         <div className="flex md:gap-8">
-          <nav
-            className="flex md:space-x-8 overflow-x-auto scrollbar-hide"
-            aria-label="Group tabs"
-          >
+          <nav className="flex md:space-x-8 overflow-x-auto scrollbar-hide" aria-label="Group tabs">
             {tabs.map(([tabKey, config]) => {
-              const Icon = config.icon;
-              const isActive = activeTab === tabKey;
+              const Icon = config.icon
+              const isActive = activeTab === tabKey
 
               return (
                 <button
@@ -94,11 +78,11 @@ export default function GroupTabs({
                     </span>
                   )}
                 </button>
-              );
+              )
             })}
           </nav>
         </div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,62 +1,58 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { UserSearchResult, SuggestedUser } from '@/types';
-import { firebaseUserApi } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { UserPlus, Check, Users, MapPin } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { UserSearchResult, SuggestedUser } from '@/types'
+import { firebaseUserApi } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { UserPlus, Check, Users, MapPin } from 'lucide-react'
 
 interface UserCardProps {
-  user: UserSearchResult | SuggestedUser;
-  variant?: 'search' | 'suggestion' | 'follower' | 'following';
-  onFollowChange?: (userId: string, isFollowing: boolean) => void;
+  user: UserSearchResult | SuggestedUser
+  variant?: 'search' | 'suggestion' | 'follower' | 'following'
+  onFollowChange?: (userId: string, isFollowing: boolean) => void
 }
 
-export const UserCard: React.FC<UserCardProps> = ({
-  user,
-  variant = 'search',
-  onFollowChange,
-}) => {
-  const { user: currentUser } = useAuth();
-  const [isFollowing, setIsFollowing] = useState(user.isFollowing || false);
-  const [isLoading, setIsLoading] = useState(false);
+export const UserCard: React.FC<UserCardProps> = ({ user, variant = 'search', onFollowChange }) => {
+  const { user: currentUser } = useAuth()
+  const [isFollowing, setIsFollowing] = useState(user.isFollowing || false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const isOwnProfile = currentUser?.id === user.id;
-  const canFollow = !isOwnProfile && currentUser && variant !== 'follower';
+  const isOwnProfile = currentUser?.id === user.id
+  const canFollow = !isOwnProfile && currentUser && variant !== 'follower'
 
   const handleFollow = async (e?: React.MouseEvent) => {
     // Prevent navigation when clicking follow button
-    e?.preventDefault();
-    e?.stopPropagation();
+    e?.preventDefault()
+    e?.stopPropagation()
 
-    if (!canFollow) return;
+    if (!canFollow) return
 
-    const newFollowingState = !isFollowing;
+    const newFollowingState = !isFollowing
 
     // Optimistic update - update UI immediately
-    setIsFollowing(newFollowingState);
-    onFollowChange?.(user.id, newFollowingState);
+    setIsFollowing(newFollowingState)
+    onFollowChange?.(user.id, newFollowingState)
 
     try {
-      setIsLoading(true);
+      setIsLoading(true)
 
       if (isFollowing) {
-        await firebaseUserApi.unfollowUser(user.id);
+        await firebaseUserApi.unfollowUser(user.id)
       } else {
-        await firebaseUserApi.followUser(user.id);
+        await firebaseUserApi.followUser(user.id)
       }
     } catch {
       // Revert on error
-      setIsFollowing(!newFollowingState);
-      onFollowChange?.(user.id, !newFollowingState);
+      setIsFollowing(!newFollowingState)
+      onFollowChange?.(user.id, !newFollowingState)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const getReasonBadge = (reason: string) => {
     const reasonMap: Record<
@@ -68,23 +64,23 @@ export const UserCard: React.FC<UserCardProps> = ({
       popular_user: { label: 'Popular user', variant: 'outline' },
       location_based: { label: 'Near you', variant: 'secondary' },
       activity_based: { label: 'Similar activity', variant: 'default' },
-    };
+    }
 
-    return reasonMap[reason] || { label: reason, variant: 'outline' };
-  };
+    return reasonMap[reason] || { label: reason, variant: 'outline' }
+  }
 
   const formatFollowerCount = (count: number): string => {
     if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M`;
+      return `${(count / 1000000).toFixed(1)}M`
     }
     if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}K`;
+      return `${(count / 1000).toFixed(1)}K`
     }
-    return count.toString();
-  };
+    return count.toString()
+  }
 
   // Use clean list style for search variant (like suggested friends)
-  const isSearchVariant = variant === 'search';
+  const isSearchVariant = variant === 'search'
 
   return (
     <div
@@ -99,7 +95,7 @@ export const UserCard: React.FC<UserCardProps> = ({
         <Link
           href={`/profile/${user.username}`}
           className="flex-shrink-0"
-          onClick={e => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
         >
           {user.profilePicture ? (
             <Image
@@ -121,10 +117,7 @@ export const UserCard: React.FC<UserCardProps> = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between">
             <div className="min-w-0 flex-1">
-              <Link
-                href={`/profile/${user.username}`}
-                onClick={e => e.stopPropagation()}
-              >
+              <Link href={`/profile/${user.username}`} onClick={(e) => e.stopPropagation()}>
                 <h3
                   className={
                     isSearchVariant
@@ -146,9 +139,7 @@ export const UserCard: React.FC<UserCardProps> = ({
               </p>
 
               {user.bio && !isSearchVariant && (
-                <p className="text-sm text-foreground mt-1 line-clamp-2">
-                  {user.bio}
-                </p>
+                <p className="text-sm text-foreground mt-1 line-clamp-2">{user.bio}</p>
               )}
 
               {/* Stats and badges */}
@@ -156,17 +147,12 @@ export const UserCard: React.FC<UserCardProps> = ({
                 <div className="flex items-center gap-3 mt-2">
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Users className="w-3 h-3" />
-                    <span>
-                      {formatFollowerCount(user.followersCount)} followers
-                    </span>
+                    <span>{formatFollowerCount(user.followersCount)} followers</span>
                   </div>
 
                   {/* Suggestion reason */}
                   {'reason' in user && user.reason ? (
-                    <Badge
-                      variant={getReasonBadge(user.reason).variant}
-                      className="text-xs"
-                    >
+                    <Badge variant={getReasonBadge(user.reason).variant} className="text-xs">
                       {getReasonBadge(user.reason).label}
                     </Badge>
                   ) : null}
@@ -226,8 +212,8 @@ export const UserCard: React.FC<UserCardProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
 // Compact version for lists
 export const UserCardCompact: React.FC<UserCardProps> = ({
@@ -235,54 +221,51 @@ export const UserCardCompact: React.FC<UserCardProps> = ({
   variant = 'search',
   onFollowChange,
 }) => {
-  const { user: currentUser } = useAuth();
-  const [isFollowing, setIsFollowing] = useState(user.isFollowing || false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { user: currentUser } = useAuth()
+  const [isFollowing, setIsFollowing] = useState(user.isFollowing || false)
+  const [isLoading, setIsLoading] = useState(false)
 
   // Sync state when user.isFollowing prop changes
   useEffect(() => {
-    setIsFollowing(user.isFollowing || false);
-  }, [user.isFollowing]);
+    setIsFollowing(user.isFollowing || false)
+  }, [user.isFollowing])
 
-  const isOwnProfile = currentUser?.id === user.id;
-  const canFollow = !isOwnProfile && currentUser && variant !== 'follower';
+  const isOwnProfile = currentUser?.id === user.id
+  const canFollow = !isOwnProfile && currentUser && variant !== 'follower'
 
   const handleFollow = async (e?: React.MouseEvent) => {
     // Prevent navigation when clicking follow button
-    e?.preventDefault();
-    e?.stopPropagation();
+    e?.preventDefault()
+    e?.stopPropagation()
 
-    if (!canFollow) return;
+    if (!canFollow) return
 
-    const newFollowingState = !isFollowing;
+    const newFollowingState = !isFollowing
 
     // Optimistic update - update UI immediately
-    setIsFollowing(newFollowingState);
-    onFollowChange?.(user.id, newFollowingState);
+    setIsFollowing(newFollowingState)
+    onFollowChange?.(user.id, newFollowingState)
 
     try {
-      setIsLoading(true);
+      setIsLoading(true)
 
       if (isFollowing) {
-        await firebaseUserApi.unfollowUser(user.id);
+        await firebaseUserApi.unfollowUser(user.id)
       } else {
-        await firebaseUserApi.followUser(user.id);
+        await firebaseUserApi.followUser(user.id)
       }
     } catch {
       // Revert on error
-      setIsFollowing(!newFollowingState);
-      onFollowChange?.(user.id, !newFollowingState);
+      setIsFollowing(!newFollowingState)
+      onFollowChange?.(user.id, !newFollowingState)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors">
-      <Link
-        href={`/profile/${user.username}`}
-        className="flex items-center gap-3 flex-1 min-w-0"
-      >
+      <Link href={`/profile/${user.username}`} className="flex items-center gap-3 flex-1 min-w-0">
         {/* Avatar */}
         {user.profilePicture ? (
           <Image
@@ -302,9 +285,7 @@ export const UserCardCompact: React.FC<UserCardProps> = ({
         {/* User Info */}
         <div className="min-w-0 flex-1">
           <h4 className="font-medium text-foreground truncate">{user.name}</h4>
-          <p className="text-sm text-muted-foreground truncate">
-            @{user.username}
-          </p>
+          <p className="text-sm text-muted-foreground truncate">@{user.username}</p>
         </div>
       </Link>
 
@@ -327,5 +308,5 @@ export const UserCardCompact: React.FC<UserCardProps> = ({
         </Button>
       )}
     </div>
-  );
-};
+  )
+}

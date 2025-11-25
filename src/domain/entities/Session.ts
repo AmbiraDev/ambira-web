@@ -5,32 +5,32 @@
  * Sessions ARE the primary content type (like Strava activities).
  */
 
-export type SessionVisibility = 'everyone' | 'followers' | 'private';
+export type SessionVisibility = 'everyone' | 'followers' | 'private'
 
 // User data for populated sessions
 export interface SessionUser {
-  id: string;
-  email: string;
-  name: string;
-  username: string;
-  bio?: string;
-  profilePicture?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  id: string
+  email: string
+  name: string
+  username: string
+  bio?: string
+  profilePicture?: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 // Activity data for populated sessions
 export interface SessionActivity {
-  id: string;
-  userId: string;
-  name: string;
-  description: string;
-  icon: string;
-  color: string;
-  status: 'active' | 'completed' | 'archived';
-  isDefault?: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  id: string
+  userId: string
+  name: string
+  description: string
+  icon: string
+  color: string
+  status: 'active' | 'completed' | 'archived'
+  isDefault?: boolean
+  createdAt: Date
+  updatedAt: Date
 }
 
 export class Session {
@@ -63,7 +63,7 @@ export class Session {
     public readonly privateNotes?: string,
     public readonly isArchived?: boolean
   ) {
-    this.validateInvariants();
+    this.validateInvariants()
   }
 
   /**
@@ -71,23 +71,23 @@ export class Session {
    */
   private validateInvariants(): void {
     if (!this.userId || this.userId.trim().length === 0) {
-      throw new Error('Session must have a user ID');
+      throw new Error('Session must have a user ID')
     }
 
     if (!this.projectId || this.projectId.trim().length === 0) {
-      throw new Error('Session must have a project ID');
+      throw new Error('Session must have a project ID')
     }
 
     if (this.duration < 0) {
-      throw new Error('Duration cannot be negative');
+      throw new Error('Duration cannot be negative')
     }
 
     if (this.supportCount < 0) {
-      throw new Error('Support count cannot be negative');
+      throw new Error('Support count cannot be negative')
     }
 
     if (this.commentCount < 0) {
-      throw new Error('Comment count cannot be negative');
+      throw new Error('Comment count cannot be negative')
     }
   }
 
@@ -95,28 +95,28 @@ export class Session {
    * Business Logic: Get duration in hours
    */
   getDurationInHours(): number {
-    return this.duration / 3600;
+    return this.duration / 3600
   }
 
   /**
    * Business Logic: Get duration in minutes
    */
   getDurationInMinutes(): number {
-    return this.duration / 60;
+    return this.duration / 60
   }
 
   /**
    * Business Logic: Format duration as human-readable string
    */
   getFormattedDuration(): string {
-    const hours = Math.floor(this.duration / 3600);
-    const minutes = Math.floor((this.duration % 3600) / 60);
+    const hours = Math.floor(this.duration / 3600)
+    const minutes = Math.floor((this.duration % 3600) / 60)
 
     if (hours > 0) {
-      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+      return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
     }
 
-    return `${minutes}m`;
+    return `${minutes}m`
   }
 
   /**
@@ -125,18 +125,18 @@ export class Session {
   isVisibleTo(viewerId: string | null, isFollower: boolean = false): boolean {
     // Own sessions are always visible
     if (viewerId === this.userId) {
-      return true;
+      return true
     }
 
     switch (this.visibility) {
       case 'everyone':
-        return true;
+        return true
       case 'followers':
-        return isFollower;
+        return isFollower
       case 'private':
-        return false;
+        return false
       default:
-        return false;
+        return false
     }
   }
 
@@ -144,14 +144,14 @@ export class Session {
    * Business Logic: Check if session is long (>1 hour)
    */
   isLongSession(): boolean {
-    return this.duration >= 3600;
+    return this.duration >= 3600
   }
 
   /**
    * Business Logic: Check if session belongs to a group
    */
   belongsToGroup(groupId: string): boolean {
-    return this.groupIds.includes(groupId);
+    return this.groupIds.includes(groupId)
   }
 
   /**
@@ -171,7 +171,7 @@ export class Session {
       this.supportCount + 1,
       this.commentCount,
       this.groupIds
-    );
+    )
   }
 
   /**
@@ -179,7 +179,7 @@ export class Session {
    */
   withDecrementedSupport(): Session {
     if (this.supportCount === 0) {
-      throw new Error('Support count cannot be negative');
+      throw new Error('Support count cannot be negative')
     }
 
     return new Session(
@@ -195,7 +195,7 @@ export class Session {
       this.supportCount - 1,
       this.commentCount,
       this.groupIds
-    );
+    )
   }
 
   /**
@@ -215,7 +215,7 @@ export class Session {
       this.supportCount,
       this.commentCount + 1,
       this.groupIds
-    );
+    )
   }
 
   /**
@@ -235,6 +235,6 @@ export class Session {
       supportCount: this.supportCount,
       commentCount: this.commentCount,
       groupIds: Array.from(this.groupIds),
-    };
+    }
   }
 }

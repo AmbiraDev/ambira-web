@@ -5,27 +5,25 @@
  * All components should use these hooks instead of direct React Query or firebaseApi calls.
  */
 
-import { useQuery, UseQueryOptions } from '@tanstack/react-query';
-import { SessionService } from '../services/SessionService';
-import { Session, SessionWithDetails, SessionFilters } from '@/types';
-import { STANDARD_CACHE_TIMES } from '@/lib/react-query';
+import { useQuery, UseQueryOptions } from '@tanstack/react-query'
+import { SessionService } from '../services/SessionService'
+import { Session, SessionWithDetails, SessionFilters } from '@/types'
+import { STANDARD_CACHE_TIMES } from '@/lib/react-query'
 
-const sessionService = new SessionService();
+const sessionService = new SessionService()
 
 // ==================== CACHE KEYS ====================
 
 export const SESSION_KEYS = {
   all: () => ['sessions'] as const,
   lists: () => [...SESSION_KEYS.all(), 'list'] as const,
-  list: (filters?: SessionFilters) =>
-    [...SESSION_KEYS.lists(), { filters }] as const,
+  list: (filters?: SessionFilters) => [...SESSION_KEYS.lists(), { filters }] as const,
   details: () => [...SESSION_KEYS.all(), 'detail'] as const,
   detail: (id: string) => [...SESSION_KEYS.details(), id] as const,
-  detailWithData: (id: string) =>
-    [...SESSION_KEYS.detail(id), 'with-details'] as const,
+  detailWithData: (id: string) => [...SESSION_KEYS.detail(id), 'with-details'] as const,
   userSessions: (userId: string, filters?: SessionFilters) =>
     [...SESSION_KEYS.all(), 'user', userId, filters] as const,
-};
+}
 
 // ==================== QUERY HOOKS ====================
 
@@ -45,7 +43,7 @@ export function useSession(
     staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes
     enabled: !!sessionId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -64,7 +62,7 @@ export function useSessionWithDetails(
     staleTime: STANDARD_CACHE_TIMES.MEDIUM,
     enabled: !!sessionId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -77,24 +75,19 @@ export function useSessionWithDetails(
  */
 export function useUserSessions(
   userId: string,
-  filtersOrOptions?:
-    | SessionFilters
-    | Partial<UseQueryOptions<Session[], Error>>
-    | null,
+  filtersOrOptions?: SessionFilters | Partial<UseQueryOptions<Session[], Error>> | null,
   options?: Partial<UseQueryOptions<Session[], Error>>
 ) {
   // Handle overloaded parameters: if second param has 'enabled', it's options not filters
-  let actualFilters: SessionFilters | undefined;
-  let actualOptions: Partial<UseQueryOptions<Session[], Error>> | undefined;
+  let actualFilters: SessionFilters | undefined
+  let actualOptions: Partial<UseQueryOptions<Session[], Error>> | undefined
 
   if (filtersOrOptions && 'enabled' in filtersOrOptions) {
-    actualFilters = undefined;
-    actualOptions = filtersOrOptions as Partial<
-      UseQueryOptions<Session[], Error>
-    >;
+    actualFilters = undefined
+    actualOptions = filtersOrOptions as Partial<UseQueryOptions<Session[], Error>>
   } else {
-    actualFilters = filtersOrOptions as SessionFilters | undefined;
-    actualOptions = options;
+    actualFilters = filtersOrOptions as SessionFilters | undefined
+    actualOptions = options
   }
 
   return useQuery<Session[], Error>({
@@ -103,5 +96,5 @@ export function useUserSessions(
     staleTime: STANDARD_CACHE_TIMES.MEDIUM,
     enabled: !!userId,
     ...actualOptions,
-  });
+  })
 }

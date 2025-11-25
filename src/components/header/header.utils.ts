@@ -3,8 +3,8 @@
  * Pure functions with no side effects for business logic
  */
 
-import type { SearchFilter } from './header.types';
-import { SEARCH_FILTERS } from './header.constants';
+import type { SearchFilter } from './header.types'
+import { SEARCH_FILTERS } from './header.constants'
 
 /**
  * Determines if a given path is the active route
@@ -20,9 +20,9 @@ import { SEARCH_FILTERS } from './header.constants';
  */
 export function isActivePath(currentPath: string, targetPath: string): boolean {
   if (targetPath === '/') {
-    return currentPath === '/';
+    return currentPath === '/'
   }
-  return currentPath.startsWith(targetPath);
+  return currentPath.startsWith(targetPath)
 }
 
 /**
@@ -36,8 +36,8 @@ export function isActivePath(currentPath: string, targetPath: string): boolean {
  * getSearchFilterLabel('groups') // 'Groups'
  */
 export function getSearchFilterLabel(filter: SearchFilter): string {
-  const filterConfig = SEARCH_FILTERS.find(f => f.value === filter);
-  return filterConfig?.label ?? 'People';
+  const filterConfig = SEARCH_FILTERS.find((f) => f.value === filter)
+  return filterConfig?.label ?? 'People'
 }
 
 /**
@@ -52,17 +52,17 @@ export function getSearchFilterLabel(filter: SearchFilter): string {
  * // '/search?q=john%20doe&type=people'
  */
 export function buildSearchUrl(query: string, filter: SearchFilter): string {
-  const trimmedQuery = query.trim();
+  const trimmedQuery = query.trim()
   if (!trimmedQuery) {
-    return '';
+    return ''
   }
 
   const params = new URLSearchParams({
     q: trimmedQuery,
     type: filter,
-  });
+  })
 
-  return `/search?${params.toString()}`;
+  return `/search?${params.toString()}`
 }
 
 /**
@@ -76,7 +76,7 @@ export function buildSearchUrl(query: string, filter: SearchFilter): string {
  * getUserInitials('jane') // 'J'
  */
 export function getUserInitials(name: string): string {
-  return name.charAt(0).toUpperCase();
+  return name.charAt(0).toUpperCase()
 }
 
 /**
@@ -86,7 +86,7 @@ export function getUserInitials(name: string): string {
  * @returns True if on timer page
  */
 export function isOnTimerPage(pathname: string): boolean {
-  return pathname.startsWith('/timer');
+  return pathname.startsWith('/timer')
 }
 
 /**
@@ -96,11 +96,8 @@ export function isOnTimerPage(pathname: string): boolean {
  * @param pathname - Current pathname
  * @returns True if timer should be shown in header
  */
-export function shouldShowHeaderTimer(
-  hasActiveSession: boolean,
-  pathname: string
-): boolean {
-  return hasActiveSession && !isOnTimerPage(pathname);
+export function shouldShowHeaderTimer(hasActiveSession: boolean, pathname: string): boolean {
+  return hasActiveSession && !isOnTimerPage(pathname)
 }
 
 /**
@@ -111,5 +108,5 @@ export function shouldShowHeaderTimer(
  * @returns Combined class string
  */
 export function cn(...classes: (string | undefined | null | false)[]): string {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(' ')
 }

@@ -1,6 +1,6 @@
-import Link from 'next/link';
-import type { AuthButtonsProps } from './header.types';
-import { EXTERNAL_LINKS, ROUTES } from './header.constants';
+import Link from 'next/link'
+import type { AuthButtonsProps } from './header.types'
+import { EXTERNAL_LINKS, ROUTES } from './header.constants'
 
 /**
  * AuthButtons Component
@@ -20,17 +20,13 @@ import { EXTERNAL_LINKS, ROUTES } from './header.constants';
 export default function AuthButtons({ isMobile = false }: AuthButtonsProps) {
   const containerClass = isMobile
     ? 'flex flex-col gap-3 w-full'
-    : 'hidden md:flex items-center gap-3';
+    : 'hidden md:flex items-center gap-3'
 
   return (
     <div className={containerClass}>
       {/* Sign In Section */}
       <div className="flex items-center gap-3">
-        {!isMobile && (
-          <span className="text-gray-700 text-sm font-medium">
-            Have an account?
-          </span>
-        )}
+        {!isMobile && <span className="text-gray-700 text-sm font-medium">Have an account?</span>}
         <Link
           href={ROUTES.AUTH}
           className="flex items-center gap-2 px-4 py-2 bg-[#0066CC] text-white hover:bg-[#0051D5] rounded-md transition-colors whitespace-nowrap font-semibold text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 min-h-[44px] justify-center"
@@ -62,5 +58,5 @@ export default function AuthButtons({ isMobile = false }: AuthButtonsProps) {
         <span>Community</span>
       </a>
     </div>
-  );
+  )
 }

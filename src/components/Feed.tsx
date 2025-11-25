@@ -1,16 +1,16 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { SessionWithDetails, FeedFilters } from '@/types';
-import { firebaseApi } from '@/lib/api';
-import SessionCard from './SessionCard';
-import { useFeedInfinite, FeedResult } from '@/features/feed/hooks';
-import { useSupportSession, useDeleteSession } from '@/features/sessions/hooks';
-import { useAuth } from '@/hooks/useAuth';
-import ConfirmDialog from './ConfirmDialog';
-import { useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Users, Search, ChevronUp } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { SessionWithDetails, FeedFilters } from '@/types'
+import { firebaseApi } from '@/lib/api'
+import SessionCard from './SessionCard'
+import { useFeedInfinite, FeedResult } from '@/features/feed/hooks'
+import { useSupportSession, useDeleteSession } from '@/features/sessions/hooks'
+import { useAuth } from '@/hooks/useAuth'
+import ConfirmDialog from './ConfirmDialog'
+import { useQueryClient } from '@tanstack/react-query'
+import { AlertTriangle, Users, Search, ChevronUp } from 'lucide-react'
 
 // Session Card Skeleton Component
 const SessionCardSkeleton: React.FC = () => (
@@ -51,14 +51,14 @@ const SessionCardSkeleton: React.FC = () => (
       <div className="h-8 bg-gray-200 rounded w-12"></div>
     </div>
   </div>
-);
+)
 
 interface FeedProps {
-  filters?: FeedFilters;
-  className?: string;
-  initialLimit?: number;
-  showEndMessage?: boolean;
-  showGroupInfo?: boolean;
+  filters?: FeedFilters
+  className?: string
+  initialLimit?: number
+  showEndMessage?: boolean
+  showGroupInfo?: boolean
 }
 
 export const Feed: React.FC<FeedProps> = ({
@@ -68,167 +68,137 @@ export const Feed: React.FC<FeedProps> = ({
   showEndMessage = true,
   showGroupInfo = false,
 }) => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const [hasNewSessions, setHasNewSessions] = useState(false);
-  const [newSessionsCount, setNewSessionsCount] = useState(0);
-  const [deleteConfirmSession, setDeleteConfirmSession] = useState<
-    string | null
-  >(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const [hasNewSessions, setHasNewSessions] = useState(false)
+  const [newSessionsCount, setNewSessionsCount] = useState(0)
+  const [deleteConfirmSession, setDeleteConfirmSession] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   // Ref for infinite scroll trigger element
-  const loadMoreTriggerRef = React.useRef<HTMLDivElement>(null);
+  const loadMoreTriggerRef = React.useRef<HTMLDivElement>(null)
 
   // Use new infinite scroll hook
-  const {
-    data,
-    isLoading,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetch,
-  } = useFeedInfinite(user?.id || '', filters, { limit: _initialLimit });
-
-  // Ref to track last logged session IDs to prevent duplicate logs
-  const lastLoggedSessionIds = React.useRef<string>('');
+  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
+    useFeedInfinite(user?.id || '', filters, { limit: _initialLimit })
 
   // Flatten pages into allSessions
   // Note: Casting to SessionWithDetails[] for compatibility during architecture migration
   // The data structure comes from useFeedInfinite which returns InfiniteData<FeedResult>
   // where each page is a FeedResult with sessions: Session[] property
   const allSessions = useMemo(() => {
-    if (!data?.pages) return [];
+    if (!data?.pages) return []
     // TypeScript can't infer the page type from useInfiniteQuery, so we cast
-    const sessions = (data.pages as FeedResult[]).flatMap(page => {
-      return page.sessions || [];
-    }) as unknown as SessionWithDetails[];
+    const sessions = (data.pages as FeedResult[]).flatMap((page) => {
+      return page.sessions || []
+    }) as unknown as SessionWithDetails[]
 
-    return sessions;
-  }, [data]);
+    return sessions
+  }, [data])
 
-  const hasMore = hasNextPage || false;
-  const isLoadingMore = isFetchingNextPage;
+  const hasMore = hasNextPage || false
+  const isLoadingMore = isFetchingNextPage
 
   // New mutations using feature hooks
-  const supportMutation = useSupportSession(user?.id);
-  const deleteSessionMutation = useDeleteSession();
+  const supportMutation = useSupportSession(user?.id)
+  const deleteSessionMutation = useDeleteSession()
 
   // Refresh sessions and invalidate cache
   const refreshSessions = useCallback(() => {
-    setHasNewSessions(false);
-    setNewSessionsCount(0);
+    setHasNewSessions(false)
+    setNewSessionsCount(0)
     // Invalidate all feed caches to force refetch
-    queryClient.invalidateQueries({ queryKey: ['feed'] });
-    refetch();
-  }, [refetch, queryClient]);
+    queryClient.invalidateQueries({ queryKey: ['feed'] })
+    refetch()
+  }, [refetch, queryClient])
 
   // Auto-refresh feed when coming from session creation
   useEffect(() => {
-    const shouldRefresh = searchParams?.get('refresh');
+    const shouldRefresh = searchParams?.get('refresh')
     if (shouldRefresh === 'true') {
       // Clear the URL parameter
-      router.replace('/', { scroll: false });
+      router.replace('/', { scroll: false })
       // Trigger immediate refresh
-      refreshSessions();
+      refreshSessions()
     }
-  }, [searchParams, router, refreshSessions]);
+  }, [searchParams, router, refreshSessions])
 
   // Load more sessions - now uses React Query infinite scroll
   const loadMore = useCallback(() => {
     if (!isLoadingMore && hasMore) {
-      fetchNextPage();
+      fetchNextPage()
     }
-  }, [isLoadingMore, hasMore, fetchNextPage]);
+  }, [isLoadingMore, hasMore, fetchNextPage])
 
   // Check for new sessions when user returns to tab
   // Only checks when page becomes visible to minimize Firestore reads
   useEffect(() => {
-    if (allSessions.length === 0) return;
+    if (allSessions.length === 0) return
 
     const checkForNewSessions = async () => {
       // Skip check if page is not visible
-      if (document.hidden) return;
+      if (document.hidden) return
 
       try {
         // Use queryClient to check cache first, then fetch if stale
-        const cachedData = queryClient.getQueryData([
-          'feed',
-          'sessions',
-          5,
-          undefined,
-          filters,
-        ]);
+        const cachedData = queryClient.getQueryData(['feed', 'sessions', 5, undefined, filters])
 
-        let response;
+        let response
         if (cachedData) {
-          response = cachedData as { sessions: SessionWithDetails[] };
+          response = cachedData as { sessions: SessionWithDetails[] }
         } else {
-          response = await firebaseApi.post.getFeedSessions(
-            5,
-            undefined,
-            filters
-          );
+          response = await firebaseApi.post.getFeedSessions(5, undefined, filters)
         }
 
-        const newSessionIds = response.sessions.map(s => s.id);
-        const currentSessionIds = allSessions.slice(0, 5).map(s => s.id);
+        const newSessionIds = response.sessions.map((s) => s.id)
+        const currentSessionIds = allSessions.slice(0, 5).map((s) => s.id)
 
-        const newCount = newSessionIds.filter(
-          id => !currentSessionIds.includes(id)
-        ).length;
+        const newCount = newSessionIds.filter((id) => !currentSessionIds.includes(id)).length
         if (newCount > 0) {
-          setHasNewSessions(true);
-          setNewSessionsCount(newCount);
+          setHasNewSessions(true)
+          setNewSessionsCount(newCount)
         }
       } catch {
         // Silently fail
       }
-    };
+    }
 
     // Check for new sessions when page becomes visible
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        checkForNewSessions();
+        checkForNewSessions()
       }
-    };
+    }
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange)
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [
-    allSessions,
-    filters,
-    queryClient,
-    setHasNewSessions,
-    setNewSessionsCount,
-  ]);
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [allSessions, filters, queryClient, setHasNewSessions, setNewSessionsCount])
 
   // Handle support with optimistic updates via React Query
   const handleSupport = useCallback(
     async (sessionId: string) => {
-      supportMutation.mutate({ sessionId, action: 'support' });
+      supportMutation.mutate({ sessionId, action: 'support' })
     },
     [supportMutation]
-  );
+  )
 
   // Handle remove support with optimistic updates via React Query
   const handleRemoveSupport = useCallback(
     async (sessionId: string) => {
-      supportMutation.mutate({ sessionId, action: 'unsupport' });
+      supportMutation.mutate({ sessionId, action: 'unsupport' })
     },
     [supportMutation]
-  );
+  )
 
   // Handle share
   const handleShare = useCallback(async (sessionId: string) => {
     try {
-      const sessionUrl = `${window.location.origin}/sessions/${sessionId}`;
+      const sessionUrl = `${window.location.origin}/sessions/${sessionId}`
 
       if (navigator.share) {
         // Use native share API on mobile
@@ -236,98 +206,90 @@ export const Feed: React.FC<FeedProps> = ({
           title: 'Check out this session on Ambira',
           text: 'Look at this productive session!',
           url: sessionUrl,
-        });
+        })
       } else {
         // Fallback to clipboard
-        await navigator.clipboard.writeText(sessionUrl);
+        await navigator.clipboard.writeText(sessionUrl)
         // Could show success toast here
       }
     } catch (err: unknown) {
       // Silently ignore if user cancels the share dialog
-      if (
-        err &&
-        typeof err === 'object' &&
-        'name' in err &&
-        err.name === 'AbortError'
-      ) {
-        return;
+      if (err && typeof err === 'object' && 'name' in err && err.name === 'AbortError') {
+        return
       }
       // Could show error toast here
     }
-  }, []);
+  }, [])
 
   // Handle delete
   const handleDelete = useCallback(async (sessionId: string) => {
-    setDeleteConfirmSession(sessionId);
-  }, []);
+    setDeleteConfirmSession(sessionId)
+  }, [])
 
   const confirmDelete = useCallback(async () => {
-    if (!deleteConfirmSession) return;
+    if (!deleteConfirmSession) return
 
     try {
-      setIsDeleting(true);
-      await deleteSessionMutation.mutateAsync(deleteConfirmSession);
-      setDeleteConfirmSession(null);
+      setIsDeleting(true)
+      await deleteSessionMutation.mutateAsync(deleteConfirmSession)
+      setDeleteConfirmSession(null)
     } catch {
       // Could show error toast here
     } finally {
-      setIsDeleting(false);
+      setIsDeleting(false)
     }
-  }, [deleteConfirmSession, deleteSessionMutation]);
+  }, [deleteConfirmSession, deleteSessionMutation])
 
   // Memoize top 3 session IDs string to create stable dependency
   // This prevents useEffect from re-running when sessions array changes but top 3 IDs remain same
   // Reduced from 10 to 3 to minimize Firestore real-time listener costs
   const top3SessionIdsString = useMemo(() => {
-    const MAX_LISTENERS = 3;
+    const MAX_LISTENERS = 3
     return allSessions
       .slice(0, MAX_LISTENERS)
-      .map(session => session.id)
-      .join(',');
-  }, [allSessions]);
+      .map((session) => session.id)
+      .join(',')
+  }, [allSessions])
 
   // Real-time updates for support counts on top 3 sessions
   // Only listen to the first 3 sessions to reduce overhead (reduced from 10 for cost optimization)
   // Invalidates React Query cache when sessions receive supports from other users
   useEffect(() => {
-    if (allSessions.length === 0 || !top3SessionIdsString) return;
+    if (allSessions.length === 0 || !top3SessionIdsString) return
 
     // Parse session IDs from memoized string
-    const sessionIds = top3SessionIdsString.split(',').filter(Boolean);
-    if (sessionIds.length === 0) return;
+    const sessionIds = top3SessionIdsString.split(',').filter(Boolean)
+    if (sessionIds.length === 0) return
 
     // Register listener and invalidate cache when sessions are updated
     // This ensures real-time support counts from other users are reflected
-    const unsubscribe = firebaseApi.post.listenToSessionUpdates(
-      sessionIds,
-      updates => {
-        // Invalidate affected sessions in React Query cache
-        // updates is a Record<sessionId, { supportCount, isSupported }>
-        if (updates && Object.keys(updates).length > 0) {
-          queryClient.invalidateQueries({
-            queryKey: ['feed'],
-            refetchType: 'none', // Don't auto-refetch, just mark as stale
-          });
-        }
+    const unsubscribe = firebaseApi.post.listenToSessionUpdates(sessionIds, (updates) => {
+      // Invalidate affected sessions in React Query cache
+      // updates is a Record<sessionId, { supportCount, isSupported }>
+      if (updates && Object.keys(updates).length > 0) {
+        queryClient.invalidateQueries({
+          queryKey: ['feed'],
+          refetchType: 'none', // Don't auto-refetch, just mark as stale
+        })
       }
-    );
+    })
 
-    return unsubscribe;
+    return unsubscribe
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [top3SessionIdsString, queryClient]); // Only re-run when top 3 IDs change or queryClient changes
+  }, [top3SessionIdsString, queryClient]) // Only re-run when top 3 IDs change or queryClient changes
 
   // Infinite scroll using IntersectionObserver
   useEffect(() => {
-    const trigger = loadMoreTriggerRef.current;
-    if (!trigger) return;
+    const trigger = loadMoreTriggerRef.current
+    if (!trigger) return
 
     const observer = new IntersectionObserver(
-      entries => {
-        const entry = entries[0];
-        if (!entry) return;
+      (entries) => {
+        const entry = entries[0]
+        if (!entry) return
 
         if (entry.isIntersecting && hasMore && !isLoadingMore) {
-          loadMore();
+          loadMore()
         }
       },
       {
@@ -335,16 +297,16 @@ export const Feed: React.FC<FeedProps> = ({
         rootMargin: '200px', // Trigger 200px before reaching the element
         threshold: 0,
       }
-    );
+    )
 
-    observer.observe(trigger);
+    observer.observe(trigger)
 
     return () => {
       if (trigger) {
-        observer.unobserve(trigger);
+        observer.unobserve(trigger)
       }
-    };
-  }, [loadMore, hasMore, isLoadingMore]);
+    }
+  }, [loadMore, hasMore, isLoadingMore])
 
   if (isLoading) {
     return (
@@ -353,29 +315,19 @@ export const Feed: React.FC<FeedProps> = ({
           <SessionCardSkeleton key={i} />
         ))}
       </div>
-    );
+    )
   }
 
   if (error) {
-    const errorMessage = String(error);
+    const errorMessage = String(error)
     const isPermissionError =
-      errorMessage.includes('permission') ||
-      errorMessage.includes('insufficient');
+      errorMessage.includes('permission') || errorMessage.includes('insufficient')
 
     return (
-      <div
-        className={`text-center py-8 px-4 ${className}`}
-        role="alert"
-        aria-live="polite"
-      >
+      <div className={`text-center py-8 px-4 ${className}`} role="alert" aria-live="polite">
         <div className="text-red-600 mb-4">
-          <AlertTriangle
-            className="w-12 h-12 mx-auto mb-2"
-            aria-hidden="true"
-          />
-          <p className="font-medium text-sm sm:text-base">
-            Failed to load sessions
-          </p>
+          <AlertTriangle className="w-12 h-12 mx-auto mb-2" aria-hidden="true" />
+          <p className="font-medium text-sm sm:text-base">Failed to load sessions</p>
           <p className="text-sm text-gray-600 mt-1">
             {isPermissionError
               ? 'There was a permissions issue loading the feed. This may be due to security rules that need updating.'
@@ -383,8 +335,7 @@ export const Feed: React.FC<FeedProps> = ({
           </p>
           {isPermissionError && (
             <p className="text-xs text-gray-500 mt-2">
-              If you're the app administrator, try deploying the latest
-              Firestore security rules.
+              If you're the app administrator, try deploying the latest Firestore security rules.
             </p>
           )}
         </div>
@@ -395,12 +346,12 @@ export const Feed: React.FC<FeedProps> = ({
           Try Again
         </button>
       </div>
-    );
+    )
   }
 
   if (allSessions.length === 0) {
     // Determine empty state content based on feed type
-    const feedType = filters?.type || 'all';
+    const feedType = filters?.type || 'all'
 
     let emptyStateContent = {
       title: 'Your feed is empty',
@@ -408,24 +359,22 @@ export const Feed: React.FC<FeedProps> = ({
         'Follow people to see their productive sessions in your feed and get inspired by their work!',
       buttonText: 'Find People to Follow',
       buttonAction: () => router.push('/discover/people'),
-    };
+    }
 
     if (feedType === 'group-members-unfollowed') {
       emptyStateContent = {
         title: 'No sessions yet',
-        message:
-          "When group members you don't follow post sessions, they'll appear here!",
+        message: "When group members you don't follow post sessions, they'll appear here!",
         buttonText: 'Discover Groups',
         buttonAction: () => router.push('/groups'),
-      };
+      }
     } else if (feedType === 'user') {
       emptyStateContent = {
         title: 'No sessions yet',
-        message:
-          'Start tracking your productive sessions to build your profile!',
+        message: 'Start tracking your productive sessions to build your profile!',
         buttonText: 'Start a Session',
         buttonAction: () => router.push('/timer'),
-      };
+      }
     } else if (feedType === 'following') {
       emptyStateContent = {
         title: 'Your feed is empty',
@@ -433,7 +382,7 @@ export const Feed: React.FC<FeedProps> = ({
           'Follow people to see their productive sessions in your feed and get inspired by their work!',
         buttonText: 'Find People to Follow',
         buttonAction: () => router.push('/discover/people'),
-      };
+      }
     }
 
     return (
@@ -441,12 +390,8 @@ export const Feed: React.FC<FeedProps> = ({
         <div className="max-w-md mx-auto">
           <div className="text-gray-500 mb-8">
             <Users className="w-20 h-20 mx-auto mb-4 text-gray-400" />
-            <h3 className="font-bold text-xl text-gray-900 mb-2">
-              {emptyStateContent.title}
-            </h3>
-            <p className="text-base text-gray-600 leading-relaxed">
-              {emptyStateContent.message}
-            </p>
+            <h3 className="font-bold text-xl text-gray-900 mb-2">{emptyStateContent.title}</h3>
+            <p className="text-base text-gray-600 leading-relaxed">{emptyStateContent.message}</p>
           </div>
 
           {/* Action Button */}
@@ -459,7 +404,7 @@ export const Feed: React.FC<FeedProps> = ({
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -474,8 +419,7 @@ export const Feed: React.FC<FeedProps> = ({
           >
             <ChevronUp className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
             <span className="truncate">
-              {newSessionsCount} new{' '}
-              {newSessionsCount === 1 ? 'session' : 'sessions'} - Click to
+              {newSessionsCount} new {newSessionsCount === 1 ? 'session' : 'sessions'} - Click to
               refresh
             </span>
           </button>
@@ -485,9 +429,9 @@ export const Feed: React.FC<FeedProps> = ({
       {/* Sessions */}
       <div className="space-y-0 md:space-y-0">
         {allSessions.map((session, index) => {
-          const isOwnSession = user && session.userId === user.id;
+          const isOwnSession = user && session.userId === user.id
           // First 2 sessions are above the fold on most screens
-          const isAboveFold = index < 2;
+          const isAboveFold = index < 2
 
           return (
             <SessionCard
@@ -497,16 +441,14 @@ export const Feed: React.FC<FeedProps> = ({
               onRemoveSupport={handleRemoveSupport}
               onShare={handleShare}
               onEdit={
-                isOwnSession
-                  ? sessionId => router.push(`/sessions/${sessionId}/edit`)
-                  : undefined
+                isOwnSession ? (sessionId) => router.push(`/sessions/${sessionId}/edit`) : undefined
               }
               onDelete={isOwnSession ? handleDelete : undefined}
               showGroupInfo={showGroupInfo}
               isAboveFold={isAboveFold}
               priority={isAboveFold}
             />
-          );
+          )
         })}
       </div>
 
@@ -548,7 +490,7 @@ export const Feed: React.FC<FeedProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Feed;
+export default Feed

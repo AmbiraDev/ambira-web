@@ -1,31 +1,31 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { Session } from '@/types';
-import { X, Image as ImageIcon } from 'lucide-react';
-import { uploadImages } from '@/lib/imageUpload';
-import { useAuth } from '@/hooks/useAuth';
-import { useActivities } from '@/hooks/useActivitiesQuery';
-import { parseLocalDateTime, cn } from '@/lib/utils';
+import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
+import { Session } from '@/types'
+import { X, Image as ImageIcon } from 'lucide-react'
+import { uploadImages } from '@/lib/imageUpload'
+import { useAuth } from '@/hooks/useAuth'
+import { useActivities } from '@/hooks/useActivitiesQuery'
+import { parseLocalDateTime, cn } from '@/lib/utils'
 
 interface EditSessionModalProps {
-  session: Session;
-  onClose: () => void;
+  session: Session
+  onClose: () => void
   onSave: (
     sessionId: string,
     data: {
-      title: string;
-      description?: string;
-      projectId?: string;
-      tags?: string[];
-      visibility?: 'everyone' | 'followers' | 'private';
-      images?: string[];
-      startTime?: Date;
-      duration?: number;
+      title: string
+      description?: string
+      projectId?: string
+      tags?: string[]
+      visibility?: 'everyone' | 'followers' | 'private'
+      images?: string[]
+      startTime?: Date
+      duration?: number
     }
-  ) => Promise<void>;
-  isPage?: boolean;
+  ) => Promise<void>
+  isPage?: boolean
 }
 
 export const EditSessionModal: React.FC<EditSessionModalProps> = ({
@@ -34,92 +34,87 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
   onSave,
   isPage = false,
 }) => {
-  const { user } = useAuth();
-  const { data: projects = [] } = useActivities(user?.id);
+  const { user } = useAuth()
+  const { data: projects = [] } = useActivities(user?.id)
 
-  const [title, setTitle] = useState(session.title || '');
-  const [description, setDescription] = useState(session.description || '');
-  const [selectedProjectId, setSelectedProjectId] = useState(
-    session.projectId || ''
-  );
-  const [visibility, setVisibility] = useState<
-    'everyone' | 'followers' | 'private'
-  >(session.visibility || 'everyone');
-  const [existingImages, setExistingImages] = useState<string[]>(
-    session.images || []
-  );
-  const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [title, setTitle] = useState(session.title || '')
+  const [description, setDescription] = useState(session.description || '')
+  const [selectedProjectId, setSelectedProjectId] = useState(session.projectId || '')
+  const [visibility, setVisibility] = useState<'everyone' | 'followers' | 'private'>(
+    session.visibility || 'everyone'
+  )
+  const [existingImages, setExistingImages] = useState<string[]>(session.images || [])
+  const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([])
+  const [isUploading, setIsUploading] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
   // Date/time state
   const [sessionDate, setSessionDate] = useState(() => {
-    const date = new Date(session.startTime);
-    return date.toISOString().split('T')[0];
-  });
+    const date = new Date(session.startTime)
+    return date.toISOString().split('T')[0]
+  })
   const [startTime, setStartTime] = useState(() => {
-    const date = new Date(session.startTime);
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${hours}:${minutes}`;
-  });
+    const date = new Date(session.startTime)
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    return `${hours}:${minutes}`
+  })
   const [durationHours, setDurationHours] = useState(() => {
-    return String(Math.floor(session.duration / 3600));
-  });
+    return String(Math.floor(session.duration / 3600))
+  })
   const [durationMinutes, setDurationMinutes] = useState(() => {
-    return String(Math.floor((session.duration % 3600) / 60));
-  });
+    return String(Math.floor((session.duration % 3600) / 60))
+  })
 
   // Update state when session prop changes (important for modal reuse)
   useEffect(() => {
-    setTitle(session.title || '');
-    setDescription(session.description || '');
-    setSelectedProjectId(session.projectId || '');
-    setVisibility(session.visibility || 'everyone');
-    setExistingImages(session.images || []);
-    setSelectedImages([]);
-    setImagePreviewUrls([]);
+    setTitle(session.title || '')
+    setDescription(session.description || '')
+    setSelectedProjectId(session.projectId || '')
+    setVisibility(session.visibility || 'everyone')
+    setExistingImages(session.images || [])
+    setSelectedImages([])
+    setImagePreviewUrls([])
 
     // Update date/time fields
-    const date = new Date(session.startTime);
-    setSessionDate(date.toISOString().split('T')[0]);
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    setStartTime(`${hours}:${minutes}`);
-    setDurationHours(String(Math.floor(session.duration / 3600)));
-    setDurationMinutes(String(Math.floor((session.duration % 3600) / 60)));
+    const date = new Date(session.startTime)
+    setSessionDate(date.toISOString().split('T')[0])
+    const hours = String(date.getHours()).padStart(2, '0')
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    setStartTime(`${hours}:${minutes}`)
+    setDurationHours(String(Math.floor(session.duration / 3600)))
+    setDurationMinutes(String(Math.floor((session.duration % 3600) / 60)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session.id]); // Only reset form when session ID changes (new session loaded)
+  }, [session.id]) // Only reset form when session ID changes (new session loaded)
 
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        onClose()
       }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [onClose]);
-
-  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-
-    const totalImages =
-      existingImages.length + selectedImages.length + files.length;
-
-    if (totalImages > 3) {
-      alert('Maximum 3 images allowed');
-      return;
     }
 
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    const validFiles: File[] = [];
-    const previewUrls: string[] = [];
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [onClose])
+
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+
+    const totalImages = existingImages.length + selectedImages.length + files.length
+
+    if (totalImages > 3) {
+      alert('Maximum 3 images allowed')
+      return
+    }
+
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    const validFiles: File[] = []
+    const previewUrls: string[] = []
 
     for (const file of files) {
       // Check if it's HEIC - we'll handle conversion during upload
@@ -127,92 +122,87 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
         file.type === 'image/heic' ||
         file.type === 'image/heif' ||
         file.name.toLowerCase().endsWith('.heic') ||
-        file.name.toLowerCase().endsWith('.heif');
+        file.name.toLowerCase().endsWith('.heif')
 
       if (file.size > maxSize) {
-        const sizeMB = (file.size / 1024 / 1024).toFixed(1);
-        alert(
-          `Image "${file.name}" is too large (${sizeMB}MB). Maximum size is 5MB.`
-        );
-        continue;
+        const sizeMB = (file.size / 1024 / 1024).toFixed(1)
+        alert(`Image "${file.name}" is too large (${sizeMB}MB). Maximum size is 5MB.`)
+        continue
       }
 
       // Allow HEIC files as well as regular images
       if (!file.type.startsWith('image/') && !isHeic) {
-        alert(`"${file.name}" is not an image file.`);
-        continue;
+        alert(`"${file.name}" is not an image file.`)
+        continue
       }
 
-      const previewUrl = URL.createObjectURL(file);
-      validFiles.push(file);
-      previewUrls.push(previewUrl);
+      const previewUrl = URL.createObjectURL(file)
+      validFiles.push(file)
+      previewUrls.push(previewUrl)
     }
 
     if (validFiles.length > 0) {
-      setSelectedImages(prev => [...prev, ...validFiles]);
-      setImagePreviewUrls(prev => [...prev, ...previewUrls]);
+      setSelectedImages((prev) => [...prev, ...validFiles])
+      setImagePreviewUrls((prev) => [...prev, ...previewUrls])
     }
-  };
+  }
 
   const handleRemoveExistingImage = (index: number) => {
-    setExistingImages(prev => prev.filter((_, i) => i !== index));
-  };
+    setExistingImages((prev) => prev.filter((_, i) => i !== index))
+  }
 
   const handleRemoveNewImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
-    setImagePreviewUrls(prev => {
-      const newUrls = prev.filter((_, i) => i !== index);
-      const urlToRevoke = prev[index];
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index))
+    setImagePreviewUrls((prev) => {
+      const newUrls = prev.filter((_, i) => i !== index)
+      const urlToRevoke = prev[index]
       if (urlToRevoke) {
-        URL.revokeObjectURL(urlToRevoke);
+        URL.revokeObjectURL(urlToRevoke)
       }
-      return newUrls;
-    });
-  };
+      return newUrls
+    })
+  }
 
   const handleSave = async () => {
     if (!title.trim()) {
-      alert('Please enter a title');
-      return;
+      alert('Please enter a title')
+      return
     }
 
     // Validate duration
-    const hours = parseInt(durationHours) || 0;
-    const minutes = parseInt(durationMinutes) || 0;
-    const totalDuration = hours * 3600 + minutes * 60;
+    const hours = parseInt(durationHours) || 0
+    const minutes = parseInt(durationMinutes) || 0
+    const totalDuration = hours * 3600 + minutes * 60
 
     if (totalDuration <= 0) {
-      alert('Duration must be greater than 0');
-      return;
+      alert('Duration must be greater than 0')
+      return
     }
 
-    setIsSaving(true);
+    setIsSaving(true)
     try {
       // Upload new images if any
-      let newImageUrls: string[] = [];
+      let newImageUrls: string[] = []
       if (selectedImages.length > 0) {
-        setIsUploading(true);
+        setIsUploading(true)
         try {
-          const uploadResults = await uploadImages(selectedImages);
-          newImageUrls = uploadResults.map(result => result.url);
-        } catch (err) {
-          alert('Failed to upload images. Please try again.');
-          setIsSaving(false);
-          setIsUploading(false);
-          return;
+          const uploadResults = await uploadImages(selectedImages)
+          newImageUrls = uploadResults.map((result) => result.url)
+        } catch (_err) {
+          alert('Failed to upload images. Please try again.')
+          setIsSaving(false)
+          setIsUploading(false)
+          return
         } finally {
-          setIsUploading(false);
+          setIsUploading(false)
         }
       }
 
       // Combine existing and new images
-      const allImages = [...existingImages, ...newImageUrls];
+      const allImages = [...existingImages, ...newImageUrls]
 
       // Parse the new start time
-      const newStartTime = parseLocalDateTime(
-        sessionDate || '',
-        startTime || ''
-      );
+      const newStartTime = parseLocalDateTime(sessionDate || '', startTime || '')
 
       await onSave(session.id, {
         title,
@@ -222,25 +212,25 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
         images: allImages.length > 0 ? allImages : undefined,
         startTime: newStartTime,
         duration: totalDuration,
-      });
+      })
 
-      onClose();
-    } catch (err) {
-      alert('Failed to save session. Please try again.');
+      onClose()
+    } catch (_err) {
+      alert('Failed to save session. Please try again.')
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   // Clean up preview URLs on unmount
   useEffect(() => {
-    const urlsToClean = imagePreviewUrls;
+    const urlsToClean = imagePreviewUrls
     return () => {
-      urlsToClean.forEach(url => URL.revokeObjectURL(url));
-    };
-  }, [imagePreviewUrls]);
+      urlsToClean.forEach((url) => URL.revokeObjectURL(url))
+    }
+  }, [imagePreviewUrls])
 
-  const totalImages = existingImages.length + selectedImages.length;
+  const totalImages = existingImages.length + selectedImages.length
 
   const formContent = (
     <>
@@ -267,13 +257,11 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
       <div className={cn('px-4 md:px-0 space-y-6')}>
         {/* Title */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Session Title *
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Session Title *</label>
           <input
             type="text"
             value={title}
-            onChange={e => setTitle(e.target.value)}
+            onChange={(e) => setTitle(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC]"
             placeholder="Enter session title"
           />
@@ -281,12 +269,10 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Description
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
           <textarea
             value={description}
-            onChange={e => setDescription(e.target.value)}
+            onChange={(e) => setDescription(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC]"
             rows={3}
             placeholder="How did the session go? What did you accomplish?"
@@ -295,20 +281,16 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
 
         {/* Date and Time Section */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">
-            Session Timing
-          </h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Session Timing</h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {/* Date */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
               <input
                 type="date"
                 value={sessionDate}
-                onChange={e => setSessionDate(e.target.value)}
+                onChange={(e) => setSessionDate(e.target.value)}
                 max={new Date().toISOString().split('T')[0]}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC]"
                 required
@@ -318,13 +300,11 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
 
             {/* Start Time */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Start Time
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
               <input
                 type="time"
                 value={startTime}
-                onChange={e => setStartTime(e.target.value)}
+                onChange={(e) => setStartTime(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC]"
               />
               <p className="text-xs text-gray-500 mt-1">When you started</p>
@@ -333,9 +313,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
 
           {/* Duration */}
           <div className="mt-3 sm:mt-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Duration *
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Duration *</label>
             <div className="flex gap-2 sm:gap-3">
               <div className="flex-1">
                 <input
@@ -343,7 +321,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
                   min="0"
                   max="23"
                   value={durationHours}
-                  onChange={e => setDurationHours(e.target.value)}
+                  onChange={(e) => setDurationHours(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC]"
                   placeholder="0"
                 />
@@ -355,7 +333,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
                   min="0"
                   max="59"
                   value={durationMinutes}
-                  onChange={e => setDurationMinutes(e.target.value)}
+                  onChange={(e) => setDurationMinutes(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC]"
                   placeholder="0"
                 />
@@ -435,13 +413,9 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
               <label className="flex flex-col items-center justify-center gap-2 px-4 py-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#0066CC] hover:bg-gray-50 transition-colors min-h-[120px]">
                 <ImageIcon className="w-8 h-8 text-gray-400" />
                 <span className="text-sm font-medium text-gray-600">
-                  {totalImages === 0
-                    ? 'Add images'
-                    : `Add ${3 - totalImages} more`}
+                  {totalImages === 0 ? 'Add images' : `Add ${3 - totalImages} more`}
                 </span>
-                <span className="text-xs text-gray-400">
-                  JPG, PNG, HEIC (max 5MB each)
-                </span>
+                <span className="text-xs text-gray-400">JPG, PNG, HEIC (max 5MB each)</span>
                 <input
                   type="file"
                   accept="image/*,.heic,.heif"
@@ -456,16 +430,14 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
 
         {/* Project Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Project
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Project</label>
           <select
             value={selectedProjectId}
-            onChange={e => setSelectedProjectId(e.target.value)}
+            onChange={(e) => setSelectedProjectId(e.target.value)}
             className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white text-sm appearance-none"
           >
             <option value="">Unassigned</option>
-            {projects?.map(project => (
+            {projects?.map((project) => (
               <option key={project.id} value={project.id}>
                 {project.name}
               </option>
@@ -475,16 +447,10 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
 
         {/* Visibility */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Visibility
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Visibility</label>
           <select
             value={visibility}
-            onChange={e =>
-              setVisibility(
-                e.target.value as 'everyone' | 'followers' | 'private'
-              )
-            }
+            onChange={(e) => setVisibility(e.target.value as 'everyone' | 'followers' | 'private')}
             className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white appearance-none"
           >
             <option value="everyone">Everyone</option>
@@ -515,18 +481,14 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
           disabled={!title.trim() || isSaving || isUploading}
           className="flex-1 px-4 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isUploading
-            ? 'Uploading Images...'
-            : isSaving
-              ? 'Saving...'
-              : 'Save Changes'}
+          {isUploading ? 'Uploading Images...' : isSaving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
     </>
-  );
+  )
 
   if (isPage) {
-    return <>{formContent}</>;
+    return <>{formContent}</>
   }
 
   return (
@@ -535,5 +497,5 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
         {formContent}
       </div>
     </div>
-  );
-};
+  )
+}

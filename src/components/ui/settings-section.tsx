@@ -1,58 +1,55 @@
-import React from 'react';
-import { LucideIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React from 'react'
+import { LucideIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 interface SettingsSectionProps {
-  children: React.ReactNode;
-  className?: string;
+  children: React.ReactNode
+  className?: string
 }
 
 interface SettingsHeaderProps {
-  icon?: LucideIcon;
-  title: string;
-  description?: string;
-  className?: string;
+  icon?: LucideIcon
+  title: string
+  description?: string
+  className?: string
 }
 
 interface SettingsCardProps {
-  children: React.ReactNode;
-  className?: string;
+  children: React.ReactNode
+  className?: string
 }
 
 interface SettingsCardHeaderProps {
-  icon?: LucideIcon;
-  title: string;
-  description?: string;
-  className?: string;
+  icon?: LucideIcon
+  title: string
+  description?: string
+  className?: string
 }
 
 interface SettingsCardContentProps {
-  children: React.ReactNode;
-  className?: string;
+  children: React.ReactNode
+  className?: string
 }
 
 interface SettingsFieldProps {
-  icon?: LucideIcon;
-  label: string;
-  description?: string;
-  children: React.ReactNode;
-  className?: string;
+  icon?: LucideIcon
+  label: string
+  description?: string
+  children: React.ReactNode
+  className?: string
 }
 
 interface SettingsRowProps {
-  label: string;
-  description?: string;
-  children: React.ReactNode;
-  className?: string;
+  label: string
+  description?: string
+  children: React.ReactNode
+  className?: string
 }
 
 // Main container with consistent spacing
-export const SettingsSection: React.FC<SettingsSectionProps> = ({
-  children,
-  className,
-}) => {
-  return <div className={cn('space-y-6', className)}>{children}</div>;
-};
+export const SettingsSection: React.FC<SettingsSectionProps> = ({ children, className }) => {
+  return <div className={cn('space-y-6', className)}>{children}</div>
+}
 
 // Page header with icon and description
 export const SettingsHeader: React.FC<SettingsHeaderProps> = ({
@@ -69,25 +66,17 @@ export const SettingsHeader: React.FC<SettingsHeaderProps> = ({
       </h2>
       {description && <p className="text-gray-600 text-sm">{description}</p>}
     </div>
-  );
-};
+  )
+}
 
 // Card container for grouped settings
-export const SettingsCard: React.FC<SettingsCardProps> = ({
-  children,
-  className,
-}) => {
+export const SettingsCard: React.FC<SettingsCardProps> = ({ children, className }) => {
   return (
-    <div
-      className={cn(
-        'bg-white rounded-lg border border-gray-200 overflow-hidden',
-        className
-      )}
-    >
+    <div className={cn('bg-white rounded-lg border border-gray-200 overflow-hidden', className)}>
       {children}
     </div>
-  );
-};
+  )
+}
 
 // Card header with title and description
 export const SettingsCardHeader: React.FC<SettingsCardHeaderProps> = ({
@@ -102,20 +91,18 @@ export const SettingsCardHeader: React.FC<SettingsCardHeaderProps> = ({
         {Icon && <Icon className="w-5 h-5 text-[#0066CC]" />}
         {title}
       </h3>
-      {description && (
-        <p className="text-sm text-gray-600 mt-1">{description}</p>
-      )}
+      {description && <p className="text-sm text-gray-600 mt-1">{description}</p>}
     </div>
-  );
-};
+  )
+}
 
 // Card content area
 export const SettingsCardContent: React.FC<SettingsCardContentProps> = ({
   children,
   className,
 }) => {
-  return <div className={cn('px-6 py-4', className)}>{children}</div>;
-};
+  return <div className={cn('px-6 py-4', className)}>{children}</div>
+}
 
 // Individual field with label and input
 export const SettingsField: React.FC<SettingsFieldProps> = ({
@@ -134,8 +121,8 @@ export const SettingsField: React.FC<SettingsFieldProps> = ({
       {children}
       {description && <p className="text-xs text-gray-500">{description}</p>}
     </div>
-  );
-};
+  )
+}
 
 // Row layout for settings with toggle/checkbox on right
 export const SettingsRow: React.FC<SettingsRowProps> = ({
@@ -153,19 +140,14 @@ export const SettingsRow: React.FC<SettingsRowProps> = ({
     >
       <div className="flex-1 pr-4">
         <div className="text-sm font-medium text-gray-900">{label}</div>
-        {description && (
-          <p className="text-xs text-gray-500 mt-0.5">{description}</p>
-        )}
+        {description && <p className="text-xs text-gray-500 mt-0.5">{description}</p>}
       </div>
       <div className="flex-shrink-0">{children}</div>
     </div>
-  );
-};
+  )
+}
 
 // Group of settings rows
-export const SettingsRowGroup: React.FC<SettingsCardContentProps> = ({
-  children,
-  className,
-}) => {
-  return <div className={cn('space-y-0', className)}>{children}</div>;
-};
+export const SettingsRowGroup: React.FC<SettingsCardContentProps> = ({ children, className }) => {
+  return <div className={cn('space-y-0', className)}>{children}</div>
+}

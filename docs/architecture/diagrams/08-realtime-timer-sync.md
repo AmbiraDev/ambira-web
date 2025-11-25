@@ -223,20 +223,20 @@ Survive Crash/Refresh
 
 ```typescript
 interface TimerState {
-  activeSession: ActiveSession | null;
-  elapsedSeconds: number;
-  isRunning: boolean;
+  activeSession: ActiveSession | null
+  elapsedSeconds: number
+  isRunning: boolean
 }
 
 interface ActiveSession {
-  id: string;
-  userId: string;
-  projectId: string;
-  projectName: string;
-  projectIcon: string;
-  projectColor: string;
-  startTime: Date;
-  lastHeartbeat: Date;
+  id: string
+  userId: string
+  projectId: string
+  projectName: string
+  projectIcon: string
+  projectColor: string
+  startTime: Date
+  lastHeartbeat: Date
 }
 ```
 
@@ -244,17 +244,15 @@ interface ActiveSession {
 
 ```typescript
 useEffect(() => {
-  if (!activeSession) return;
+  if (!activeSession) return
 
   const interval = setInterval(() => {
-    const elapsed = Math.floor(
-      (Date.now() - activeSession.startTime.getTime()) / 1000
-    );
-    setElapsedSeconds(elapsed);
-  }, 1000); // Update every second
+    const elapsed = Math.floor((Date.now() - activeSession.startTime.getTime()) / 1000)
+    setElapsedSeconds(elapsed)
+  }, 1000) // Update every second
 
-  return () => clearInterval(interval);
-}, [activeSession]);
+  return () => clearInterval(interval)
+}, [activeSession])
 ```
 
 ### 2. localStorage Synchronization
@@ -262,7 +260,7 @@ useEffect(() => {
 **Storage Key**:
 
 ```typescript
-const STORAGE_KEY = `ambira_active_session_${userId}`;
+const STORAGE_KEY = `ambira_active_session_${userId}`
 ```
 
 **Write to localStorage**:
@@ -277,11 +275,11 @@ const syncToLocalStorage = (session: ActiveSession | null) => {
         projectId: session.projectId,
         startTime: session.startTime.toISOString(),
       })
-    );
+    )
   } else {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY)
   }
-};
+}
 ```
 
 **Cross-Tab Listener**:
@@ -289,21 +287,21 @@ const syncToLocalStorage = (session: ActiveSession | null) => {
 ```typescript
 useEffect(() => {
   const handleStorageChange = (e: StorageEvent) => {
-    if (e.key !== STORAGE_KEY) return;
+    if (e.key !== STORAGE_KEY) return
 
     if (e.newValue) {
       // Session started/updated in another tab
-      const data = JSON.parse(e.newValue);
-      loadSessionFromFirestore(data.sessionId);
+      const data = JSON.parse(e.newValue)
+      loadSessionFromFirestore(data.sessionId)
     } else {
       // Session completed in another tab
-      clearActiveSession();
+      clearActiveSession()
     }
-  };
+  }
 
-  window.addEventListener('storage', handleStorageChange);
-  return () => window.removeEventListener('storage', handleStorageChange);
-}, []);
+  window.addEventListener('storage', handleStorageChange)
+  return () => window.removeEventListener('storage', handleStorageChange)
+}, [])
 ```
 
 **Important**: `storage` event only fires in OTHER tabs, not the tab that made the change. The changing tab updates React state directly.
@@ -315,14 +313,14 @@ useEffect(() => {
 ```typescript
 // /users/{userId}/activeSession/{sessionId}
 {
-  id: string;
-  userId: string;
-  projectId: string;
-  projectName: string;
-  projectIcon: string;
-  projectColor: string;
-  startTime: Timestamp;
-  lastHeartbeat: Timestamp; // Updated every 30s
+  id: string
+  userId: string
+  projectId: string
+  projectName: string
+  projectIcon: string
+  projectColor: string
+  startTime: Timestamp
+  lastHeartbeat: Timestamp // Updated every 30s
 }
 ```
 
@@ -330,7 +328,7 @@ useEffect(() => {
 
 ```typescript
 useEffect(() => {
-  if (!activeSession) return;
+  if (!activeSession) return
 
   const heartbeat = setInterval(async () => {
     try {
@@ -341,16 +339,16 @@ useEffect(() => {
         .doc(activeSession.id)
         .update({
           lastHeartbeat: serverTimestamp(),
-        });
+        })
     } catch (error) {
-      console.error('Heartbeat failed:', error);
+      console.error('Heartbeat failed:', error)
       // Queue for retry on network restore
-      queueFailedHeartbeat(activeSession.id);
+      queueFailedHeartbeat(activeSession.id)
     }
-  }, 30000); // Every 30 seconds
+  }, 30000) // Every 30 seconds
 
-  return () => clearInterval(heartbeat);
-}, [activeSession]);
+  return () => clearInterval(heartbeat)
+}, [activeSession])
 ```
 
 **Session Recovery on Mount**:
@@ -359,14 +357,14 @@ useEffect(() => {
 useEffect(() => {
   const loadActiveSession = async () => {
     // 1. Check localStorage first (fastest)
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
-      const data = JSON.parse(stored);
+      const data = JSON.parse(stored)
       // Use localStorage data optimistically
       setActiveSession({
         ...data,
         startTime: new Date(data.startTime),
-      });
+      })
     }
 
     // 2. Verify with Firestore (source of truth)
@@ -375,26 +373,26 @@ useEffect(() => {
       .doc(userId)
       .collection('activeSession')
       .limit(1)
-      .get();
+      .get()
 
     if (!snapshot.empty) {
-      const doc = snapshot.docs[0];
+      const doc = snapshot.docs[0]
       const session = {
         ...doc.data(),
         startTime: doc.data().startTime.toDate(),
-      };
+      }
 
-      setActiveSession(session);
-      syncToLocalStorage(session);
+      setActiveSession(session)
+      syncToLocalStorage(session)
     } else {
       // No active session in Firestore
-      setActiveSession(null);
-      localStorage.removeItem(STORAGE_KEY);
+      setActiveSession(null)
+      localStorage.removeItem(STORAGE_KEY)
     }
-  };
+  }
 
-  loadActiveSession();
-}, [userId]);
+  loadActiveSession()
+}, [userId])
 ```
 
 ## Synchronization Scenarios
@@ -456,17 +454,13 @@ useEffect(() => {
 
 ```typescript
 // Option 1: Use userId as document ID (one active session per user)
-const docRef = firestore
-  .collection('users')
-  .doc(userId)
-  .collection('activeSession')
-  .doc('current');
+const docRef = firestore.collection('users').doc(userId).collection('activeSession').doc('current')
 
 // Option 2: Check before creating
-const existing = await docRef.get();
+const existing = await docRef.get()
 if (existing.exists) {
   // Load existing session instead of creating new
-  return existing.data();
+  return existing.data()
 }
 ```
 
@@ -530,11 +524,11 @@ const TimerDisplay = React.memo(({ seconds }: { seconds: number }) => {
 ### 2. Debounce localStorage Writes
 
 ```typescript
-const debouncedSync = useMemo(() => debounce(syncToLocalStorage, 1000), []);
+const debouncedSync = useMemo(() => debounce(syncToLocalStorage, 1000), [])
 
 useEffect(() => {
-  debouncedSync(activeSession);
-}, [activeSession]);
+  debouncedSync(activeSession)
+}, [activeSession])
 ```
 
 ### 3. Batch Firestore Writes
@@ -623,17 +617,17 @@ useEffect(() => {
     .collection('users')
     .doc(userId)
     .collection('activeSession')
-    .onSnapshot(snapshot => {
+    .onSnapshot((snapshot) => {
       if (snapshot.empty) {
-        setActiveSession(null);
+        setActiveSession(null)
       } else {
-        const doc = snapshot.docs[0];
-        setActiveSession(doc.data());
+        const doc = snapshot.docs[0]
+        setActiveSession(doc.data())
       }
-    });
+    })
 
-  return () => unsubscribe();
-}, [userId]);
+  return () => unsubscribe()
+}, [userId])
 ```
 
 **Benefits**:
@@ -653,11 +647,11 @@ Use service worker to maintain heartbeat even when tabs are closed:
 
 ```typescript
 // service-worker.js
-self.addEventListener('periodicsync', event => {
+self.addEventListener('periodicsync', (event) => {
   if (event.tag === 'timer-heartbeat') {
-    event.waitUntil(sendHeartbeat());
+    event.waitUntil(sendHeartbeat())
   }
-});
+})
 ```
 
 ### 3. Pause/Resume
@@ -667,14 +661,12 @@ Allow pausing the timer without completing:
 ```typescript
 interface ActiveSession {
   // ...
-  pausedAt?: Date;
-  pausedDuration: number; // Total time paused
+  pausedAt?: Date
+  pausedDuration: number // Total time paused
 }
 
 // Calculate elapsed excluding paused time
-const elapsed = isPaused
-  ? pausedAt - startTime - pausedDuration
-  : now - startTime - pausedDuration;
+const elapsed = isPaused ? pausedAt - startTime - pausedDuration : now - startTime - pausedDuration
 ```
 
 ### 4. Session Templates
@@ -683,17 +675,17 @@ Save common session patterns:
 
 ```typescript
 interface SessionTemplate {
-  projectId: string;
-  estimatedDuration: number;
-  notes: string;
-  tags: string[];
+  projectId: string
+  estimatedDuration: number
+  notes: string
+  tags: string[]
 }
 
 // Quick-start from template
-const startFromTemplate = template => {
+const startFromTemplate = (template) => {
   startSession({
     ...template,
     startTime: now,
-  });
-};
+  })
+}
 ```

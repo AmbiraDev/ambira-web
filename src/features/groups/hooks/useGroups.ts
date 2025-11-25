@@ -8,18 +8,14 @@
  * Components → useGroups hooks (React Query) → GroupService → GroupRepository → Firebase
  */
 
-import { useQuery, UseQueryOptions } from '@tanstack/react-query';
-import { GroupService } from '../services/GroupService';
-import { Group as DomainGroup } from '@/domain/entities/Group';
-import { Group as UIGroup } from '@/types';
-import {
-  LeaderboardEntry,
-  TimePeriod,
-  GroupStats,
-} from '../types/groups.types';
+import { useQuery, UseQueryOptions } from '@tanstack/react-query'
+import { GroupService } from '../services/GroupService'
+import { Group as DomainGroup } from '@/domain/entities/Group'
+import { Group as UIGroup } from '@/types'
+import { LeaderboardEntry, TimePeriod, GroupStats } from '../types/groups.types'
 
 // Singleton service instance
-const groupService = new GroupService();
+const groupService = new GroupService()
 
 // ==================== ADAPTERS ====================
 /**
@@ -33,8 +29,7 @@ function adaptDomainGroupToUI(domainGroup: DomainGroup): UIGroup {
     description: domainGroup.description,
     category: domainGroup.category,
     type: 'professional', // Default type - can be made configurable
-    privacySetting:
-      domainGroup.privacy === 'public' ? 'public' : 'approval-required',
+    privacySetting: domainGroup.privacy === 'public' ? 'public' : 'approval-required',
     memberCount: domainGroup.getMemberCount(),
     adminUserIds: Array.from(domainGroup.adminUserIds),
     memberIds: Array.from(domainGroup.memberIds),
@@ -47,14 +42,14 @@ function adaptDomainGroupToUI(domainGroup: DomainGroup): UIGroup {
     icon: undefined,
     color: undefined,
     bannerUrl: undefined,
-  };
+  }
 }
 
 /**
  * Convert array of domain Groups to UI Groups
  */
 function adaptDomainGroupsToUI(domainGroups: DomainGroup[]): UIGroup[] {
-  return domainGroups.map(adaptDomainGroupToUI);
+  return domainGroups.map(adaptDomainGroupToUI)
 }
 
 // ==================== CACHE KEYS ====================
@@ -65,14 +60,12 @@ export const GROUPS_KEYS = {
   list: (filters?: string) => [...GROUPS_KEYS.lists(), { filters }] as const,
   details: () => [...GROUPS_KEYS.all(), 'detail'] as const,
   detail: (id: string) => [...GROUPS_KEYS.details(), id] as const,
-  userGroups: (userId: string) =>
-    [...GROUPS_KEYS.all(), 'user', userId] as const,
+  userGroups: (userId: string) => [...GROUPS_KEYS.all(), 'user', userId] as const,
   publicGroups: () => [...GROUPS_KEYS.lists(), 'public'] as const,
   leaderboard: (groupId: string, period: TimePeriod) =>
     [...GROUPS_KEYS.detail(groupId), 'leaderboard', period] as const,
-  stats: (groupId: string) =>
-    [...GROUPS_KEYS.detail(groupId), 'stats'] as const,
-};
+  stats: (groupId: string) => [...GROUPS_KEYS.detail(groupId), 'stats'] as const,
+}
 
 // ==================== CACHE TIMES ====================
 const CACHE_TIMES = {
@@ -80,7 +73,7 @@ const CACHE_TIMES = {
   MEDIUM: 5 * 60 * 1000, // 5 minutes
   LONG: 15 * 60 * 1000, // 15 minutes
   VERY_LONG: 60 * 60 * 1000, // 1 hour
-};
+}
 
 // ==================== QUERY HOOKS ====================
 
@@ -97,13 +90,13 @@ export function useGroupDetails(
   return useQuery<UIGroup | null, Error>({
     queryKey: GROUPS_KEYS.detail(groupId),
     queryFn: async () => {
-      const domainGroup = await groupService.getGroupDetails(groupId);
-      return domainGroup ? adaptDomainGroupToUI(domainGroup) : null;
+      const domainGroup = await groupService.getGroupDetails(groupId)
+      return domainGroup ? adaptDomainGroupToUI(domainGroup) : null
     },
     staleTime: CACHE_TIMES.LONG, // 15 minutes cache
     enabled: !!groupId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -119,13 +112,13 @@ export function useUserGroups(
   return useQuery<UIGroup[], Error>({
     queryKey: GROUPS_KEYS.userGroups(userId),
     queryFn: async () => {
-      const domainGroups = await groupService.getUserGroups(userId);
-      return adaptDomainGroupsToUI(domainGroups);
+      const domainGroups = await groupService.getUserGroups(userId)
+      return adaptDomainGroupsToUI(domainGroups)
     },
     staleTime: CACHE_TIMES.LONG, // 15 minutes cache
     enabled: !!userId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -141,12 +134,12 @@ export function usePublicGroups(
   return useQuery<UIGroup[], Error>({
     queryKey: [...GROUPS_KEYS.publicGroups(), limit],
     queryFn: async () => {
-      const domainGroups = await groupService.getPublicGroups(limit);
-      return adaptDomainGroupsToUI(domainGroups);
+      const domainGroups = await groupService.getPublicGroups(limit)
+      return adaptDomainGroupsToUI(domainGroups)
     },
     staleTime: CACHE_TIMES.LONG, // 15 minutes cache
     ...options,
-  });
+  })
 }
 
 /**
@@ -166,7 +159,7 @@ export function useGroupLeaderboard(
     staleTime: CACHE_TIMES.MEDIUM, // 5 minutes cache for leaderboards
     enabled: !!groupId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -185,7 +178,7 @@ export function useGroupStats(
     staleTime: CACHE_TIMES.MEDIUM, // 5 minutes cache for stats
     enabled: !!groupId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -205,7 +198,7 @@ export function useCanJoinGroup(
     staleTime: CACHE_TIMES.MEDIUM,
     enabled: !!groupId && !!userId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -225,7 +218,7 @@ export function useCanInviteToGroup(
     staleTime: CACHE_TIMES.MEDIUM,
     enabled: !!groupId && !!userId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -241,12 +234,12 @@ export function useGroups(
   return useQuery<UIGroup[], Error>({
     queryKey: GROUPS_KEYS.list(JSON.stringify(filters || {})),
     queryFn: async () => {
-      const domainGroups = await groupService.getPublicGroups();
-      return adaptDomainGroupsToUI(domainGroups);
+      const domainGroups = await groupService.getPublicGroups()
+      return adaptDomainGroupsToUI(domainGroups)
     },
     staleTime: CACHE_TIMES.LONG,
     ...options,
-  });
+  })
 }
 
 /**
@@ -264,23 +257,19 @@ export function useGroupSearch(
     queryKey: [...GROUPS_KEYS.lists(), 'search', filters, limit],
     queryFn: async () => {
       // Get all public groups and filter client-side
-      const domainGroups = await groupService.getPublicGroups(limit);
-      const filtered = domainGroups.filter(group => {
+      const domainGroups = await groupService.getPublicGroups(limit)
+      const filtered = domainGroups.filter((group) => {
         const matchesName =
-          !filters.name ||
-          group.name.toLowerCase().includes(filters.name.toLowerCase());
+          !filters.name || group.name.toLowerCase().includes(filters.name.toLowerCase())
         const matchesLocation =
           !filters.location ||
-          group.location
-            ?.toLowerCase()
-            .includes(filters.location.toLowerCase());
-        const matchesCategory =
-          !filters.category || group.category === filters.category;
-        return matchesName && matchesLocation && matchesCategory;
-      });
-      return adaptDomainGroupsToUI(filtered);
+          group.location?.toLowerCase().includes(filters.location.toLowerCase())
+        const matchesCategory = !filters.category || group.category === filters.category
+        return matchesName && matchesLocation && matchesCategory
+      })
+      return adaptDomainGroupsToUI(filtered)
     },
     staleTime: CACHE_TIMES.SHORT,
     ...options,
-  });
+  })
 }

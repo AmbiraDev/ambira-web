@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test'
 
 /**
  * Playwright configuration for smoke tests and accessibility checks
@@ -27,10 +27,7 @@ export default defineConfig({
         ['junit', { outputFile: 'docs/playwright-artifacts/report/junit.xml' }],
         ['list'],
       ]
-    : [
-        ['html', { outputFolder: 'docs/playwright-artifacts/report' }],
-        ['list'],
-      ],
+    : [['html', { outputFolder: 'docs/playwright-artifacts/report' }], ['list']],
 
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -90,4 +87,4 @@ export default defineConfig({
         reuseExistingServer: !process.env.CI,
         timeout: 120 * 1000,
       },
-});
+})

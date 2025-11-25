@@ -1,86 +1,84 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import { Group } from '@/types';
-import { firebaseApi } from '@/lib/api';
-import { Users, MapPin, Loader2 } from 'lucide-react';
-import Image from 'next/image';
+import React, { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
+import { Group } from '@/types'
+import { firebaseApi } from '@/lib/api'
+import { Users, MapPin, Loader2 } from 'lucide-react'
+import Image from 'next/image'
 
 interface GroupInviteLandingProps {
-  groupId: string;
+  groupId: string
 }
 
-export default function GroupInviteLanding({
-  groupId,
-}: GroupInviteLandingProps) {
-  const router = useRouter();
-  const { user, isLoading: authLoading } = useAuth();
-  const [group, setGroup] = useState<Group | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isJoining, setIsJoining] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export default function GroupInviteLanding({ groupId }: GroupInviteLandingProps) {
+  const router = useRouter()
+  const { user, isLoading: authLoading } = useAuth()
+  const [group, setGroup] = useState<Group | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isJoining, setIsJoining] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const loadGroup = useCallback(async () => {
     try {
-      setIsLoading(true);
-      const groupData = await firebaseApi.group.getGroup(groupId);
+      setIsLoading(true)
+      const groupData = await firebaseApi.group.getGroup(groupId)
       if (!groupData) {
-        setError('Group not found');
-        return;
+        setError('Group not found')
+        return
       }
-      setGroup(groupData);
+      setGroup(groupData)
     } catch (_error) {
-      setError('Failed to load group information');
+      setError('Failed to load group information')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, [groupId]);
+  }, [groupId])
 
   const handleJoinGroup = useCallback(async () => {
-    if (!user || !group) return;
+    if (!user || !group) return
 
     try {
-      setIsJoining(true);
-      await firebaseApi.group.joinGroup(group.id, user.id);
+      setIsJoining(true)
+      await firebaseApi.group.joinGroup(group.id, user.id)
       // Redirect to group page
-      router.push(`/groups/${groupId}`);
+      router.push(`/groups/${groupId}`)
     } catch (err: unknown) {
       const errorMessage =
         err && typeof err === 'object' && 'message' in err
           ? String(err.message)
-          : 'Failed to join group';
-      setError(errorMessage);
+          : 'Failed to join group'
+      setError(errorMessage)
     } finally {
-      setIsJoining(false);
+      setIsJoining(false)
     }
-  }, [user, group, router, groupId]);
+  }, [user, group, router, groupId])
 
   const checkMembershipAndRedirect = useCallback(async () => {
-    if (!user || !group) return;
+    if (!user || !group) return
 
     // Check if user is already a member
     if (group.memberIds.includes(user.id)) {
       // Already a member, redirect to group
-      router.push(`/groups/${groupId}`);
-      return;
+      router.push(`/groups/${groupId}`)
+      return
     }
 
     // Not a member, auto-join them
-    await handleJoinGroup();
-  }, [user, group, router, groupId, handleJoinGroup]);
+    await handleJoinGroup()
+  }, [user, group, router, groupId, handleJoinGroup])
 
   useEffect(() => {
-    loadGroup();
-  }, [loadGroup]);
+    loadGroup()
+  }, [loadGroup])
 
   // If user is already logged in, check membership and redirect
   useEffect(() => {
     if (!authLoading && user && group) {
-      checkMembershipAndRedirect();
+      checkMembershipAndRedirect()
     }
-  }, [user, authLoading, group, checkMembershipAndRedirect]);
+  }, [user, authLoading, group, checkMembershipAndRedirect])
 
   const handleSignUp = () => {
     // Store invite context in sessionStorage for post-signup redirect
@@ -91,10 +89,10 @@ export default function GroupInviteLanding({
           type: 'group',
           groupId: groupId,
         })
-      );
+      )
     }
-    router.push('/signup');
-  };
+    router.push('/signup')
+  }
 
   const handleLogin = () => {
     // Store invite context in sessionStorage for post-login redirect
@@ -105,25 +103,25 @@ export default function GroupInviteLanding({
           type: 'group',
           groupId: groupId,
         })
-      );
+      )
     }
-    router.push('/login');
-  };
+    router.push('/login')
+  }
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'work':
-        return '💼';
+        return '💼'
       case 'study':
-        return '📚';
+        return '📚'
       case 'side-project':
-        return '💻';
+        return '💻'
       case 'learning':
-        return '🎓';
+        return '🎓'
       default:
-        return '📌';
+        return '📌'
     }
-  };
+  }
 
   if (isLoading || authLoading) {
     return (
@@ -133,7 +131,7 @@ export default function GroupInviteLanding({
           <p className="text-gray-600">Loading group...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (error || !group) {
@@ -143,12 +141,9 @@ export default function GroupInviteLanding({
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">❌</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Group Not Found
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Group Not Found</h1>
           <p className="text-gray-600 mb-6">
-            {error ||
-              "The group you're looking for doesn't exist or has been deleted."}
+            {error || "The group you're looking for doesn't exist or has been deleted."}
           </p>
           <button
             onClick={() => router.push('/')}
@@ -158,7 +153,7 @@ export default function GroupInviteLanding({
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   // If user is logged in and joining, show loading state
@@ -170,7 +165,7 @@ export default function GroupInviteLanding({
           <p className="text-gray-600">Joining {group.name}...</p>
         </div>
       </div>
-    );
+    )
   }
 
   // Show invite landing page for non-logged-in users
@@ -180,13 +175,7 @@ export default function GroupInviteLanding({
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 mx-auto mb-4">
-            <Image
-              src="/logo.svg"
-              alt="Ambira"
-              width={64}
-              height={64}
-              className="w-16 h-16"
-            />
+            <Image src="/logo.svg" alt="Ambira" width={64} height={64} className="w-16 h-16" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Join Ambira</h1>
         </div>
@@ -210,9 +199,7 @@ export default function GroupInviteLanding({
               )}
             </div>
 
-            <h2 className="text-3xl font-bold text-white mb-2">
-              Join {group.name}
-            </h2>
+            <h2 className="text-3xl font-bold text-white mb-2">Join {group.name}</h2>
             <p className="text-blue-100 text-lg">on Ambira</p>
           </div>
 
@@ -221,9 +208,7 @@ export default function GroupInviteLanding({
             {/* Description */}
             {group.description && (
               <div className="mb-6">
-                <p className="text-gray-700 text-center leading-relaxed">
-                  {group.description}
-                </p>
+                <p className="text-gray-700 text-center leading-relaxed">{group.description}</p>
               </div>
             )}
 
@@ -231,20 +216,15 @@ export default function GroupInviteLanding({
             <div className="flex items-center justify-center gap-6 mb-8 text-sm text-gray-600">
               {/* Category */}
               <div className="flex items-center gap-2">
-                <span className="text-xl">
-                  {getCategoryIcon(group.category)}
-                </span>
-                <span className="capitalize">
-                  {group.category.replace('-', ' ')}
-                </span>
+                <span className="text-xl">{getCategoryIcon(group.category)}</span>
+                <span className="capitalize">{group.category.replace('-', ' ')}</span>
               </div>
 
               {/* Member Count */}
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
                 <span>
-                  {group.memberCount}{' '}
-                  {group.memberCount === 1 ? 'member' : 'members'}
+                  {group.memberCount} {group.memberCount === 1 ? 'member' : 'members'}
                 </span>
               </div>
 
@@ -285,12 +265,11 @@ export default function GroupInviteLanding({
         <div className="bg-white/80 backdrop-blur rounded-xl p-6 text-center">
           <h3 className="font-semibold text-gray-900 mb-2">What is Ambira?</h3>
           <p className="text-gray-600 text-sm">
-            Ambira is a social productivity tracking app that helps you track
-            work sessions, build streaks, and compete with friends. Think
-            Strava, but for productivity.
+            Ambira is a social productivity tracking app that helps you track work sessions, build
+            streaks, and compete with friends. Think Strava, but for productivity.
           </p>
         </div>
       </div>
     </div>
-  );
+  )
 }

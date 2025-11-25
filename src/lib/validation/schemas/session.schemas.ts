@@ -5,7 +5,7 @@
  * input sanitization, and Firestore compatibility.
  */
 
-import * as v from 'valibot';
+import * as v from 'valibot'
 import {
   UuidSchema,
   VisibilitySchema,
@@ -16,7 +16,7 @@ import {
   ImageUrlsSchema,
   NonEmptyStringSchema,
   OptionalStringSchema,
-} from '../utils/common-schemas';
+} from '../utils/common-schemas'
 
 /**
  * Schema for creating a new session
@@ -30,14 +30,14 @@ export const CreateSessionSchema = v.object({
     v.string('Title is required'),
     v.nonEmpty('Title cannot be empty'),
     v.maxLength(200, 'Title cannot exceed 200 characters'),
-    v.transform(str => str.trim())
+    v.transform((str) => str.trim())
   ),
   duration: DurationSchema,
   startTime: v.union([
     v.date('Invalid start time'),
     v.pipe(
       v.number(),
-      v.transform(n => new Date(n))
+      v.transform((n) => new Date(n))
     ),
   ]),
 
@@ -60,7 +60,7 @@ export const CreateSessionSchema = v.object({
 
   // Backwards compatibility
   projectId: v.optional(UuidSchema),
-});
+})
 
 /**
  * Schema for updating an existing session
@@ -73,7 +73,7 @@ export const UpdateSessionSchema = v.object({
       v.string(),
       v.nonEmpty('Title cannot be empty'),
       v.maxLength(200, 'Title cannot exceed 200 characters'),
-      v.transform(str => str.trim())
+      v.transform((str) => str.trim())
     )
   ),
   description: OptionalStringSchema,
@@ -92,7 +92,7 @@ export const UpdateSessionSchema = v.object({
   privateNotes: LongTextSchema,
   allowComments: v.optional(v.boolean()),
   isArchived: v.optional(v.boolean()),
-});
+})
 
 /**
  * Schema for session form data (used in UI forms)
@@ -107,7 +107,7 @@ export const SessionFormSchema = v.object({
     DurationSchema,
     v.pipe(
       v.string(),
-      v.transform(str => parseInt(str, 10)),
+      v.transform((str) => parseInt(str, 10)),
       DurationSchema
     ),
   ]),
@@ -115,7 +115,7 @@ export const SessionFormSchema = v.object({
     v.date(),
     v.pipe(
       v.string(),
-      v.transform(str => new Date(str))
+      v.transform((str) => new Date(str))
     ),
   ]),
   description: OptionalStringSchema,
@@ -125,7 +125,7 @@ export const SessionFormSchema = v.object({
       v.array(v.string()),
       v.pipe(
         v.string(),
-        v.transform(str => (str ? str.split(',').map(tag => tag.trim()) : []))
+        v.transform((str) => (str ? str.split(',').map((tag) => tag.trim()) : []))
       ),
     ])
   ),
@@ -135,7 +135,7 @@ export const SessionFormSchema = v.object({
       v.boolean(),
       v.pipe(
         v.string(),
-        v.transform(str => str === 'true')
+        v.transform((str) => str === 'true')
       ),
     ])
   ),
@@ -144,7 +144,7 @@ export const SessionFormSchema = v.object({
       v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(5)),
       v.pipe(
         v.string(),
-        v.transform(str => parseInt(str, 10)),
+        v.transform((str) => parseInt(str, 10)),
         v.integer(),
         v.minValue(1),
         v.maxValue(5)
@@ -157,11 +157,11 @@ export const SessionFormSchema = v.object({
       v.boolean(),
       v.pipe(
         v.string(),
-        v.transform(str => str === 'true')
+        v.transform((str) => str === 'true')
       ),
     ])
   ),
-});
+})
 
 /**
  * Schema for session filters (used in queries)
@@ -174,7 +174,7 @@ export const SessionFiltersSchema = v.object({
   endDate: v.optional(v.date()),
   isArchived: v.optional(v.boolean()),
   tags: v.optional(v.array(v.string())),
-});
+})
 
 /**
  * Schema for session sort options
@@ -182,20 +182,20 @@ export const SessionFiltersSchema = v.object({
 export const SessionSortSchema = v.object({
   field: v.picklist(['createdAt', 'startTime', 'duration', 'supportCount']),
   direction: v.picklist(['asc', 'desc']),
-});
+})
 
 // Type exports for use throughout the application
-export type CreateSessionInput = v.InferInput<typeof CreateSessionSchema>;
-export type CreateSessionData = v.InferOutput<typeof CreateSessionSchema>;
+export type CreateSessionInput = v.InferInput<typeof CreateSessionSchema>
+export type CreateSessionData = v.InferOutput<typeof CreateSessionSchema>
 
-export type UpdateSessionInput = v.InferInput<typeof UpdateSessionSchema>;
-export type UpdateSessionData = v.InferOutput<typeof UpdateSessionSchema>;
+export type UpdateSessionInput = v.InferInput<typeof UpdateSessionSchema>
+export type UpdateSessionData = v.InferOutput<typeof UpdateSessionSchema>
 
-export type SessionFormInput = v.InferInput<typeof SessionFormSchema>;
-export type SessionFormData = v.InferOutput<typeof SessionFormSchema>;
+export type SessionFormInput = v.InferInput<typeof SessionFormSchema>
+export type SessionFormData = v.InferOutput<typeof SessionFormSchema>
 
-export type SessionFiltersInput = v.InferInput<typeof SessionFiltersSchema>;
-export type SessionFilters = v.InferOutput<typeof SessionFiltersSchema>;
+export type SessionFiltersInput = v.InferInput<typeof SessionFiltersSchema>
+export type SessionFilters = v.InferOutput<typeof SessionFiltersSchema>
 
-export type SessionSortInput = v.InferInput<typeof SessionSortSchema>;
-export type SessionSort = v.InferOutput<typeof SessionSortSchema>;
+export type SessionSortInput = v.InferInput<typeof SessionSortSchema>
+export type SessionSort = v.InferOutput<typeof SessionSortSchema>

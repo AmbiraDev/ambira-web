@@ -1,22 +1,22 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import React, { useState } from 'react'
+import { useAuth } from '@/hooks/useAuth'
 import {
   useSessionComments,
   useCreateComment,
   useDeleteComment,
   useCommentLike,
-} from '@/features/comments/hooks';
-import CommentInput from './CommentInput';
-import CommentItem from './CommentItem';
+} from '@/features/comments/hooks'
+import CommentInput from './CommentInput'
+import CommentItem from './CommentItem'
 
 interface CommentListProps {
-  sessionId: string;
-  onCommentCountChange?: (count: number) => void;
-  showPagination?: boolean;
-  commentsPerPage?: number;
-  initialCommentCount?: number;
+  sessionId: string
+  onCommentCountChange?: (count: number) => void
+  showPagination?: boolean
+  commentsPerPage?: number
+  initialCommentCount?: number
 }
 
 export const CommentList: React.FC<CommentListProps> = ({
@@ -24,8 +24,8 @@ export const CommentList: React.FC<CommentListProps> = ({
   onCommentCountChange,
   initialCommentCount: _initialCommentCount,
 }) => {
-  const { user } = useAuth();
-  const [showInput, setShowInput] = useState(false);
+  const { user } = useAuth()
+  const [showInput, setShowInput] = useState(false)
 
   // Use new React Query hooks
   const {
@@ -33,60 +33,60 @@ export const CommentList: React.FC<CommentListProps> = ({
     isLoading,
     error: queryError,
     refetch,
-  } = useSessionComments(sessionId, 20);
+  } = useSessionComments(sessionId, 20)
 
   const createCommentMutation = useCreateComment({
     onSuccess: () => {
-      setShowInput(false);
+      setShowInput(false)
       // Update parent component's count
       if (onCommentCountChange && commentsResponse) {
-        onCommentCountChange(commentsResponse.comments.length + 1);
+        onCommentCountChange(commentsResponse.comments.length + 1)
       }
     },
-  });
+  })
 
   const deleteCommentMutation = useDeleteComment({
     onSuccess: () => {
       // Update parent component's count
       if (onCommentCountChange && commentsResponse) {
-        onCommentCountChange(Math.max(0, commentsResponse.comments.length - 1));
+        onCommentCountChange(Math.max(0, commentsResponse.comments.length - 1))
       }
     },
-  });
+  })
 
-  const likeMutation = useCommentLike(sessionId);
+  const likeMutation = useCommentLike(sessionId)
 
-  const comments = commentsResponse?.comments || [];
-  const hasMore = commentsResponse?.hasMore || false;
-  const error = queryError?.message || null;
+  const comments = commentsResponse?.comments || []
+  const hasMore = commentsResponse?.hasMore || false
+  const error = queryError?.message || null
 
   const handleCreateComment = async (content: string) => {
     try {
       await createCommentMutation.mutateAsync({
         sessionId,
         content,
-      });
+      })
     } catch (err: unknown) {
-      throw err;
+      throw err
     }
-  };
+  }
 
   const handleDelete = async (commentId: string) => {
     try {
-      await deleteCommentMutation.mutateAsync({ commentId, sessionId });
+      await deleteCommentMutation.mutateAsync({ commentId, sessionId })
     } catch (err: unknown) {
-      throw err;
+      throw err
     }
-  };
+  }
 
   const handleLike = (commentId: string, action: 'like' | 'unlike') => {
-    likeMutation.mutate({ commentId, action });
-  };
+    likeMutation.mutate({ commentId, action })
+  }
 
   if (isLoading) {
     return (
       <div className="space-y-3 py-4">
-        {[1, 2, 3].map(i => (
+        {[1, 2, 3].map((i) => (
           <div key={i} className="flex gap-2.5 animate-pulse">
             <div className="w-10 h-10 rounded-full bg-gray-200" />
             <div className="flex-1 space-y-1.5">
@@ -97,7 +97,7 @@ export const CommentList: React.FC<CommentListProps> = ({
           </div>
         ))}
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -111,7 +111,7 @@ export const CommentList: React.FC<CommentListProps> = ({
           Try again
         </button>
       </div>
-    );
+    )
   }
 
   return (
@@ -128,7 +128,7 @@ export const CommentList: React.FC<CommentListProps> = ({
       {/* Comments List */}
       {comments.length > 0 ? (
         <div className="space-y-3 mb-3">
-          {comments.map(comment => (
+          {comments.map((comment) => (
             <CommentItem
               key={comment.id}
               comment={comment}
@@ -171,7 +171,7 @@ export const CommentList: React.FC<CommentListProps> = ({
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default CommentList;
+export default CommentList

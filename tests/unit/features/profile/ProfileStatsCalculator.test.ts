@@ -1,21 +1,21 @@
-import { Session } from '@/domain/entities/Session';
-import { ProfileStatsCalculator } from '@/features/profile/domain/ProfileStatsCalculator';
+import { Session } from '@/domain/entities/Session'
+import { ProfileStatsCalculator } from '@/features/profile/domain/ProfileStatsCalculator'
 
-const calculator = new ProfileStatsCalculator();
+const calculator = new ProfileStatsCalculator()
 
 function buildSession(
   id: string,
   overrides: Partial<{
-    createdAt: Date;
-    duration: number;
-    projectId: string;
-    activityId: string;
+    createdAt: Date
+    duration: number
+    projectId: string
+    activityId: string
   }> = {}
 ) {
-  const createdAt = overrides.createdAt ?? new Date('2024-01-01T10:00:00Z');
-  const duration = overrides.duration ?? 3600;
-  const projectId = overrides.projectId ?? 'project-default';
-  const activityId = overrides.activityId ?? 'activity-default';
+  const createdAt = overrides.createdAt ?? new Date('2024-01-01T10:00:00Z')
+  const duration = overrides.duration ?? 3600
+  const projectId = overrides.projectId ?? 'project-default'
+  const activityId = overrides.activityId ?? 'activity-default'
 
   return new Session(
     id,
@@ -27,7 +27,7 @@ function buildSession(
     undefined,
     undefined,
     'everyone'
-  );
+  )
 }
 
 describe('ProfileStatsCalculator', () => {
@@ -45,23 +45,23 @@ describe('ProfileStatsCalculator', () => {
         createdAt: new Date('2024-01-03T12:00:00Z'),
         duration: 7200,
       }),
-    ];
+    ]
 
     // Freeze time to Jan 7th
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date('2024-01-07T12:00:00Z'));
-    const chart = calculator.calculateChartData(sessions, '7D');
-    jest.useRealTimers();
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date('2024-01-07T12:00:00Z'))
+    const chart = calculator.calculateChartData(sessions, '7D')
+    jest.useRealTimers()
 
-    expect(chart).toHaveLength(7);
-    const busyDay = chart.find(point => point.sessions === 2);
-    expect(busyDay).toBeDefined();
-    expect(busyDay?.hours ?? 0).toBeGreaterThan(1.4);
-  });
+    expect(chart).toHaveLength(7)
+    const busyDay = chart.find((point) => point.sessions === 2)
+    expect(busyDay).toBeDefined()
+    expect(busyDay?.hours ?? 0).toBeGreaterThan(1.4)
+  })
 
   it('summarises overall session statistics and streaks', () => {
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date('2024-01-07T12:00:00Z'));
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date('2024-01-07T12:00:00Z'))
 
     const sessions = [
       buildSession('s1', {
@@ -76,18 +76,18 @@ describe('ProfileStatsCalculator', () => {
         createdAt: new Date('2024-01-04T09:00:00Z'),
         duration: 1800,
       }),
-    ];
+    ]
 
-    const stats = calculator.calculateStats(sessions);
+    const stats = calculator.calculateStats(sessions)
 
-    expect(stats.totalSessions).toBe(3);
-    expect(stats.totalHours).toBeCloseTo((3600 + 7200 + 1800) / 3600, 5);
-    expect(stats.longestSession).toBe(7200);
-    expect(stats.currentStreak).toBeGreaterThanOrEqual(2);
-    expect(stats.longestStreak).toBeGreaterThanOrEqual(stats.currentStreak);
+    expect(stats.totalSessions).toBe(3)
+    expect(stats.totalHours).toBeCloseTo((3600 + 7200 + 1800) / 3600, 5)
+    expect(stats.longestSession).toBe(7200)
+    expect(stats.currentStreak).toBeGreaterThanOrEqual(2)
+    expect(stats.longestStreak).toBeGreaterThanOrEqual(stats.currentStreak)
 
-    jest.useRealTimers();
-  });
+    jest.useRealTimers()
+  })
 
   it('filters sessions by activity and ranks top activities', () => {
     const sessions = [
@@ -106,13 +106,13 @@ describe('ProfileStatsCalculator', () => {
         projectId: 'reading',
         duration: 1800,
       }),
-    ];
+    ]
 
-    const filtered = calculator.filterSessionsByActivity(sessions, 'writing');
-    expect(filtered).toHaveLength(2);
+    const filtered = calculator.filterSessionsByActivity(sessions, 'writing')
+    expect(filtered).toHaveLength(2)
 
-    const top = calculator.getTopActivities(sessions, 2);
-    expect(top[0]).toMatchObject({ id: 'writing', sessions: 2 });
-    expect(top[1]).toMatchObject({ id: 'reading', sessions: 1 });
-  });
-});
+    const top = calculator.getTopActivities(sessions, 2)
+    expect(top[0]).toMatchObject({ id: 'writing', sessions: 2 })
+    expect(top[1]).toMatchObject({ id: 'reading', sessions: 1 })
+  })
+})

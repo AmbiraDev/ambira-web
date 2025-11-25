@@ -8,12 +8,7 @@
  */
 
 // Query hooks
-export {
-  useSession,
-  useSessionWithDetails,
-  useUserSessions,
-  SESSION_KEYS,
-} from './useSessions';
+export { useSession, useSessionWithDetails, useUserSessions, SESSION_KEYS } from './useSessions'
 
 // Mutation hooks
 export {
@@ -22,7 +17,7 @@ export {
   useUpdateSession,
   useInvalidateSession,
   useInvalidateAllSessions,
-} from './useSessionMutations';
+} from './useSessionMutations'
 
 // Re-export types
-export type { SupportSessionData } from '../services/SessionService';
+export type { SupportSessionData } from '../services/SessionService'

@@ -214,9 +214,9 @@ sequenceDiagram
 
 ```typescript
 interface AuthState {
-  user: User | null; // Current user or null if not authenticated
-  loading: boolean; // Loading during initial auth check
-  error: string | null; // Authentication error message
+  user: User | null // Current user or null if not authenticated
+  loading: boolean // Loading during initial auth check
+  error: string | null // Authentication error message
 }
 ```
 

@@ -1,30 +1,19 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { CreateGroupData } from '@/types';
-import { Globe, Lock } from 'lucide-react';
+import React, { useState } from 'react'
+import { CreateGroupData } from '@/types'
+import { Globe, Lock } from 'lucide-react'
 
 interface CreateGroupModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (data: CreateGroupData) => Promise<void>;
-  isLoading?: boolean;
-  isFullPage?: boolean; // New prop to control full-page vs modal rendering
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (data: CreateGroupData) => Promise<void>
+  isLoading?: boolean
+  isFullPage?: boolean // New prop to control full-page vs modal rendering
 }
 
 // Preset icons (same as CreateProjectModal)
-const availableIcons = [
-  '💻',
-  '⚛️',
-  '💪',
-  '📚',
-  '🎨',
-  '🏃',
-  '🎵',
-  '🔬',
-  '📝',
-  '🚀',
-];
+const availableIcons = ['💻', '⚛️', '💪', '📚', '🎨', '🏃', '🎵', '🔬', '📝', '🚀']
 
 // Preset colors (same as CreateProjectModal)
 const availableColors = [
@@ -36,7 +25,7 @@ const availableColors = [
   { name: 'yellow', class: 'bg-yellow-500', hex: '#eab308' },
   { name: 'pink', class: 'bg-pink-500', hex: '#ec4899' },
   { name: 'indigo', class: 'bg-indigo-500', hex: '#6366f1' },
-];
+]
 
 export default function CreateGroupModal({
   isOpen,
@@ -56,70 +45,70 @@ export default function CreateGroupModal({
     location: '',
     imageUrl: '',
     bannerUrl: '',
-  });
+  })
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Handle ESC key to close modal
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen && !isLoading) {
-        onClose();
+        onClose()
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleEscape)
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, isLoading, onClose]);
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, isLoading, onClose])
 
   const handleInputChange = (field: keyof CreateGroupData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }))
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: '' }))
     }
-  };
+  }
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: Record<string, string> = {}
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Group name is required';
+      newErrors.name = 'Group name is required'
     } else if (formData.name.length < 3) {
-      newErrors.name = 'Group name must be at least 3 characters';
+      newErrors.name = 'Group name must be at least 3 characters'
     } else if (formData.name.length > 50) {
-      newErrors.name = 'Group name must be less than 50 characters';
+      newErrors.name = 'Group name must be less than 50 characters'
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = 'Group description is required';
+      newErrors.description = 'Group description is required'
     } else if (formData.description.length < 10) {
-      newErrors.description = 'Description must be at least 10 characters';
+      newErrors.description = 'Description must be at least 10 characters'
     } else if (formData.description.length > 500) {
-      newErrors.description = 'Description must be less than 500 characters';
+      newErrors.description = 'Description must be less than 500 characters'
     }
 
     if (formData.location && formData.location.length > 100) {
-      newErrors.location = 'Location must be less than 100 characters';
+      newErrors.location = 'Location must be less than 100 characters'
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!validateForm()) {
-      return;
+      return
     }
 
     try {
-      await onSubmit(formData);
+      await onSubmit(formData)
       // Reset form on success
       setFormData({
         name: '',
@@ -132,12 +121,12 @@ export default function CreateGroupModal({
         location: '',
         imageUrl: '',
         bannerUrl: '',
-      });
-      setErrors({});
-    } catch (err) {}
-  };
+      })
+      setErrors({})
+    } catch (_err) {}
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   // Shared form content
   const formContent = (
@@ -145,13 +134,11 @@ export default function CreateGroupModal({
       {/* Group Preview */}
       <div className="flex flex-col items-center pb-6 border-b border-gray-200">
         <div
-          className={`w-24 h-24 ${availableColors.find(c => c.name === formData.color)?.class || 'bg-orange-500'} rounded-xl flex items-center justify-center text-white text-4xl mb-3 shadow-md`}
+          className={`w-24 h-24 ${availableColors.find((c) => c.name === formData.color)?.class || 'bg-orange-500'} rounded-xl flex items-center justify-center text-white text-4xl mb-3 shadow-md`}
         >
           {formData.icon}
         </div>
-        <h3 className="text-xl font-bold text-gray-900">
-          {formData.name || 'Group Name'}
-        </h3>
+        <h3 className="text-xl font-bold text-gray-900">{formData.name || 'Group Name'}</h3>
         <p className="text-sm text-gray-500 mt-1 text-center max-w-md">
           {formData.description || 'Group description'}
         </p>
@@ -160,17 +147,14 @@ export default function CreateGroupModal({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Name */}
         <div>
-          <label
-            htmlFor="name"
-            className="block text-sm font-semibold text-gray-900 mb-2"
-          >
+          <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
             Group Name *
           </label>
           <input
             type="text"
             id="name"
             value={formData.name}
-            onChange={e => handleInputChange('name', e.target.value)}
+            onChange={(e) => handleInputChange('name', e.target.value)}
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] transition-colors ${
               errors.name ? 'border-red-500' : 'border-gray-300'
             }`}
@@ -182,11 +166,7 @@ export default function CreateGroupModal({
             autoFocus
           />
           {errors.name && (
-            <p
-              id="name-error"
-              className="mt-1 text-sm text-red-600"
-              role="alert"
-            >
+            <p id="name-error" className="mt-1 text-sm text-red-600" role="alert">
               {errors.name}
             </p>
           )}
@@ -194,16 +174,13 @@ export default function CreateGroupModal({
 
         {/* Description */}
         <div>
-          <label
-            htmlFor="description"
-            className="block text-sm font-semibold text-gray-900 mb-2"
-          >
+          <label htmlFor="description" className="block text-sm font-semibold text-gray-900 mb-2">
             Description *
           </label>
           <textarea
             id="description"
             value={formData.description}
-            onChange={e => handleInputChange('description', e.target.value)}
+            onChange={(e) => handleInputChange('description', e.target.value)}
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] resize-none transition-colors ${
               errors.description ? 'border-red-500' : 'border-gray-300'
             }`}
@@ -211,22 +188,15 @@ export default function CreateGroupModal({
             rows={3}
             maxLength={500}
           />
-          {errors.description && (
-            <p className="mt-1 text-sm text-red-600">{errors.description}</p>
-          )}
-          <p className="mt-1 text-xs text-gray-500">
-            {formData.description.length}/500 characters
-          </p>
+          {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+          <p className="mt-1 text-xs text-gray-500">{formData.description.length}/500 characters</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Icon Picker */}
         <div>
-          <label
-            id="icon-picker-label"
-            className="block text-sm font-semibold text-gray-900 mb-3"
-          >
+          <label id="icon-picker-label" className="block text-sm font-semibold text-gray-900 mb-3">
             Icon
           </label>
           <div
@@ -234,7 +204,7 @@ export default function CreateGroupModal({
             role="radiogroup"
             aria-labelledby="icon-picker-label"
           >
-            {availableIcons.map(icon => (
+            {availableIcons.map((icon) => (
               <button
                 key={icon}
                 type="button"
@@ -256,10 +226,7 @@ export default function CreateGroupModal({
 
         {/* Color Picker */}
         <div>
-          <label
-            id="color-picker-label"
-            className="block text-sm font-semibold text-gray-900 mb-3"
-          >
+          <label id="color-picker-label" className="block text-sm font-semibold text-gray-900 mb-3">
             Color
           </label>
           <div
@@ -267,7 +234,7 @@ export default function CreateGroupModal({
             role="radiogroup"
             aria-labelledby="color-picker-label"
           >
-            {availableColors.map(color => (
+            {availableColors.map((color) => (
               <button
                 key={color.name}
                 type="button"
@@ -304,17 +271,10 @@ export default function CreateGroupModal({
 
       {/* Privacy Setting */}
       <div className="pt-6 border-t border-gray-200">
-        <label
-          id="privacy-label"
-          className="block text-sm font-semibold text-gray-900 mb-3"
-        >
+        <label id="privacy-label" className="block text-sm font-semibold text-gray-900 mb-3">
           Privacy Setting *
         </label>
-        <div
-          className="space-y-3"
-          role="radiogroup"
-          aria-labelledby="privacy-label"
-        >
+        <div className="space-y-3" role="radiogroup" aria-labelledby="privacy-label">
           <label
             className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
               formData.privacySetting === 'public'
@@ -327,9 +287,7 @@ export default function CreateGroupModal({
               name="privacySetting"
               value="public"
               checked={formData.privacySetting === 'public'}
-              onChange={e =>
-                handleInputChange('privacySetting', e.target.value)
-              }
+              onChange={(e) => handleInputChange('privacySetting', e.target.value)}
               className="mt-1"
             />
             <div className="flex-1">
@@ -337,9 +295,7 @@ export default function CreateGroupModal({
                 <Globe className="w-5 h-5 text-green-600" />
                 <span className="font-semibold text-gray-900">Public</span>
               </div>
-              <p className="text-sm text-gray-600 mt-1">
-                Anyone can join instantly
-              </p>
+              <p className="text-sm text-gray-600 mt-1">Anyone can join instantly</p>
             </div>
           </label>
           <label
@@ -354,21 +310,15 @@ export default function CreateGroupModal({
               name="privacySetting"
               value="approval-required"
               checked={formData.privacySetting === 'approval-required'}
-              onChange={e =>
-                handleInputChange('privacySetting', e.target.value)
-              }
+              onChange={(e) => handleInputChange('privacySetting', e.target.value)}
               className="mt-1"
             />
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <Lock className="w-5 h-5 text-orange-600" />
-                <span className="font-semibold text-gray-900">
-                  Approval Required
-                </span>
+                <span className="font-semibold text-gray-900">Approval Required</span>
               </div>
-              <p className="text-sm text-gray-600 mt-1">
-                Admins must approve new members
-              </p>
+              <p className="text-sm text-gray-600 mt-1">Admins must approve new members</p>
             </div>
           </label>
         </div>
@@ -393,7 +343,7 @@ export default function CreateGroupModal({
         </button>
       </div>
     </form>
-  );
+  )
 
   // Full-page view (rendered inline within the page)
   if (isFullPage) {
@@ -408,16 +358,16 @@ export default function CreateGroupModal({
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   // Modal view (popup style)
   return (
     <div
       className="fixed inset-0 bg-gray-500 bg-opacity-30 flex items-center justify-center z-40 p-4"
-      onClick={e => {
+      onClick={(e) => {
         if (e.target === e.currentTarget) {
-          onClose();
+          onClose()
         }
       }}
       role="dialog"
@@ -428,10 +378,7 @@ export default function CreateGroupModal({
         <div className="p-4 sm:p-8">
           {/* Header */}
           <div className="flex justify-between items-center mb-6 sm:mb-8">
-            <h2
-              id="create-group-title"
-              className="text-xl sm:text-2xl font-bold text-gray-900"
-            >
+            <h2 id="create-group-title" className="text-xl sm:text-2xl font-bold text-gray-900">
               Create New Group
             </h2>
             <button
@@ -459,5 +406,5 @@ export default function CreateGroupModal({
         </div>
       </div>
     </div>
-  );
+  )
 }

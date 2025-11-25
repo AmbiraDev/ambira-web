@@ -11,13 +11,13 @@
  * - Smooth section transitions
  */
 
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import Header from '@/components/HeaderComponent';
-import MobileHeader from '@/components/MobileHeader';
-import BottomNavigation from '@/components/BottomNavigation';
-import Footer from '@/components/Footer';
+import React, { useState, useEffect } from 'react'
+import Header from '@/components/HeaderComponent'
+import MobileHeader from '@/components/MobileHeader'
+import BottomNavigation from '@/components/BottomNavigation'
+import Footer from '@/components/Footer'
 import {
   User,
   Shield,
@@ -31,24 +31,23 @@ import {
   Trash2,
   Globe,
   Activity,
-} from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import Image from 'next/image';
-import { firebaseUserApi } from '@/lib/api';
-import ConfirmDialog from '@/components/ConfirmDialog';
-import { useQueryClient } from '@tanstack/react-query';
-import { AUTH_KEYS } from '@/lib/react-query/auth.queries';
+} from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
+import Image from 'next/image'
+import { firebaseUserApi } from '@/lib/api'
+import ConfirmDialog from '@/components/ConfirmDialog'
+import { useQueryClient } from '@tanstack/react-query'
+import { AUTH_KEYS } from '@/lib/react-query/auth.queries'
 
-type SettingsSection = 'profile' | 'privacy' | null;
+type SettingsSection = 'profile' | 'privacy' | null
 
 export function SettingsPageContent() {
-  const { user, logout } = useAuth();
-  const queryClient = useQueryClient();
+  const { user, logout } = useAuth()
+  const queryClient = useQueryClient()
   // Mobile: expanded section state for accordion behavior
-  const [expandedSection, setExpandedSection] = useState<SettingsSection>(null);
+  const [expandedSection, setExpandedSection] = useState<SettingsSection>(null)
   // Desktop: active section state for sidebar navigation
-  const [activeSection, setActiveSection] =
-    useState<SettingsSection>('profile');
+  const [activeSection, setActiveSection] = useState<SettingsSection>('profile')
   const [formData, setFormData] = useState({
     name: user?.name || '',
     tagline: user?.tagline || '',
@@ -60,15 +59,13 @@ export function SettingsPageContent() {
     github: user?.socialLinks?.github || '',
     linkedin: user?.socialLinks?.linkedin || '',
     profileVisibility: 'everyone' as 'everyone' | 'followers' | 'private',
-  });
-  const [isSaving, setIsSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [profilePictureUrl, setProfilePictureUrl] = useState(
-    user?.profilePicture || ''
-  );
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  })
+  const [isSaving, setIsSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
+  const [profilePictureUrl, setProfilePictureUrl] = useState(user?.profilePicture || '')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [originalFormData, setOriginalFormData] = useState({
     name: user?.name || '',
     tagline: user?.tagline || '',
@@ -80,19 +77,19 @@ export function SettingsPageContent() {
     github: user?.socialLinks?.github || '',
     linkedin: user?.socialLinks?.linkedin || '',
     profileVisibility: 'everyone' as 'everyone' | 'followers' | 'private',
-  });
-  const [urlError, setUrlError] = useState('');
+  })
+  const [urlError, setUrlError] = useState('')
 
   // URL validation helper
   const validateURL = (url: string): boolean => {
-    if (!url) return true; // Optional field
+    if (!url) return true // Optional field
     try {
-      new URL(url);
-      return url.startsWith('http://') || url.startsWith('https://');
+      new URL(url)
+      return url.startsWith('http://') || url.startsWith('https://')
     } catch {
-      return false;
+      return false
     }
-  };
+  }
 
   // Settings menu structure for vertical layout (mobile)
   const settingsItems = [
@@ -116,7 +113,7 @@ export function SettingsPageContent() {
       isLink: true,
       href: '/settings/activities',
     },
-  ];
+  ]
 
   // Check if form has been modified
   const hasChanges =
@@ -129,7 +126,7 @@ export function SettingsPageContent() {
     formData.twitter !== originalFormData.twitter ||
     formData.github !== originalFormData.github ||
     formData.linkedin !== originalFormData.linkedin ||
-    formData.profileVisibility !== originalFormData.profileVisibility;
+    formData.profileVisibility !== originalFormData.profileVisibility
 
   // Update form data when user data loads
   useEffect(() => {
@@ -145,63 +142,63 @@ export function SettingsPageContent() {
         github: user.socialLinks?.github || '',
         linkedin: user.socialLinks?.linkedin || '',
         profileVisibility: 'everyone' as 'everyone' | 'followers' | 'private',
-      };
+      }
       setFormData({
         ...userData,
-      });
-      setOriginalFormData(userData);
-      setProfilePictureUrl(user.profilePicture || '');
+      })
+      setOriginalFormData(userData)
+      setProfilePictureUrl(user.profilePicture || '')
     }
-  }, [user]);
+  }, [user])
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]
+    if (!file) return
 
     // Validate file type
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
     if (!validTypes.includes(file.type)) {
-      return;
+      return
     }
 
     // Validate file size (5MB max)
-    const maxSize = 5 * 1024 * 1024;
+    const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
-      return;
+      return
     }
 
     try {
-      setIsUploadingPhoto(true);
+      setIsUploadingPhoto(true)
 
       // Upload to Firebase Storage
-      const downloadURL = await firebaseUserApi.uploadProfilePicture(file);
+      const downloadURL = await firebaseUserApi.uploadProfilePicture(file)
 
       // Update profile with new picture URL
       await firebaseUserApi.updateProfile({
         profilePicture: downloadURL,
-      });
+      })
 
-      setProfilePictureUrl(downloadURL);
-    } catch (err: unknown) {
+      setProfilePictureUrl(downloadURL)
+    } catch (_err: unknown) {
     } finally {
-      setIsUploadingPhoto(false);
+      setIsUploadingPhoto(false)
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     try {
-      setIsSaving(true);
+      setIsSaving(true)
 
       // Build social links object only if at least one link is provided
       const socialLinks: {
-        twitter?: string;
-        github?: string;
-        linkedin?: string;
-      } = {};
-      if (formData.twitter) socialLinks.twitter = formData.twitter;
-      if (formData.github) socialLinks.github = formData.github;
-      if (formData.linkedin) socialLinks.linkedin = formData.linkedin;
+        twitter?: string
+        github?: string
+        linkedin?: string
+      } = {}
+      if (formData.twitter) socialLinks.twitter = formData.twitter
+      if (formData.github) socialLinks.github = formData.github
+      if (formData.linkedin) socialLinks.linkedin = formData.linkedin
 
       await firebaseUserApi.updateProfile({
         name: formData.name,
@@ -210,76 +207,70 @@ export function SettingsPageContent() {
         bio: formData.bio || undefined,
         location: formData.location || undefined,
         website: formData.website || undefined,
-        socialLinks:
-          Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
+        socialLinks: Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
         profileVisibility: formData.profileVisibility,
-      });
+      })
 
       // Invalidate auth cache to refresh user data
-      await queryClient.invalidateQueries({ queryKey: AUTH_KEYS.session() });
+      await queryClient.invalidateQueries({ queryKey: AUTH_KEYS.session() })
 
-      setSaved(true);
-      setIsSaving(false);
-    } catch (err: unknown) {
-      setIsSaving(false);
+      setSaved(true)
+      setIsSaving(false)
+    } catch (_err: unknown) {
+      setIsSaving(false)
     }
-  };
+  }
 
   const handlePrivacySubmit = async () => {
     try {
-      setIsSaving(true);
+      setIsSaving(true)
       await firebaseUserApi.updateProfile({
         profileVisibility: formData.profileVisibility,
-      });
+      })
 
       // Invalidate auth cache to refresh user data
-      await queryClient.invalidateQueries({ queryKey: AUTH_KEYS.session() });
+      await queryClient.invalidateQueries({ queryKey: AUTH_KEYS.session() })
 
-      setSaved(true);
-      setIsSaving(false);
-    } catch (err: unknown) {
-      setIsSaving(false);
+      setSaved(true)
+      setIsSaving(false)
+    } catch (_err: unknown) {
+      setIsSaving(false)
     }
-  };
+  }
 
   const handleLogout = async () => {
     try {
-      await logout();
-    } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to log out';
+      await logout()
+    } catch (_err: unknown) {
+      // Logout failed, but user will remain authenticated
     }
-  };
+  }
 
   const handleDeleteAccount = async () => {
-    if (!user) return;
+    if (!user) return
 
     try {
-      setIsDeleting(true);
-      await firebaseUserApi.deleteAccount();
+      setIsDeleting(true)
+      await firebaseUserApi.deleteAccount()
       // The logout will happen automatically as part of deleteAccount
-    } catch (err: unknown) {
-      setIsDeleting(false);
-      setShowDeleteConfirm(false);
+    } catch (_err: unknown) {
+      setIsDeleting(false)
+      setShowDeleteConfirm(false)
     }
-  };
+  }
 
   const handleSectionClick = (sectionId: string) => {
     if (sectionId === 'profile' || sectionId === 'privacy') {
-      setExpandedSection(
-        expandedSection === sectionId ? null : (sectionId as SettingsSection)
-      );
+      setExpandedSection(expandedSection === sectionId ? null : (sectionId as SettingsSection))
     }
-  };
+  }
 
   // Profile Form Component (reusable for both desktop and mobile)
   const ProfileForm = ({ idPrefix = '' }: { idPrefix?: string }) => (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Profile Picture */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
-          Profile Picture
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-3">Profile Picture</label>
         <div className="flex items-center gap-6">
           {profilePictureUrl || user?.profilePicture ? (
             <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-white flex-shrink-0">
@@ -322,9 +313,7 @@ export function SettingsPageContent() {
                 </>
               )}
             </label>
-            <p className="text-sm text-gray-500 mt-2">
-              JPG, PNG, GIF or WebP. Max 5MB.
-            </p>
+            <p className="text-sm text-gray-500 mt-2">JPG, PNG, GIF or WebP. Max 5MB.</p>
           </div>
         </div>
       </div>
@@ -342,7 +331,7 @@ export function SettingsPageContent() {
           type="text"
           id={`name${idPrefix}`}
           value={formData.name}
-          onChange={e => setFormData({ ...formData, name: e.target.value })}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
         />
       </div>
@@ -357,9 +346,7 @@ export function SettingsPageContent() {
           Username
         </label>
         <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-            @
-          </span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">@</span>
           <input
             type="text"
             id={`username${idPrefix}`}
@@ -385,7 +372,7 @@ export function SettingsPageContent() {
           type="text"
           id={`tagline${idPrefix}`}
           value={formData.tagline}
-          onChange={e => setFormData({ ...formData, tagline: e.target.value })}
+          onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
           maxLength={60}
           placeholder="Your headline or current status..."
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
@@ -407,7 +394,7 @@ export function SettingsPageContent() {
           type="text"
           id={`pronouns${idPrefix}`}
           value={formData.pronouns}
-          onChange={e => setFormData({ ...formData, pronouns: e.target.value })}
+          onChange={(e) => setFormData({ ...formData, pronouns: e.target.value })}
           maxLength={20}
           placeholder="e.g., she/her, he/him, they/them"
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
@@ -425,7 +412,7 @@ export function SettingsPageContent() {
         <textarea
           id={`bio${idPrefix}`}
           value={formData.bio}
-          onChange={e => setFormData({ ...formData, bio: e.target.value })}
+          onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
           rows={4}
           maxLength={160}
           placeholder="Tell us about yourself..."
@@ -447,7 +434,7 @@ export function SettingsPageContent() {
           type="text"
           id={`location${idPrefix}`}
           value={formData.location}
-          onChange={e => setFormData({ ...formData, location: e.target.value })}
+          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
           placeholder="City, Country"
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
         />
@@ -470,16 +457,12 @@ export function SettingsPageContent() {
             type="url"
             id={`website${idPrefix}`}
             value={formData.website}
-            onChange={e =>
-              setFormData({ ...formData, website: e.target.value })
-            }
-            onBlur={e => {
-              const isValid = validateURL(e.target.value);
+            onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+            onBlur={(e) => {
+              const isValid = validateURL(e.target.value)
               setUrlError(
-                isValid
-                  ? ''
-                  : 'Please enter a valid URL starting with http:// or https://'
-              );
+                isValid ? '' : 'Please enter a valid URL starting with http:// or https://'
+              )
             }}
             placeholder="https://yourwebsite.com"
             pattern="https?://.*"
@@ -490,11 +473,7 @@ export function SettingsPageContent() {
             }`}
           />
           {urlError && (
-            <p
-              id={`website-error${idPrefix}`}
-              className="text-sm text-red-600 mt-1"
-              role="alert"
-            >
+            <p id={`website-error${idPrefix}`} className="text-sm text-red-600 mt-1" role="alert">
               {urlError}
             </p>
           )}
@@ -511,16 +490,12 @@ export function SettingsPageContent() {
               Twitter/X
             </label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                @
-              </span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">@</span>
               <input
                 type="text"
                 id={`twitter${idPrefix}`}
                 value={formData.twitter}
-                onChange={e =>
-                  setFormData({ ...formData, twitter: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
                 placeholder="username"
                 className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
               />
@@ -539,9 +514,7 @@ export function SettingsPageContent() {
               type="text"
               id={`github${idPrefix}`}
               value={formData.github}
-              onChange={e =>
-                setFormData({ ...formData, github: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, github: e.target.value })}
               placeholder="username"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
             />
@@ -559,9 +532,7 @@ export function SettingsPageContent() {
               type="text"
               id={`linkedin${idPrefix}`}
               value={formData.linkedin}
-              onChange={e =>
-                setFormData({ ...formData, linkedin: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
               placeholder="username"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
             />
@@ -592,7 +563,7 @@ export function SettingsPageContent() {
         </button>
       </div>
     </form>
-  );
+  )
 
   // Privacy Form Component (reusable for both desktop and mobile)
   const PrivacyForm = ({ idPrefix = '' }: { idPrefix?: string }) => (
@@ -607,13 +578,10 @@ export function SettingsPageContent() {
         <select
           id={`profileVisibility${idPrefix}`}
           value={formData.profileVisibility}
-          onChange={e =>
+          onChange={(e) =>
             setFormData({
               ...formData,
-              profileVisibility: e.target.value as
-                | 'everyone'
-                | 'followers'
-                | 'private',
+              profileVisibility: e.target.value as 'everyone' | 'followers' | 'private',
             })
           }
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
@@ -622,8 +590,7 @@ export function SettingsPageContent() {
             Everyone - Your profile and sessions are visible to all users
           </option>
           <option value="followers">
-            Followers Only - Only your followers can see your profile and
-            sessions
+            Followers Only - Only your followers can see your profile and sessions
           </option>
           <option value="private">
             Only You - Your profile and sessions are completely private
@@ -669,7 +636,7 @@ export function SettingsPageContent() {
         </button>
       </div>
     </div>
-  );
+  )
 
   return (
     <>
@@ -703,41 +670,29 @@ export function SettingsPageContent() {
                   <button
                     onClick={() => setActiveSection('profile')}
                     aria-label="My Profile settings"
-                    aria-current={
-                      activeSection === 'profile' ? 'page' : undefined
-                    }
+                    aria-current={activeSection === 'profile' ? 'page' : undefined}
                     className={`w-full px-4 py-3 flex items-center gap-3 text-left border-b border-gray-200 transition-colors ${
                       activeSection === 'profile'
                         ? 'bg-blue-50 border-l-4 border-l-[#0066CC] text-[#0066CC]'
                         : 'hover:bg-gray-50 text-gray-700'
                     }`}
                   >
-                    <User
-                      className="w-5 h-5 flex-shrink-0"
-                      aria-hidden="true"
-                    />
+                    <User className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
                     <span className="text-sm font-medium">My Profile</span>
                   </button>
 
                   <button
                     onClick={() => setActiveSection('privacy')}
                     aria-label="Privacy Controls settings"
-                    aria-current={
-                      activeSection === 'privacy' ? 'page' : undefined
-                    }
+                    aria-current={activeSection === 'privacy' ? 'page' : undefined}
                     className={`w-full px-4 py-3 flex items-center gap-3 text-left border-b border-gray-200 transition-colors ${
                       activeSection === 'privacy'
                         ? 'bg-blue-50 border-l-4 border-l-[#0066CC] text-[#0066CC]'
                         : 'hover:bg-gray-50 text-gray-700'
                     }`}
                   >
-                    <Shield
-                      className="w-5 h-5 flex-shrink-0"
-                      aria-hidden="true"
-                    />
-                    <span className="text-sm font-medium">
-                      Privacy Controls
-                    </span>
+                    <Shield className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
+                    <span className="text-sm font-medium">Privacy Controls</span>
                   </button>
 
                   <a
@@ -745,10 +700,7 @@ export function SettingsPageContent() {
                     aria-label="Activities settings"
                     className="w-full px-4 py-3 flex items-center gap-3 text-left border-b border-gray-200 transition-colors hover:bg-gray-50 text-gray-700"
                   >
-                    <Activity
-                      className="w-5 h-5 flex-shrink-0"
-                      aria-hidden="true"
-                    />
+                    <Activity className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
                     <span className="text-sm font-medium">Activities</span>
                   </a>
 
@@ -757,10 +709,7 @@ export function SettingsPageContent() {
                     aria-label="Log out of your account"
                     className="w-full px-4 py-3 flex items-center gap-3 text-left border-b border-gray-200 hover:bg-gray-50 transition-colors text-gray-700"
                   >
-                    <LogOut
-                      className="w-5 h-5 flex-shrink-0"
-                      aria-hidden="true"
-                    />
+                    <LogOut className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
                     <span className="text-sm font-medium">Log Out</span>
                   </button>
 
@@ -769,10 +718,7 @@ export function SettingsPageContent() {
                     aria-label="Delete your account permanently"
                     className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-red-50 transition-colors text-red-600"
                   >
-                    <Trash2
-                      className="w-5 h-5 flex-shrink-0"
-                      aria-hidden="true"
-                    />
+                    <Trash2 className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
                     <span className="text-sm font-medium">Delete Account</span>
                   </button>
                 </nav>
@@ -784,9 +730,7 @@ export function SettingsPageContent() {
                   {/* Profile Section */}
                   {activeSection === 'profile' && (
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                        My Profile
-                      </h2>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6">My Profile</h2>
                       <ProfileForm idPrefix="-desktop" />
                     </div>
                   )}
@@ -794,9 +738,7 @@ export function SettingsPageContent() {
                   {/* Privacy Section */}
                   {activeSection === 'privacy' && (
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                        Privacy Controls
-                      </h2>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6">Privacy Controls</h2>
                       <PrivacyForm idPrefix="-desktop" />
                     </div>
                   )}
@@ -815,10 +757,10 @@ export function SettingsPageContent() {
 
           {/* Vertical Settings List */}
           <div className="bg-white">
-            {settingsItems.map(item => {
-              const Icon = item.icon;
-              const isExpanded = expandedSection === item.id;
-              const contentId = `${item.id}-content`;
+            {settingsItems.map((item) => {
+              const Icon = item.icon
+              const isExpanded = expandedSection === item.id
+              const contentId = `${item.id}-content`
 
               return (
                 <div key={item.id}>
@@ -830,15 +772,10 @@ export function SettingsPageContent() {
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="flex-shrink-0">
-                          <Icon
-                            className="w-5 h-5 text-gray-700"
-                            aria-hidden="true"
-                          />
+                          <Icon className="w-5 h-5 text-gray-700" aria-hidden="true" />
                         </div>
                         <div className="flex-1 text-left min-w-0">
-                          <div className="text-sm font-semibold text-gray-900">
-                            {item.label}
-                          </div>
+                          <div className="text-sm font-semibold text-gray-900">{item.label}</div>
                         </div>
                       </div>
                       <ChevronRight
@@ -848,30 +785,21 @@ export function SettingsPageContent() {
                     </a>
                   ) : (
                     <button
-                      onClick={() =>
-                        item.navigable && handleSectionClick(item.id)
-                      }
+                      onClick={() => item.navigable && handleSectionClick(item.id)}
                       aria-expanded={item.navigable ? isExpanded : undefined}
                       aria-controls={item.navigable ? contentId : undefined}
                       aria-label={`${item.label} settings`}
                       className={`w-full px-4 py-4 flex items-center justify-between border-b border-gray-200 transition-colors ${
-                        item.navigable
-                          ? 'hover:bg-gray-50 active:bg-gray-100'
-                          : 'cursor-default'
+                        item.navigable ? 'hover:bg-gray-50 active:bg-gray-100' : 'cursor-default'
                       }`}
                       disabled={!item.navigable}
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="flex-shrink-0">
-                          <Icon
-                            className="w-5 h-5 text-gray-700"
-                            aria-hidden="true"
-                          />
+                          <Icon className="w-5 h-5 text-gray-700" aria-hidden="true" />
                         </div>
                         <div className="flex-1 text-left min-w-0">
-                          <div className="text-sm font-semibold text-gray-900">
-                            {item.label}
-                          </div>
+                          <div className="text-sm font-semibold text-gray-900">{item.label}</div>
                         </div>
                       </div>
                       {item.navigable && (
@@ -909,7 +837,7 @@ export function SettingsPageContent() {
                     </div>
                   )}
                 </div>
-              );
+              )
             })}
 
             {/* Account Actions */}
@@ -919,9 +847,7 @@ export function SettingsPageContent() {
             >
               <LogOut className="w-5 h-5 text-gray-700" />
               <div className="flex-1">
-                <div className="text-sm font-semibold text-gray-900">
-                  Log Out
-                </div>
+                <div className="text-sm font-semibold text-gray-900">Log Out</div>
               </div>
               <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
             </button>
@@ -932,9 +858,7 @@ export function SettingsPageContent() {
             >
               <Trash2 className="w-5 h-5 text-red-600" />
               <div className="flex-1">
-                <div className="text-sm font-semibold text-red-600">
-                  Delete Account
-                </div>
+                <div className="text-sm font-semibold text-red-600">Delete Account</div>
               </div>
               <ChevronRight className="w-5 h-5 text-red-400 flex-shrink-0" />
             </button>
@@ -963,5 +887,5 @@ export function SettingsPageContent() {
         />
       </div>
     </>
-  );
+  )
 }

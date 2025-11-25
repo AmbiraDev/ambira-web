@@ -1,0 +1,155 @@
+name: Feature Request
+description: Suggest a new feature or enhancement for Ambira
+title: '[Feature]: '
+labels: ['enhancement', 'needs-triage']
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please provide as much detail as possible to help us understand your idea.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Description
+      description: Is your feature request related to a problem? Please describe the problem or use case.
+      placeholder: |
+        I'm frustrated when...
+        I often need to...
+        It would be helpful if...
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see
+      placeholder: |
+        I would like to be able to...
+        The feature should work like...
+        Similar to how [other app] does it...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered
+      placeholder: |
+        I also thought about...
+        Another approach could be...
+        I tried using [existing feature] but...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: feature-area
+    attributes:
+      label: Feature Area
+      description: Which area of the application does this feature relate to?
+      options:
+        - Timer / Session Logging
+        - Feed / Social Features
+        - Activities / Projects
+        - Groups
+        - Challenges
+        - Analytics / Stats
+        - Profile / Settings
+        - Notifications
+        - Search / Discovery
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Nice to have
+        - Would improve my experience
+        - Important for my workflow
+        - Critical / Blocking
+    validations:
+      required: true
+
+  - type: dropdown
+    id: user-type
+    attributes:
+      label: User Type
+      description: Which type of user would benefit most from this feature?
+      multiple: true
+      options:
+        - Individual users
+        - Group members
+        - Challenge participants
+        - New users
+        - Power users
+        - All users
+    validations:
+      required: true
+
+  - type: textarea
+    id: similar-features
+    attributes:
+      label: Similar Features in Other Apps
+      description: Are there similar features in other applications that inspired this request?
+      placeholder: |
+        Strava has a feature where...
+        Notion allows users to...
+        I saw this in [app name]...
+    validations:
+      required: false
+
+  - type: textarea
+    id: user-stories
+    attributes:
+      label: User Stories
+      description: Describe how users would interact with this feature
+      placeholder: |
+        As a [user type], I want to [action] so that [benefit]
+
+        Example:
+        As a group member, I want to compare my stats with other members so that I can see how I'm performing relative to the group.
+    validations:
+      required: false
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups or Examples
+      description: If you have any mockups, wireframes, or visual examples, please share them here
+      placeholder: Drag and drop images here or paste image URLs
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context, screenshots, or details about the feature request
+      placeholder: |
+        - Who would use this feature?
+        - How often would they use it?
+        - What problem does it solve?
+        - Any technical considerations?
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm the following before submitting
+      options:
+        - label: I have searched existing issues to ensure this feature hasn't been requested before
+          required: true
+        - label: I have clearly described the problem this feature would solve
+          required: true
+        - label: I have provided a detailed description of the proposed solution
+          required: true

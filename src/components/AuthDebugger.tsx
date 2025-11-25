@@ -1,7 +1,7 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { auth } from '@/lib/firebase';
+import React, { useState, useEffect } from 'react'
+import { auth } from '@/lib/firebase'
 
 /**
  * Debug component to help diagnose mobile OAuth issues
@@ -19,15 +19,14 @@ export const AuthDebugger: React.FC = () => {
     screenSize: '',
     platform: '',
     errors: [] as string[],
-  });
+  })
 
   useEffect(() => {
-    const userAgent = navigator.userAgent;
-    const isMobile =
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        userAgent
-      );
-    const isSafari = /^((?!chrome|android).)*safari/i.test(userAgent);
+    const userAgent = navigator.userAgent
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      userAgent
+    )
+    const isSafari = /^((?!chrome|android).)*safari/i.test(userAgent)
 
     setDebugInfo({
       userAgent,
@@ -38,23 +37,22 @@ export const AuthDebugger: React.FC = () => {
       screenSize: `${window.innerWidth}x${window.innerHeight}`,
       platform: navigator.platform,
       errors: [],
-    });
-  }, []);
+    })
+  }, [])
 
   const copyToClipboard = () => {
-    const debugText = JSON.stringify(debugInfo, null, 2);
-    navigator.clipboard.writeText(debugText);
-    alert('Debug info copied to clipboard!');
-  };
+    const debugText = JSON.stringify(debugInfo, null, 2)
+    navigator.clipboard.writeText(debugText)
+    alert('Debug info copied to clipboard!')
+  }
 
   // Only show in development or when a special query param is present
   const showDebugger =
     process.env.NODE_ENV === 'development' ||
-    (typeof window !== 'undefined' &&
-      window.location.search.includes('debug=true'));
+    (typeof window !== 'undefined' && window.location.search.includes('debug=true'))
 
   if (!showDebugger) {
-    return null;
+    return null
   }
 
   return (
@@ -143,9 +141,7 @@ export const AuthDebugger: React.FC = () => {
         <div>
           <strong>User Agent:</strong>
         </div>
-        <div style={{ wordBreak: 'break-all', fontSize: '10px' }}>
-          {debugInfo.userAgent}
-        </div>
+        <div style={{ wordBreak: 'break-all', fontSize: '10px' }}>{debugInfo.userAgent}</div>
       </div>
 
       {debugInfo.errors.length > 0 && (
@@ -156,12 +152,8 @@ export const AuthDebugger: React.FC = () => {
             paddingTop: '10px',
           }}
         >
-          <strong style={{ color: '#ff0000' }}>
-            Errors ({debugInfo.errors.length}):
-          </strong>
-          <div
-            style={{ maxHeight: '100px', overflow: 'auto', marginTop: '5px' }}
-          >
+          <strong style={{ color: '#ff0000' }}>Errors ({debugInfo.errors.length}):</strong>
+          <div style={{ maxHeight: '100px', overflow: 'auto', marginTop: '5px' }}>
             {debugInfo.errors.map((error, index) => (
               <div
                 key={index}
@@ -182,7 +174,7 @@ export const AuthDebugger: React.FC = () => {
         Add ?debug=true to URL to show in production
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AuthDebugger;
+export default AuthDebugger

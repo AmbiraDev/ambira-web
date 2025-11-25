@@ -1,19 +1,19 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { UserSearchResult } from '@/types';
-import { firebaseUserApi } from '@/lib/api';
-import { UserCard, UserCardCompact } from './UserCard';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Search, Users, X, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { UserSearchResult } from '@/types'
+import { firebaseUserApi } from '@/lib/api'
+import { UserCard, UserCardCompact } from './UserCard'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Search, Users, X, Loader2 } from 'lucide-react'
 
 interface SearchUsersProps {
-  onUserSelect?: (user: UserSearchResult) => void;
-  variant?: 'default' | 'compact' | 'modal';
-  placeholder?: string;
-  showResults?: boolean;
-  maxResults?: number;
+  onUserSelect?: (user: UserSearchResult) => void
+  variant?: 'default' | 'compact' | 'modal'
+  placeholder?: string
+  showResults?: boolean
+  maxResults?: number
 }
 
 export const SearchUsers: React.FC<SearchUsersProps> = ({
@@ -23,91 +23,88 @@ export const SearchUsers: React.FC<SearchUsersProps> = ({
   showResults = true,
   maxResults = 20,
 }) => {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<UserSearchResult[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
-  const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<UserSearchResult[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [hasSearched, setHasSearched] = useState(false)
+  const [totalCount, setTotalCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
 
   // Search function
   const performSearch = useCallback(
     async (searchQuery: string, page: number = 1) => {
       if (!searchQuery.trim()) {
-        setResults([]);
-        setHasSearched(false);
-        return;
+        setResults([])
+        setHasSearched(false)
+        return
       }
 
       try {
-        setIsLoading(true);
-        const response = await firebaseUserApi.searchUsers(
-          searchQuery,
-          maxResults
-        );
+        setIsLoading(true)
+        const response = await firebaseUserApi.searchUsers(searchQuery, maxResults)
 
         if (page === 1) {
-          setResults(response.users);
+          setResults(response.users)
         } else {
-          setResults(prev => [...prev, ...response.users]);
+          setResults((prev) => [...prev, ...response.users])
         }
 
-        setTotalCount(response.totalCount);
-        setHasMore(response.hasMore);
-        setHasSearched(true);
+        setTotalCount(response.totalCount)
+        setHasMore(response.hasMore)
+        setHasSearched(true)
       } catch {
-        setResults([]);
-        setHasSearched(true);
+        setResults([])
+        setHasSearched(true)
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
     },
     [maxResults]
-  );
+  )
 
   // Debounced search using useRef
   const debouncedSearchRef = useRef(
     debounce((searchQuery: string) => {
-      performSearch(searchQuery, 1);
+      performSearch(searchQuery, 1)
     }, 300)
-  );
+  )
 
   // Update debounced function when performSearch changes
   useEffect(() => {
     debouncedSearchRef.current = debounce((searchQuery: string) => {
-      performSearch(searchQuery, 1);
-    }, 300);
-  }, [performSearch]);
+      performSearch(searchQuery, 1)
+    }, 300)
+  }, [performSearch])
 
   // Search effect
   useEffect(() => {
-    setCurrentPage(1);
-    debouncedSearchRef.current(query);
-  }, [query]);
+    setCurrentPage(1)
+    debouncedSearchRef.current(query)
+  }, [query])
 
   const handleLoadMore = () => {
     if (hasMore && !isLoading) {
-      const nextPage = currentPage + 1;
-      setCurrentPage(nextPage);
-      performSearch(query, nextPage);
+      const nextPage = currentPage + 1
+      setCurrentPage(nextPage)
+      performSearch(query, nextPage)
     }
-  };
+  }
 
   const handleClear = () => {
-    setQuery('');
-    setResults([]);
-    setHasSearched(false);
-    setCurrentPage(1);
-  };
+    setQuery('')
+    setResults([])
+    setHasSearched(false)
+    setCurrentPage(1)
+  }
 
   const handleUserSelect = (user: UserSearchResult) => {
-    onUserSelect?.(user);
-  };
+    onUserSelect?.(user)
+  }
 
   const handleFollowChange = (userId: string, isFollowing: boolean) => {
-    setResults(prev =>
-      prev.map(user =>
+    setResults((prev) =>
+      prev.map((user) =>
         user.id === userId
           ? {
               ...user,
@@ -118,10 +115,10 @@ export const SearchUsers: React.FC<SearchUsersProps> = ({
             }
           : user
       )
-    );
-  };
+    )
+  }
 
-  const UserCardComponent = variant === 'compact' ? UserCardCompact : UserCard;
+  const UserCardComponent = variant === 'compact' ? UserCardCompact : UserCard
 
   return (
     <div className="w-full">
@@ -132,12 +129,12 @@ export const SearchUsers: React.FC<SearchUsersProps> = ({
           type="text"
           placeholder={placeholder}
           value={query}
-          onChange={e => setQuery(e.target.value)}
-          onKeyDown={e => {
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              e.preventDefault();
-              setHasSearched(true);
-              performSearch(query, 1);
+              e.preventDefault()
+              setHasSearched(true)
+              performSearch(query, 1)
             }
           }}
           className="pl-10 pr-10"
@@ -158,9 +155,7 @@ export const SearchUsers: React.FC<SearchUsersProps> = ({
       {isLoading && (
         <div className="flex items-center justify-center py-4">
           <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-          <span className="ml-2 text-sm text-muted-foreground">
-            Searching...
-          </span>
+          <span className="ml-2 text-sm text-muted-foreground">Searching...</span>
         </div>
       )}
 
@@ -183,7 +178,7 @@ export const SearchUsers: React.FC<SearchUsersProps> = ({
 
               {/* User Cards */}
               <div className="space-y-1">
-                {results.map(user => (
+                {results.map((user) => (
                   <div key={user.id} onClick={() => handleUserSelect(user)}>
                     <UserCardComponent
                       user={user}
@@ -218,9 +213,7 @@ export const SearchUsers: React.FC<SearchUsersProps> = ({
           ) : query.trim() ? (
             <div className="text-center py-8">
               <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <h3 className="font-medium text-foreground mb-1">
-                No users found
-              </h3>
+              <h3 className="font-medium text-foreground mb-1">No users found</h3>
               <p className="text-sm text-muted-foreground">
                 Try searching with a different name or username
               </p>
@@ -234,21 +227,19 @@ export const SearchUsers: React.FC<SearchUsersProps> = ({
         <div className="text-center py-8">
           <Search className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
           <h3 className="font-medium text-foreground mb-1">Search for users</h3>
-          <p className="text-sm text-muted-foreground">
-            Find people to follow and connect with
-          </p>
+          <p className="text-sm text-muted-foreground">Find people to follow and connect with</p>
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
 // Modal version for overlays
 interface SearchUsersModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onUserSelect?: (user: UserSearchResult) => void;
-  title?: string;
+  isOpen: boolean
+  onClose: () => void
+  onUserSelect?: (user: UserSearchResult) => void
+  title?: string
 }
 
 export const SearchUsersModal: React.FC<SearchUsersModalProps> = ({
@@ -257,7 +248,7 @@ export const SearchUsersModal: React.FC<SearchUsersModalProps> = ({
   onUserSelect,
   title = 'Search Users',
 }) => {
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -265,12 +256,7 @@ export const SearchUsersModal: React.FC<SearchUsersModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-xl font-semibold text-foreground">{title}</h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="h-8 w-8 p-0"
-          >
+          <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -279,9 +265,9 @@ export const SearchUsersModal: React.FC<SearchUsersModalProps> = ({
         <div className="flex-1 overflow-hidden">
           <div className="p-6 h-full overflow-y-auto">
             <SearchUsers
-              onUserSelect={user => {
-                onUserSelect?.(user);
-                onClose();
+              onUserSelect={(user) => {
+                onUserSelect?.(user)
+                onClose()
               }}
               variant="compact"
               showResults={true}
@@ -290,17 +276,17 @@ export const SearchUsersModal: React.FC<SearchUsersModalProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
 // Debounce utility function
 function debounce(
   func: (searchQuery: string) => void,
   wait: number
 ): (searchQuery: string) => void {
-  let timeout: NodeJS.Timeout;
+  let timeout: NodeJS.Timeout
   return (searchQuery: string) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(searchQuery), wait);
-  };
+    clearTimeout(timeout)
+    timeout = setTimeout(() => func(searchQuery), wait)
+  }
 }

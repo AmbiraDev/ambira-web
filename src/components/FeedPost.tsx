@@ -1,20 +1,20 @@
-'use client';
+'use client'
 
 interface FeedPostProps {
-  author: string;
-  authorInitials: string;
-  authorColor: string;
-  timestamp: string;
-  location?: string;
-  title: string;
-  description?: string;
-  time: string;
-  metric1: string;
-  metric1Value: string;
-  metric2: string;
-  metric2Value: string;
-  kudosCount: number;
-  commentCount: number;
+  author: string
+  authorInitials: string
+  authorColor: string
+  timestamp: string
+  location?: string
+  title: string
+  description?: string
+  time: string
+  metric1: string
+  metric1Value: string
+  metric2: string
+  metric2Value: string
+  kudosCount: number
+  commentCount: number
 }
 
 function FeedPost({
@@ -42,9 +42,7 @@ function FeedPost({
             <div
               className={`w-10 h-10 ${authorColor} rounded-full flex items-center justify-center flex-shrink-0`}
             >
-              <span className="text-sm font-medium text-white">
-                {authorInitials}
-              </span>
+              <span className="text-sm font-medium text-white">{authorInitials}</span>
             </div>
             <div>
               <div className="font-semibold text-gray-900">{author}</div>
@@ -55,12 +53,7 @@ function FeedPost({
             </div>
           </div>
           <button className="text-gray-400 hover:text-gray-600">
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -90,9 +83,7 @@ function FeedPost({
           </svg>
           <div className="flex-1">
             <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
-            {description && (
-              <p className="text-sm text-gray-600 mb-3">{description}</p>
-            )}
+            {description && <p className="text-sm text-gray-600 mb-3">{description}</p>}
 
             {/* Stats Grid */}
             <div className="grid grid-cols-3 gap-4 text-sm">
@@ -102,15 +93,11 @@ function FeedPost({
               </div>
               <div>
                 <div className="text-gray-600 text-xs">{metric1}</div>
-                <div className="font-semibold text-gray-900">
-                  {metric1Value}
-                </div>
+                <div className="font-semibold text-gray-900">{metric1Value}</div>
               </div>
               <div>
                 <div className="text-gray-600 text-xs">{metric2}</div>
-                <div className="font-semibold text-gray-900">
-                  {metric2Value}
-                </div>
+                <div className="font-semibold text-gray-900">{metric2Value}</div>
               </div>
             </div>
           </div>
@@ -127,18 +114,12 @@ function FeedPost({
             <div className="w-6 h-6 bg-green-400 rounded-full border-2 border-white"></div>
           </div>
           <span className="text-sm text-gray-600">
-            {kudosCount} kudos • {commentCount}{' '}
-            {commentCount === 1 ? 'comment' : 'comments'}
+            {kudosCount} kudos • {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
           </span>
         </div>
         <div className="flex items-center space-x-4">
           <button className="text-gray-400 hover:text-[#0066CC] transition-colors">
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -148,12 +129,7 @@ function FeedPost({
             </svg>
           </button>
           <button className="text-gray-400 hover:text-[#0066CC] transition-colors">
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -174,21 +150,12 @@ function FeedPost({
             </div>
             <div className="flex-1">
               <div className="flex items-center space-x-2 mb-1">
-                <span className="font-semibold text-sm text-gray-900">
-                  Elijah Shekinah
-                </span>
+                <span className="font-semibold text-sm text-gray-900">Elijah Shekinah</span>
                 <span className="text-xs text-gray-500">about 3 hours ago</span>
               </div>
-              <p className="text-sm text-gray-700">
-                Just like witches at black masses 😈
-              </p>
+              <p className="text-sm text-gray-700">Just like witches at black masses 😈</p>
               <button className="flex items-center space-x-1 mt-1 text-xs text-gray-500 hover:text-gray-700">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -203,7 +170,7 @@ function FeedPost({
         </div>
       )}
     </div>
-  );
+  )
 }
 
-export default FeedPost;
+export default FeedPost

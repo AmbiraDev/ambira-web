@@ -1,17 +1,17 @@
-'use client';
+'use client'
 
-import React, { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
-import { UserSearchResult } from '@/types';
-import { firebaseUserApi } from '@/lib/api';
+import React, { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
+import { UserSearchResult } from '@/types'
+import { firebaseUserApi } from '@/lib/api'
 
 interface CommentInputProps {
-  placeholder?: string;
-  onSubmit: (content: string) => Promise<void>;
-  autoFocus?: boolean;
-  initialValue?: string;
-  sessionId?: string;
-  onCancel?: () => void;
+  placeholder?: string
+  onSubmit: (content: string) => Promise<void>
+  autoFocus?: boolean
+  initialValue?: string
+  sessionId?: string
+  onCancel?: () => void
 }
 
 export const CommentInput: React.FC<CommentInputProps> = ({
@@ -22,151 +22,145 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   sessionId: _sessionId,
   onCancel: _onCancel,
 }) => {
-  const maxCharacters = 1000;
-  const [content, setContent] = useState(initialValue);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showMentions, setShowMentions] = useState(false);
-  const [mentionQuery, setMentionQuery] = useState('');
-  const [mentionSuggestions, setMentionSuggestions] = useState<
-    UserSearchResult[]
-  >([]);
-  const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
-  const [mentionStartPos, setMentionStartPos] = useState<number | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const mentionDropdownRef = useRef<HTMLDivElement>(null);
+  const maxCharacters = 1000
+  const [content, setContent] = useState(initialValue)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showMentions, setShowMentions] = useState(false)
+  const [mentionQuery, setMentionQuery] = useState('')
+  const [mentionSuggestions, setMentionSuggestions] = useState<UserSearchResult[]>([])
+  const [selectedMentionIndex, setSelectedMentionIndex] = useState(0)
+  const [mentionStartPos, setMentionStartPos] = useState<number | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const mentionDropdownRef = useRef<HTMLDivElement>(null)
 
   // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
     }
-  }, [content]);
+  }, [content])
 
   // Auto-focus if requested
   useEffect(() => {
     if (autoFocus && textareaRef.current) {
-      textareaRef.current.focus();
+      textareaRef.current.focus()
     }
-  }, [autoFocus]);
+  }, [autoFocus])
 
   // Handle mention search
   useEffect(() => {
     const searchMentions = async () => {
       if (mentionQuery.length > 0) {
         try {
-          const results = await firebaseUserApi.searchUsers(mentionQuery, 5);
-          setMentionSuggestions(results.users);
-        } catch (err) {
-          setMentionSuggestions([]);
+          const results = await firebaseUserApi.searchUsers(mentionQuery, 5)
+          setMentionSuggestions(results.users)
+        } catch (_err) {
+          setMentionSuggestions([])
         }
       } else {
-        setMentionSuggestions([]);
+        setMentionSuggestions([])
       }
-    };
+    }
 
-    const debounce = setTimeout(searchMentions, 200);
-    return () => clearTimeout(debounce);
-  }, [mentionQuery]);
+    const debounce = setTimeout(searchMentions, 200)
+    return () => clearTimeout(debounce)
+  }, [mentionQuery])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
+    const value = e.target.value
 
     // Enforce character limit
     if (value.length > maxCharacters) {
-      return;
+      return
     }
 
-    const cursorPos = e.target.selectionStart;
+    const cursorPos = e.target.selectionStart
 
-    setContent(value);
+    setContent(value)
 
     // Check for @ mentions
-    const textBeforeCursor = value.slice(0, cursorPos);
-    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+    const textBeforeCursor = value.slice(0, cursorPos)
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@')
 
     if (lastAtIndex !== -1) {
-      const textAfterAt = textBeforeCursor.slice(lastAtIndex + 1);
+      const textAfterAt = textBeforeCursor.slice(lastAtIndex + 1)
 
       // Check if there's a space after @
       if (!textAfterAt.includes(' ') && textAfterAt.length < 20) {
-        setShowMentions(true);
-        setMentionQuery(textAfterAt);
-        setMentionStartPos(lastAtIndex);
-        setSelectedMentionIndex(0);
+        setShowMentions(true)
+        setMentionQuery(textAfterAt)
+        setMentionStartPos(lastAtIndex)
+        setSelectedMentionIndex(0)
       } else {
-        setShowMentions(false);
+        setShowMentions(false)
       }
     } else {
-      setShowMentions(false);
+      setShowMentions(false)
     }
-  };
+  }
 
   const insertMention = (user: UserSearchResult) => {
-    if (mentionStartPos === null) return;
+    if (mentionStartPos === null) return
 
-    const beforeMention = content.slice(0, mentionStartPos);
-    const cursorPos = textareaRef.current?.selectionStart || content.length;
-    const afterCursor = content.slice(cursorPos);
+    const beforeMention = content.slice(0, mentionStartPos)
+    const cursorPos = textareaRef.current?.selectionStart || content.length
+    const afterCursor = content.slice(cursorPos)
 
-    const newContent = `${beforeMention}@${user.username} ${afterCursor}`;
-    setContent(newContent);
-    setShowMentions(false);
-    setMentionQuery('');
-    setMentionStartPos(null);
+    const newContent = `${beforeMention}@${user.username} ${afterCursor}`
+    setContent(newContent)
+    setShowMentions(false)
+    setMentionQuery('')
+    setMentionStartPos(null)
 
     // Focus back on textarea
     setTimeout(() => {
       if (textareaRef.current) {
-        const newCursorPos = mentionStartPos + user.username.length + 2;
-        textareaRef.current.focus();
-        textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+        const newCursorPos = mentionStartPos + user.username.length + 2
+        textareaRef.current.focus()
+        textareaRef.current.setSelectionRange(newCursorPos, newCursorPos)
       }
-    }, 0);
-  };
+    }, 0)
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (showMentions && mentionSuggestions.length > 0) {
       if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setSelectedMentionIndex(prev =>
-          prev < mentionSuggestions.length - 1 ? prev + 1 : 0
-        );
+        e.preventDefault()
+        setSelectedMentionIndex((prev) => (prev < mentionSuggestions.length - 1 ? prev + 1 : 0))
       } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setSelectedMentionIndex(prev =>
-          prev > 0 ? prev - 1 : mentionSuggestions.length - 1
-        );
+        e.preventDefault()
+        setSelectedMentionIndex((prev) => (prev > 0 ? prev - 1 : mentionSuggestions.length - 1))
       } else if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        const selectedUser = mentionSuggestions[selectedMentionIndex];
+        e.preventDefault()
+        const selectedUser = mentionSuggestions[selectedMentionIndex]
         if (selectedUser) {
-          insertMention(selectedUser);
+          insertMention(selectedUser)
         }
       } else if (e.key === 'Escape') {
-        setShowMentions(false);
+        setShowMentions(false)
       }
     } else if (e.key === 'Enter' && !e.shiftKey && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      handleSubmit();
+      e.preventDefault()
+      handleSubmit()
     }
-  };
+  }
 
   const handleSubmit = async () => {
-    if (!content.trim() || isSubmitting) return;
+    if (!content.trim() || isSubmitting) return
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
-      await onSubmit(content.trim());
-      setContent('');
-      setShowMentions(false);
-      setMentionQuery('');
-    } catch (err) {
+      await onSubmit(content.trim())
+      setContent('')
+      setShowMentions(false)
+      setMentionQuery('')
+    } catch (_err) {
       // Silent failure
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <div className="relative">
@@ -237,7 +231,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
                   <span className="text-xs font-semibold text-white">
                     {user.name
                       .split(' ')
-                      .map(n => n[0])
+                      .map((n) => n[0])
                       .join('')
                       .slice(0, 2)
                       .toUpperCase()}
@@ -245,19 +239,15 @@ export const CommentInput: React.FC<CommentInputProps> = ({
                 </div>
               )}
               <div className="flex-1 text-left min-w-0">
-                <div className="text-sm font-semibold text-gray-900 truncate">
-                  {user.name}
-                </div>
-                <div className="text-xs text-gray-600 truncate">
-                  @{user.username}
-                </div>
+                <div className="text-sm font-semibold text-gray-900 truncate">{user.name}</div>
+                <div className="text-xs text-gray-600 truncate">@{user.username}</div>
               </div>
             </button>
           ))}
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default CommentInput;
+export default CommentInput

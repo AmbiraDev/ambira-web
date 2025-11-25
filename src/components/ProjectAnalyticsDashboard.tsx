@@ -1,20 +1,20 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { PersonalAnalyticsDashboard } from './PersonalAnalyticsDashboard';
-import { useAuth } from '@/hooks/useAuth';
+import React from 'react'
+import { PersonalAnalyticsDashboard } from './PersonalAnalyticsDashboard'
+import { useAuth } from '@/hooks/useAuth'
 
 interface ProjectAnalyticsDashboardProps {
-  projectId: string;
+  projectId: string
 }
 
-export const ProjectAnalyticsDashboard: React.FC<
-  ProjectAnalyticsDashboardProps
-> = ({ projectId }) => {
-  const { user } = useAuth();
+export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps> = ({
+  projectId,
+}) => {
+  const { user } = useAuth()
 
-  if (!user) return null;
+  if (!user) return null
 
   // Simply render PersonalAnalyticsDashboard with projectId filter
-  return <PersonalAnalyticsDashboard userId={user.id} projectId={projectId} />;
-};
+  return <PersonalAnalyticsDashboard userId={user.id} projectId={projectId} />
+}

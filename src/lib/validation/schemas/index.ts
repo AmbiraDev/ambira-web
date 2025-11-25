@@ -5,19 +5,19 @@
  */
 
 // Session schemas
-export * from './session.schemas';
+export * from './session.schemas'
 
 // User schemas
-export * from './user.schemas';
+export * from './user.schemas'
 
 // Comment schemas
-export * from './comment.schemas';
+export * from './comment.schemas'
 
 // Project/Activity schemas
-export * from './project.schemas';
+export * from './project.schemas'
 
 // Group schemas
-export * from './group.schemas';
+export * from './group.schemas'
 
 // Re-export common schemas for convenience
-export * from '../utils/common-schemas';
+export * from '../utils/common-schemas'

@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 /**
  * AuthContext - Placeholder for backwards compatibility
@@ -6,18 +6,14 @@
  * Use: import { useAuth } from '@/hooks/useAuth';
  */
 
-import React, { createContext } from 'react';
+import React, { createContext } from 'react'
 
-export const AuthContext = createContext<null>(null) as React.Context<null>;
+export const AuthContext = createContext<null>(null) as React.Context<null>
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  return <AuthContext.Provider value={null}>{children}</AuthContext.Provider>;
-};
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return <AuthContext.Provider value={null}>{children}</AuthContext.Provider>
+}
 
 export const useAuth = () => {
-  throw new Error(
-    'useAuth context is deprecated. Please use the hook from @/hooks/useAuth'
-  );
-};
+  throw new Error('useAuth context is deprecated. Please use the hook from @/hooks/useAuth')
+}

@@ -1,38 +1,38 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { Activity } from '@/types';
-import { ImageUpload } from '@/components/ImageUpload';
-import Slider from 'rc-slider';
-import 'rc-slider/assets/index.css';
-import { IconRenderer } from '@/components/IconRenderer';
-import { Check, ChevronDown } from 'lucide-react';
+import React, { useState } from 'react'
+import Link from 'next/link'
+import { Activity } from '@/types'
+import { ImageUpload } from '@/components/ImageUpload'
+import Slider from 'rc-slider'
+import 'rc-slider/assets/index.css'
+import { IconRenderer } from '@/components/IconRenderer'
+import { Check, ChevronDown } from 'lucide-react'
 
 interface FinishSessionModalProps {
-  sessionTitle: string;
-  setSessionTitle: (title: string) => void;
-  sessionDescription: string;
-  setSessionDescription: (description: string) => void;
-  selectedActivityId: string;
-  setSelectedActivityId: (id: string) => void;
-  allActivities: Activity[];
-  selectedActivity: Activity | null;
-  selectedImages: File[];
-  imagePreviewUrls: string[];
-  onImagesChange: (images: File[], previewUrls: string[]) => void;
-  adjustedDuration: number;
-  onDurationChange: (value: number | number[]) => void;
-  getElapsedTime: () => number;
-  getFormattedTime: (seconds: number) => string;
-  startTime: Date;
-  onStartTimeChange: (timeString: string) => void;
-  visibility: 'everyone' | 'followers' | 'private';
-  setVisibility: (visibility: 'everyone' | 'followers' | 'private') => void;
-  isUploadingImages: boolean;
-  onSave: () => void;
-  onResume: () => void;
-  onDiscard: () => void;
+  sessionTitle: string
+  setSessionTitle: (title: string) => void
+  sessionDescription: string
+  setSessionDescription: (description: string) => void
+  selectedActivityId: string
+  setSelectedActivityId: (id: string) => void
+  allActivities: Activity[]
+  selectedActivity: Activity | null
+  selectedImages: File[]
+  imagePreviewUrls: string[]
+  onImagesChange: (images: File[], previewUrls: string[]) => void
+  adjustedDuration: number
+  onDurationChange: (value: number | number[]) => void
+  getElapsedTime: () => number
+  getFormattedTime: (seconds: number) => string
+  startTime: Date
+  onStartTimeChange: (timeString: string) => void
+  visibility: 'everyone' | 'followers' | 'private'
+  setVisibility: (visibility: 'everyone' | 'followers' | 'private') => void
+  isUploadingImages: boolean
+  onSave: () => void
+  onResume: () => void
+  onDiscard: () => void
 }
 
 export function FinishSessionModal({
@@ -60,15 +60,15 @@ export function FinishSessionModal({
   onResume,
   onDiscard,
 }: FinishSessionModalProps) {
-  const [showActivityPicker, setShowActivityPicker] = useState(false);
-  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showActivityPicker, setShowActivityPicker] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
 
   // Helper to format Date to time input value (HH:MM)
   const formatTimeForInput = (date: Date): string => {
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-  };
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    return `${hours}:${minutes}`
+  }
 
   return (
     <>
@@ -83,9 +83,7 @@ export function FinishSessionModal({
               >
                 Resume
               </button>
-              <h3 className="text-base font-semibold text-gray-900">
-                Save Session
-              </h3>
+              <h3 className="text-base font-semibold text-gray-900">Save Session</h3>
               <div className="w-16"></div> {/* Spacer for centering */}
             </div>
 
@@ -94,7 +92,7 @@ export function FinishSessionModal({
               <input
                 type="text"
                 value={sessionTitle}
-                onChange={e => setSessionTitle(e.target.value)}
+                onChange={(e) => setSessionTitle(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-base"
                 placeholder="Afternoon Work Session"
               />
@@ -102,7 +100,7 @@ export function FinishSessionModal({
               {/* Description */}
               <textarea
                 value={sessionDescription}
-                onChange={e => setSessionDescription(e.target.value)}
+                onChange={(e) => setSessionDescription(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-base"
                 rows={3}
                 placeholder="How'd it go? Share more about your session."
@@ -120,14 +118,10 @@ export function FinishSessionModal({
                         iconName={selectedActivity.icon}
                         className="w-6 h-6 text-gray-700 flex-shrink-0"
                       />
-                      <span className="flex-1 text-left">
-                        {selectedActivity.name}
-                      </span>
+                      <span className="flex-1 text-left">{selectedActivity.name}</span>
                     </>
                   ) : (
-                    <span className="flex-1 text-left text-gray-500">
-                      Select an activity
-                    </span>
+                    <span className="flex-1 text-left text-gray-500">Select an activity</span>
                   )}
                   <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
                 </button>
@@ -145,11 +139,9 @@ export function FinishSessionModal({
                     <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
                       {allActivities.length === 0 ? (
                         <div className="p-4 text-center">
-                          <p className="text-sm text-gray-600 mb-3">
-                            No activities yet
-                          </p>
+                          <p className="text-sm text-gray-600 mb-3">No activities yet</p>
                           <Link
-                            href="/activities/new"
+                            href="/settings/activities"
                             className="inline-flex items-center gap-2 px-4 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
                           >
                             <svg
@@ -170,17 +162,15 @@ export function FinishSessionModal({
                         </div>
                       ) : (
                         <>
-                          {allActivities.map(activity => (
+                          {allActivities.map((activity) => (
                             <button
                               key={activity.id}
                               onClick={() => {
-                                setSelectedActivityId(activity.id);
-                                setShowActivityPicker(false);
+                                setSelectedActivityId(activity.id)
+                                setShowActivityPicker(false)
                               }}
                               className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
-                                selectedActivityId === activity.id
-                                  ? 'bg-blue-50'
-                                  : ''
+                                selectedActivityId === activity.id ? 'bg-blue-50' : ''
                               }`}
                             >
                               <IconRenderer
@@ -250,7 +240,7 @@ export function FinishSessionModal({
                     <input
                       type="time"
                       value={formatTimeForInput(startTime)}
-                      onChange={e => onStartTimeChange(e.target.value)}
+                      onChange={(e) => onStartTimeChange(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-sm"
                     />
                   </div>
@@ -287,14 +277,10 @@ export function FinishSessionModal({
 
               {/* Visibility */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Visibility
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Visibility</label>
                 <select
                   value={visibility}
-                  onChange={e =>
-                    setVisibility(e.target.value as typeof visibility)
-                  }
+                  onChange={(e) => setVisibility(e.target.value as typeof visibility)}
                   className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] appearance-none bg-white min-h-[44px]"
                   style={{
                     backgroundImage:
@@ -336,12 +322,9 @@ export function FinishSessionModal({
       {showCancelConfirm && (
         <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-3">
-              Discard Session?
-            </h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Discard Session?</h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to discard this session? All progress will
-              be lost.
+              Are you sure you want to discard this session? All progress will be lost.
             </p>
             <div className="flex gap-3">
               <button
@@ -361,5 +344,5 @@ export function FinishSessionModal({
         </div>
       )}
     </>
-  );
+  )
 }

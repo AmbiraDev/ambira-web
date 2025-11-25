@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import { useEffect } from 'react';
+import { useEffect } from 'react'
 
 export default function PWAInstaller() {
   useEffect(() => {
@@ -9,10 +9,10 @@ export default function PWAInstaller() {
         navigator.serviceWorker
           .register('/sw.js')
           .then(() => {})
-          .catch(() => {});
-      });
+          .catch(() => {})
+      })
     }
-  }, []);
+  }, [])
 
-  return null;
+  return null
 }

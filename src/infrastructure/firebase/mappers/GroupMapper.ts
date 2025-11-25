@@ -5,17 +5,17 @@
  * Handles all data transformation and ensures undefined values are stripped.
  */
 
-import { DocumentSnapshot, Timestamp } from 'firebase/firestore';
-import { Group, GroupCategory, GroupPrivacy } from '@/domain/entities/Group';
+import { DocumentSnapshot, Timestamp } from 'firebase/firestore'
+import { Group, GroupCategory, GroupPrivacy } from '@/domain/entities/Group'
 
 export class GroupMapper {
   /**
    * Convert Firestore document to Group domain entity
    */
   toDomain(doc: DocumentSnapshot): Group {
-    const data = doc.data();
+    const data = doc.data()
     if (!data) {
-      throw new Error(`Group document ${doc.id} does not exist`);
+      throw new Error(`Group document ${doc.id} does not exist`)
     }
 
     return new Group(
@@ -31,7 +31,7 @@ export class GroupMapper {
       data.location,
       data.imageUrl,
       data.memberCount
-    );
+    )
   }
 
   /**
@@ -49,18 +49,18 @@ export class GroupMapper {
       createdByUserId: group.createdByUserId,
       createdAt: Timestamp.fromDate(group.createdAt),
       memberCount: group.getMemberCount(),
-    };
+    }
 
     // Add optional fields only if defined
     if (group.location !== undefined) {
-      data.location = group.location;
+      data.location = group.location
     }
 
     if (group.imageUrl !== undefined) {
-      data.imageUrl = group.imageUrl;
+      data.imageUrl = group.imageUrl
     }
 
-    return data;
+    return data
   }
 
   /**
@@ -68,20 +68,20 @@ export class GroupMapper {
    */
   private timestampToDate(timestamp: Timestamp | Date | undefined): Date {
     if (!timestamp) {
-      return new Date();
+      return new Date()
     }
 
     if (timestamp instanceof Date) {
-      return timestamp;
+      return timestamp
     }
 
-    return timestamp.toDate();
+    return timestamp.toDate()
   }
 
   /**
    * Convert multiple Firestore documents to Group entities
    */
   toDomainList(docs: DocumentSnapshot[]): Group[] {
-    return docs.map(doc => this.toDomain(doc));
+    return docs.map((doc) => this.toDomain(doc))
   }
 }

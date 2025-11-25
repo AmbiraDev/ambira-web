@@ -1,18 +1,15 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { Session, Project } from '@/types';
+import React, { useState, useEffect } from 'react'
+import { Session, Project } from '@/types'
 
 interface PostCreationModalProps {
-  session: Session;
-  project: Project;
-  onSubmit: (
-    description: string,
-    visibility: 'everyone' | 'followers' | 'private'
-  ) => Promise<void>;
-  onSkip: () => void;
-  onCancel: () => void;
-  isOpen: boolean;
+  session: Session
+  project: Project
+  onSubmit: (description: string, visibility: 'everyone' | 'followers' | 'private') => Promise<void>
+  onSkip: () => void
+  onCancel: () => void
+  isOpen: boolean
 }
 
 export const PostCreationModal: React.FC<PostCreationModalProps> = ({
@@ -23,50 +20,48 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
   onCancel,
   isOpen,
 }) => {
-  const [description, setDescription] = useState('');
-  const [visibility, setVisibility] = useState<
-    'everyone' | 'followers' | 'private'
-  >('everyone');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [description, setDescription] = useState('')
+  const [visibility, setVisibility] = useState<'everyone' | 'followers' | 'private'>('everyone')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        onCancel();
+        onCancel()
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleEscape)
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, onCancel]);
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, onCancel])
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+    e.preventDefault()
+    setIsSubmitting(true)
     try {
-      await onSubmit(description, visibility);
+      await onSubmit(description, visibility)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const formatDuration = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    return `${minutes}m`;
-  };
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    if (hours > 0) return `${hours}h ${minutes}m`
+    return `${minutes}m`
+  }
 
   // Task tracking not implemented at session level
-  const completedTasks = 0;
+  const completedTasks = 0
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -74,19 +69,12 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Share Your Session
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-900">Share Your Session</h2>
             <button
               onClick={onCancel}
               className="text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -96,9 +84,7 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
               </svg>
             </button>
           </div>
-          <p className="text-gray-600 mt-1">
-            Tell your followers about this productive session
-          </p>
+          <p className="text-gray-600 mt-1">Tell your followers about this productive session</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -112,9 +98,7 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
                 {project.icon}
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-lg text-gray-900">
-                  {session.title}
-                </h3>
+                <h3 className="font-bold text-lg text-gray-900">{session.title}</h3>
                 <p className="text-gray-600">{project.name}</p>
                 <div className="flex items-center gap-4 mt-2">
                   <div className="flex items-center gap-2">
@@ -148,9 +132,7 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span className="font-semibold text-gray-900">
-                        {completedTasks} tasks
-                      </span>
+                      <span className="font-semibold text-gray-900">{completedTasks} tasks</span>
                     </div>
                   )}
                 </div>
@@ -165,16 +147,14 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
             </label>
             <textarea
               value={description}
-              onChange={e => setDescription(e.target.value)}
+              onChange={(e) => setDescription(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
               rows={4}
               placeholder="Share your progress, learnings, or reflections with your followers..."
               disabled={isSubmitting}
             />
             <div className="flex items-center justify-between mt-2">
-              <span className="text-sm text-gray-500">
-                {description.length} / 500 characters
-              </span>
+              <span className="text-sm text-gray-500">{description.length} / 500 characters</span>
               {description.length > 500 && (
                 <span className="text-sm text-red-500">
                   Too long! Please keep it under 500 characters.
@@ -294,7 +274,7 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
         </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default PostCreationModal;
+export default PostCreationModal

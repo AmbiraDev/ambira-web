@@ -20,13 +20,13 @@ export {
   useGroups,
   useGroupSearch,
   GROUPS_KEYS,
-} from './useGroups';
+} from './useGroups'
 
 // Members hook
-export { useGroupMembers } from './useGroupMembers';
+export { useGroupMembers } from './useGroupMembers'
 
 // Leaderboard hook (override the one from useGroups)
-export { useGroupLeaderboard as useGroupLeaderboardData } from './useGroupLeaderboard';
+export { useGroupLeaderboard as useGroupLeaderboardData } from './useGroupLeaderboard'
 
 // Mutation hooks
 export {
@@ -34,4 +34,4 @@ export {
   useLeaveGroup,
   useInvalidateGroups,
   useInvalidateGroup,
-} from './useGroupMutations';
+} from './useGroupMutations'

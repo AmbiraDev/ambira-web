@@ -1,10 +1,10 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import { SignupCredentials } from '@/types';
-import { firebaseAuthApi } from '@/lib/api';
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
+import { SignupCredentials } from '@/types'
+import { firebaseAuthApi } from '@/lib/api'
 
 export const SignupForm: React.FC = () => {
   const [formData, setFormData] = useState<SignupCredentials>({
@@ -12,186 +12,170 @@ export const SignupForm: React.FC = () => {
     password: '',
     name: '',
     username: '',
-  });
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState<
-    Partial<SignupCredentials & { confirmPassword: string }>
-  >({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string>('');
-  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
-  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(
-    null
-  );
+  })
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [errors, setErrors] = useState<Partial<SignupCredentials & { confirmPassword: string }>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string>('')
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false)
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null)
 
-  const { signup } = useAuth();
-  const router = useRouter();
+  const { signup } = useAuth()
+  const router = useRouter()
 
   // Real-time username availability check with debounce
   useEffect(() => {
     const checkUsername = async () => {
-      const username = formData.username.trim();
+      const username = formData.username.trim()
 
       // Only check if username meets minimum requirements
       if (username.length < 3) {
-        setUsernameAvailable(null);
-        return;
+        setUsernameAvailable(null)
+        return
       }
 
       // Validate username format
       if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-        setUsernameAvailable(null);
-        return;
+        setUsernameAvailable(null)
+        return
       }
 
-      setIsCheckingUsername(true);
+      setIsCheckingUsername(true)
       try {
-        const isAvailable =
-          await firebaseAuthApi.checkUsernameAvailability(username);
-        setUsernameAvailable(isAvailable);
+        const isAvailable = await firebaseAuthApi.checkUsernameAvailability(username)
+        setUsernameAvailable(isAvailable)
       } catch {
-        setUsernameAvailable(null);
+        setUsernameAvailable(null)
       } finally {
-        setIsCheckingUsername(false);
+        setIsCheckingUsername(false)
       }
-    };
+    }
 
     // Debounce: wait 1000ms after user stops typing
-    const timeoutId = setTimeout(checkUsername, 1000);
-    return () => clearTimeout(timeoutId);
-  }, [formData.username]);
+    const timeoutId = setTimeout(checkUsername, 1000)
+    return () => clearTimeout(timeoutId)
+  }, [formData.username])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
 
     if (name === 'confirmPassword') {
-      setConfirmPassword(value);
+      setConfirmPassword(value)
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }))
     }
 
     // Reset username availability when username changes
     if (name === 'username') {
-      setUsernameAvailable(null);
+      setUsernameAvailable(null)
     }
 
     // Clear field-specific error when user starts typing
-    if (
-      errors[name as keyof (SignupCredentials & { confirmPassword: string })]
-    ) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
+    if (errors[name as keyof (SignupCredentials & { confirmPassword: string })]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }))
     }
 
     // Clear submit error
     if (submitError) {
-      setSubmitError('');
+      setSubmitError('')
     }
-  };
+  }
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<SignupCredentials & { confirmPassword: string }> =
-      {};
+    const newErrors: Partial<SignupCredentials & { confirmPassword: string }> = {}
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = 'Name is required'
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+      newErrors.name = 'Name must be at least 2 characters'
     }
 
     if (!formData.username.trim()) {
-      newErrors.username = 'Username is required';
+      newErrors.username = 'Username is required'
     } else if (formData.username.trim().length < 3) {
-      newErrors.username = 'Username must be at least 3 characters';
+      newErrors.username = 'Username must be at least 3 characters'
     } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username.trim())) {
-      newErrors.username =
-        'Username can only contain letters, numbers, and underscores';
+      newErrors.username = 'Username can only contain letters, numbers, and underscores'
     } else if (usernameAvailable === false) {
-      newErrors.username = 'This username is already taken';
+      newErrors.username = 'This username is already taken'
     }
 
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'Email is required'
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = 'Email is invalid'
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = 'Password is required'
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = 'Password must be at least 6 characters'
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
+      newErrors.confirmPassword = 'Please confirm your password'
     } else if (formData.password !== confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = 'Passwords do not match'
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!validateForm()) {
-      return;
+      return
     }
 
-    setIsSubmitting(true);
-    setSubmitError('');
+    setIsSubmitting(true)
+    setSubmitError('')
 
     try {
-      await signup(formData);
+      await signup(formData)
 
       // Check for invite context in sessionStorage
       const inviteContextStr =
-        typeof window !== 'undefined'
-          ? sessionStorage.getItem('inviteContext')
-          : null;
+        typeof window !== 'undefined' ? sessionStorage.getItem('inviteContext') : null
 
       if (inviteContextStr) {
         try {
-          const inviteContext = JSON.parse(inviteContextStr);
+          const inviteContext = JSON.parse(inviteContextStr)
 
           // Clear the invite context
-          sessionStorage.removeItem('inviteContext');
+          sessionStorage.removeItem('inviteContext')
 
           // Redirect based on invite type
           if (inviteContext.type === 'group' && inviteContext.groupId) {
-            router.push(`/invite/group/${inviteContext.groupId}`);
-            return;
+            router.push(`/invite/group/${inviteContext.groupId}`)
+            return
           }
         } catch {}
       }
 
       // Default redirect to home
-      router.push('/');
+      router.push('/')
     } catch (error: unknown) {
       // Handle specific Firebase errors with user-friendly messages
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error)
       if (errorMessage.includes('auth/email-already-in-use')) {
         setSubmitError(
           'This email address is already registered. Please try logging in instead or use a different email.'
-        );
+        )
       } else if (errorMessage.includes('auth/weak-password')) {
         setSubmitError(
           'Password is too weak. Please choose a stronger password with at least 6 characters.'
-        );
+        )
       } else if (errorMessage.includes('auth/invalid-email')) {
-        setSubmitError('Please enter a valid email address.');
+        setSubmitError('Please enter a valid email address.')
       } else {
-        setSubmitError(
-          error instanceof Error
-            ? error.message
-            : 'Signup failed. Please try again.'
-        );
+        setSubmitError(error instanceof Error ? error.message : 'Signup failed. Please try again.')
       }
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -203,10 +187,7 @@ export const SignupForm: React.FC = () => {
 
       <div className="space-y-5">
         <div>
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium text-foreground mb-2"
-          >
+          <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
             Full Name
           </label>
           <input
@@ -221,16 +202,11 @@ export const SignupForm: React.FC = () => {
             }`}
             placeholder="Enter your full name"
           />
-          {errors.name && (
-            <p className="mt-2 text-sm text-destructive">{errors.name}</p>
-          )}
+          {errors.name && <p className="mt-2 text-sm text-destructive">{errors.name}</p>}
         </div>
 
         <div>
-          <label
-            htmlFor="username"
-            className="block text-sm font-medium text-foreground mb-2"
-          >
+          <label htmlFor="username" className="block text-sm font-medium text-foreground mb-2">
             Username
           </label>
           <div className="relative">
@@ -257,32 +233,22 @@ export const SignupForm: React.FC = () => {
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
               </div>
             )}
-            {!isCheckingUsername &&
-              usernameAvailable === true &&
-              formData.username.length >= 3 && (
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              )}
+            {!isCheckingUsername && usernameAvailable === true && formData.username.length >= 3 && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+            )}
             {!isCheckingUsername &&
               usernameAvailable === false &&
               formData.username.length >= 3 && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 text-destructive">
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
                       d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -292,30 +258,17 @@ export const SignupForm: React.FC = () => {
                 </div>
               )}
           </div>
-          {errors.username && (
-            <p className="mt-2 text-sm text-destructive">{errors.username}</p>
+          {errors.username && <p className="mt-2 text-sm text-destructive">{errors.username}</p>}
+          {!errors.username && usernameAvailable === true && formData.username.length >= 3 && (
+            <p className="mt-2 text-sm text-green-600">Username is available!</p>
           )}
-          {!errors.username &&
-            usernameAvailable === true &&
-            formData.username.length >= 3 && (
-              <p className="mt-2 text-sm text-green-600">
-                Username is available!
-              </p>
-            )}
-          {!errors.username &&
-            usernameAvailable === false &&
-            formData.username.length >= 3 && (
-              <p className="mt-2 text-sm text-destructive">
-                This username is already taken
-              </p>
-            )}
+          {!errors.username && usernameAvailable === false && formData.username.length >= 3 && (
+            <p className="mt-2 text-sm text-destructive">This username is already taken</p>
+          )}
         </div>
 
         <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-foreground mb-2"
-          >
+          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
             Email address
           </label>
           <input
@@ -330,16 +283,11 @@ export const SignupForm: React.FC = () => {
             }`}
             placeholder="Enter your email"
           />
-          {errors.email && (
-            <p className="mt-2 text-sm text-destructive">{errors.email}</p>
-          )}
+          {errors.email && <p className="mt-2 text-sm text-destructive">{errors.email}</p>}
         </div>
 
         <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-foreground mb-2"
-          >
+          <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
             Password
           </label>
           <input
@@ -354,9 +302,7 @@ export const SignupForm: React.FC = () => {
             }`}
             placeholder="Create a password"
           />
-          {errors.password && (
-            <p className="mt-2 text-sm text-destructive">{errors.password}</p>
-          )}
+          {errors.password && <p className="mt-2 text-sm text-destructive">{errors.password}</p>}
         </div>
 
         <div>
@@ -379,9 +325,7 @@ export const SignupForm: React.FC = () => {
             placeholder="Confirm your password"
           />
           {errors.confirmPassword && (
-            <p className="mt-2 text-sm text-destructive">
-              {errors.confirmPassword}
-            </p>
+            <p className="mt-2 text-sm text-destructive">{errors.confirmPassword}</p>
           )}
         </div>
       </div>
@@ -415,5 +359,5 @@ export const SignupForm: React.FC = () => {
         </div>
       </div>
     </form>
-  );
-};
+  )
+}

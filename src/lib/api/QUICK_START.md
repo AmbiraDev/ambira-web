@@ -10,10 +10,10 @@ The massive `firebaseApi.ts` file is being split into focused modules. **Your ex
 
 ```typescript
 // OLD (still works)
-import { firebaseAuthApi } from '@/lib/firebaseApi';
+import { firebaseAuthApi } from '@/lib/firebaseApi'
 
 // NEW (preferred)
-import { firebaseAuthApi } from '@/lib/api/auth';
+import { firebaseAuthApi } from '@/lib/api/auth'
 ```
 
 ## Available Modules
@@ -22,19 +22,13 @@ import { firebaseAuthApi } from '@/lib/api/auth';
 
 ```typescript
 // Authentication
-import { firebaseAuthApi } from '@/lib/api/auth';
+import { firebaseAuthApi } from '@/lib/api/auth'
 
 // Shared utilities
-import {
-  convertTimestamp,
-  removeUndefinedFields,
-} from '@/lib/api/shared/utils';
+import { convertTimestamp, removeUndefinedFields } from '@/lib/api/shared/utils'
 
 // Social helpers
-import {
-  updateSocialGraph,
-  fetchUserDataForSocialContext,
-} from '@/lib/api/social/helpers';
+import { updateSocialGraph, fetchUserDataForSocialContext } from '@/lib/api/social/helpers'
 ```
 
 ### 🚧 In Progress (Use old paths for now)
@@ -50,7 +44,7 @@ import {
   firebaseStreakApi,
   firebaseAchievementApi,
   firebaseNotificationApi,
-} from '@/lib/firebaseApi';
+} from '@/lib/firebaseApi'
 ```
 
 ## Module Map
@@ -71,25 +65,25 @@ import {
 ### Before
 
 ```typescript
-import { firebaseAuthApi, firebaseUserApi } from '@/lib/firebaseApi';
+import { firebaseAuthApi, firebaseUserApi } from '@/lib/firebaseApi'
 
 // Use the APIs
-await firebaseAuthApi.login({ email, password });
-const profile = await firebaseUserApi.getUserProfile(username);
+await firebaseAuthApi.login({ email, password })
+const profile = await firebaseUserApi.getUserProfile(username)
 ```
 
 ### After (Gradually)
 
 ```typescript
 // Already extracted - use new path
-import { firebaseAuthApi } from '@/lib/api/auth';
+import { firebaseAuthApi } from '@/lib/api/auth'
 
 // Not yet extracted - use old path
-import { firebaseUserApi } from '@/lib/firebaseApi';
+import { firebaseUserApi } from '@/lib/firebaseApi'
 
 // Use the APIs (no changes)
-await firebaseAuthApi.login({ email, password });
-const profile = await firebaseUserApi.getUserProfile(username);
+await firebaseAuthApi.login({ email, password })
+const profile = await firebaseUserApi.getUserProfile(username)
 ```
 
 ## FAQs
@@ -129,7 +123,7 @@ export const firebaseAuthApi = {
   newAuthMethod: async () => {
     /* new code */
   },
-};
+}
 
 // User features -> add to src/lib/firebaseApi.ts (for now)
 // Will be moved when users module is extracted

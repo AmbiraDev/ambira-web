@@ -1,19 +1,19 @@
-'use client';
+'use client'
 
-import React, { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
-import { CommentWithDetails } from '@/types';
-import Link from 'next/link';
-import { Trash2, Heart, MoreVertical } from 'lucide-react';
-import { formatTimeAgo } from '@/lib/formatters';
-import { getUserInitials } from '@/lib/userUtils';
+import React, { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
+import { CommentWithDetails } from '@/types'
+import Link from 'next/link'
+import { Trash2, Heart, MoreVertical } from 'lucide-react'
+import { formatTimeAgo } from '@/lib/formatters'
+import { getUserInitials } from '@/lib/userUtils'
 
 interface CommentItemProps {
-  comment: CommentWithDetails;
-  onDelete?: (commentId: string) => Promise<void>;
-  onLike?: (commentId: string, action: 'like' | 'unlike') => void;
-  currentUserId?: string;
-  sessionId?: string;
+  comment: CommentWithDetails
+  onDelete?: (commentId: string) => Promise<void>
+  onLike?: (commentId: string, action: 'like' | 'unlike') => void
+  currentUserId?: string
+  sessionId?: string
 }
 
 export const CommentItem: React.FC<CommentItemProps> = ({
@@ -23,47 +23,45 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   currentUserId,
   sessionId: _sessionId,
 }) => {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isLiking, setIsLiking] = useState(false);
-  const [optimisticLiked, setOptimisticLiked] = useState(comment.isLiked);
-  const [optimisticLikeCount, setOptimisticLikeCount] = useState(
-    comment.likeCount
-  );
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isLiking, setIsLiking] = useState(false)
+  const [optimisticLiked, setOptimisticLiked] = useState(comment.isLiked)
+  const [optimisticLikeCount, setOptimisticLikeCount] = useState(comment.likeCount)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   // Update optimistic state when prop changes (from cache invalidation)
   useEffect(() => {
-    setOptimisticLiked(comment.isLiked);
-    setOptimisticLikeCount(comment.likeCount);
-  }, [comment.isLiked, comment.likeCount]);
+    setOptimisticLiked(comment.isLiked)
+    setOptimisticLikeCount(comment.likeCount)
+  }, [comment.isLiked, comment.likeCount])
 
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
+        setIsMenuOpen(false)
       }
-    };
+    }
 
     if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside)
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isMenuOpen]);
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isMenuOpen])
 
-  const isOwner = currentUserId === comment.userId;
-  const canDelete = isOwner && !!onDelete;
+  const isOwner = currentUserId === comment.userId
+  const canDelete = isOwner && !!onDelete
 
   const renderContent = (text: string) => {
     // Highlight mentions
-    const parts = text.split(/(@\w+)/g);
+    const parts = text.split(/(@\w+)/g)
     return parts.map((part, index) => {
       if (part.startsWith('@')) {
-        const username = part.slice(1);
+        const username = part.slice(1)
         return (
           <Link
             key={index}
@@ -72,45 +70,43 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           >
             {part}
           </Link>
-        );
+        )
       }
-      return <span key={index}>{part}</span>;
-    });
-  };
+      return <span key={index}>{part}</span>
+    })
+  }
 
   const handleDelete = async () => {
-    if (!onDelete) return;
-    setIsMenuOpen(false);
+    if (!onDelete) return
+    setIsMenuOpen(false)
     if (window.confirm('Are you sure you want to delete this comment?')) {
-      setIsDeleting(true);
+      setIsDeleting(true)
       try {
-        await onDelete(comment.id);
-      } catch (err) {
-        setIsDeleting(false);
+        await onDelete(comment.id)
+      } catch (_err) {
+        setIsDeleting(false)
       }
     }
-  };
+  }
 
   const handleLike = () => {
-    if (!onLike || !currentUserId || isLiking) return;
+    if (!onLike || !currentUserId || isLiking) return
 
     // Optimistic update
-    const action = optimisticLiked ? 'unlike' : 'like';
-    const newLiked = !optimisticLiked;
-    const newCount = newLiked
-      ? optimisticLikeCount + 1
-      : Math.max(0, optimisticLikeCount - 1);
+    const action = optimisticLiked ? 'unlike' : 'like'
+    const newLiked = !optimisticLiked
+    const newCount = newLiked ? optimisticLikeCount + 1 : Math.max(0, optimisticLikeCount - 1)
 
-    setOptimisticLiked(newLiked);
-    setOptimisticLikeCount(newCount);
-    setIsLiking(true);
+    setOptimisticLiked(newLiked)
+    setOptimisticLikeCount(newCount)
+    setIsLiking(true)
 
     // Call the mutation
-    onLike(comment.id, action);
+    onLike(comment.id, action)
 
     // Reset loading state after a short delay to prevent rapid clicking
-    setTimeout(() => setIsLiking(false), 500);
-  };
+    setTimeout(() => setIsLiking(false), 500)
+  }
 
   if (isDeleting) {
     return (
@@ -121,16 +117,13 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           <div className="h-3 bg-gray-200 rounded w-full animate-pulse" />
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="flex gap-3">
       {/* User Avatar */}
-      <Link
-        href={`/profile/${comment.user.username}`}
-        className="shrink-0 mt-1.5 sm:mt-2"
-      >
+      <Link href={`/profile/${comment.user.username}`} className="shrink-0 mt-1.5 sm:mt-2">
         {comment.user.profilePicture ? (
           <div className="w-10 h-10 relative rounded-full overflow-hidden border border-gray-200">
             <Image
@@ -234,7 +227,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default CommentItem;
+export default CommentItem

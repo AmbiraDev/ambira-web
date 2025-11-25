@@ -1,10 +1,10 @@
-'use client';
+'use client'
 
-import React from 'react';
-import Link from 'next/link';
-import { Challenge, ChallengeProgress as ChallengeProgressType } from '@/types';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import React from 'react'
+import Link from 'next/link'
+import { Challenge, ChallengeProgress as ChallengeProgressType } from '@/types'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Trophy,
   Target,
@@ -14,13 +14,13 @@ import {
   Clock,
   CheckCircle,
   ExternalLink,
-} from 'lucide-react';
+} from 'lucide-react'
 
 interface ChallengeProgressProps {
-  challenge: Challenge;
-  progress: ChallengeProgressType;
-  compact?: boolean;
-  showActions?: boolean;
+  challenge: Challenge
+  progress: ChallengeProgressType
+  compact?: boolean
+  showActions?: boolean
 }
 
 const challengeTypeConfig = {
@@ -44,7 +44,7 @@ const challengeTypeConfig = {
     icon: Target,
     color: 'bg-green-100 text-green-800',
   },
-};
+}
 
 export default function ChallengeProgress({
   challenge,
@@ -52,14 +52,14 @@ export default function ChallengeProgress({
   compact = false,
   showActions = true,
 }: ChallengeProgressProps) {
-  const typeConfig = challengeTypeConfig[challenge.type];
-  const TypeIcon = typeConfig.icon;
+  const typeConfig = challengeTypeConfig[challenge.type]
+  const TypeIcon = typeConfig.icon
 
-  const now = new Date();
-  const endDate = new Date(challenge.endDate);
-  const timeRemaining = endDate.getTime() - now.getTime();
-  const daysRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
-  const isActive = timeRemaining > 0 && challenge.isActive;
+  const now = new Date()
+  const endDate = new Date(challenge.endDate)
+  const timeRemaining = endDate.getTime() - now.getTime()
+  const daysRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24))
+  const isActive = timeRemaining > 0 && challenge.isActive
 
   const formatProgress = (value: number) => {
     if (
@@ -67,27 +67,27 @@ export default function ChallengeProgress({
       challenge.type === 'group-goal' ||
       challenge.type === 'longest-session'
     ) {
-      return `${value.toFixed(1)}h`;
+      return `${value.toFixed(1)}h`
     }
     if (challenge.type === 'fastest-effort') {
-      return `${value.toFixed(1)} tasks/h`;
+      return `${value.toFixed(1)} tasks/h`
     }
-    return value.toString();
-  };
+    return value.toString()
+  }
 
   const getProgressColor = () => {
-    if (progress.isCompleted) return 'bg-green-500';
-    if (progress.percentage >= 75) return 'bg-blue-500';
-    if (progress.percentage >= 50) return 'bg-yellow-500';
-    return 'bg-gray-400';
-  };
+    if (progress.isCompleted) return 'bg-green-500'
+    if (progress.percentage >= 75) return 'bg-blue-500'
+    if (progress.percentage >= 50) return 'bg-yellow-500'
+    return 'bg-gray-400'
+  }
 
   const getRankColor = () => {
-    if (progress.rank === 1) return 'text-yellow-600';
-    if (progress.rank <= 3) return 'text-blue-600';
-    if (progress.rank <= 10) return 'text-green-600';
-    return 'text-gray-600';
-  };
+    if (progress.rank === 1) return 'text-yellow-600'
+    if (progress.rank <= 3) return 'text-blue-600'
+    if (progress.rank <= 10) return 'text-green-600'
+    return 'text-gray-600'
+  }
 
   if (compact) {
     return (
@@ -102,9 +102,7 @@ export default function ChallengeProgress({
               {challenge.name}
             </Link>
           </div>
-          {progress.isCompleted && (
-            <CheckCircle className="w-5 h-5 text-green-500" />
-          )}
+          {progress.isCompleted && <CheckCircle className="w-5 h-5 text-green-500" />}
         </div>
 
         <div className="space-y-2">
@@ -112,8 +110,7 @@ export default function ChallengeProgress({
             <span className="text-gray-600">Progress</span>
             <span className="font-medium">
               {formatProgress(progress.currentValue)}
-              {challenge.goalValue &&
-                ` / ${formatProgress(challenge.goalValue)}`}
+              {challenge.goalValue && ` / ${formatProgress(challenge.goalValue)}`}
             </span>
           </div>
 
@@ -127,9 +124,7 @@ export default function ChallengeProgress({
           )}
 
           <div className="flex items-center justify-between text-sm text-gray-500">
-            <span className={`font-medium ${getRankColor()}`}>
-              Rank #{progress.rank}
-            </span>
+            <span className={`font-medium ${getRankColor()}`}>Rank #{progress.rank}</span>
             {isActive && (
               <span className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
@@ -139,7 +134,7 @@ export default function ChallengeProgress({
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -189,16 +184,12 @@ export default function ChallengeProgress({
         )}
 
         <div className="text-center">
-          <div className={`text-2xl font-bold ${getRankColor()}`}>
-            #{progress.rank}
-          </div>
+          <div className={`text-2xl font-bold ${getRankColor()}`}>#{progress.rank}</div>
           <div className="text-sm text-gray-500">Your Rank</div>
         </div>
 
         <div className="text-center">
-          <div className="text-2xl font-bold text-gray-900">
-            {progress.percentage.toFixed(1)}%
-          </div>
+          <div className="text-2xl font-bold text-gray-900">{progress.percentage.toFixed(1)}%</div>
           <div className="text-sm text-gray-500">Complete</div>
         </div>
       </div>
@@ -209,8 +200,7 @@ export default function ChallengeProgress({
           <div className="flex items-center justify-between text-sm mb-2">
             <span className="text-gray-600">Progress to Goal</span>
             <span className="font-medium">
-              {formatProgress(progress.currentValue)} /{' '}
-              {formatProgress(challenge.goalValue)}
+              {formatProgress(progress.currentValue)} / {formatProgress(challenge.goalValue)}
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3">
@@ -244,9 +234,7 @@ export default function ChallengeProgress({
         <div className="bg-green-50 rounded-lg p-4 mb-4">
           <div className="flex items-center gap-2 mb-1">
             <Trophy className="w-4 h-4 text-green-600" />
-            <span className="font-medium text-green-900">
-              Challenge Completed!
-            </span>
+            <span className="font-medium text-green-900">Challenge Completed!</span>
           </div>
           <p className="text-green-700">
             Congratulations! You've successfully completed this challenge.
@@ -277,5 +265,5 @@ export default function ChallengeProgress({
         Last updated: {progress.lastUpdated.toLocaleString()}
       </div>
     </div>
-  );
+  )
 }

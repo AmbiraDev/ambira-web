@@ -8,7 +8,7 @@
  */
 
 // Query hooks
-export { useSessionComments, COMMENT_KEYS } from './useComments';
+export { useSessionComments, COMMENT_KEYS } from './useComments'
 
 // Mutation hooks
 export {
@@ -18,7 +18,7 @@ export {
   useCommentLike,
   useInvalidateComments,
   useInvalidateAllComments,
-} from './useCommentMutations';
+} from './useCommentMutations'
 
 // Re-export types
-export type { CommentLikeData } from '../services/CommentService';
+export type { CommentLikeData } from '../services/CommentService'

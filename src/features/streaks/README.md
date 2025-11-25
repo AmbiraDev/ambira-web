@@ -5,22 +5,18 @@ Hooks and services for managing user streak data - tracking consecutive days of 
 ## Quick Start
 
 ```typescript
-import {
-  useStreakData,
-  useStreakStats,
-  useUpdateStreakVisibility,
-} from '@/features/streaks/hooks';
+import { useStreakData, useStreakStats, useUpdateStreakVisibility } from '@/features/streaks/hooks'
 
 // Get user's streak data
-const { data: streak } = useStreakData(userId);
+const { data: streak } = useStreakData(userId)
 // streak.currentStreak, streak.longestStreak, etc.
 
 // Get streak statistics
-const { data: stats } = useStreakStats(userId);
+const { data: stats } = useStreakStats(userId)
 
 // Update streak visibility
-const updateVisibility = useUpdateStreakVisibility();
-updateVisibility.mutate({ userId, isPublic: true });
+const updateVisibility = useUpdateStreakVisibility()
+updateVisibility.mutate({ userId, isPublic: true })
 ```
 
 ## Available Hooks
@@ -44,9 +40,9 @@ updateVisibility.mutate({ userId, isPublic: true });
 ```typescript
 STREAK_KEYS = {
   all: () => ['streaks'],
-  data: userId => ['streaks', 'data', userId],
-  stats: userId => ['streaks', 'stats', userId],
-};
+  data: (userId) => ['streaks', 'data', userId],
+  stats: (userId) => ['streaks', 'stats', userId],
+}
 ```
 
 ## Features
@@ -123,17 +119,17 @@ function SessionCompleteHandler() {
 **Before:**
 
 ```typescript
-import { useStreak } from '@/hooks/useCache';
+import { useStreak } from '@/hooks/useCache'
 
-const { data } = useStreak(userId);
+const { data } = useStreak(userId)
 ```
 
 **After:**
 
 ```typescript
-import { useStreakData } from '@/features/streaks/hooks';
+import { useStreakData } from '@/features/streaks/hooks'
 
-const { data } = useStreakData(userId);
+const { data } = useStreakData(userId)
 ```
 
 ## Service Layer

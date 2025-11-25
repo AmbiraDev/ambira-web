@@ -8,12 +8,12 @@
  * backwards compatibility with Project naming.
  */
 
-import { useQuery, UseQueryOptions } from '@tanstack/react-query';
-import { ProjectService } from '../services/ProjectService';
-import { Project, ProjectStats } from '@/types';
-import { STANDARD_CACHE_TIMES } from '@/lib/react-query';
+import { useQuery, UseQueryOptions } from '@tanstack/react-query'
+import { ProjectService } from '../services/ProjectService'
+import { Project, ProjectStats } from '@/types'
+import { STANDARD_CACHE_TIMES } from '@/lib/react-query'
 
-const projectService = new ProjectService();
+const projectService = new ProjectService()
 
 // ==================== CACHE KEYS ====================
 
@@ -24,7 +24,7 @@ export const PROJECT_KEYS = {
   details: () => [...PROJECT_KEYS.all(), 'detail'] as const,
   detail: (id: string) => [...PROJECT_KEYS.details(), id] as const,
   stats: (id: string) => [...PROJECT_KEYS.detail(id), 'stats'] as const,
-};
+}
 
 // ==================== QUERY HOOKS ====================
 
@@ -34,15 +34,13 @@ export const PROJECT_KEYS = {
  * @example
  * const { data: projects, isLoading, error } = useProjects();
  */
-export function useProjects(
-  options?: Partial<UseQueryOptions<Project[], Error>>
-) {
+export function useProjects(options?: Partial<UseQueryOptions<Project[], Error>>) {
   return useQuery<Project[], Error>({
     queryKey: PROJECT_KEYS.list(),
     queryFn: () => projectService.getProjects(),
     staleTime: STANDARD_CACHE_TIMES.LONG, // 15 minutes - projects don't change often
     ...options,
-  });
+  })
 }
 
 /**
@@ -61,7 +59,7 @@ export function useProject(
     staleTime: STANDARD_CACHE_TIMES.LONG,
     enabled: !!projectId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -80,5 +78,5 @@ export function useProjectStats(
     staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes - stats change more frequently
     enabled: !!projectId,
     ...options,
-  });
+  })
 }

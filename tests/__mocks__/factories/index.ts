@@ -11,7 +11,7 @@ export {
   createMockSessionUser,
   createMockSessionActivity,
   resetSessionFactory,
-} from './sessionFactory';
+} from './sessionFactory'
 
 // User factories
 export {
@@ -21,7 +21,7 @@ export {
   createMockPrivateUser,
   createMockFollowersOnlyUser,
   resetUserFactory,
-} from './userFactory';
+} from './userFactory'
 
 // Active session factories
 export {
@@ -31,7 +31,7 @@ export {
   createMockOldSession,
   createMockSessionBatch as createMockActiveSessionBatch,
   resetActiveSessionFactory,
-} from './activeSessionFactory';
+} from './activeSessionFactory'
 
 // Activity/Project factories
 export {
@@ -39,7 +39,7 @@ export {
   createMockProject,
   createMockActivityBatch,
   resetActivityFactory,
-} from './activityFactory';
+} from './activityFactory'
 
 // Group factories
 export {
@@ -47,7 +47,7 @@ export {
   createMockGroupMembership,
   createMockGroupBatch,
   resetGroupFactory,
-} from './groupFactory';
+} from './groupFactory'
 
 // Challenge factories
 export {
@@ -55,7 +55,7 @@ export {
   createMockChallengeParticipant,
   createMockChallengeBatch,
   resetChallengeFactory,
-} from './challengeFactory';
+} from './challengeFactory'
 
 // Comment factories
 export {
@@ -63,7 +63,7 @@ export {
   createMockCommentWithDetails,
   createMockCommentBatch,
   resetCommentFactory,
-} from './commentFactory';
+} from './commentFactory'
 
 // Notification factories
 export {
@@ -77,26 +77,26 @@ export {
   createMockChallengeNotification,
   createMockGroupNotification,
   resetNotificationFactory,
-} from './notificationFactory';
+} from './notificationFactory'
 
 // Import reset functions for use in resetAllFactories
-import { resetSessionFactory } from './sessionFactory';
-import { resetUserFactory } from './userFactory';
-import { resetActiveSessionFactory } from './activeSessionFactory';
-import { resetActivityFactory } from './activityFactory';
-import { resetGroupFactory } from './groupFactory';
-import { resetChallengeFactory as resetChallenge } from './challengeFactory';
-import { resetCommentFactory as resetComment } from './commentFactory';
-import { resetNotificationFactory } from './notificationFactory';
+import { resetSessionFactory } from './sessionFactory'
+import { resetUserFactory } from './userFactory'
+import { resetActiveSessionFactory } from './activeSessionFactory'
+import { resetActivityFactory } from './activityFactory'
+import { resetGroupFactory } from './groupFactory'
+import { resetChallengeFactory as resetChallenge } from './challengeFactory'
+import { resetCommentFactory as resetComment } from './commentFactory'
+import { resetNotificationFactory } from './notificationFactory'
 
 // Reset all factories
 export function resetAllFactories() {
-  resetSessionFactory();
-  resetUserFactory();
-  resetActiveSessionFactory();
-  resetActivityFactory();
-  resetGroupFactory();
-  resetChallenge();
-  resetComment();
-  resetNotificationFactory();
+  resetSessionFactory()
+  resetUserFactory()
+  resetActiveSessionFactory()
+  resetActivityFactory()
+  resetGroupFactory()
+  resetChallenge()
+  resetComment()
+  resetNotificationFactory()
 }

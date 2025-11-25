@@ -1,163 +1,152 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import Header from '@/components/HeaderComponent';
-import { SessionWithDetails, CommentWithDetails } from '@/types';
-import { firebaseApi } from '@/lib/api';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Heart, MessageCircle, Eye, TrendingUp } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import Header from '@/components/HeaderComponent'
+import { SessionWithDetails, CommentWithDetails } from '@/types'
+import { firebaseApi } from '@/lib/api'
+import Link from 'next/link'
+import Image from 'next/image'
+import { Heart, MessageCircle, Eye, TrendingUp } from 'lucide-react'
 
-type ActivityTab = 'overview' | 'comments';
+type ActivityTab = 'overview' | 'comments'
 
 interface ActivityDetailPageProps {
   params: Promise<{
-    id: string;
-  }>;
+    id: string
+  }>
 }
 
 function ActivityDetailContent({ activityId }: { activityId: string }) {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [session, setSession] = useState<SessionWithDetails | null>(null);
-  const [comments, setComments] = useState<CommentWithDetails[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<ActivityTab>('overview');
-  const [isSupporting, setIsSupporting] = useState(false);
-  const [newComment, setNewComment] = useState('');
-  const [isPostingComment, setIsPostingComment] = useState(false);
+  const router = useRouter()
+  const { user } = useAuth()
+  const [session, setSession] = useState<SessionWithDetails | null>(null)
+  const [comments, setComments] = useState<CommentWithDetails[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState<ActivityTab>('overview')
+  const [isSupporting, setIsSupporting] = useState(false)
+  const [newComment, setNewComment] = useState('')
+  const [isPostingComment, setIsPostingComment] = useState(false)
 
   useEffect(() => {
     if (activityId && user) {
-      loadSessionData();
-      loadComments();
+      loadSessionData()
+      loadComments()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activityId, user]);
+  }, [activityId, user])
 
   const loadSessionData = async () => {
     try {
-      setIsLoading(true);
-      const sessionData =
-        await firebaseApi.session.getSessionWithDetails(activityId);
-      setSession(sessionData as unknown as SessionWithDetails);
+      setIsLoading(true)
+      const sessionData = await firebaseApi.session.getSessionWithDetails(activityId)
+      setSession(sessionData as unknown as SessionWithDetails)
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error)
       const isPermissionError =
-        errorMessage.includes('permission') ||
-        errorMessage.includes('Permission');
-      const isNotFound =
-        errorMessage.includes('not found') ||
-        errorMessage.includes('Not found');
+        errorMessage.includes('permission') || errorMessage.includes('Permission')
+      const isNotFound = errorMessage.includes('not found') || errorMessage.includes('Not found')
 
       if (isPermissionError || isNotFound) {
-        setSession(null);
+        setSession(null)
       } else {
-        setSession(null);
+        setSession(null)
       }
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const loadComments = async () => {
     try {
-      const response = await firebaseApi.comment.getSessionComments(activityId);
-      setComments(response.comments);
+      const response = await firebaseApi.comment.getSessionComments(activityId)
+      setComments(response.comments)
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error)
       const isPermissionError =
-        errorMessage.includes('permission') ||
-        errorMessage.includes('Permission');
+        errorMessage.includes('permission') || errorMessage.includes('Permission')
       if (!isPermissionError) {
       }
     }
-  };
+  }
 
   const handleSupport = async () => {
-    if (!session || isSupporting) return;
+    if (!session || isSupporting) return
 
     try {
-      setIsSupporting(true);
+      setIsSupporting(true)
       if (session.isSupported) {
-        await firebaseApi.post.removeSupportFromSession(session.id);
+        await firebaseApi.post.removeSupportFromSession(session.id)
       } else {
-        await firebaseApi.post.supportSession(session.id);
+        await firebaseApi.post.supportSession(session.id)
       }
-      await loadSessionData();
+      await loadSessionData()
     } catch {
     } finally {
-      setIsSupporting(false);
+      setIsSupporting(false)
     }
-  };
+  }
 
   const handlePostComment = async () => {
-    if (!newComment.trim() || isPostingComment) return;
+    if (!newComment.trim() || isPostingComment) return
 
     try {
-      setIsPostingComment(true);
+      setIsPostingComment(true)
       await firebaseApi.comment.createComment({
         sessionId: activityId,
         content: newComment.trim(),
-      });
-      setNewComment('');
-      await loadComments();
-      await loadSessionData();
+      })
+      setNewComment('')
+      await loadComments()
+      await loadSessionData()
     } catch {
     } finally {
-      setIsPostingComment(false);
+      setIsPostingComment(false)
     }
-  };
+  }
 
   const formatTime = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
     if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}h ${minutes}m`
     }
-    return `${minutes}m`;
-  };
+    return `${minutes}m`
+  }
 
   const formatDate = (date: Date): string => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    });
-  };
+    })
+  }
 
   const formatTimeAgo = (date: Date): string => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
 
-    const activityDate = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate()
-    );
+    const activityDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
 
     // Format time as "h:mm am/pm"
     const timeStr = new Date(date).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
-    });
+    })
 
     // Check if today
     if (activityDate.getTime() === today.getTime()) {
-      return `Today at ${timeStr}`;
+      return `Today at ${timeStr}`
     }
 
     // Check if yesterday
     if (activityDate.getTime() === yesterday.getTime()) {
-      return `Yesterday at ${timeStr}`;
+      return `Yesterday at ${timeStr}`
     }
 
     // Otherwise show full date: "Month Day, Year at h:mm am/pm"
@@ -165,19 +154,16 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
       month: 'long',
       day: 'numeric',
       year: 'numeric',
-    });
+    })
 
-    return `${dateStr} at ${timeStr}`;
-  };
+    return `${dateStr} at ${timeStr}`
+  }
 
   // Calculate engagement metrics (X-like analytics)
-  const totalEngagements =
-    (session?.supportCount || 0) + (session?.commentCount || 0);
-  const impressions = 0; // Placeholder - would need to implement view tracking
+  const totalEngagements = (session?.supportCount || 0) + (session?.commentCount || 0)
+  const impressions = 0 // Placeholder - would need to implement view tracking
   const engagementRate =
-    impressions > 0
-      ? ((totalEngagements / impressions) * 100).toFixed(1)
-      : '0.0';
+    impressions > 0 ? ((totalEngagements / impressions) * 100).toFixed(1) : '0.0'
 
   if (!user) {
     return (
@@ -186,12 +172,10 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
             Please log in to view activities
           </h1>
-          <p className="text-gray-600">
-            You need to be logged in to view activity details.
-          </p>
+          <p className="text-gray-600">You need to be logged in to view activity details.</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (isLoading) {
@@ -206,7 +190,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   if (!session) {
@@ -232,12 +216,9 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Unable to view activity
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Unable to view activity</h1>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              This activity doesn't exist, has been deleted, or is set to
-              private.
+              This activity doesn't exist, has been deleted, or is set to private.
             </p>
             <button
               onClick={() => router.push('/')}
@@ -248,7 +229,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -282,12 +263,8 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                 </div>
               )}
               <div>
-                <div className="font-semibold text-gray-900">
-                  {session.user.name}
-                </div>
-                <div className="text-sm text-gray-500">
-                  @{session.user.username}
-                </div>
+                <div className="font-semibold text-gray-900">{session.user.name}</div>
+                <div className="text-sm text-gray-500">@{session.user.username}</div>
               </div>
             </Link>
           </div>
@@ -300,15 +277,11 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
               className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors mb-4"
             >
               <span className="text-xl">{session.activity.icon || '📊'}</span>
-              <span className="text-sm font-medium text-gray-900">
-                {session.activity.name}
-              </span>
+              <span className="text-sm font-medium text-gray-900">{session.activity.name}</span>
             </Link>
 
             {/* Title & Description */}
-            <h1 className="text-2xl font-bold text-gray-900 mb-3">
-              {session.title}
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-3">{session.title}</h1>
             {session.description && (
               <p className="text-gray-700 text-lg mb-4 whitespace-pre-line">
                 {session.description}
@@ -317,9 +290,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
 
             {/* Duration & Date */}
             <div className="flex items-center gap-4 text-gray-500 text-sm mb-6">
-              <span className="font-medium text-gray-900">
-                {formatTime(session.duration)}
-              </span>
+              <span className="font-medium text-gray-900">{formatTime(session.duration)}</span>
               <span>•</span>
               <span>{formatTimeAgo(session.createdAt)}</span>
               {session.showStartTime && (
@@ -365,9 +336,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
               }`}
             >
-              <Heart
-                className={`w-5 h-5 ${session.isSupported ? 'fill-current' : ''}`}
-              />
+              <Heart className={`w-5 h-5 ${session.isSupported ? 'fill-current' : ''}`} />
               <span>{session.isSupported ? 'Supported' : 'Support'}</span>
             </button>
             <button
@@ -412,9 +381,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
             <div className="space-y-6">
               {/* Engagement Overview - X Style */}
               <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-6">
-                  Engagement
-                </h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-6">Engagement</h3>
 
                 {/* Main Metrics Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -422,33 +389,23 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                     <div className="flex justify-center mb-2">
                       <Eye className="w-6 h-6 text-[#0066CC]" />
                     </div>
-                    <div className="text-2xl font-bold text-gray-900">
-                      {impressions}
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      Impressions
-                    </div>
+                    <div className="text-2xl font-bold text-gray-900">{impressions}</div>
+                    <div className="text-sm text-gray-600 mt-1">Impressions</div>
                   </div>
 
                   <div className="text-center p-4 bg-gray-50 rounded-xl">
                     <div className="flex justify-center mb-2">
                       <TrendingUp className="w-6 h-6 text-green-600" />
                     </div>
-                    <div className="text-2xl font-bold text-gray-900">
-                      {totalEngagements}
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      Engagements
-                    </div>
+                    <div className="text-2xl font-bold text-gray-900">{totalEngagements}</div>
+                    <div className="text-sm text-gray-600 mt-1">Engagements</div>
                   </div>
 
                   <div className="text-center p-4 bg-gray-50 rounded-xl">
                     <div className="flex justify-center mb-2">
                       <Heart className="w-6 h-6 text-red-500" />
                     </div>
-                    <div className="text-2xl font-bold text-gray-900">
-                      {session.supportCount}
-                    </div>
+                    <div className="text-2xl font-bold text-gray-900">{session.supportCount}</div>
                     <div className="text-sm text-gray-600 mt-1">Supports</div>
                   </div>
 
@@ -456,9 +413,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                     <div className="flex justify-center mb-2">
                       <MessageCircle className="w-6 h-6 text-[#0066CC]" />
                     </div>
-                    <div className="text-2xl font-bold text-gray-900">
-                      {session.commentCount}
-                    </div>
+                    <div className="text-2xl font-bold text-gray-900">{session.commentCount}</div>
                     <div className="text-sm text-gray-600 mt-1">Comments</div>
                   </div>
                 </div>
@@ -467,16 +422,10 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                 <div className="border-t border-gray-200 pt-6">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <div className="text-sm font-medium text-gray-600">
-                        Engagement Rate
-                      </div>
-                      <div className="text-xs text-gray-500 mt-0.5">
-                        Engagements ÷ Impressions
-                      </div>
+                      <div className="text-sm font-medium text-gray-600">Engagement Rate</div>
+                      <div className="text-xs text-gray-500 mt-0.5">Engagements ÷ Impressions</div>
                     </div>
-                    <div className="text-3xl font-bold text-gray-900">
-                      {engagementRate}%
-                    </div>
+                    <div className="text-3xl font-bold text-gray-900">{engagementRate}%</div>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                     <div
@@ -491,9 +440,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
 
               {/* Engagement Breakdown */}
               <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-6">
-                  Engagement Breakdown
-                </h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-6">Engagement Breakdown</h3>
 
                 <div className="space-y-4">
                   {/* Supports */}
@@ -501,16 +448,12 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <Heart className="w-4 h-4 text-red-500" />
-                        <span className="text-sm font-medium text-gray-700">
-                          Supports
-                        </span>
+                        <span className="text-sm font-medium text-gray-700">Supports</span>
                       </div>
                       <span className="text-sm font-semibold text-gray-900">
                         {session.supportCount} (
                         {totalEngagements > 0
-                          ? Math.round(
-                              (session.supportCount / totalEngagements) * 100
-                            )
+                          ? Math.round((session.supportCount / totalEngagements) * 100)
                           : 0}
                         %)
                       </span>
@@ -530,16 +473,12 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <MessageCircle className="w-4 h-4 text-[#0066CC]" />
-                        <span className="text-sm font-medium text-gray-700">
-                          Comments
-                        </span>
+                        <span className="text-sm font-medium text-gray-700">Comments</span>
                       </div>
                       <span className="text-sm font-semibold text-gray-900">
                         {session.commentCount} (
                         {totalEngagements > 0
-                          ? Math.round(
-                              (session.commentCount / totalEngagements) * 100
-                            )
+                          ? Math.round((session.commentCount / totalEngagements) * 100)
                           : 0}
                         %)
                       </span>
@@ -558,9 +497,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
 
               {/* Activity Details */}
               <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">
-                  Activity Details
-                </h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Activity Details</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <span className="text-sm text-gray-600">Duration</span>
@@ -570,9 +507,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                   </div>
                   <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <span className="text-sm text-gray-600">Date</span>
-                    <span className="text-sm text-gray-900">
-                      {formatDate(session.startTime)}
-                    </span>
+                    <span className="text-sm text-gray-900">{formatDate(session.startTime)}</span>
                   </div>
                   <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <span className="text-sm text-gray-600">Visibility</span>
@@ -599,12 +534,10 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
               {/* Comment Input */}
               {session.allowComments !== false && (
                 <div className="bg-white rounded-xl border border-gray-200 p-6">
-                  <h3 className="text-base font-medium text-gray-900 mb-4">
-                    Add a comment
-                  </h3>
+                  <h3 className="text-base font-medium text-gray-900 mb-4">Add a comment</h3>
                   <textarea
                     value={newComment}
-                    onChange={e => setNewComment(e.target.value)}
+                    onChange={(e) => setNewComment(e.target.value)}
                     placeholder="Write a comment..."
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent resize-none"
                     rows={3}
@@ -628,7 +561,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                 </h3>
                 {comments.length > 0 ? (
                   <div className="space-y-6">
-                    {comments.map(comment => (
+                    {comments.map((comment) => (
                       <div key={comment.id} className="flex gap-3">
                         <Link href={`/profile/${comment.user.username}`}>
                           {comment.user.profilePicture ? (
@@ -657,15 +590,11 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                             >
                               {comment.user.name}
                             </Link>
-                            <p className="text-gray-700 mt-1">
-                              {comment.content}
-                            </p>
+                            <p className="text-gray-700 mt-1">{comment.content}</p>
                           </div>
                           <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                             <span>{formatTimeAgo(comment.createdAt)}</span>
-                            {comment.likeCount > 0 && (
-                              <span>{comment.likeCount} likes</span>
-                            )}
+                            {comment.likeCount > 0 && <span>{comment.likeCount} likes</span>}
                           </div>
                         </div>
                       </div>
@@ -683,17 +612,15 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default function ActivityDetailPageWrapper({
-  params,
-}: ActivityDetailPageProps) {
-  const [activityId, setActivityId] = React.useState<string>('');
+export default function ActivityDetailPageWrapper({ params }: ActivityDetailPageProps) {
+  const [activityId, setActivityId] = React.useState<string>('')
 
   React.useEffect(() => {
-    params.then(({ id }) => setActivityId(id));
-  }, [params]);
+    params.then(({ id }) => setActivityId(id))
+  }, [params])
 
   return (
     <ProtectedRoute>
@@ -712,5 +639,5 @@ export default function ActivityDetailPageWrapper({
         <ActivityDetailContent activityId={activityId} />
       )}
     </ProtectedRoute>
-  );
+  )
 }

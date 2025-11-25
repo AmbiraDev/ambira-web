@@ -9,7 +9,7 @@ import type {
   UseQueryOptions as TanStackUseQueryOptions,
   UseMutationOptions as TanStackUseMutationOptions,
   QueryKey,
-} from '@tanstack/react-query';
+} from '@tanstack/react-query'
 
 /**
  * Standard query options for feature hooks
@@ -30,7 +30,7 @@ export type QueryOptions<
   TData = unknown,
   TError = Error,
   TQueryKey extends QueryKey = QueryKey,
-> = Partial<TanStackUseQueryOptions<TData, TError, TData, TQueryKey>>;
+> = Partial<TanStackUseQueryOptions<TData, TError, TData, TQueryKey>>
 
 /**
  * Standard mutation options for feature hooks
@@ -45,11 +45,9 @@ export type QueryOptions<
  *   });
  * }
  */
-export type MutationOptions<
-  TData = unknown,
-  TVariables = void,
-  TError = Error,
-> = Partial<TanStackUseMutationOptions<TData, TError, TVariables>>;
+export type MutationOptions<TData = unknown, TVariables = void, TError = Error> = Partial<
+  TanStackUseMutationOptions<TData, TError, TVariables>
+>
 
 /**
  * Cache key factory pattern
@@ -65,10 +63,7 @@ export type MutationOptions<
  *   detail: (id: string) => [...GROUPS_KEYS.details(), id] as const,
  * };
  */
-export type CacheKeyFactory = Record<
-  string,
-  (...args: never[]) => readonly unknown[]
->;
+export type CacheKeyFactory = Record<string, (...args: never[]) => readonly unknown[]>
 
 /**
  * Standard cache times for different data types
@@ -93,14 +88,14 @@ export const STANDARD_CACHE_TIMES = {
 
   /** Infinite - Data that never changes */
   INFINITE: Infinity,
-} as const;
+} as const
 
 /**
  * Helper type for service methods that feature hooks wrap
  */
 export type ServiceMethod<TReturn, TParams extends unknown[] = []> = (
   ...args: TParams
-) => Promise<TReturn>;
+) => Promise<TReturn>
 
 /**
  * Extract parameters from a service method
@@ -109,8 +104,7 @@ export type ServiceMethod<TReturn, TParams extends unknown[] = []> = (
  * type GroupServiceParams = ServiceParams<typeof groupService.getGroupDetails>;
  * // string
  */
-export type ServiceParams<T> =
-  T extends ServiceMethod<unknown, infer P> ? P : never;
+export type ServiceParams<T> = T extends ServiceMethod<unknown, infer P> ? P : never
 
 /**
  * Extract return type from a service method
@@ -119,4 +113,4 @@ export type ServiceParams<T> =
  * type GroupReturn = ServiceReturn<typeof groupService.getGroupDetails>;
  * // Group | null
  */
-export type ServiceReturn<T> = T extends ServiceMethod<infer R> ? R : never;
+export type ServiceReturn<T> = T extends ServiceMethod<infer R> ? R : never

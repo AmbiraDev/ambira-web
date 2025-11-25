@@ -1,80 +1,71 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { firebaseSessionApi, firebaseUserApi } from '@/lib/api';
-import { Clock, Flame, Target, TrendingUp } from 'lucide-react';
-import Link from 'next/link';
+import React, { useState, useEffect, useCallback } from 'react'
+import { useAuth } from '@/hooks/useAuth'
+import { firebaseSessionApi, firebaseUserApi } from '@/lib/api'
+import { Clock, Flame, Target, TrendingUp } from 'lucide-react'
+import Link from 'next/link'
 
 export default function DayOverview() {
-  const { user } = useAuth();
+  const { user } = useAuth()
   const [todayStats, setTodayStats] = useState({
     totalTime: 0,
     sessionsCount: 0,
     currentStreak: 0,
-  });
-  const [isLoading, setIsLoading] = useState(true);
+  })
+  const [isLoading, setIsLoading] = useState(true)
 
   const loadTodayStats = useCallback(async () => {
-    if (!user) return;
+    if (!user) return
 
     try {
-      setIsLoading(true);
+      setIsLoading(true)
 
       // Get today's sessions
-      const sessions = await firebaseSessionApi.getUserSessions(
-        user.id,
-        50,
-        true
-      );
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      const sessions = await firebaseSessionApi.getUserSessions(user.id, 50, true)
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
 
-      const todaySessions = sessions.filter(session => {
+      const todaySessions = sessions.filter((session) => {
         const sessionDate =
-          session.createdAt instanceof Date
-            ? session.createdAt
-            : new Date(session.createdAt);
-        const sessionDay = new Date(sessionDate);
-        sessionDay.setHours(0, 0, 0, 0);
-        return sessionDay.getTime() === today.getTime();
-      });
+          session.createdAt instanceof Date ? session.createdAt : new Date(session.createdAt)
+        const sessionDay = new Date(sessionDate)
+        sessionDay.setHours(0, 0, 0, 0)
+        return sessionDay.getTime() === today.getTime()
+      })
 
       // Calculate total time
-      const totalSeconds = todaySessions.reduce(
-        (sum, session) => sum + session.duration,
-        0
-      );
+      const totalSeconds = todaySessions.reduce((sum, session) => sum + session.duration, 0)
 
       // Get streak
-      const stats = await firebaseUserApi.getUserStats(user.id);
+      const stats = await firebaseUserApi.getUserStats(user.id)
 
       setTodayStats({
         totalTime: totalSeconds,
         sessionsCount: todaySessions.length,
         currentStreak: stats?.currentStreak || 0,
-      });
-    } catch (err) {
+      })
+    } catch (_err) {
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, [user]);
+  }, [user])
 
   useEffect(() => {
     if (user) {
-      loadTodayStats();
+      loadTodayStats()
     }
-  }, [user, loadTodayStats]);
+  }, [user, loadTodayStats])
 
   const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
 
     if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}h ${minutes}m`
     }
-    return `${minutes}m`;
-  };
+    return `${minutes}m`
+  }
 
   if (isLoading) {
     return (
@@ -85,7 +76,7 @@ export default function DayOverview() {
           <div className="h-16 bg-gray-200 rounded-lg flex-1"></div>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -94,9 +85,7 @@ export default function DayOverview() {
       className="md:hidden block bg-white border-b border-gray-200 px-4 py-4"
     >
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-900">
-          Today's Progress
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-900">Today's Progress</h3>
         <TrendingUp className="w-5 h-5 text-[#0066CC]" />
       </div>
 
@@ -104,30 +93,24 @@ export default function DayOverview() {
         {/* Total Time */}
         <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
           <Clock className="w-5 h-5 text-[#0066CC] mb-2" />
-          <div className="text-lg font-bold text-gray-900">
-            {formatTime(todayStats.totalTime)}
-          </div>
+          <div className="text-lg font-bold text-gray-900">{formatTime(todayStats.totalTime)}</div>
           <div className="text-xs text-gray-500">Time</div>
         </div>
 
         {/* Sessions */}
         <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
           <Target className="w-5 h-5 text-[#22C55E] mb-2" />
-          <div className="text-lg font-bold text-gray-900">
-            {todayStats.sessionsCount}
-          </div>
+          <div className="text-lg font-bold text-gray-900">{todayStats.sessionsCount}</div>
           <div className="text-xs text-gray-500">Sessions</div>
         </div>
 
         {/* Streak */}
         <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
           <Flame className="w-5 h-5 text-[#FC4C02] mb-2" />
-          <div className="text-lg font-bold text-gray-900">
-            {todayStats.currentStreak}
-          </div>
+          <div className="text-lg font-bold text-gray-900">{todayStats.currentStreak}</div>
           <div className="text-xs text-gray-500">Day Streak</div>
         </div>
       </div>
     </Link>
-  );
+  )
 }

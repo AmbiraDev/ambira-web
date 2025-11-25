@@ -6,7 +6,7 @@
 
 // Note: 'any' types are acceptable in test utilities to support various query types
 
-import { waitFor } from '@testing-library/react';
+import { waitFor } from '@testing-library/react'
 
 /**
  * Wait for React Query cache to be updated
@@ -14,14 +14,14 @@ import { waitFor } from '@testing-library/react';
 export async function waitForCacheUpdate(
   callback: () => any,
   options?: {
-    timeout?: number;
-    interval?: number;
+    timeout?: number
+    interval?: number
   }
 ): Promise<void> {
   await waitFor(callback, {
     timeout: options?.timeout || 3000,
     interval: options?.interval || 50,
-  });
+  })
 }
 
 /**
@@ -34,12 +34,12 @@ export async function waitForQueryInvalidation(
 ): Promise<void> {
   await waitFor(
     () => {
-      const state = queryClient.getQueryState(queryKey);
-      expect(state).toBeDefined();
-      expect(state?.isInvalidated || state?.dataUpdatedAt).toBeTruthy();
+      const state = queryClient.getQueryState(queryKey)
+      expect(state).toBeDefined()
+      expect(state?.isInvalidated || state?.dataUpdatedAt).toBeTruthy()
     },
     { timeout: options?.timeout || 3000 }
-  );
+  )
 }
 
 /**
@@ -52,11 +52,11 @@ export async function waitForQueryData(
 ): Promise<void> {
   await waitFor(
     () => {
-      const data = queryClient.getQueryData(queryKey);
-      expect(data).toBeDefined();
+      const data = queryClient.getQueryData(queryKey)
+      expect(data).toBeDefined()
     },
     { timeout: options?.timeout || 3000 }
-  );
+  )
 }
 
 /**
@@ -69,14 +69,14 @@ export async function waitForMutation(
   await waitFor(
     async () => {
       try {
-        await mutationFn();
+        await mutationFn()
       } catch (error) {
         // Expected if mutation is still pending
-        throw error;
+        throw error
       }
     },
     { timeout: options?.timeout || 3000 }
-  );
+  )
 }
 
 /**
@@ -90,11 +90,11 @@ export async function waitForOptimisticUpdate(
 ): Promise<void> {
   await waitFor(
     () => {
-      const data = queryClient.getQueryData(queryKey);
-      expect(data).toMatchObject(expectedValue);
+      const data = queryClient.getQueryData(queryKey)
+      expect(data).toMatchObject(expectedValue)
     },
     { timeout: options?.timeout || 3000 }
-  );
+  )
 }
 
 /**
@@ -104,21 +104,21 @@ export async function waitForNetworkIdle(
   mockFn: jest.Mock,
   options?: { timeout?: number; expectedCalls?: number }
 ): Promise<void> {
-  const expectedCalls = options?.expectedCalls || 1;
+  const expectedCalls = options?.expectedCalls || 1
 
   await waitFor(
     () => {
-      expect(mockFn).toHaveBeenCalledTimes(expectedCalls);
+      expect(mockFn).toHaveBeenCalledTimes(expectedCalls)
     },
     { timeout: options?.timeout || 3000 }
-  );
+  )
 }
 
 /**
  * Delay execution for testing timing-sensitive operations
  */
 export function delay(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 /**
@@ -128,22 +128,22 @@ export async function waitForElement(
   callback: () => HTMLElement | null,
   options?: { timeout?: number }
 ): Promise<HTMLElement> {
-  let element: HTMLElement | null = null;
+  let element: HTMLElement | null = null
 
   await waitFor(
     () => {
-      element = callback();
-      expect(element).toBeInTheDocument();
+      element = callback()
+      expect(element).toBeInTheDocument()
     },
     { timeout: options?.timeout || 3000 }
-  );
+  )
 
   // At this point, element is guaranteed to be non-null due to toBeInTheDocument assertion
   if (!element) {
-    throw new Error('Element not found after waitFor');
+    throw new Error('Element not found after waitFor')
   }
 
-  return element;
+  return element
 }
 
 /**
@@ -156,8 +156,8 @@ export async function waitForStateUpdate(
 ): Promise<void> {
   await waitFor(
     () => {
-      expect(getState()).toEqual(expectedValue);
+      expect(getState()).toEqual(expectedValue)
     },
     { timeout: options?.timeout || 3000 }
-  );
+  )
 }

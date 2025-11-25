@@ -1,48 +1,46 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useAuth } from '@/hooks/useAuth';
-import { SignupCredentials } from '@/types';
-import { firebaseUserApi } from '@/lib/api';
-import Header from './HeaderComponent';
-import PWAInstallPrompt from './PWAInstallPrompt';
+import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useAuth } from '@/hooks/useAuth'
+import { SignupCredentials } from '@/types'
+import { firebaseUserApi } from '@/lib/api'
+import Header from './HeaderComponent'
+import PWAInstallPrompt from './PWAInstallPrompt'
 
 export const LandingPage: React.FC = () => {
-  const { login, signup, signInWithGoogle } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [showSignup, setShowSignup] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
+  const { login, signup, signInWithGoogle } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [showSignup, setShowSignup] = useState(false)
+  const [showLogin, setShowLogin] = useState(false)
   const [loginData, setLoginData] = useState({
     email: '',
     password: '',
-  });
+  })
   const [signupData, setSignupData] = useState<SignupCredentials>({
     email: '',
     password: '',
     name: '',
     username: '',
-  });
-  const [confirmPassword, setConfirmPassword] = useState('');
+  })
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [signupErrors, setSignupErrors] = useState<
     Partial<SignupCredentials & { confirmPassword: string }>
-  >({});
+  >({})
   const [loginErrors, setLoginErrors] = useState<{
-    email?: string;
-    password?: string;
-  }>({});
-  const [usernameCheckLoading, setUsernameCheckLoading] = useState(false);
-  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(
-    null
-  );
+    email?: string
+    password?: string
+  }>({})
+  const [usernameCheckLoading, setUsernameCheckLoading] = useState(false)
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null)
 
   const handleGoogleSignIn = async () => {
     try {
-      setIsLoading(true);
-      setError(null);
-      await signInWithGoogle();
+      setIsLoading(true)
+      setError(null)
+      await signInWithGoogle()
       // Navigation is handled by AuthContext after successful authentication
       // No need to manually navigate here - AuthContext will update isAuthenticated
       // and the page component will automatically show the authenticated view
@@ -50,243 +48,224 @@ export const LandingPage: React.FC = () => {
       // Don't show error or clear loading if redirect is in progress
       // (user is being redirected to Google)
       const errorMessage =
-        err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
-          : '';
+        err && typeof err === 'object' && 'message' in err ? String(err.message) : ''
       if (errorMessage !== 'REDIRECT_IN_PROGRESS') {
-        setError(
-          errorMessage || 'Failed to sign in with Google. Please try again.'
-        );
-        setIsLoading(false);
+        setError(errorMessage || 'Failed to sign in with Google. Please try again.')
+        setIsLoading(false)
       }
       // If REDIRECT_IN_PROGRESS, keep loading state - browser will redirect
     }
-  };
+  }
 
   const handleSignupWithEmail = () => {
-    setShowSignup(true);
-    setError(null);
-  };
+    setShowSignup(true)
+    setError(null)
+  }
 
   const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setLoginData(prev => ({ ...prev, [name]: value }));
+    const { name, value } = e.target
+    setLoginData((prev) => ({ ...prev, [name]: value }))
 
     // Clear field-specific error when user starts typing
     if (loginErrors[name as keyof typeof loginErrors]) {
-      setLoginErrors(prev => ({ ...prev, [name]: undefined }));
+      setLoginErrors((prev) => ({ ...prev, [name]: undefined }))
     }
 
     // Clear submit error
     if (error) {
-      setError('');
+      setError('')
     }
-  };
+  }
 
   const validateLoginForm = (): boolean => {
-    const newErrors: { email?: string; password?: string } = {};
+    const newErrors: { email?: string; password?: string } = {}
 
     if (!loginData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'Email is required'
     } else if (!/\S+@\S+\.\S+/.test(loginData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = 'Email is invalid'
     }
 
     if (!loginData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = 'Password is required'
     }
 
-    setLoginErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setLoginErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!validateLoginForm()) {
-      return;
+      return
     }
 
     try {
-      setIsLoading(true);
-      setError(null);
-      await login(loginData);
+      setIsLoading(true)
+      setError(null)
+      await login(loginData)
       // Navigation is handled by AuthContext after successful authentication
       // No need to manually navigate here - AuthContext will update isAuthenticated
       // and the page component will automatically show the authenticated view
     } catch (err: unknown) {
       // Handle specific Firebase errors with user-friendly messages
       const errorMessage =
-        err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
-          : '';
+        err && typeof err === 'object' && 'message' in err ? String(err.message) : ''
       if (errorMessage.includes('auth/user-not-found')) {
-        setError(
-          'No account found with this email address. Please sign up or check your email.'
-        );
+        setError('No account found with this email address. Please sign up or check your email.')
       } else if (errorMessage.includes('auth/wrong-password')) {
-        setError('Incorrect password. Please try again.');
+        setError('Incorrect password. Please try again.')
       } else if (errorMessage.includes('auth/invalid-email')) {
-        setError('Please enter a valid email address.');
+        setError('Please enter a valid email address.')
       } else if (errorMessage.includes('auth/too-many-requests')) {
-        setError('Too many failed attempts. Please try again later.');
+        setError('Too many failed attempts. Please try again later.')
       } else {
-        setError(
-          'Failed to sign in. Please check your credentials and try again.'
-        );
+        setError('Failed to sign in. Please check your credentials and try again.')
       }
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleSignupChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
 
     if (name === 'confirmPassword') {
-      setConfirmPassword(value);
+      setConfirmPassword(value)
     } else {
-      setSignupData(prev => ({ ...prev, [name]: value }));
+      setSignupData((prev) => ({ ...prev, [name]: value }))
     }
 
     // Clear field-specific error when user starts typing
-    if (
-      signupErrors[
-        name as keyof (SignupCredentials & { confirmPassword: string })
-      ]
-    ) {
-      setSignupErrors(prev => ({ ...prev, [name]: undefined }));
+    if (signupErrors[name as keyof (SignupCredentials & { confirmPassword: string })]) {
+      setSignupErrors((prev) => ({ ...prev, [name]: undefined }))
     }
 
     // Clear submit error
     if (error) {
-      setError('');
+      setError('')
     }
 
     // Reset username availability when username changes
     if (name === 'username') {
-      setUsernameAvailable(null);
+      setUsernameAvailable(null)
     }
-  };
+  }
 
   // Debounced username availability check
   useEffect(() => {
     const checkUsername = async () => {
-      const username = signupData.username.trim();
+      const username = signupData.username.trim()
 
       // Only check if username meets minimum requirements
       if (username.length < 3) {
-        setUsernameAvailable(null);
-        return;
+        setUsernameAvailable(null)
+        return
       }
 
       // Validate username format
       if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-        setUsernameAvailable(null);
-        return;
+        setUsernameAvailable(null)
+        return
       }
 
-      setUsernameCheckLoading(true);
+      setUsernameCheckLoading(true)
       try {
-        const available =
-          await firebaseUserApi.checkUsernameAvailability(username);
-        setUsernameAvailable(available);
+        const available = await firebaseUserApi.checkUsernameAvailability(username)
+        setUsernameAvailable(available)
       } catch {
         // Set to null to indicate check couldn't be completed
         // Registration will still proceed with server-side validation
-        setUsernameAvailable(null);
+        setUsernameAvailable(null)
       } finally {
-        setUsernameCheckLoading(false);
+        setUsernameCheckLoading(false)
       }
-    };
+    }
 
     // Debounce: wait 1000ms after user stops typing
-    const timeoutId = setTimeout(checkUsername, 1000);
-    return () => clearTimeout(timeoutId);
-  }, [signupData.username]);
+    const timeoutId = setTimeout(checkUsername, 1000)
+    return () => clearTimeout(timeoutId)
+  }, [signupData.username])
 
   const validateSignupForm = (): boolean => {
-    const newErrors: Partial<SignupCredentials & { confirmPassword: string }> =
-      {};
+    const newErrors: Partial<SignupCredentials & { confirmPassword: string }> = {}
 
     if (!signupData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = 'Name is required'
     } else if (signupData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
+      newErrors.name = 'Name must be at least 2 characters'
     }
 
     if (!signupData.username.trim()) {
-      newErrors.username = 'Username is required';
+      newErrors.username = 'Username is required'
     } else if (signupData.username.trim().length < 3) {
-      newErrors.username = 'Username must be at least 3 characters';
+      newErrors.username = 'Username must be at least 3 characters'
     } else if (!/^[a-zA-Z0-9_]+$/.test(signupData.username.trim())) {
-      newErrors.username =
-        'Username can only contain letters, numbers, and underscores';
+      newErrors.username = 'Username can only contain letters, numbers, and underscores'
     } else if (usernameAvailable === false) {
-      newErrors.username = 'Username is already taken';
+      newErrors.username = 'Username is already taken'
     } else if (usernameCheckLoading) {
-      newErrors.username = 'Checking username availability...';
+      newErrors.username = 'Checking username availability...'
     }
 
     if (!signupData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'Email is required'
     } else if (!/\S+@\S+\.\S+/.test(signupData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = 'Email is invalid'
     }
 
     if (!signupData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = 'Password is required'
     } else if (signupData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = 'Password must be at least 6 characters'
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
+      newErrors.confirmPassword = 'Please confirm your password'
     } else if (signupData.password !== confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = 'Passwords do not match'
     }
 
-    setSignupErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setSignupErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSignupSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!validateSignupForm()) {
-      return;
+      return
     }
 
     try {
-      setIsLoading(true);
-      setError(null);
-      await signup(signupData);
+      setIsLoading(true)
+      setError(null)
+      await signup(signupData)
       // Navigation is handled by AuthContext after successful authentication
       // No need to manually navigate here - AuthContext will update isAuthenticated
       // and the page component will automatically show the authenticated view
     } catch (err: unknown) {
       // Handle specific Firebase errors with user-friendly messages
       const errorMessage =
-        err && typeof err === 'object' && 'message' in err
-          ? String(err.message)
-          : '';
+        err && typeof err === 'object' && 'message' in err ? String(err.message) : ''
       if (errorMessage.includes('auth/email-already-in-use')) {
         setError(
           'This email address is already registered. Please try logging in instead or use a different email.'
-        );
+        )
       } else if (errorMessage.includes('auth/weak-password')) {
         setError(
           'Password is too weak. Please choose a stronger password with at least 6 characters.'
-        );
+        )
       } else if (errorMessage.includes('auth/invalid-email')) {
-        setError('Please enter a valid email address.');
+        setError('Please enter a valid email address.')
       } else {
-        setError('Failed to create account. Please try again.');
+        setError('Failed to create account. Please try again.')
       }
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -303,20 +282,10 @@ export const LandingPage: React.FC = () => {
             {/* Logo and Welcome */}
             <div className="text-center mb-6">
               <div className="w-32 h-32 flex items-center justify-center mx-auto mb-4">
-                <Image
-                  src="/logo.svg"
-                  alt="Ambira Logo"
-                  width={128}
-                  height={128}
-                  priority={true}
-                />
+                <Image src="/logo.svg" alt="Ambira Logo" width={128} height={128} priority={true} />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                Welcome to Ambira
-              </h1>
-              <p className="text-base text-gray-600">
-                Study, work, and build with your friends.
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome to Ambira</h1>
+              <p className="text-base text-gray-600">Study, work, and build with your friends.</p>
             </div>
 
             {/* Already a Member Header */}
@@ -397,18 +366,13 @@ export const LandingPage: React.FC = () => {
             <div className="mb-4 relative">
               <button
                 onClick={() => {
-                  setShowLogin(false);
-                  setShowSignup(false);
+                  setShowLogin(false)
+                  setShowSignup(false)
                 }}
                 className="absolute right-0 top-0 text-gray-600 p-2"
                 aria-label="Close form"
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -560,16 +524,12 @@ export const LandingPage: React.FC = () => {
                       placeholder="Enter your full name"
                     />
                     {signupErrors.name && (
-                      <p className="mt-1 text-xs text-red-600">
-                        {signupErrors.name}
-                      </p>
+                      <p className="mt-1 text-xs text-red-600">{signupErrors.name}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Username
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
                     <div className="relative">
                       <input
                         name="username"
@@ -631,16 +591,12 @@ export const LandingPage: React.FC = () => {
                       )}
                     </div>
                     {signupErrors.username && (
-                      <p className="mt-1 text-xs text-red-600">
-                        {signupErrors.username}
-                      </p>
+                      <p className="mt-1 text-xs text-red-600">{signupErrors.username}</p>
                     )}
                     {!signupErrors.username &&
                       usernameAvailable === true &&
                       signupData.username.trim().length >= 3 && (
-                        <p className="mt-1 text-xs text-green-600">
-                          Username is available!
-                        </p>
+                        <p className="mt-1 text-xs text-green-600">Username is available!</p>
                       )}
                   </div>
 
@@ -655,23 +611,17 @@ export const LandingPage: React.FC = () => {
                       value={signupData.email}
                       onChange={handleSignupChange}
                       className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
-                        signupErrors.email
-                          ? 'border-red-300'
-                          : 'border-gray-300'
+                        signupErrors.email ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Enter your email"
                     />
                     {signupErrors.email && (
-                      <p className="mt-1 text-xs text-red-600">
-                        {signupErrors.email}
-                      </p>
+                      <p className="mt-1 text-xs text-red-600">{signupErrors.email}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Password
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                     <input
                       name="password"
                       type="password"
@@ -679,16 +629,12 @@ export const LandingPage: React.FC = () => {
                       value={signupData.password}
                       onChange={handleSignupChange}
                       className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
-                        signupErrors.password
-                          ? 'border-red-300'
-                          : 'border-gray-300'
+                        signupErrors.password ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Create a password"
                     />
                     {signupErrors.password && (
-                      <p className="mt-1 text-xs text-red-600">
-                        {signupErrors.password}
-                      </p>
+                      <p className="mt-1 text-xs text-red-600">{signupErrors.password}</p>
                     )}
                   </div>
 
@@ -703,16 +649,12 @@ export const LandingPage: React.FC = () => {
                       value={confirmPassword}
                       onChange={handleSignupChange}
                       className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
-                        signupErrors.confirmPassword
-                          ? 'border-red-300'
-                          : 'border-gray-300'
+                        signupErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Confirm your password"
                     />
                     {signupErrors.confirmPassword && (
-                      <p className="mt-1 text-xs text-red-600">
-                        {signupErrors.confirmPassword}
-                      </p>
+                      <p className="mt-1 text-xs text-red-600">{signupErrors.confirmPassword}</p>
                     )}
                   </div>
 
@@ -764,12 +706,8 @@ export const LandingPage: React.FC = () => {
                     priority={true}
                   />
                 </div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                  Welcome to Ambira
-                </h1>
-                <p className="text-lg text-gray-600">
-                  Study, work, and build with your friends.
-                </p>
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome to Ambira</h1>
+                <p className="text-lg text-gray-600">Study, work, and build with your friends.</p>
               </div>
 
               {/* Already a Member Header */}
@@ -791,17 +729,9 @@ export const LandingPage: React.FC = () => {
           {showLogin && (
             <div className="text-center mb-8">
               <div className="w-48 h-48 flex items-center justify-center mx-auto mb-6">
-                <Image
-                  src="/logo.svg"
-                  alt="Ambira Logo"
-                  width={192}
-                  height={192}
-                  priority={true}
-                />
+                <Image src="/logo.svg" alt="Ambira Logo" width={192} height={192} priority={true} />
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Welcome Back
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
               <p className="text-lg text-gray-600">Sign in to your account</p>
             </div>
           )}
@@ -810,17 +740,9 @@ export const LandingPage: React.FC = () => {
           {showSignup && (
             <div className="text-center mb-8">
               <div className="w-48 h-48 flex items-center justify-center mx-auto mb-6">
-                <Image
-                  src="/logo.svg"
-                  alt="Ambira Logo"
-                  width={192}
-                  height={192}
-                  priority={true}
-                />
+                <Image src="/logo.svg" alt="Ambira Logo" width={192} height={192} priority={true} />
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Create Your Account
-              </h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Your Account</h1>
               <p className="text-lg text-gray-600">
                 Join Ambira and start tracking your productivity
               </p>
@@ -884,12 +806,7 @@ export const LandingPage: React.FC = () => {
                     type="button"
                     aria-label="Go back to login options"
                   >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -952,9 +869,7 @@ export const LandingPage: React.FC = () => {
                       placeholder="Enter your email"
                     />
                     {loginErrors.email && (
-                      <p className="mt-2 text-sm text-red-600">
-                        {loginErrors.email}
-                      </p>
+                      <p className="mt-2 text-sm text-red-600">{loginErrors.email}</p>
                     )}
                   </div>
                   <div>
@@ -975,9 +890,7 @@ export const LandingPage: React.FC = () => {
                       placeholder="Enter your password"
                     />
                     {loginErrors.password && (
-                      <p className="mt-2 text-sm text-red-600">
-                        {loginErrors.password}
-                      </p>
+                      <p className="mt-2 text-sm text-red-600">{loginErrors.password}</p>
                     )}
                   </div>
 
@@ -1006,12 +919,7 @@ export const LandingPage: React.FC = () => {
                     type="button"
                     aria-label="Go back to signup options"
                   >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -1025,10 +933,7 @@ export const LandingPage: React.FC = () => {
                 {/* Signup Form */}
                 <form onSubmit={handleSignupSubmit} className="space-y-4">
                   <div>
-                    <label
-                      htmlFor="name"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                       Full Name
                     </label>
                     <input
@@ -1044,9 +949,7 @@ export const LandingPage: React.FC = () => {
                       placeholder="Enter your full name"
                     />
                     {signupErrors.name && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {signupErrors.name}
-                      </p>
+                      <p className="mt-1 text-sm text-red-600">{signupErrors.name}</p>
                     )}
                   </div>
 
@@ -1119,24 +1022,17 @@ export const LandingPage: React.FC = () => {
                       )}
                     </div>
                     {signupErrors.username && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {signupErrors.username}
-                      </p>
+                      <p className="mt-1 text-sm text-red-600">{signupErrors.username}</p>
                     )}
                     {!signupErrors.username &&
                       usernameAvailable === true &&
                       signupData.username.trim().length >= 3 && (
-                        <p className="mt-1 text-sm text-green-600">
-                          Username is available!
-                        </p>
+                        <p className="mt-1 text-sm text-green-600">Username is available!</p>
                       )}
                   </div>
 
                   <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                       Email address
                     </label>
                     <input
@@ -1147,16 +1043,12 @@ export const LandingPage: React.FC = () => {
                       value={signupData.email}
                       onChange={handleSignupChange}
                       className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
-                        signupErrors.email
-                          ? 'border-red-300'
-                          : 'border-gray-300'
+                        signupErrors.email ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Enter your email"
                     />
                     {signupErrors.email && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {signupErrors.email}
-                      </p>
+                      <p className="mt-1 text-sm text-red-600">{signupErrors.email}</p>
                     )}
                   </div>
 
@@ -1175,16 +1067,12 @@ export const LandingPage: React.FC = () => {
                       value={signupData.password}
                       onChange={handleSignupChange}
                       className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
-                        signupErrors.password
-                          ? 'border-red-300'
-                          : 'border-gray-300'
+                        signupErrors.password ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Create a password"
                     />
                     {signupErrors.password && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {signupErrors.password}
-                      </p>
+                      <p className="mt-1 text-sm text-red-600">{signupErrors.password}</p>
                     )}
                   </div>
 
@@ -1203,16 +1091,12 @@ export const LandingPage: React.FC = () => {
                       value={confirmPassword}
                       onChange={handleSignupChange}
                       className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
-                        signupErrors.confirmPassword
-                          ? 'border-red-300'
-                          : 'border-gray-300'
+                        signupErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Confirm your password"
                     />
                     {signupErrors.confirmPassword && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {signupErrors.confirmPassword}
-                      </p>
+                      <p className="mt-1 text-sm text-red-600">{signupErrors.confirmPassword}</p>
                     )}
                   </div>
 
@@ -1261,18 +1145,12 @@ export const LandingPage: React.FC = () => {
             <div className="md:col-span-1">
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-8 h-8 flex items-center justify-center">
-                  <Image
-                    src="/logo.svg"
-                    alt="Ambira Logo"
-                    width={32}
-                    height={32}
-                  />
+                  <Image src="/logo.svg" alt="Ambira Logo" width={32} height={32} />
                 </div>
                 <span className="text-xl font-bold text-[#0066CC]">Ambira</span>
               </div>
               <p className="text-sm text-gray-600 max-w-xs mb-4">
-                Track focus sessions, hit goals, and share progress with
-                friends.
+                Track focus sessions, hit goals, and share progress with friends.
               </p>
               {/* Discord Button */}
               <a
@@ -1310,34 +1188,22 @@ export const LandingPage: React.FC = () => {
                 <h3 className="font-semibold text-gray-900 mb-3">Product</h3>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <Link
-                      href="/features"
-                      className="text-gray-600 hover:text-[#0066CC]"
-                    >
+                    <Link href="/features" className="text-gray-600 hover:text-[#0066CC]">
                       Features
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      href="/activities"
-                      className="text-gray-600 hover:text-[#0066CC]"
-                    >
+                    <Link href="/activities" className="text-gray-600 hover:text-[#0066CC]">
                       Activities
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      href="/groups"
-                      className="text-gray-600 hover:text-[#0066CC]"
-                    >
+                    <Link href="/groups" className="text-gray-600 hover:text-[#0066CC]">
                       Groups
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      href="/challenges"
-                      className="text-gray-600 hover:text-[#0066CC]"
-                    >
+                    <Link href="/challenges" className="text-gray-600 hover:text-[#0066CC]">
                       Challenges
                     </Link>
                   </li>
@@ -1348,34 +1214,22 @@ export const LandingPage: React.FC = () => {
                 <h3 className="font-semibold text-gray-900 mb-3">Resources</h3>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <Link
-                      href="/about"
-                      className="text-gray-600 hover:text-[#0066CC]"
-                    >
+                    <Link href="/about" className="text-gray-600 hover:text-[#0066CC]">
                       About
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      href="/feed"
-                      className="text-gray-600 hover:text-[#0066CC]"
-                    >
+                    <Link href="/feed" className="text-gray-600 hover:text-[#0066CC]">
                       Community
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      href="/sessions"
-                      className="text-gray-600 hover:text-[#0066CC]"
-                    >
+                    <Link href="/sessions" className="text-gray-600 hover:text-[#0066CC]">
                       Sessions
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      href="/tasks"
-                      className="text-gray-600 hover:text-[#0066CC]"
-                    >
+                    <Link href="/tasks" className="text-gray-600 hover:text-[#0066CC]">
                       Tasks
                     </Link>
                   </li>
@@ -1386,26 +1240,17 @@ export const LandingPage: React.FC = () => {
                 <h3 className="font-semibold text-gray-900 mb-3">Support</h3>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <Link
-                      href="/help"
-                      className="text-gray-600 hover:text-[#0066CC]"
-                    >
+                    <Link href="/help" className="text-gray-600 hover:text-[#0066CC]">
                       Help Center
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      href="/contact"
-                      className="text-gray-600 hover:text-[#0066CC]"
-                    >
+                    <Link href="/contact" className="text-gray-600 hover:text-[#0066CC]">
                       Contact
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      href="/status"
-                      className="text-gray-600 hover:text-[#0066CC]"
-                    >
+                    <Link href="/status" className="text-gray-600 hover:text-[#0066CC]">
                       Status
                     </Link>
                   </li>
@@ -1416,26 +1261,17 @@ export const LandingPage: React.FC = () => {
                 <h3 className="font-semibold text-gray-900 mb-3">Legal</h3>
                 <ul className="space-y-2 text-sm">
                   <li>
-                    <Link
-                      href="/privacy"
-                      className="text-gray-600 hover:text-[#0066CC]"
-                    >
+                    <Link href="/privacy" className="text-gray-600 hover:text-[#0066CC]">
                       Privacy
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      href="/terms"
-                      className="text-gray-600 hover:text-[#0066CC]"
-                    >
+                    <Link href="/terms" className="text-gray-600 hover:text-[#0066CC]">
                       Terms
                     </Link>
                   </li>
                   <li>
-                    <Link
-                      href="/cookies"
-                      className="text-gray-600 hover:text-[#0066CC]"
-                    >
+                    <Link href="/cookies" className="text-gray-600 hover:text-[#0066CC]">
                       Cookie Policy
                     </Link>
                   </li>
@@ -1465,5 +1301,5 @@ export const LandingPage: React.FC = () => {
       {/* PWA Install Prompt - Always show on mobile when in login/signup mode */}
       <PWAInstallPrompt alwaysShowOnMobile={showLogin || showSignup} />
     </div>
-  );
-};
+  )
+}

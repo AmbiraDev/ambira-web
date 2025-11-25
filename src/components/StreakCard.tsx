@@ -1,16 +1,16 @@
-'use client';
+'use client'
 
-import React, { useEffect, useState } from 'react';
-import { Flame } from 'lucide-react';
-import { firebaseApi } from '@/lib/api';
-import { StreakStats } from '@/types';
-import Link from 'next/link';
-import { WeekStreakCalendar } from './WeekStreakCalendar';
+import React, { useEffect, useState } from 'react'
+import { Flame } from 'lucide-react'
+import { firebaseApi } from '@/lib/api'
+import { StreakStats } from '@/types'
+import Link from 'next/link'
+import { WeekStreakCalendar } from './WeekStreakCalendar'
 
 interface StreakCardProps {
-  userId: string;
-  variant?: 'default' | 'compact';
-  showProgress?: boolean;
+  userId: string
+  variant?: 'default' | 'compact'
+  showProgress?: boolean
 }
 
 export const StreakCard: React.FC<StreakCardProps> = ({
@@ -18,80 +18,80 @@ export const StreakCard: React.FC<StreakCardProps> = ({
   variant = 'default',
   showProgress = true,
 }) => {
-  const [streakStats, setStreakStats] = useState<StreakStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [streakStats, setStreakStats] = useState<StreakStats | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const loadStreak = async () => {
       try {
-        const stats = await firebaseApi.streak.getStreakStats(userId);
+        const stats = await firebaseApi.streak.getStreakStats(userId)
 
         // Fetch last 7 days of sessions for detailed logging
-        const sessionsResponse = await firebaseApi.session.getSessions(100, {});
+        const sessionsResponse = await firebaseApi.session.getSessions(100, {})
 
         // Get date 7 days ago at start of day
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const sevenDaysAgo = new Date(today);
-        sevenDaysAgo.setDate(today.getDate() - 6); // Include today = 7 days total
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const sevenDaysAgo = new Date(today)
+        sevenDaysAgo.setDate(today.getDate() - 6) // Include today = 7 days total
 
         // Create a map of dates to sessions
         type SessionData = {
-          duration: number;
-          startTime: Date | string;
-        };
+          duration: number
+          startTime: Date | string
+        }
         const dateMap = new Map<
           string,
           {
-            totalMinutes: number;
-            sessionCount: number;
-            sessions: SessionData[];
+            totalMinutes: number
+            sessionCount: number
+            sessions: SessionData[]
           }
-        >();
+        >()
 
         // Initialize all 7 days
         for (let i = 0; i < 7; i++) {
-          const date = new Date(sevenDaysAgo);
-          date.setDate(sevenDaysAgo.getDate() + i);
+          const date = new Date(sevenDaysAgo)
+          date.setDate(sevenDaysAgo.getDate() + i)
           const dateKey = date.toLocaleDateString('en-US', {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
-          });
+          })
           dateMap.set(dateKey, {
             totalMinutes: 0,
             sessionCount: 0,
             sessions: [],
-          });
+          })
         }
 
         // Filter sessions from last 7 days and group by date
         sessionsResponse.sessions.forEach((session: SessionData) => {
-          const sessionDate = new Date(session.startTime);
+          const sessionDate = new Date(session.startTime)
           if (sessionDate >= sevenDaysAgo && sessionDate <= new Date()) {
             const dateKey = sessionDate.toLocaleDateString('en-US', {
               year: 'numeric',
               month: '2-digit',
               day: '2-digit',
-            });
-            const dayData = dateMap.get(dateKey);
+            })
+            const dayData = dateMap.get(dateKey)
             if (dayData) {
-              dayData.totalMinutes += session.duration;
-              dayData.sessionCount += 1;
-              dayData.sessions.push(session);
+              dayData.totalMinutes += session.duration
+              dayData.sessionCount += 1
+              dayData.sessions.push(session)
             }
           }
-        });
+        })
 
-        setStreakStats(stats);
+        setStreakStats(stats)
       } catch {
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    loadStreak();
-  }, [userId]);
+    loadStreak()
+  }, [userId])
 
   if (isLoading) {
     return (
@@ -105,44 +105,40 @@ export const StreakCard: React.FC<StreakCardProps> = ({
         </div>
         <div className="h-16 bg-gray-200 rounded"></div>
       </div>
-    );
+    )
   }
 
-  if (!streakStats) return null;
+  if (!streakStats) return null
 
   const getFlameColor = () => {
     // Grey flame when user has a streak but hasn't completed today's session
-    if (streakStats.streakAtRisk && streakStats.currentStreak > 0)
-      return 'text-gray-400';
+    if (streakStats.streakAtRisk && streakStats.currentStreak > 0) return 'text-gray-400'
     // Milestone-based colors for active streaks
-    if (streakStats.currentStreak >= 100) return 'text-purple-500';
-    if (streakStats.currentStreak >= 30) return 'text-blue-500';
-    if (streakStats.currentStreak >= 7) return 'text-orange-500';
+    if (streakStats.currentStreak >= 100) return 'text-purple-500'
+    if (streakStats.currentStreak >= 30) return 'text-blue-500'
+    if (streakStats.currentStreak >= 7) return 'text-orange-500'
     // Default orange for new streaks
-    return 'text-orange-400';
-  };
+    return 'text-orange-400'
+  }
 
   const getGradientColor = () => {
-    if (streakStats.streakAtRisk && streakStats.currentStreak > 0)
-      return 'from-gray-50 to-gray-100';
-    if (streakStats.currentStreak >= 100) return 'from-purple-50 to-purple-100';
-    if (streakStats.currentStreak >= 30) return 'from-blue-50 to-blue-100';
-    if (streakStats.currentStreak >= 7) return 'from-orange-50 to-orange-100';
-    return 'from-orange-50 to-orange-100';
-  };
+    if (streakStats.streakAtRisk && streakStats.currentStreak > 0) return 'from-gray-50 to-gray-100'
+    if (streakStats.currentStreak >= 100) return 'from-purple-50 to-purple-100'
+    if (streakStats.currentStreak >= 30) return 'from-blue-50 to-blue-100'
+    if (streakStats.currentStreak >= 7) return 'from-orange-50 to-orange-100'
+    return 'from-orange-50 to-orange-100'
+  }
 
   const progressToNextMilestone = streakStats.nextMilestone
     ? (streakStats.currentStreak / streakStats.nextMilestone) * 100
-    : 0;
+    : 0
 
   if (variant === 'compact') {
     return (
       <Link href="/analytics" className="block">
         <div className="p-3 hover:bg-gray-50 rounded-xl transition-all cursor-pointer">
           {/* Header */}
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">
-            Your streak
-          </h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Your streak</h3>
 
           {/* Flame icon and week calendar side by side */}
           <div className="flex items-center gap-3">
@@ -166,7 +162,7 @@ export const StreakCard: React.FC<StreakCardProps> = ({
           </div>
         </div>
       </Link>
-    );
+    )
   }
 
   return (
@@ -184,10 +180,7 @@ export const StreakCard: React.FC<StreakCardProps> = ({
             <p className="text-sm text-gray-600">Stay consistent</p>
           </div>
         </div>
-        <Link
-          href="/analytics"
-          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-        >
+        <Link href="/analytics" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
           View Analytics →
         </Link>
       </div>
@@ -242,5 +235,5 @@ export const StreakCard: React.FC<StreakCardProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}

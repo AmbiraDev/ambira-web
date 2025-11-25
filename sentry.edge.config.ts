@@ -3,10 +3,10 @@
 // Note that this config is unrelated to the Vercel Edge Runtime and is also required when running locally.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
-import * as Sentry from '@sentry/nextjs';
-import { getSentryConfig } from './src/lib/sentry-config';
+import * as Sentry from '@sentry/nextjs'
+import { getSentryConfig } from './src/lib/sentry-config'
 
-const config = getSentryConfig();
+const config = getSentryConfig()
 
 // Only initialize Sentry if enabled
 if (config.enabled && config.dsn) {
@@ -30,5 +30,5 @@ if (config.enabled && config.dsn) {
 
     // Capture 100% of errors (we sample traces, not errors)
     sampleRate: 1.0,
-  });
+  })
 }

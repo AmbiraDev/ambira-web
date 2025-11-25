@@ -100,41 +100,41 @@ Review and expand existing service tests:
 #### API Test Template
 
 ```typescript
-import { mockFirestore } from '@/tests/__mocks__/firebase/firestore';
-import { createMockUser, createMockSession } from '@/tests/__mocks__/factories';
-import { createSession } from '@/lib/api/sessions';
+import { mockFirestore } from '@/tests/__mocks__/firebase/firestore'
+import { createMockUser, createMockSession } from '@/tests/__mocks__/factories'
+import { createSession } from '@/lib/api/sessions'
 
 describe('createSession', () => {
   beforeEach(() => {
-    mockFirestore._clearAll();
-  });
+    mockFirestore._clearAll()
+  })
 
   it('should create a session with valid data', async () => {
     // Arrange
-    const user = createMockUser();
+    const user = createMockUser()
     const sessionData = {
       title: 'Test Session',
       duration: 3600,
       activityId: 'activity-1',
-    };
+    }
 
     // Act
-    const result = await createSession(user.id, sessionData);
+    const result = await createSession(user.id, sessionData)
 
     // Assert
-    expect(result).toHaveProperty('id');
-    expect(result.title).toBe('Test Session');
-    expect(result.userId).toBe(user.id);
-  });
+    expect(result).toHaveProperty('id')
+    expect(result.title).toBe('Test Session')
+    expect(result.userId).toBe(user.id)
+  })
 
   it('should throw error with invalid data', async () => {
     // Arrange
-    const invalidData = { title: '', duration: -1 };
+    const invalidData = { title: '', duration: -1 }
 
     // Act & Assert
-    await expect(createSession('user-1', invalidData)).rejects.toThrow();
-  });
-});
+    await expect(createSession('user-1', invalidData)).rejects.toThrow()
+  })
+})
 ```
 
 #### Hook Test Template
@@ -182,9 +182,9 @@ describe('useActivitiesQuery', () => {
 
 ```typescript
 // Mocks
-import { mockFirestore } from '@/tests/__mocks__/firebase/firestore';
-import { mockAuth } from '@/tests/__mocks__/firebase/auth';
-import { mockStorage } from '@/tests/__mocks__/firebase/storage';
+import { mockFirestore } from '@/tests/__mocks__/firebase/firestore'
+import { mockAuth } from '@/tests/__mocks__/firebase/auth'
+import { mockStorage } from '@/tests/__mocks__/firebase/storage'
 
 // Factories
 import {
@@ -194,7 +194,7 @@ import {
   createMockGroup,
   createMockChallenge,
   createMockComment,
-} from '@/tests/__mocks__/factories';
+} from '@/tests/__mocks__/factories'
 ```
 
 ### Output Structure

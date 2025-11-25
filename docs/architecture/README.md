@@ -237,7 +237,7 @@ export function useGroupDetails(groupId: string) {
     queryKey: GROUPS_KEYS.detail(groupId),
     queryFn: () => groupService.getGroupDetails(groupId),
     staleTime: 15 * 60 * 1000,
-  });
+  })
 }
 ```
 
@@ -246,35 +246,34 @@ export function useGroupDetails(groupId: string) {
 ```typescript
 // src/features/groups/hooks/useGroupMutations.ts
 export function useJoinGroup() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ groupId, userId }) =>
-      groupService.joinGroup(groupId, userId),
+    mutationFn: ({ groupId, userId }) => groupService.joinGroup(groupId, userId),
 
     onMutate: async ({ groupId }) => {
       // Optimistic update
       await queryClient.cancelQueries({
         queryKey: GROUPS_KEYS.detail(groupId),
-      });
-      const previous = queryClient.getQueryData(GROUPS_KEYS.detail(groupId));
+      })
+      const previous = queryClient.getQueryData(GROUPS_KEYS.detail(groupId))
       queryClient.setQueryData(GROUPS_KEYS.detail(groupId), (old: any) => ({
         ...old,
         memberIds: [...old.memberIds, userId],
-      }));
-      return { previous };
+      }))
+      return { previous }
     },
 
     onError: (_, { groupId }, context) => {
       // Rollback
-      queryClient.setQueryData(GROUPS_KEYS.detail(groupId), context?.previous);
+      queryClient.setQueryData(GROUPS_KEYS.detail(groupId), context?.previous)
     },
 
     onSuccess: (_, { groupId }) => {
       // Invalidate
-      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) });
+      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) })
     },
-  });
+  })
 }
 ```
 
@@ -360,12 +359,10 @@ When implementing a new feature:
 // No React dependencies - easy to test
 describe('GroupService', () => {
   it('should throw error when joining a group you already belong to', async () => {
-    const service = new GroupService();
-    await expect(service.joinGroup('group-123', 'user-456')).rejects.toThrow(
-      'Already a member'
-    );
-  });
-});
+    const service = new GroupService()
+    await expect(service.joinGroup('group-123', 'user-456')).rejects.toThrow('Already a member')
+  })
+})
 ```
 
 ### Hook Tests
@@ -420,7 +417,7 @@ const CACHE_TIMES = {
   MEDIUM: 5 * 60 * 1000, // 5m  - Session details, comments
   LONG: 15 * 60 * 1000, // 15m - User profiles, groups
   VERY_LONG: 60 * 60 * 1000, // 1h  - Stats, analytics
-};
+}
 ```
 
 ### Optimistic Updates
@@ -463,11 +460,11 @@ Prefetch data for better UX:
 ```typescript
 onSuccess: (_, { groupId }) => {
   // Invalidate specific group
-  queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) });
+  queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) })
 
   // Invalidate all groups lists
-  queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.lists() });
-};
+  queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.lists() })
+}
 ```
 
 ### Stale data shown
@@ -481,7 +478,7 @@ return useQuery({
   queryKey: GROUPS_KEYS.detail(groupId),
   queryFn: () => groupService.getGroupDetails(groupId),
   staleTime: 5 * 60 * 1000, // Adjust based on data freshness needs
-});
+})
 ```
 
 ### Too many network requests
@@ -496,10 +493,10 @@ return useQuery({
 
 ```typescript
 // ❌ BAD - Creates new object on each render
-queryKey: ['groups', { filter: 'active' }];
+queryKey: ['groups', { filter: 'active' }]
 
 // ✅ GOOD - Stable reference
-queryKey: GROUPS_KEYS.list('active');
+queryKey: GROUPS_KEYS.list('active')
 ```
 
 ## Resources

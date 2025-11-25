@@ -1,8 +1,8 @@
 export interface SuggestedProject {
-  name: string;
-  description: string;
-  color: string;
-  icon: string;
+  name: string
+  description: string
+  color: string
+  icon: string
 }
 
 export const suggestedProjects: SuggestedProject[] = [
@@ -36,4 +36,4 @@ export const suggestedProjects: SuggestedProject[] = [
     color: '#AF52DE',
     icon: 'flat-color-icons:gallery',
   },
-];
+]

@@ -11,10 +11,10 @@
  * - Handles OAuth redirect flows and session persistence
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import { firebaseAuthApi } from '@/lib/api/auth';
-import type { AuthUser, LoginCredentials, SignupCredentials } from '@/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
+import { firebaseAuthApi } from '@/lib/api/auth'
+import type { AuthUser, LoginCredentials, SignupCredentials } from '@/types'
 
 /**
  * Cache Keys for Auth
@@ -24,7 +24,7 @@ export const AUTH_KEYS = {
   all: () => ['auth'] as const,
   session: () => [...AUTH_KEYS.all(), 'session'] as const,
   user: (userId: string) => [...AUTH_KEYS.all(), 'user', userId] as const,
-} as const;
+} as const
 
 /**
  * Hook to get current auth state from React Query cache
@@ -40,10 +40,10 @@ export function useAuth() {
     queryFn: async () => {
       // This is only called on initial mount or when cache is invalidated
       try {
-        return await firebaseAuthApi.getCurrentUser();
+        return await firebaseAuthApi.getCurrentUser()
       } catch (_error) {
         // User is not authenticated
-        return null;
+        return null
       }
     },
     staleTime: Infinity, // Never auto-refetch - managed by Firebase listener
@@ -51,7 +51,7 @@ export function useAuth() {
     refetchOnWindowFocus: false, // Firebase listener handles this
     refetchOnMount: false, // Firebase listener handles this
     refetchOnReconnect: false, // Firebase listener handles this
-  });
+  })
 }
 
 /**
@@ -59,24 +59,24 @@ export function useAuth() {
  * Logs in with email/password and updates auth cache
  */
 export function useLogin() {
-  const queryClient = useQueryClient();
-  const router = useRouter();
+  const queryClient = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
-      return await firebaseAuthApi.login(credentials);
+      return await firebaseAuthApi.login(credentials)
     },
-    onSuccess: data => {
+    onSuccess: (data) => {
       // Update auth cache with logged-in user
-      queryClient.setQueryData(AUTH_KEYS.session(), data.user);
+      queryClient.setQueryData(AUTH_KEYS.session(), data.user)
 
       // Navigate to home
-      router.push('/');
+      router.push('/')
     },
-    onError: error => {
+    onError: (_error) => {
       // Error is already formatted by firebaseAuthApi
     },
-  });
+  })
 }
 
 /**
@@ -84,22 +84,22 @@ export function useLogin() {
  * Creates new account and updates auth cache
  */
 export function useSignup() {
-  const queryClient = useQueryClient();
-  const router = useRouter();
+  const queryClient = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: async (credentials: SignupCredentials) => {
-      return await firebaseAuthApi.signup(credentials);
+      return await firebaseAuthApi.signup(credentials)
     },
-    onSuccess: data => {
+    onSuccess: (data) => {
       // Update auth cache with new user
-      queryClient.setQueryData(AUTH_KEYS.session(), data.user);
+      queryClient.setQueryData(AUTH_KEYS.session(), data.user)
 
       // Navigate to home
-      router.push('/');
+      router.push('/')
     },
-    onError: error => {},
-  });
+    onError: (_error) => {},
+  })
 }
 
 /**
@@ -107,29 +107,29 @@ export function useSignup() {
  * Handles Google OAuth popup flow
  */
 export function useGoogleSignIn() {
-  const queryClient = useQueryClient();
-  const router = useRouter();
+  const queryClient = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: async () => {
-      return await firebaseAuthApi.signInWithGoogle();
+      return await firebaseAuthApi.signInWithGoogle()
     },
-    onSuccess: data => {
+    onSuccess: (data) => {
       // Update auth cache with Google user
-      queryClient.setQueryData(AUTH_KEYS.session(), data.user);
+      queryClient.setQueryData(AUTH_KEYS.session(), data.user)
 
       // Navigate to home
-      router.push('/');
+      router.push('/')
     },
     onError: (error: unknown) => {
       // Special case: redirect in progress (mobile OAuth)
-      const err = error as { message?: string };
+      const err = error as { message?: string }
       if (err?.message === 'REDIRECT_IN_PROGRESS') {
         // Don't show error - page will redirect
-        return;
+        return
       }
     },
-  });
+  })
 }
 
 /**
@@ -137,34 +137,34 @@ export function useGoogleSignIn() {
  * Signs out and clears all user-specific caches
  */
 export function useLogout() {
-  const queryClient = useQueryClient();
-  const router = useRouter();
+  const queryClient = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: async () => {
-      await firebaseAuthApi.logout();
+      await firebaseAuthApi.logout()
     },
     onMutate: async () => {
       // Optimistically clear auth state
-      queryClient.setQueryData(AUTH_KEYS.session(), null);
+      queryClient.setQueryData(AUTH_KEYS.session(), null)
     },
     onSuccess: () => {
       // Clear ALL caches (user-specific data should not persist)
-      queryClient.clear();
+      queryClient.clear()
 
       // Ensure auth cache is null
-      queryClient.setQueryData(AUTH_KEYS.session(), null);
+      queryClient.setQueryData(AUTH_KEYS.session(), null)
 
       // Navigate to landing page
-      router.push('/');
+      router.push('/')
     },
-    onError: error => {
+    onError: (_error) => {
       // Still navigate and clear cache even on error
-      queryClient.clear();
-      queryClient.setQueryData(AUTH_KEYS.session(), null);
-      router.push('/');
+      queryClient.clear()
+      queryClient.setQueryData(AUTH_KEYS.session(), null)
+      router.push('/')
     },
-  });
+  })
 }
 
 /**
@@ -172,25 +172,23 @@ export function useLogout() {
  * Updates user profile and refreshes auth cache
  */
 export function useUpdateProfile() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (updates: Partial<AuthUser>) => {
       // This would call firebaseUserApi.updateProfile
       // For now, just return the updated user
-      const currentUser = queryClient.getQueryData<AuthUser>(
-        AUTH_KEYS.session()
-      );
+      const currentUser = queryClient.getQueryData<AuthUser>(AUTH_KEYS.session())
       if (!currentUser) {
-        throw new Error('Not authenticated');
+        throw new Error('Not authenticated')
       }
-      return { ...currentUser, ...updates };
+      return { ...currentUser, ...updates }
     },
-    onSuccess: updatedUser => {
+    onSuccess: (updatedUser) => {
       // Update auth cache
-      queryClient.setQueryData(AUTH_KEYS.session(), updatedUser);
+      queryClient.setQueryData(AUTH_KEYS.session(), updatedUser)
     },
-  });
+  })
 }
 
 /**
@@ -198,24 +196,24 @@ export function useUpdateProfile() {
  * Deletes user account and clears all caches
  */
 export function useDeleteAccount() {
-  const queryClient = useQueryClient();
-  const router = useRouter();
+  const queryClient = useQueryClient()
+  const router = useRouter()
 
   return useMutation({
     mutationFn: async () => {
       // This would call firebaseUserApi.deleteAccount
       // For now, just logout
-      await firebaseAuthApi.logout();
+      await firebaseAuthApi.logout()
     },
     onSuccess: () => {
       // Clear all caches
-      queryClient.clear();
-      queryClient.setQueryData(AUTH_KEYS.session(), null);
+      queryClient.clear()
+      queryClient.setQueryData(AUTH_KEYS.session(), null)
 
       // Navigate to landing
-      router.push('/');
+      router.push('/')
     },
-  });
+  })
 }
 
 /**
@@ -225,7 +223,7 @@ export function useDeleteAccount() {
 export function useCheckUsernameAvailability() {
   return useMutation({
     mutationFn: async (username: string) => {
-      return await firebaseAuthApi.checkUsernameAvailability(username);
+      return await firebaseAuthApi.checkUsernameAvailability(username)
     },
-  });
+  })
 }

@@ -1,95 +1,88 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
-import { ChevronDown, Check } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { firebaseApi } from '@/lib/api';
-import { Group } from '@/types';
+import React, { useState, useEffect, useRef } from 'react'
+import { ChevronDown, Check } from 'lucide-react'
+import { useAuth } from '@/hooks/useAuth'
+import { firebaseApi } from '@/lib/api'
+import { Group } from '@/types'
 
 export interface FeedFilterOption {
-  type: 'following' | 'user' | 'group' | 'all';
-  label: string;
-  groupId?: string;
+  type: 'following' | 'user' | 'group' | 'all'
+  label: string
+  groupId?: string
 }
 
 interface FeedFilterDropdownProps {
-  selectedFilter: FeedFilterOption;
-  onFilterChange: (filter: FeedFilterOption) => void;
+  selectedFilter: FeedFilterOption
+  onFilterChange: (filter: FeedFilterOption) => void
 }
 
 export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
   selectedFilter,
   onFilterChange,
 }) => {
-  const { user } = useAuth();
-  const [isOpen, setIsOpen] = useState(false);
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [isLoadingGroups, setIsLoadingGroups] = useState(true);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth()
+  const [isOpen, setIsOpen] = useState(false)
+  const [groups, setGroups] = useState<Group[]>([])
+  const [isLoadingGroups, setIsLoadingGroups] = useState(true)
+  const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside)
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
 
   // Fetch user's groups
   useEffect(() => {
     const fetchGroups = async () => {
-      if (!user) return;
+      if (!user) return
 
       try {
-        setIsLoadingGroups(true);
-        const userGroups = await firebaseApi.group.getUserGroups(user.id);
-        setGroups(userGroups);
-      } catch (err) {
+        setIsLoadingGroups(true)
+        const userGroups = await firebaseApi.group.getUserGroups(user.id)
+        setGroups(userGroups)
+      } catch (_err) {
       } finally {
-        setIsLoadingGroups(false);
+        setIsLoadingGroups(false)
       }
-    };
+    }
 
-    fetchGroups();
-  }, [user]);
+    fetchGroups()
+  }, [user])
 
   const handleFilterSelect = (filter: FeedFilterOption) => {
-    onFilterChange(filter);
-    setIsOpen(false);
-  };
+    onFilterChange(filter)
+    setIsOpen(false)
+  }
 
   const isSelected = (filter: FeedFilterOption) => {
     if (filter.type === 'group' && selectedFilter.type === 'group') {
-      return filter.groupId === selectedFilter.groupId;
+      return filter.groupId === selectedFilter.groupId
     }
-    return (
-      filter.type === selectedFilter.type &&
-      !filter.groupId &&
-      !selectedFilter.groupId
-    );
-  };
+    return filter.type === selectedFilter.type && !filter.groupId && !selectedFilter.groupId
+  }
 
   return (
     <div ref={dropdownRef} className="relative inline-block w-[220px]">
       {/* Dropdown Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        onKeyDown={e => {
+        onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setIsOpen(!isOpen);
+            e.preventDefault()
+            setIsOpen(!isOpen)
           }
         }}
         className="w-full flex items-center justify-between px-4 py-2.5 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors duration-200 shadow-sm min-h-[44px]"
@@ -99,9 +92,7 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
       >
         <span className="font-semibold">{selectedFilter.label}</span>
         <ChevronDown
-          className={`w-4 h-4 transition-transform ${
-            isOpen ? 'transform rotate-180' : ''
-          }`}
+          className={`w-4 h-4 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
           aria-hidden="true"
         />
       </button>
@@ -117,16 +108,14 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
             {/* All */}
             <button
               onClick={() => handleFilterSelect({ type: 'all', label: 'All' })}
-              onKeyDown={e => {
+              onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleFilterSelect({ type: 'all', label: 'All' });
+                  e.preventDefault()
+                  handleFilterSelect({ type: 'all', label: 'All' })
                 }
               }}
               className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
-                isSelected({ type: 'all', label: 'All' })
-                  ? 'bg-gray-50'
-                  : 'hover:bg-gray-50'
+                isSelected({ type: 'all', label: 'All' }) ? 'bg-gray-50' : 'hover:bg-gray-50'
               }`}
               role="option"
               aria-selected={isSelected({ type: 'all', label: 'All' })}
@@ -147,13 +136,11 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
 
             {/* Following */}
             <button
-              onClick={() =>
-                handleFilterSelect({ type: 'following', label: 'Following' })
-              }
-              onKeyDown={e => {
+              onClick={() => handleFilterSelect({ type: 'following', label: 'Following' })}
+              onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleFilterSelect({ type: 'following', label: 'Following' });
+                  e.preventDefault()
+                  handleFilterSelect({ type: 'following', label: 'Following' })
                 }
               }}
               className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
@@ -183,13 +170,11 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
 
             {/* My Activities */}
             <button
-              onClick={() =>
-                handleFilterSelect({ type: 'user', label: 'My Activities' })
-              }
-              onKeyDown={e => {
+              onClick={() => handleFilterSelect({ type: 'user', label: 'My Activities' })}
+              onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  handleFilterSelect({ type: 'user', label: 'My Activities' });
+                  e.preventDefault()
+                  handleFilterSelect({ type: 'user', label: 'My Activities' })
                 }
               }}
               className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
@@ -218,21 +203,15 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
             </button>
 
             {/* Divider if there are groups */}
-            {groups.length > 0 && (
-              <div className="border-t border-gray-200 my-1"></div>
-            )}
+            {groups.length > 0 && <div className="border-t border-gray-200 my-1"></div>}
 
             {/* User's Groups */}
             {isLoadingGroups ? (
-              <div className="px-4 py-3 text-sm text-gray-500">
-                Loading groups...
-              </div>
+              <div className="px-4 py-3 text-sm text-gray-500">Loading groups...</div>
             ) : groups.length === 0 ? (
-              <div className="px-4 py-3 text-sm text-gray-500">
-                No groups yet
-              </div>
+              <div className="px-4 py-3 text-sm text-gray-500">No groups yet</div>
             ) : (
-              groups.map(group => (
+              groups.map((group) => (
                 <button
                   key={group.id}
                   onClick={() =>
@@ -242,14 +221,14 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                       groupId: group.id,
                     })
                   }
-                  onKeyDown={e => {
+                  onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
+                      e.preventDefault()
                       handleFilterSelect({
                         type: 'group',
                         label: group.name,
                         groupId: group.id,
-                      });
+                      })
                     }
                   }}
                   className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
@@ -285,9 +264,7 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                     type: 'group',
                     label: group.name,
                     groupId: group.id,
-                  }) && (
-                    <Check className="w-5 h-5 flex-shrink-0 ml-2 text-gray-900" />
-                  )}
+                  }) && <Check className="w-5 h-5 flex-shrink-0 ml-2 text-gray-900" />}
                 </button>
               ))
             )}
@@ -295,5 +272,5 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}

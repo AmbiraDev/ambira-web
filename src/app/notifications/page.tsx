@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   ArrowLeft,
   Trash2,
@@ -12,10 +12,10 @@ import {
   Users,
   Trophy,
   Bell,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { useAuth } from '@/hooks/useAuth';
+} from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import { useAuth } from '@/hooks/useAuth'
 import {
   useNotifications,
   useUnreadCount,
@@ -23,12 +23,12 @@ import {
   useMarkAllNotificationsRead,
   useDeleteNotification,
   useClearAllNotifications,
-} from '@/hooks/useNotifications';
-import Header from '@/components/HeaderComponent';
-import BottomNavigation from '@/components/BottomNavigation';
-import { Notification } from '@/types';
-import { formatDistanceToNow } from 'date-fns';
-import ConfirmDialog from '@/components/ConfirmDialog';
+} from '@/hooks/useNotifications'
+import Header from '@/components/HeaderComponent'
+import BottomNavigation from '@/components/BottomNavigation'
+import { Notification } from '@/types'
+import { formatDistanceToNow } from 'date-fns'
+import ConfirmDialog from '@/components/ConfirmDialog'
 
 // Swipeable notification item component
 function SwipeableNotificationItem({
@@ -37,91 +37,91 @@ function SwipeableNotificationItem({
 
   onClick,
 }: {
-  notification: Notification;
-  onDelete: (id: string) => void;
+  notification: Notification
+  onDelete: (id: string) => void
 
-  onClick: (notification: Notification) => void;
+  onClick: (notification: Notification) => void
 }) {
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
-  const [swipeOffset, setSwipeOffset] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [touchStart, setTouchStart] = useState(0)
+  const [touchEnd, setTouchEnd] = useState(0)
+  const [swipeOffset, setSwipeOffset] = useState(0)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const minSwipeDistance = 80;
-  const deleteThreshold = 120;
+  const minSwipeDistance = 80
+  const deleteThreshold = 120
 
   const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(0);
-    const touch = e.targetTouches[0];
+    setTouchEnd(0)
+    const touch = e.targetTouches[0]
     if (touch) {
-      setTouchStart(touch.clientX);
+      setTouchStart(touch.clientX)
     }
-  };
+  }
 
   const onTouchMove = (e: React.TouchEvent) => {
-    const touch = e.targetTouches[0];
-    if (!touch) return;
+    const touch = e.targetTouches[0]
+    if (!touch) return
 
-    setTouchEnd(touch.clientX);
-    const distance = touchStart - touch.clientX;
+    setTouchEnd(touch.clientX)
+    const distance = touchStart - touch.clientX
     if (distance > 0) {
-      setSwipeOffset(Math.min(distance, deleteThreshold + 20));
+      setSwipeOffset(Math.min(distance, deleteThreshold + 20))
     }
-  };
+  }
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (!touchStart || !touchEnd) return
 
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
 
     if (isLeftSwipe && distance >= deleteThreshold) {
       // Delete if swiped past threshold
-      handleDelete();
+      handleDelete()
     } else if (isLeftSwipe && distance >= minSwipeDistance) {
       // Show delete button
-      setSwipeOffset(deleteThreshold);
+      setSwipeOffset(deleteThreshold)
     } else {
       // Reset
-      setSwipeOffset(0);
+      setSwipeOffset(0)
     }
-  };
+  }
 
   const handleDelete = async () => {
-    setIsDeleting(true);
+    setIsDeleting(true)
     setTimeout(() => {
-      onDelete(notification.id);
-    }, 200);
-  };
+      onDelete(notification.id)
+    }, 200)
+  }
 
   const handleClick = () => {
     if (swipeOffset === 0 && !isDeleting) {
-      onClick(notification);
+      onClick(notification)
     }
-  };
+  }
 
   const getNotificationIcon = (type: Notification['type']) => {
-    const iconClass = 'w-5 h-5 text-gray-600';
+    const iconClass = 'w-5 h-5 text-gray-600'
 
     switch (type) {
       case 'follow':
-        return <UserPlus className={iconClass} />;
+        return <UserPlus className={iconClass} />
       case 'support':
-        return <Heart className={iconClass} />;
+        return <Heart className={iconClass} />
       case 'comment':
-        return <MessageCircle className={iconClass} />;
+        return <MessageCircle className={iconClass} />
       case 'reply':
-        return <Reply className={iconClass} />;
+        return <Reply className={iconClass} />
       case 'mention':
-        return <AtSign className={iconClass} />;
+        return <AtSign className={iconClass} />
       case 'group':
-        return <Users className={iconClass} />;
+        return <Users className={iconClass} />
       case 'challenge':
-        return <Trophy className={iconClass} />;
+        return <Trophy className={iconClass} />
       default:
-        return <Bell className={iconClass} />;
+        return <Bell className={iconClass} />
     }
-  };
+  }
 
   return (
     <div className="relative overflow-hidden">
@@ -137,10 +137,7 @@ function SwipeableNotificationItem({
               : 'none',
         }}
       >
-        <button
-          onClick={handleDelete}
-          className="text-white flex flex-col items-center gap-1"
-        >
+        <button onClick={handleDelete} className="text-white flex flex-col items-center gap-1">
           <Trash2 className="w-6 h-6" />
           <span className="text-xs font-medium">Delete</span>
         </button>
@@ -191,9 +188,7 @@ function SwipeableNotificationItem({
                 >
                   {notification.title}
                 </p>
-                <p className="text-sm text-gray-600 mt-1">
-                  {notification.message}
-                </p>
+                <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
                 {notification.createdAt && (
                   <p className="text-xs text-gray-500 mt-2">
                     {formatDistanceToNow(notification.createdAt, {
@@ -207,54 +202,54 @@ function SwipeableNotificationItem({
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export default function NotificationsPage() {
-  const router = useRouter();
-  const { user } = useAuth();
+  const router = useRouter()
+  const { user } = useAuth()
   const { data: notifications = [] } = useNotifications({
     realtime: true,
-  });
-  const unreadCount = useUnreadCount();
-  const markAsReadMutation = useMarkNotificationRead();
-  const markAllAsReadMutation = useMarkAllNotificationsRead();
-  const deleteNotificationMutation = useDeleteNotification();
-  const clearAllNotificationsMutation = useClearAllNotifications();
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  })
+  const unreadCount = useUnreadCount()
+  const markAsReadMutation = useMarkNotificationRead()
+  const markAllAsReadMutation = useMarkAllNotificationsRead()
+  const deleteNotificationMutation = useDeleteNotification()
+  const clearAllNotificationsMutation = useClearAllNotifications()
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
 
   const handleNotificationClick = (notification: Notification) => {
     // Mark as read
     if (!notification.isRead) {
-      markAsReadMutation.mutate(notification.id);
+      markAsReadMutation.mutate(notification.id)
     }
 
     // Navigate to link if available
     if (notification.linkUrl) {
-      router.push(notification.linkUrl);
+      router.push(notification.linkUrl)
     }
-  };
+  }
 
   const handleDelete = (id: string) => {
-    deleteNotificationMutation.mutate(id);
-  };
+    deleteNotificationMutation.mutate(id)
+  }
 
   const handleMarkAllRead = () => {
-    markAllAsReadMutation.mutate();
-  };
+    markAllAsReadMutation.mutate()
+  }
 
   const handleClearAllClick = () => {
-    setShowClearConfirm(true);
-  };
+    setShowClearConfirm(true)
+  }
 
   const handleClearAllConfirm = () => {
-    clearAllNotificationsMutation.mutate();
-    setShowClearConfirm(false);
-  };
+    clearAllNotificationsMutation.mutate()
+    setShowClearConfirm(false)
+  }
 
   const handleClearAllCancel = () => {
-    setShowClearConfirm(false);
-  };
+    setShowClearConfirm(false)
+  }
 
   if (!user) {
     return (
@@ -263,7 +258,7 @@ export default function NotificationsPage() {
           <p className="text-gray-600">Please log in to view notifications</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -294,9 +289,7 @@ export default function NotificationsPage() {
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-start justify-between">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
-                    Notifications
-                  </h1>
+                  <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
                   <p className="text-sm text-gray-600 mt-1">
                     {unreadCount > 0
                       ? `${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}`
@@ -342,7 +335,7 @@ export default function NotificationsPage() {
                   <p className="text-gray-600">No notifications yet</p>
                 </div>
               ) : (
-                notifications.map(notification => (
+                notifications.map((notification) => (
                   <SwipeableNotificationItem
                     key={notification.id}
                     notification={notification}
@@ -396,16 +389,14 @@ export default function NotificationsPage() {
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
               <span className="text-4xl">🔔</span>
             </div>
-            <p className="text-lg font-semibold text-gray-900 mb-2">
-              No notifications
-            </p>
+            <p className="text-lg font-semibold text-gray-900 mb-2">No notifications</p>
             <p className="text-gray-600 text-center">
               When you get notifications, they'll show up here
             </p>
           </div>
         ) : (
           <div>
-            {notifications.map(notification => (
+            {notifications.map((notification) => (
               <SwipeableNotificationItem
                 key={notification.id}
                 notification={notification}
@@ -435,5 +426,5 @@ export default function NotificationsPage() {
         isLoading={clearAllNotificationsMutation.isPending}
       />
     </div>
-  );
+  )
 }

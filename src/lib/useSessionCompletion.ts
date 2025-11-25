@@ -1,32 +1,29 @@
-import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { firebaseApi } from './api';
-import { Session, Achievement, CreateSessionData } from '@/types';
+import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { firebaseApi } from './api'
+import { Session, Achievement, CreateSessionData } from '@/types'
 
 export const useSessionCompletion = () => {
-  const [newAchievements, setNewAchievements] = useState<Achievement[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const queryClient = useQueryClient();
+  const [newAchievements, setNewAchievements] = useState<Achievement[]>([])
+  const [isProcessing, setIsProcessing] = useState(false)
+  const queryClient = useQueryClient()
 
   const completeSession = async (
     sessionData: CreateSessionData,
     userId: string
   ): Promise<{ session: Session; achievements: Achievement[] }> => {
-    setIsProcessing(true);
+    setIsProcessing(true)
     try {
       // 1. Create the session
-      const session = await firebaseApi.session.createSession(sessionData);
+      const session = await firebaseApi.session.createSession(sessionData)
 
       // 2. Update streak
-      await firebaseApi.streak.updateStreak(userId, session.startTime);
+      await firebaseApi.streak.updateStreak(userId, session.startTime)
 
       // 3. Check for new achievements
-      const achievements = await firebaseApi.achievement.checkAchievements(
-        userId,
-        session.id
-      );
+      const achievements = await firebaseApi.achievement.checkAchievements(userId, session.id)
 
-      setNewAchievements(achievements);
+      setNewAchievements(achievements)
 
       // 4. Force immediate refetch of feed queries to show new session at top
       // This creates an Instagram-like experience where posts appear immediately
@@ -34,31 +31,31 @@ export const useSessionCompletion = () => {
       await queryClient.invalidateQueries({
         queryKey: ['feed'],
         refetchType: 'active',
-      });
+      })
 
       // 5. Invalidate other caches to refresh UI when needed
       // Use partial key matching to invalidate all related caches
-      queryClient.invalidateQueries({ queryKey: ['user', 'sessions', userId] });
-      queryClient.invalidateQueries({ queryKey: ['user', 'stats', userId] });
-      queryClient.invalidateQueries({ queryKey: ['streak', userId] });
-      queryClient.invalidateQueries({ queryKey: ['sessions', 'feed'] });
+      queryClient.invalidateQueries({ queryKey: ['user', 'sessions', userId] })
+      queryClient.invalidateQueries({ queryKey: ['user', 'stats', userId] })
+      queryClient.invalidateQueries({ queryKey: ['streak', userId] })
+      queryClient.invalidateQueries({ queryKey: ['sessions', 'feed'] })
 
-      return { session, achievements };
+      return { session, achievements }
     } catch (_err) {
-      throw _err;
+      throw _err
     } finally {
-      setIsProcessing(false);
+      setIsProcessing(false)
     }
-  };
+  }
 
   const clearAchievements = () => {
-    setNewAchievements([]);
-  };
+    setNewAchievements([])
+  }
 
   return {
     completeSession,
     newAchievements,
     clearAchievements,
     isProcessing,
-  };
-};
+  }
+}

@@ -12,4 +12,4 @@ export {
   formatValidationError,
   isValidationError,
   ValidationError,
-} from './validate';
+} from './validate'

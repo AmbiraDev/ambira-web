@@ -5,8 +5,9 @@ Welcome to the Ambira documentation hub. This guide will help you navigate all p
 ## Quick Start
 
 - **New to the project?** Start with [README.md](../README.md)
+- **Setting up Firebase?** See [Firebase Setup Guide](./setup/FIREBASE_SETUP.md)
 - **Development guidelines?** See [CLAUDE.md](../CLAUDE.md)
-- **Setting up your environment?** Check [Testing Quickstart](./testing/QUICKSTART.md)
+- **Setting up testing?** Check [Testing Quickstart](./testing/QUICKSTART.md)
 
 ## Documentation Status
 
@@ -15,6 +16,13 @@ Welcome to the Ambira documentation hub. This guide will help you navigate all p
 - **[Documentation Gaps Summary](./DOCUMENTATION_GAPS_SUMMARY.md)** - Quick reference for critical gaps and action plan
 
 ## Core Documentation
+
+### Setup & Configuration
+
+Getting started with Ambira development environment.
+
+- **[Firebase Setup Guide](./setup/FIREBASE_SETUP.md)** - Complete Firebase configuration walkthrough
+- **[Firebase Indexes](./setup/FIREBASE_INDEXES.md)** - Required Firestore indexes and troubleshooting
 
 ### Architecture
 
@@ -125,6 +133,10 @@ ambira-web/
 │
 └── docs/
     ├── index.md              # This file - central navigation
+    │
+    ├── setup/                # Setup and configuration
+    │   ├── FIREBASE_SETUP.md
+    │   └── FIREBASE_INDEXES.md
     │
     ├── architecture/         # System architecture
     │   ├── README.md

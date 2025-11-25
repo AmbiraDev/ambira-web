@@ -3,9 +3,9 @@
  * Import this in test setup to mock all Firebase services
  */
 
-export * from './auth';
-export * from './firestore';
-export * from './storage';
+export * from './auth'
+export * from './firestore'
+export * from './storage'
 
 // Mock Firebase app initialization
 export const mockFirebaseApp = {
@@ -19,9 +19,9 @@ export const mockFirebaseApp = {
     appId: 'mock-app-id',
   },
   automaticDataCollectionEnabled: false,
-};
+}
 
-export const initializeApp = jest.fn(() => mockFirebaseApp);
-export const getApp = jest.fn(() => mockFirebaseApp);
-export const getApps = jest.fn(() => [mockFirebaseApp]);
-export const deleteApp = jest.fn().mockResolvedValue(undefined);
+export const initializeApp = jest.fn(() => mockFirebaseApp)
+export const getApp = jest.fn(() => mockFirebaseApp)
+export const getApps = jest.fn(() => [mockFirebaseApp])
+export const deleteApp = jest.fn().mockResolvedValue(undefined)

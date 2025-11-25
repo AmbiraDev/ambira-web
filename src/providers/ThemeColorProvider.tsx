@@ -8,21 +8,18 @@
  * consistency with the white theme-color defined in layout.tsx metadata.
  */
 
-'use client';
+'use client'
 
-import { useLayoutEffect, type ReactNode } from 'react';
+import { useLayoutEffect, type ReactNode } from 'react'
 
 export function ThemeColorProvider({ children }: { children: ReactNode }) {
   // Ensure theme color is white on mount (belt and suspenders with layout.tsx)
   useLayoutEffect(() => {
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (
-      metaThemeColor &&
-      metaThemeColor.getAttribute('content') !== '#ffffff'
-    ) {
-      metaThemeColor.setAttribute('content', '#ffffff');
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+    if (metaThemeColor && metaThemeColor.getAttribute('content') !== '#ffffff') {
+      metaThemeColor.setAttribute('content', '#ffffff')
     }
-  }, []);
+  }, [])
 
-  return <>{children}</>;
+  return <>{children}</>
 }

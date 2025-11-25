@@ -5,13 +5,8 @@
  * and input sanitization.
  */
 
-import * as v from 'valibot';
-import {
-  UuidSchema,
-  NonEmptyStringSchema,
-  OptionalStringSchema,
-  UrlSchema,
-} from '../utils/common-schemas';
+import * as v from 'valibot'
+import { NonEmptyStringSchema, OptionalStringSchema, UrlSchema } from '../utils/common-schemas'
 
 /**
  * Group category options
@@ -19,7 +14,7 @@ import {
 export const GroupCategorySchema = v.picklist(
   ['work', 'study', 'side-project', 'learning', 'other'],
   'Invalid group category'
-);
+)
 
 /**
  * Group type options
@@ -27,7 +22,7 @@ export const GroupCategorySchema = v.picklist(
 export const GroupTypeSchema = v.picklist(
   ['just-for-fun', 'professional', 'competitive', 'other'],
   'Invalid group type'
-);
+)
 
 /**
  * Privacy setting options
@@ -35,7 +30,7 @@ export const GroupTypeSchema = v.picklist(
 export const GroupPrivacySchema = v.picklist(
   ['public', 'approval-required'],
   'Invalid privacy setting'
-);
+)
 
 /**
  * Schema for creating a new group
@@ -47,14 +42,14 @@ export const CreateGroupSchema = v.object({
     v.nonEmpty('Group name cannot be empty'),
     v.minLength(3, 'Group name must be at least 3 characters'),
     v.maxLength(100, 'Group name cannot exceed 100 characters'),
-    v.transform(str => str.trim())
+    v.transform((str) => str.trim())
   ),
   description: v.pipe(
     v.string('Description is required'),
     v.nonEmpty('Description cannot be empty'),
     v.minLength(10, 'Description must be at least 10 characters'),
     v.maxLength(1000, 'Description cannot exceed 1000 characters'),
-    v.transform(str => str.trim())
+    v.transform((str) => str.trim())
   ),
   category: GroupCategorySchema,
   type: GroupTypeSchema,
@@ -63,15 +58,12 @@ export const CreateGroupSchema = v.object({
   // Optional fields
   icon: v.optional(NonEmptyStringSchema),
   color: v.optional(
-    v.pipe(
-      v.string(),
-      v.regex(/^#[0-9A-F]{6}$/i, 'Color must be a valid hex code')
-    )
+    v.pipe(v.string(), v.regex(/^#[0-9A-F]{6}$/i, 'Color must be a valid hex code'))
   ),
   location: OptionalStringSchema,
   imageUrl: v.optional(UrlSchema),
   bannerUrl: v.optional(UrlSchema),
-});
+})
 
 /**
  * Schema for updating an existing group
@@ -83,7 +75,7 @@ export const UpdateGroupSchema = v.object({
       v.nonEmpty('Group name cannot be empty'),
       v.minLength(3, 'Group name must be at least 3 characters'),
       v.maxLength(100, 'Group name cannot exceed 100 characters'),
-      v.transform(str => str.trim())
+      v.transform((str) => str.trim())
     )
   ),
   description: v.optional(
@@ -92,7 +84,7 @@ export const UpdateGroupSchema = v.object({
       v.nonEmpty('Description cannot be empty'),
       v.minLength(10, 'Description must be at least 10 characters'),
       v.maxLength(1000, 'Description cannot exceed 1000 characters'),
-      v.transform(str => str.trim())
+      v.transform((str) => str.trim())
     )
   ),
   category: v.optional(GroupCategorySchema),
@@ -103,7 +95,7 @@ export const UpdateGroupSchema = v.object({
   location: OptionalStringSchema,
   imageUrl: v.optional(UrlSchema),
   bannerUrl: v.optional(UrlSchema),
-});
+})
 
 /**
  * Schema for group membership operations
@@ -111,7 +103,7 @@ export const UpdateGroupSchema = v.object({
 export const GroupMembershipSchema = v.object({
   groupId: NonEmptyStringSchema,
   userId: v.optional(NonEmptyStringSchema), // Optional if operating on current user
-});
+})
 
 /**
  * Schema for group role assignment
@@ -120,7 +112,7 @@ export const GroupRoleSchema = v.object({
   groupId: NonEmptyStringSchema,
   userId: NonEmptyStringSchema,
   role: v.picklist(['admin', 'member'], 'Invalid role'),
-});
+})
 
 /**
  * Schema for group filters
@@ -132,7 +124,7 @@ export const GroupFiltersSchema = v.object({
   location: v.optional(v.string()),
   search: v.optional(v.string()),
   userId: v.optional(NonEmptyStringSchema), // Filter groups by member
-});
+})
 
 /**
  * Schema for group sort options
@@ -140,7 +132,7 @@ export const GroupFiltersSchema = v.object({
 export const GroupSortSchema = v.object({
   field: v.picklist(['name', 'memberCount', 'createdAt', 'updatedAt']),
   direction: v.picklist(['asc', 'desc']),
-});
+})
 
 /**
  * Schema for group invitation
@@ -156,29 +148,29 @@ export const GroupInviteSchema = v.object({
     v.pipe(
       v.string(),
       v.maxLength(500, 'Invitation message cannot exceed 500 characters'),
-      v.transform(str => str.trim())
+      v.transform((str) => str.trim())
     )
   ),
-});
+})
 
 // Type exports
-export type CreateGroupInput = v.InferInput<typeof CreateGroupSchema>;
-export type CreateGroupData = v.InferOutput<typeof CreateGroupSchema>;
+export type CreateGroupInput = v.InferInput<typeof CreateGroupSchema>
+export type CreateGroupData = v.InferOutput<typeof CreateGroupSchema>
 
-export type UpdateGroupInput = v.InferInput<typeof UpdateGroupSchema>;
-export type UpdateGroupData = v.InferOutput<typeof UpdateGroupSchema>;
+export type UpdateGroupInput = v.InferInput<typeof UpdateGroupSchema>
+export type UpdateGroupData = v.InferOutput<typeof UpdateGroupSchema>
 
-export type GroupMembershipInput = v.InferInput<typeof GroupMembershipSchema>;
-export type GroupMembershipData = v.InferOutput<typeof GroupMembershipSchema>;
+export type GroupMembershipInput = v.InferInput<typeof GroupMembershipSchema>
+export type GroupMembershipData = v.InferOutput<typeof GroupMembershipSchema>
 
-export type GroupRoleInput = v.InferInput<typeof GroupRoleSchema>;
-export type GroupRoleData = v.InferOutput<typeof GroupRoleSchema>;
+export type GroupRoleInput = v.InferInput<typeof GroupRoleSchema>
+export type GroupRoleData = v.InferOutput<typeof GroupRoleSchema>
 
-export type GroupFiltersInput = v.InferInput<typeof GroupFiltersSchema>;
-export type GroupFilters = v.InferOutput<typeof GroupFiltersSchema>;
+export type GroupFiltersInput = v.InferInput<typeof GroupFiltersSchema>
+export type GroupFilters = v.InferOutput<typeof GroupFiltersSchema>
 
-export type GroupSortInput = v.InferInput<typeof GroupSortSchema>;
-export type GroupSort = v.InferOutput<typeof GroupSortSchema>;
+export type GroupSortInput = v.InferInput<typeof GroupSortSchema>
+export type GroupSort = v.InferOutput<typeof GroupSortSchema>
 
-export type GroupInviteInput = v.InferInput<typeof GroupInviteSchema>;
-export type GroupInviteData = v.InferOutput<typeof GroupInviteSchema>;
+export type GroupInviteInput = v.InferInput<typeof GroupInviteSchema>
+export type GroupInviteData = v.InferOutput<typeof GroupInviteSchema>

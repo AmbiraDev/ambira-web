@@ -5,12 +5,12 @@
  * Extracted from the main route file for better separation of concerns.
  */
 
-'use client';
+'use client'
 
-import Header from '@/components/HeaderComponent';
-import Footer from '@/components/Footer';
-import Link from 'next/link';
-import Image from 'next/image';
+import Header from '@/components/HeaderComponent'
+import Footer from '@/components/Footer'
+import Link from 'next/link'
+import Image from 'next/image'
 
 export function LandingPageContent() {
   return (
@@ -19,17 +19,14 @@ export function LandingPageContent() {
 
       <main role="main">
         {/* Hero Section */}
-        <section
-          id="hero-section"
-          className="max-w-6xl mx-auto px-4 py-20 md:py-32"
-        >
+        <section id="hero-section" className="max-w-6xl mx-auto px-4 py-20 md:py-32">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6">
               Make productivity <span className="text-[#0066CC]">social.</span>
             </h1>
             <p className="text-xl text-gray-600 mb-10">
-              Studying shouldn't be done alone. Join your friends, share your
-              progress, and achieve better results together.
+              Studying shouldn't be done alone. Join your friends, share your progress, and achieve
+              better results together.
             </p>
             <div className="space-y-4">
               <Link
@@ -56,13 +53,10 @@ export function LandingPageContent() {
           {/* Feature 1: Share Your Sessions */}
           <div className="flex flex-col md:flex-row items-center md:items-start gap-12">
             <div className="flex-1 space-y-4 md:pt-12 text-center md:text-left">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-                Share Your Work
-              </h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Share Your Work</h2>
               <p className="text-lg md:text-xl text-gray-600">
-                Track your study and work sessions, then share them with
-                friends. Get encouragement and support as you make progress on
-                your goals.
+                Track your study and work sessions, then share them with friends. Get encouragement
+                and support as you make progress on your goals.
               </p>
             </div>
             <div className="flex-1">
@@ -82,13 +76,10 @@ export function LandingPageContent() {
           {/* Feature 2: Join Groups */}
           <div className="flex flex-col md:flex-row-reverse items-center md:items-start gap-12">
             <div className="flex-1 space-y-4 md:pt-12 text-center md:text-left">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-                Study With Groups
-              </h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Study With Groups</h2>
               <p className="text-lg md:text-xl text-gray-600">
-                Better results happen with groups. Join communities of students
-                and professionals working toward similar goals, and stay
-                accountable together.
+                Better results happen with groups. Join communities of students and professionals
+                working toward similar goals, and stay accountable together.
               </p>
             </div>
             <div className="flex-1">
@@ -111,8 +102,8 @@ export function LandingPageContent() {
                 Understand Your Habits
               </h2>
               <p className="text-lg md:text-xl text-gray-600">
-                See detailed insights into your productivity patterns. Track
-                your progress over time and discover when you work best.
+                See detailed insights into your productivity patterns. Track your progress over time
+                and discover when you work best.
               </p>
             </div>
             <div className="flex-1">
@@ -169,5 +160,5 @@ export function LandingPageContent() {
       {/* Footer */}
       <Footer />
     </div>
-  );
+  )
 }

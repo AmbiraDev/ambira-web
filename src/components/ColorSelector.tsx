@@ -1,29 +1,24 @@
-'use client';
+'use client'
 
-import React, { useState, useRef, useEffect } from 'react';
-import * as Icons from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react'
+import * as Icons from 'lucide-react'
 
 export interface ColorOption {
-  name: string;
-  hex: string;
-  label: string;
+  name: string
+  hex: string
+  label: string
 }
 
 interface ColorSelectorProps {
-  colors: ColorOption[];
-  value: string;
-  onChange: (colorName: string) => void;
-  className?: string;
+  colors: ColorOption[]
+  value: string
+  onChange: (colorName: string) => void
+  className?: string
 }
 
-export function ColorSelector({
-  colors,
-  value,
-  onChange,
-  className = '',
-}: ColorSelectorProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+export function ColorSelector({ colors, value, onChange, className = '' }: ColorSelectorProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   // Support both name and hex value
   // Ensure selectedColor is always defined with a fallback
@@ -31,36 +26,31 @@ export function ColorSelector({
     name: 'gray',
     hex: '#6B7280',
     label: 'Gray',
-  };
+  }
   const selectedColor =
-    colors.find(c => c.name === value || c.hex === value) ||
-    colors[0] ||
-    DEFAULT_COLOR;
+    colors.find((c) => c.name === value || c.hex === value) || colors[0] || DEFAULT_COLOR
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside)
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
 
   const handleColorSelect = (colorName: string) => {
-    onChange(colorName);
-    setIsOpen(false);
-  };
+    onChange(colorName)
+    setIsOpen(false)
+  }
 
   return (
     <div className={`relative max-w-sm ${className}`} ref={containerRef}>
@@ -86,9 +76,8 @@ export function ColorSelector({
       {isOpen && (
         <div className="absolute z-50 w-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg p-4">
           <div className="grid grid-cols-6 sm:grid-cols-9 gap-2">
-            {colors.map(colorData => {
-              const isSelected =
-                colorData.name === value || colorData.hex === value;
+            {colors.map((colorData) => {
+              const isSelected = colorData.name === value || colorData.hex === value
 
               return (
                 <button
@@ -107,11 +96,11 @@ export function ColorSelector({
                     style={{ backgroundColor: colorData.hex }}
                   />
                 </button>
-              );
+              )
             })}
           </div>
         </div>
       )}
     </div>
-  );
+  )
 }

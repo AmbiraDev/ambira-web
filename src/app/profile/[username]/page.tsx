@@ -14,18 +14,18 @@
  * For now, we've separated routing from presentation.
  */
 
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import Header from '@/components/HeaderComponent';
-import MobileHeader from '@/components/MobileHeader';
-import BottomNavigation from '@/components/BottomNavigation';
-import ProfilePageContent from './page-content';
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import Header from '@/components/HeaderComponent'
+import MobileHeader from '@/components/MobileHeader'
+import BottomNavigation from '@/components/BottomNavigation'
+import ProfilePageContent from './page-content'
 
 interface ProfilePageProps {
-  params: Promise<{ username: string }>;
+  params: Promise<{ username: string }>
 }
 
 export default async function ProfilePage(props: ProfilePageProps) {
-  const params = await props.params;
+  const params = await props.params
 
   return (
     <ProtectedRoute>
@@ -49,5 +49,5 @@ export default async function ProfilePage(props: ProfilePageProps) {
         </div>
       </div>
     </ProtectedRoute>
-  );
+  )
 }

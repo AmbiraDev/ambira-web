@@ -1,12 +1,12 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Timer, Edit3 } from 'lucide-react';
-import { useTimer } from '@/features/timer/hooks';
-import type { TimerStatusProps } from './header.types';
-import { TIMING, CLASS_NAMES, ROUTES } from './header.constants';
-import { shouldShowHeaderTimer, isOnTimerPage } from './header.utils';
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { Timer, Edit3 } from 'lucide-react'
+import { useTimer } from '@/features/timer/hooks'
+import type { TimerStatusProps } from './header.types'
+import { TIMING, CLASS_NAMES, ROUTES } from './header.constants'
+import { shouldShowHeaderTimer, isOnTimerPage } from './header.utils'
 
 /**
  * TimerStatus Component
@@ -24,31 +24,31 @@ import { shouldShowHeaderTimer, isOnTimerPage } from './header.utils';
  * ```
  */
 export default function TimerStatus({ pathname }: TimerStatusProps) {
-  const { timerState, getElapsedTime, getFormattedTime } = useTimer();
-  const [headerTimer, setHeaderTimer] = useState<string>('');
+  const { timerState, getElapsedTime, getFormattedTime } = useTimer()
+  const [headerTimer, setHeaderTimer] = useState<string>('')
 
   const hasActiveSession = !!(
     timerState.currentProject &&
     (timerState.isRunning || timerState.pausedDuration > 0)
-  );
+  )
 
   // Update header timer display when there is an active/paused session
   // and we are not on the timer page
   useEffect(() => {
     if (!shouldShowHeaderTimer(hasActiveSession, pathname)) {
-      setHeaderTimer('');
-      return;
+      setHeaderTimer('')
+      return
     }
 
     const updateTimer = () => {
-      const seconds = getElapsedTime();
-      setHeaderTimer(getFormattedTime(seconds));
-    };
+      const seconds = getElapsedTime()
+      setHeaderTimer(getFormattedTime(seconds))
+    }
 
-    updateTimer();
-    const interval = setInterval(updateTimer, TIMING.TIMER_UPDATE_INTERVAL);
+    updateTimer()
+    const interval = setInterval(updateTimer, TIMING.TIMER_UPDATE_INTERVAL)
 
-    return () => clearInterval(interval);
+    return () => clearInterval(interval)
   }, [
     pathname,
     hasActiveSession,
@@ -56,13 +56,11 @@ export default function TimerStatus({ pathname }: TimerStatusProps) {
     timerState.pausedDuration,
     getElapsedTime,
     getFormattedTime,
-  ]);
+  ])
 
   // Show active session indicator
   if (hasActiveSession) {
-    const displayText = isOnTimerPage(pathname)
-      ? 'Active'
-      : headerTimer || 'Active';
+    const displayText = isOnTimerPage(pathname) ? 'Active' : headerTimer || 'Active'
 
     return (
       <Link
@@ -70,23 +68,17 @@ export default function TimerStatus({ pathname }: TimerStatusProps) {
         className="hidden md:flex items-center space-x-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
         aria-label="View active session"
       >
-        <div
-          className="w-2 h-2 rounded-full bg-green-300 flex-shrink-0"
-          aria-hidden="true"
-        />
+        <div className="w-2 h-2 rounded-full bg-green-300 flex-shrink-0" aria-hidden="true" />
         <span className="w-[60px] text-center">{displayText}</span>
       </Link>
-    );
+    )
   }
 
   // Show session action buttons when no active session
   return (
     <>
       {/* Start Session Button */}
-      <Link
-        href={ROUTES.TIMER}
-        className={cn(CLASS_NAMES.BUTTON_PRIMARY, 'hidden md:flex')}
-      >
+      <Link href={ROUTES.TIMER} className={cn(CLASS_NAMES.BUTTON_PRIMARY, 'hidden md:flex')}>
         <Timer className="w-4 h-4" strokeWidth={2.5} />
         <span>Start Session</span>
       </Link>
@@ -100,7 +92,7 @@ export default function TimerStatus({ pathname }: TimerStatusProps) {
         <span>Log Manual</span>
       </Link>
     </>
-  );
+  )
 }
 
 /**
@@ -108,5 +100,5 @@ export default function TimerStatus({ pathname }: TimerStatusProps) {
  * Moved here to avoid circular dependencies
  */
 function cn(...classes: (string | undefined)[]): string {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(' ')
 }

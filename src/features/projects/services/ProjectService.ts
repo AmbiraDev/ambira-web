@@ -8,7 +8,7 @@
  * but we maintain backwards compatibility with Project naming.
  */
 
-import { firebaseApi } from '@/lib/api';
+import { firebaseApi } from '@/lib/api'
 import {
   Project,
   // Activity,
@@ -16,12 +16,8 @@ import {
   UpdateProjectData,
   ProjectStats,
   // ActivityStats,
-} from '@/types';
-import {
-  validateOrThrow,
-  CreateProjectSchema,
-  UpdateProjectSchema,
-} from '@/lib/validation';
+} from '@/types'
+import { validateOrThrow, CreateProjectSchema, UpdateProjectSchema } from '@/lib/validation'
 
 export class ProjectService {
   /**
@@ -29,9 +25,9 @@ export class ProjectService {
    */
   async getProjects(): Promise<Project[]> {
     try {
-      return await firebaseApi.project.getProjects();
+      return await firebaseApi.project.getProjects()
     } catch (_err) {
-      return [];
+      return []
     }
   }
 
@@ -40,9 +36,9 @@ export class ProjectService {
    */
   async getProject(projectId: string): Promise<Project | null> {
     try {
-      return await firebaseApi.project.getProjectById(projectId);
+      return await firebaseApi.project.getProjectById(projectId)
     } catch (_err) {
-      return null;
+      return null
     }
   }
 
@@ -51,9 +47,9 @@ export class ProjectService {
    */
   async getProjectStats(projectId: string): Promise<ProjectStats | null> {
     try {
-      return await firebaseApi.project.getProjectStats(projectId);
+      return await firebaseApi.project.getProjectStats(projectId)
     } catch (_err) {
-      return null;
+      return null
     }
   }
 
@@ -61,39 +57,36 @@ export class ProjectService {
    * Create a new project
    */
   async createProject(data: unknown): Promise<Project> {
-    const validated = validateOrThrow(CreateProjectSchema, data);
-    return firebaseApi.project.createProject(validated as CreateProjectData);
+    const validated = validateOrThrow(CreateProjectSchema, data)
+    return firebaseApi.project.createProject(validated as CreateProjectData)
   }
 
   /**
    * Update a project
    */
   async updateProject(projectId: string, data: unknown): Promise<Project> {
-    const validated = validateOrThrow(UpdateProjectSchema, data);
-    return firebaseApi.project.updateProject(
-      projectId,
-      validated as UpdateProjectData
-    );
+    const validated = validateOrThrow(UpdateProjectSchema, data)
+    return firebaseApi.project.updateProject(projectId, validated as UpdateProjectData)
   }
 
   /**
    * Delete a project
    */
   async deleteProject(projectId: string): Promise<void> {
-    return firebaseApi.project.deleteProject(projectId);
+    return firebaseApi.project.deleteProject(projectId)
   }
 
   /**
    * Archive a project
    */
   async archiveProject(projectId: string): Promise<Project> {
-    return this.updateProject(projectId, { status: 'archived' });
+    return this.updateProject(projectId, { status: 'archived' })
   }
 
   /**
    * Restore an archived project
    */
   async restoreProject(projectId: string): Promise<Project> {
-    return this.updateProject(projectId, { status: 'active' });
+    return this.updateProject(projectId, { status: 'active' })
   }
 }

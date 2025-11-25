@@ -14,13 +14,13 @@ import {
   UseQueryOptions,
   UseInfiniteQueryOptions,
   InfiniteData,
-} from '@tanstack/react-query';
-import { FeedService, FeedFilters } from '../services/FeedService';
-import { Session } from '@/domain/entities/Session';
-import { STANDARD_CACHE_TIMES } from '@/lib/react-query';
+} from '@tanstack/react-query'
+import { FeedService, FeedFilters } from '../services/FeedService'
+import { Session } from '@/domain/entities/Session'
+import { STANDARD_CACHE_TIMES } from '@/lib/react-query'
 
 // Singleton service instance
-const feedService = new FeedService();
+const feedService = new FeedService()
 
 // ==================== TYPES ====================
 
@@ -29,18 +29,18 @@ const feedService = new FeedService();
 type InfiniteQueryOptions<TData, TError> = Omit<
   Partial<UseInfiniteQueryOptions<TData, TError, InfiniteData<TData, unknown>>>,
   'select'
->;
+>
 
 export interface FeedResult {
-  sessions: Session[];
-  hasMore: boolean;
-  nextCursor?: string;
+  sessions: Session[]
+  hasMore: boolean
+  nextCursor?: string
 }
 
 export interface FeedPage {
-  sessions: Session[];
-  hasMore: boolean;
-  nextCursor?: string;
+  sessions: Session[]
+  hasMore: boolean
+  nextCursor?: string
 }
 
 // ==================== CACHE KEYS ====================
@@ -49,11 +49,10 @@ export interface FeedPage {
 export const FEED_KEYS = {
   all: () => ['feed'] as const,
   lists: () => [...FEED_KEYS.all(), 'list'] as const,
-  list: (userId: string, filters: FeedFilters) =>
-    [...FEED_KEYS.lists(), userId, filters] as const,
+  list: (userId: string, filters: FeedFilters) => [...FEED_KEYS.lists(), userId, filters] as const,
   user: (userId: string) => [...FEED_KEYS.all(), 'user', userId] as const,
   group: (groupId: string) => [...FEED_KEYS.all(), 'group', groupId] as const,
-};
+}
 
 // ==================== QUERY HOOKS ====================
 
@@ -78,7 +77,7 @@ export function useFeedInfinite(
   filters: FeedFilters = {},
   options?: InfiniteQueryOptions<FeedResult, Error> & { limit?: number }
 ) {
-  const limit = options?.limit || 10;
+  const limit = options?.limit || 10
 
   return useInfiniteQuery<FeedResult, Error>({
     queryKey: [...FEED_KEYS.list(currentUserId, filters), limit],
@@ -87,8 +86,8 @@ export function useFeedInfinite(
         limit,
         cursor: pageParam as string | undefined,
       }),
-    getNextPageParam: lastPage => {
-      return lastPage.hasMore ? lastPage.nextCursor : undefined;
+    getNextPageParam: (lastPage) => {
+      return lastPage.hasMore ? lastPage.nextCursor : undefined
     },
     initialPageParam: undefined as string | undefined,
     // Cache Configuration:
@@ -105,7 +104,7 @@ export function useFeedInfinite(
     refetchOnReconnect: true,
     enabled: !!currentUserId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -139,7 +138,7 @@ export function useFeed(
     refetchOnReconnect: true,
     enabled: !!currentUserId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -158,12 +157,11 @@ export function useUserFeed(
 ) {
   return useQuery<FeedResult, Error>({
     queryKey: [...FEED_KEYS.user(userId), currentUserId, limit],
-    queryFn: () =>
-      feedService.getFeed(currentUserId, { type: 'user', userId }, { limit }),
+    queryFn: () => feedService.getFeed(currentUserId, { type: 'user', userId }, { limit }),
     staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes
     enabled: !!currentUserId && !!userId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -182,12 +180,11 @@ export function useGroupFeed(
 ) {
   return useQuery<FeedResult, Error>({
     queryKey: [...FEED_KEYS.group(groupId), currentUserId, limit],
-    queryFn: () =>
-      feedService.getFeed(currentUserId, { type: 'group', groupId }, { limit }),
+    queryFn: () => feedService.getFeed(currentUserId, { type: 'group', groupId }, { limit }),
     staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes
     enabled: !!currentUserId && !!groupId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -206,7 +203,7 @@ export function useFollowingFeedInfinite(
   currentUserId: string,
   options?: InfiniteQueryOptions<FeedResult, Error>
 ) {
-  return useFeedInfinite(currentUserId, { type: 'following' }, options);
+  return useFeedInfinite(currentUserId, { type: 'following' }, options)
 }
 
 /**
@@ -225,5 +222,5 @@ export function usePublicFeedInfinite(
   currentUserId: string,
   options?: InfiniteQueryOptions<FeedResult, Error>
 ) {
-  return useFeedInfinite(currentUserId, { type: 'all' }, options);
+  return useFeedInfinite(currentUserId, { type: 'all' }, options)
 }

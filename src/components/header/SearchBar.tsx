@@ -1,11 +1,11 @@
-'use client';
+'use client'
 
-import { useState, useEffect, useRef, type FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
-import { Search, X, ChevronDown } from 'lucide-react';
-import type { SearchBarProps, SearchFilter } from './header.types';
-import { SEARCH_FILTERS } from './header.constants';
-import { getSearchFilterLabel, buildSearchUrl } from './header.utils';
+import { useState, useEffect, useRef, type FormEvent } from 'react'
+import { useRouter } from 'next/navigation'
+import { Search, X, ChevronDown } from 'lucide-react'
+import type { SearchBarProps, SearchFilter } from './header.types'
+import { SEARCH_FILTERS } from './header.constants'
+import { getSearchFilterLabel, buildSearchUrl } from './header.utils'
 
 /**
  * SearchBar Component
@@ -26,51 +26,51 @@ import { getSearchFilterLabel, buildSearchUrl } from './header.utils';
  * ```
  */
 export default function SearchBar({ isOpen, onToggle }: SearchBarProps) {
-  const router = useRouter();
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter()
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   // Local state for search functionality
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchFilter, setSearchFilter] = useState<SearchFilter>('people');
-  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchFilter, setSearchFilter] = useState<SearchFilter>('people')
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false)
 
   // Focus search input when search opens
   useEffect(() => {
     if (isOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
+      searchInputRef.current.focus()
     }
-  }, [isOpen]);
+  }, [isOpen])
 
   /**
    * Handles search form submission
    * Navigates to search results page with query parameters
    */
   const handleSearch = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    const searchUrl = buildSearchUrl(searchQuery, searchFilter);
+    const searchUrl = buildSearchUrl(searchQuery, searchFilter)
     if (searchUrl) {
-      router.push(searchUrl);
-      handleClose();
+      router.push(searchUrl)
+      handleClose()
     }
-  };
+  }
 
   /**
    * Closes search bar and resets state
    */
   const handleClose = () => {
-    onToggle();
-    setSearchQuery('');
-    setIsFilterDropdownOpen(false);
-  };
+    onToggle()
+    setSearchQuery('')
+    setIsFilterDropdownOpen(false)
+  }
 
   /**
    * Updates search filter and closes dropdown
    */
   const handleFilterSelect = (filter: SearchFilter) => {
-    setSearchFilter(filter);
-    setIsFilterDropdownOpen(false);
-  };
+    setSearchFilter(filter)
+    setIsFilterDropdownOpen(false)
+  }
 
   // Collapsed state - just show search icon button that navigates to search page
   if (!isOpen) {
@@ -83,7 +83,7 @@ export default function SearchBar({ isOpen, onToggle }: SearchBarProps) {
       >
         <Search className="w-5 h-5" />
       </button>
-    );
+    )
   }
 
   // Expanded state - show full search form
@@ -139,7 +139,7 @@ export default function SearchBar({ isOpen, onToggle }: SearchBarProps) {
             ref={searchInputRef}
             type="text"
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={`Search ${getSearchFilterLabel(searchFilter).toLowerCase()}...`}
             className="w-full px-3 md:px-4 py-2 pr-8 md:pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent text-xs md:text-sm"
             aria-label="Search query"
@@ -158,5 +158,5 @@ export default function SearchBar({ isOpen, onToggle }: SearchBarProps) {
         <X className="w-5 h-5" />
       </button>
     </div>
-  );
+  )
 }

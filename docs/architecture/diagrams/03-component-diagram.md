@@ -220,28 +220,27 @@ export function GroupCard({ group, onJoin }) {
 // src/features/groups/hooks/useGroups.ts
 export const GROUPS_KEYS = {
   all: () => ['groups'],
-  detail: id => [...GROUPS_KEYS.all(), 'detail', id],
-};
+  detail: (id) => [...GROUPS_KEYS.all(), 'detail', id],
+}
 
 export function useGroupDetails(groupId: string) {
   return useQuery({
     queryKey: GROUPS_KEYS.detail(groupId),
     queryFn: () => groupService.getGroupDetails(groupId),
     staleTime: 15 * 60 * 1000,
-  });
+  })
 }
 
 export function useJoinGroup() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ groupId, userId }) =>
-      groupService.joinGroup(groupId, userId),
+    mutationFn: ({ groupId, userId }) => groupService.joinGroup(groupId, userId),
     onSuccess: (_, { groupId }) => {
       queryClient.invalidateQueries({
         queryKey: GROUPS_KEYS.detail(groupId),
-      });
+      })
     },
-  });
+  })
 }
 ```
 
@@ -262,18 +261,18 @@ export function useJoinGroup() {
 ```typescript
 // src/features/groups/services/GroupService.ts
 export class GroupService {
-  private groupRepo: GroupRepository;
+  private groupRepo: GroupRepository
 
   async joinGroup(groupId: string, userId: string): Promise<void> {
     // Business logic
-    const group = await this.groupRepo.findById(groupId);
-    if (!group) throw new Error('Group not found');
+    const group = await this.groupRepo.findById(groupId)
+    if (!group) throw new Error('Group not found')
     if (group.memberIds.includes(userId)) {
-      throw new Error('Already a member');
+      throw new Error('Already a member')
     }
 
     // Update membership
-    await this.groupRepo.addMember(groupId, userId);
+    await this.groupRepo.addMember(groupId, userId)
   }
 }
 ```
@@ -296,9 +295,9 @@ export class GroupService {
 export class MembershipRules {
   static canJoinGroup(group: Group, user: User): boolean {
     if (group.privacy === 'approval-required') {
-      return false; // Need approval flow
+      return false // Need approval flow
     }
-    return !group.memberIds.includes(user.id);
+    return !group.memberIds.includes(user.id)
   }
 }
 ```
@@ -321,8 +320,8 @@ export class MembershipRules {
 // src/features/groups/repositories/GroupRepository.ts
 export class GroupRepository {
   async findById(groupId: string): Promise<Group | null> {
-    const doc = await firestore.collection('groups').doc(groupId).get();
-    return doc.exists ? (doc.data() as Group) : null;
+    const doc = await firestore.collection('groups').doc(groupId).get()
+    return doc.exists ? (doc.data() as Group) : null
   }
 
   async addMember(groupId: string, userId: string): Promise<void> {
@@ -332,7 +331,7 @@ export class GroupRepository {
       .update({
         memberIds: firestore.FieldValue.arrayUnion(userId),
         memberCount: firestore.FieldValue.increment(1),
-      });
+      })
   }
 }
 ```
@@ -452,11 +451,9 @@ test('useGroupDetails fetches and caches', async () => {
 ```typescript
 // Services are pure - easy to test
 test('joinGroup throws when already member', async () => {
-  const service = new GroupService();
-  await expect(service.joinGroup('group-1', 'user-1')).rejects.toThrow(
-    'Already a member'
-  );
-});
+  const service = new GroupService()
+  await expect(service.joinGroup('group-1', 'user-1')).rejects.toThrow('Already a member')
+})
 ```
 
 ## Migration from Legacy Patterns
@@ -466,9 +463,9 @@ test('joinGroup throws when already member', async () => {
 ```typescript
 // ❌ Old pattern - Context everywhere
 const GroupPage = () => {
-  const { groups, loading } = useGroupsContext();
+  const { groups, loading } = useGroupsContext()
   // Context causes re-renders across all consumers
-};
+}
 ```
 
 ### After (React Query at Feature Boundary)
@@ -476,9 +473,9 @@ const GroupPage = () => {
 ```typescript
 // ✅ New pattern - React Query at boundary
 const GroupPage = () => {
-  const { data: groups, isLoading } = useGroups();
+  const { data: groups, isLoading } = useGroups()
   // Granular caching, automatic refetching
-};
+}
 ```
 
 ## Benefits

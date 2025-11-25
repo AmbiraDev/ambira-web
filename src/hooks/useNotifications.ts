@@ -1,12 +1,7 @@
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  UseQueryOptions,
-} from '@tanstack/react-query';
-import { useAuth } from '@/hooks/useAuth';
-import { Notification } from '@/types';
-import { firebaseNotificationApi } from '@/lib/api';
+import { useQuery, useMutation, useQueryClient, UseQueryOptions } from '@tanstack/react-query'
+import { useAuth } from '@/hooks/useAuth'
+import { Notification } from '@/types'
+import { firebaseNotificationApi } from '@/lib/api'
 import {
   collection,
   query,
@@ -14,10 +9,10 @@ import {
   orderBy,
   limit as firestoreLimit,
   onSnapshot,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useEffect, useMemo } from 'react';
-import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
+} from 'firebase/firestore'
+import { db } from '@/lib/firebase'
+import { useEffect, useMemo } from 'react'
+import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient'
 
 /**
  * Hook to fetch user notifications with optional real-time updates
@@ -26,51 +21,51 @@ import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
  * @param options.limit - Maximum number of notifications to fetch (default: 50)
  */
 export function useNotifications(options?: {
-  realtime?: boolean;
-  limit?: number;
-  queryOptions?: Partial<UseQueryOptions<Notification[]>>;
+  realtime?: boolean
+  limit?: number
+  queryOptions?: Partial<UseQueryOptions<Notification[]>>
 }) {
-  const { user, isAuthenticated } = useAuth();
-  const queryClient = useQueryClient();
-  const realtime = options?.realtime ?? false;
-  const limit = options?.limit ?? 50;
+  const { user, isAuthenticated } = useAuth()
+  const queryClient = useQueryClient()
+  const realtime = options?.realtime ?? false
+  const limit = options?.limit ?? 50
 
   const queryKey = useMemo(
     () => [...CACHE_KEYS.NOTIFICATIONS(user?.id || 'none'), limit, user],
     [user, limit]
-  );
+  )
 
   // Base query for notifications
   const notificationsQuery = useQuery({
     queryKey,
     queryFn: async () => {
-      if (!user) return [];
-      return firebaseNotificationApi.getUserNotifications(user.id, limit);
+      if (!user) return []
+      return firebaseNotificationApi.getUserNotifications(user.id, limit)
     },
     enabled: isAuthenticated && !!user,
     staleTime: CACHE_TIMES.REAL_TIME, // 30 seconds
     gcTime: CACHE_TIMES.MEDIUM, // 5 minutes
     ...options?.queryOptions,
-  });
+  })
 
   // Set up real-time listener if requested
   useEffect(() => {
-    if (!realtime || !isAuthenticated || !user) return;
+    if (!realtime || !isAuthenticated || !user) return
 
     const notificationsRef = query(
       collection(db, 'notifications'),
       where('userId', '==', user.id),
       orderBy('createdAt', 'desc'),
       firestoreLimit(limit)
-    );
+    )
 
     const unsubscribe = onSnapshot(
       notificationsRef,
-      snapshot => {
-        const notifications: Notification[] = [];
+      (snapshot) => {
+        const notifications: Notification[] = []
 
-        snapshot.forEach(doc => {
-          const data = doc.data();
+        snapshot.forEach((doc) => {
+          const data = doc.data()
           const notification: Notification = {
             id: doc.id,
             userId: data.userId,
@@ -88,21 +83,21 @@ export function useNotifications(options?: {
             commentId: data.commentId,
             groupId: data.groupId,
             challengeId: data.challengeId,
-          };
+          }
 
-          notifications.push(notification);
-        });
+          notifications.push(notification)
+        })
 
         // Update React Query cache with real-time data
-        queryClient.setQueryData(queryKey, notifications);
+        queryClient.setQueryData(queryKey, notifications)
       },
-      error => {}
-    );
+      (_error) => {}
+    )
 
-    return () => unsubscribe();
-  }, [realtime, isAuthenticated, user, limit, queryClient, queryKey]);
+    return () => unsubscribe()
+  }, [realtime, isAuthenticated, user, limit, queryClient, queryKey])
 
-  return notificationsQuery;
+  return notificationsQuery
 }
 
 /**
@@ -110,212 +105,202 @@ export function useNotifications(options?: {
  * Derived from notifications query for efficiency
  */
 export function useUnreadCount(limit: number = 50) {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
 
   // Use the same query key structure as useNotifications
   const queryKey = useMemo(
     () => [...CACHE_KEYS.NOTIFICATIONS(user?.id || 'none'), limit, user],
     [user, limit]
-  );
+  )
 
   // Get cached notifications data
-  const notifications = queryClient.getQueryData<Notification[]>(queryKey);
+  const notifications = queryClient.getQueryData<Notification[]>(queryKey)
 
-  return useMemo(
-    () => notifications?.filter(n => !n.isRead).length ?? 0,
-    [notifications]
-  );
+  return useMemo(() => notifications?.filter((n) => !n.isRead).length ?? 0, [notifications])
 }
 
 /**
  * Hook to mark a notification as read with optimistic updates
  */
 export function useMarkNotificationRead(limit: number = 50) {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
 
   // Use the same query key structure as useNotifications
   const queryKey = useMemo(
     () => [...CACHE_KEYS.NOTIFICATIONS(user?.id || 'none'), limit, user],
     [user, limit]
-  );
+  )
 
   return useMutation({
-    mutationFn: (notificationId: string) =>
-      firebaseNotificationApi.markAsRead(notificationId),
+    mutationFn: (notificationId: string) => firebaseNotificationApi.markAsRead(notificationId),
 
     // Optimistic update
-    onMutate: async notificationId => {
+    onMutate: async (notificationId) => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey });
+      await queryClient.cancelQueries({ queryKey })
 
       // Snapshot the previous value
-      const previousNotifications =
-        queryClient.getQueryData<Notification[]>(queryKey);
+      const previousNotifications = queryClient.getQueryData<Notification[]>(queryKey)
 
       // Optimistically update to the new value
       if (previousNotifications) {
         queryClient.setQueryData<Notification[]>(
           queryKey,
-          previousNotifications.map(n =>
-            n.id === notificationId ? { ...n, isRead: true } : n
-          )
-        );
+          previousNotifications.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n))
+        )
       }
 
       // Return context with the previous value
-      return { previousNotifications };
+      return { previousNotifications }
     },
 
     // On error, roll back to the previous value
     onError: (err, notificationId, context) => {
       if (context?.previousNotifications) {
-        queryClient.setQueryData(queryKey, context.previousNotifications);
+        queryClient.setQueryData(queryKey, context.previousNotifications)
       }
     },
 
     // Always refetch after error or success
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey })
     },
-  });
+  })
 }
 
 /**
  * Hook to mark all notifications as read
  */
 export function useMarkAllNotificationsRead(limit: number = 50) {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
 
   // Use the same query key structure as useNotifications
   const queryKey = useMemo(
     () => [...CACHE_KEYS.NOTIFICATIONS(user?.id || 'none'), limit, user],
     [user, limit]
-  );
+  )
 
   return useMutation({
     mutationFn: async () => {
-      if (!user) throw new Error('User not authenticated');
-      return firebaseNotificationApi.markAllAsRead(user.id);
+      if (!user) throw new Error('User not authenticated')
+      return firebaseNotificationApi.markAllAsRead(user.id)
     },
 
     // Optimistic update
     onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey });
+      await queryClient.cancelQueries({ queryKey })
 
-      const previousNotifications =
-        queryClient.getQueryData<Notification[]>(queryKey);
+      const previousNotifications = queryClient.getQueryData<Notification[]>(queryKey)
 
       if (previousNotifications) {
         queryClient.setQueryData<Notification[]>(
           queryKey,
-          previousNotifications.map(n => ({ ...n, isRead: true }))
-        );
+          previousNotifications.map((n) => ({ ...n, isRead: true }))
+        )
       }
 
-      return { previousNotifications };
+      return { previousNotifications }
     },
 
     onError: (err, variables, context) => {
       if (context?.previousNotifications) {
-        queryClient.setQueryData(queryKey, context.previousNotifications);
+        queryClient.setQueryData(queryKey, context.previousNotifications)
       }
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey })
     },
-  });
+  })
 }
 
 /**
  * Hook to delete a notification with optimistic updates
  */
 export function useDeleteNotification(limit: number = 50) {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
 
   // Use the same query key structure as useNotifications
   const queryKey = useMemo(
     () => [...CACHE_KEYS.NOTIFICATIONS(user?.id || 'none'), limit, user],
     [user, limit]
-  );
+  )
 
   return useMutation({
     mutationFn: (notificationId: string) =>
       firebaseNotificationApi.deleteNotification(notificationId),
 
     // Optimistic update
-    onMutate: async notificationId => {
-      await queryClient.cancelQueries({ queryKey });
+    onMutate: async (notificationId) => {
+      await queryClient.cancelQueries({ queryKey })
 
-      const previousNotifications =
-        queryClient.getQueryData<Notification[]>(queryKey);
+      const previousNotifications = queryClient.getQueryData<Notification[]>(queryKey)
 
       if (previousNotifications) {
         queryClient.setQueryData<Notification[]>(
           queryKey,
-          previousNotifications.filter(n => n.id !== notificationId)
-        );
+          previousNotifications.filter((n) => n.id !== notificationId)
+        )
       }
 
-      return { previousNotifications };
+      return { previousNotifications }
     },
 
     onError: (err, notificationId, context) => {
       if (context?.previousNotifications) {
-        queryClient.setQueryData(queryKey, context.previousNotifications);
+        queryClient.setQueryData(queryKey, context.previousNotifications)
       }
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey })
     },
-  });
+  })
 }
 
 /**
  * Hook to clear all notifications with optimistic updates
  */
 export function useClearAllNotifications(limit: number = 50) {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
 
   // Use the same query key structure as useNotifications
   const queryKey = useMemo(
     () => [...CACHE_KEYS.NOTIFICATIONS(user?.id || 'none'), limit, user],
     [user, limit]
-  );
+  )
 
   return useMutation({
     mutationFn: async () => {
-      if (!user) throw new Error('User not authenticated');
-      return firebaseNotificationApi.clearAllNotifications(user.id);
+      if (!user) throw new Error('User not authenticated')
+      return firebaseNotificationApi.clearAllNotifications(user.id)
     },
 
     // Optimistic update
     onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey });
+      await queryClient.cancelQueries({ queryKey })
 
-      const previousNotifications =
-        queryClient.getQueryData<Notification[]>(queryKey);
+      const previousNotifications = queryClient.getQueryData<Notification[]>(queryKey)
 
       // Clear the cache immediately
-      queryClient.setQueryData<Notification[]>(queryKey, []);
+      queryClient.setQueryData<Notification[]>(queryKey, [])
 
-      return { previousNotifications };
+      return { previousNotifications }
     },
 
     onError: (err, variables, context) => {
       if (context?.previousNotifications) {
-        queryClient.setQueryData(queryKey, context.previousNotifications);
+        queryClient.setQueryData(queryKey, context.previousNotifications)
       }
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey })
     },
-  });
+  })
 }

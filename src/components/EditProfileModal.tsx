@@ -1,21 +1,21 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { UserProfile } from '@/types';
-import { firebaseUserApi } from '@/lib/api';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectItem } from '@/components/ui/select';
-import { X, User, MapPin, FileText, Globe } from 'lucide-react';
-import { ImageUpload } from '@/components/ImageUpload';
+import React, { useState, useEffect } from 'react'
+import { UserProfile } from '@/types'
+import { firebaseUserApi } from '@/lib/api'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectItem } from '@/components/ui/select'
+import { X, User, MapPin, FileText, Globe } from 'lucide-react'
+import { ImageUpload } from '@/components/ImageUpload'
 
 interface EditProfileModalProps {
-  profile: UserProfile;
-  isOpen: boolean;
-  onClose: () => void;
-  onProfileUpdate: (updatedProfile: UserProfile) => void;
+  profile: UserProfile
+  isOpen: boolean
+  onClose: () => void
+  onProfileUpdate: (updatedProfile: UserProfile) => void
 }
 
 export const EditProfileModal: React.FC<EditProfileModalProps> = ({
@@ -29,15 +29,15 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     bio: profile.bio || '',
     location: profile.location || '',
     profilePicture: profile.profilePicture || '',
-  });
-  const [profileVisibility, setProfileVisibility] = useState<
-    'everyone' | 'followers' | 'private'
-  >('everyone');
-  const [isLoading, setIsLoading] = useState(false);
-  const [profileImageFile, setProfileImageFile] = useState<File[]>([]);
+  })
+  const [profileVisibility, setProfileVisibility] = useState<'everyone' | 'followers' | 'private'>(
+    'everyone'
+  )
+  const [isLoading, setIsLoading] = useState(false)
+  const [profileImageFile, setProfileImageFile] = useState<File[]>([])
   const [profileImagePreview, setProfileImagePreview] = useState<string[]>(
     profile.profilePicture ? [profile.profilePicture] : []
-  );
+  )
 
   // Handle ESC key to close modal
   useEffect(() => {
@@ -49,36 +49,36 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
           bio: profile.bio || '',
           location: profile.location || '',
           profilePicture: profile.profilePicture || '',
-        });
-        onClose();
+        })
+        onClose()
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleEscape)
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, isLoading, onClose, profile]);
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, isLoading, onClose, profile])
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
 
   const handleProfileImageChange = (images: File[], previewUrls: string[]) => {
-    setProfileImageFile(images);
-    setProfileImagePreview(previewUrls);
-  };
+    setProfileImageFile(images)
+    setProfileImagePreview(previewUrls)
+  }
 
   const handleProfileImageUpload = async (files: File[]): Promise<string[]> => {
-    const file = files[0];
-    if (!file) return [];
+    const file = files[0]
+    if (!file) return []
 
     try {
       // Upload to Firebase Storage
-      const downloadURL = await firebaseUserApi.uploadProfilePicture(file);
+      const downloadURL = await firebaseUserApi.uploadProfilePicture(file)
 
       // Delete old profile picture if it exists and is a Firebase Storage URL
       if (
@@ -86,34 +86,34 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         profile.profilePicture.includes('firebasestorage.googleapis.com')
       ) {
         try {
-          await firebaseUserApi.deleteProfilePicture(profile.profilePicture);
+          await firebaseUserApi.deleteProfilePicture(profile.profilePicture)
         } catch {
           // Silently fail - old picture deletion is not critical
         }
       }
 
-      setFormData(prev => ({ ...prev, profilePicture: downloadURL }));
+      setFormData((prev) => ({ ...prev, profilePicture: downloadURL }))
 
-      return [downloadURL];
+      return [downloadURL]
     } catch (err) {
-      throw err;
+      throw err
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     try {
-      setIsLoading(true);
+      setIsLoading(true)
 
-      const updatedProfile = await firebaseUserApi.updateProfile(formData);
-      onProfileUpdate(updatedProfile);
-      onClose();
-    } catch (error: unknown) {
+      const updatedProfile = await firebaseUserApi.updateProfile(formData)
+      onProfileUpdate(updatedProfile)
+      onClose()
+    } catch (_error: unknown) {
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleClose = () => {
     if (!isLoading) {
@@ -123,21 +123,19 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         bio: profile.bio || '',
         location: profile.location || '',
         profilePicture: profile.profilePicture || '',
-      });
-      onClose();
+      })
+      onClose()
     }
-  };
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div className="max-w-2xl w-full mx-auto p-4">
       <div className="bg-background rounded-lg shadow-xl w-full">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
-          <h2 className="text-xl font-semibold text-foreground">
-            Edit Profile
-          </h2>
+          <h2 className="text-xl font-semibold text-foreground">Edit Profile</h2>
           <Button
             variant="ghost"
             size="sm"
@@ -177,7 +175,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
               id="name"
               type="text"
               value={formData.name}
-              onChange={e => handleInputChange('name', e.target.value)}
+              onChange={(e) => handleInputChange('name', e.target.value)}
               placeholder="Your full name"
               required
               disabled={isLoading}
@@ -194,7 +192,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
             <Textarea
               id="bio"
               value={formData.bio}
-              onChange={e => handleInputChange('bio', e.target.value)}
+              onChange={(e) => handleInputChange('bio', e.target.value)}
               placeholder="Tell us about yourself..."
               rows={4}
               maxLength={160}
@@ -216,7 +214,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
               id="location"
               type="text"
               value={formData.location}
-              onChange={e => handleInputChange('location', e.target.value)}
+              onChange={(e) => handleInputChange('location', e.target.value)}
               placeholder="City, Country"
               disabled={isLoading}
               className="text-base"
@@ -225,9 +223,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
           {/* Privacy Settings */}
           <div className="space-y-4 pt-4 border-t border-border">
-            <h3 className="text-lg font-semibold text-foreground">
-              Privacy Settings
-            </h3>
+            <h3 className="text-lg font-semibold text-foreground">Privacy Settings</h3>
 
             <div className="space-y-2">
               <Label className="text-base font-medium">
@@ -236,10 +232,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
               </Label>
               <Select
                 value={profileVisibility}
-                onChange={e =>
-                  setProfileVisibility(
-                    e.target.value as 'everyone' | 'followers' | 'private'
-                  )
+                onChange={(e) =>
+                  setProfileVisibility(e.target.value as 'everyone' | 'followers' | 'private')
                 }
               >
                 <SelectItem value="everyone">Everyone</SelectItem>
@@ -251,19 +245,10 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-6 border-t border-border">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isLoading}
-            >
+            <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="min-w-[100px]"
-            >
+            <Button type="submit" disabled={isLoading} className="min-w-[100px]">
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -277,5 +262,5 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         </form>
       </div>
     </div>
-  );
-};
+  )
+}

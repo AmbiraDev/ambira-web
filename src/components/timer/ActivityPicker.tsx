@@ -1,21 +1,21 @@
-'use client';
+'use client'
 
-import React from 'react';
-import Link from 'next/link';
-import { ChevronDown, Check, Plus } from 'lucide-react';
-import { Activity, ActivityType } from '@/types';
-import { IconRenderer } from '@/components/IconRenderer';
-import { useAuth } from '@/hooks/useAuth';
-import { useAllActivityTypes } from '@/hooks/useActivityTypes';
-import { useRecentActivities } from '@/hooks/useActivityPreferences';
+import React from 'react'
+import Link from 'next/link'
+import { ChevronDown, Check, Plus } from 'lucide-react'
+import { Activity, ActivityType } from '@/types'
+import { IconRenderer } from '@/components/IconRenderer'
+import { useAuth } from '@/hooks/useAuth'
+import { useAllActivityTypes } from '@/hooks/useActivityTypes'
+import { useRecentActivities } from '@/hooks/useActivityPreferences'
 
 interface ActivityPickerProps {
-  selectedActivityId: string;
-  setSelectedActivityId: (id: string) => void;
-  allActivities?: Activity[]; // Legacy support - will be deprecated
-  selectedActivity: Activity | ActivityType | null;
-  showError?: boolean;
-  onErrorClear?: () => void;
+  selectedActivityId: string
+  setSelectedActivityId: (id: string) => void
+  allActivities?: Activity[] // Legacy support - will be deprecated
+  selectedActivity: Activity | ActivityType | null
+  showError?: boolean
+  onErrorClear?: () => void
 }
 
 export function ActivityPicker({
@@ -26,23 +26,21 @@ export function ActivityPicker({
   showError,
   onErrorClear,
 }: ActivityPickerProps) {
-  const [showDropdown, setShowDropdown] = React.useState(false);
-  const { user } = useAuth();
+  const [showDropdown, setShowDropdown] = React.useState(false)
+  const { user } = useAuth()
 
   // Use new hooks if user is available, otherwise fall back to legacy prop
   const { data: allActivitiesFromHook } = useAllActivityTypes(user?.id || '', {
     enabled: !!user?.id,
-  });
-  const { data: recentActivitiesPrefs } = useRecentActivities(
-    user?.id || '',
-    5,
-    { enabled: !!user?.id }
-  );
+  })
+  const { data: recentActivitiesPrefs } = useRecentActivities(user?.id || '', 5, {
+    enabled: !!user?.id,
+  })
 
   // Convert ActivityType[] to Activity[] for compatibility
   const allActivities = React.useMemo(() => {
-    if (legacyActivities) return legacyActivities;
-    if (!allActivitiesFromHook) return [];
+    if (legacyActivities) return legacyActivities
+    if (!allActivitiesFromHook) return []
     return allActivitiesFromHook.map(
       (type): Activity => ({
         id: type.id,
@@ -55,51 +53,49 @@ export function ActivityPicker({
         createdAt: type.createdAt, // Already a Date object
         updatedAt: type.updatedAt, // Already a Date object
       })
-    );
-  }, [legacyActivities, allActivitiesFromHook]);
+    )
+  }, [legacyActivities, allActivitiesFromHook])
 
   // Get recent activity IDs and map to full Activity objects
   const recentActivities = React.useMemo(() => {
-    if (!recentActivitiesPrefs || !allActivities.length) return [];
+    if (!recentActivitiesPrefs || !allActivities.length) return []
 
-    const recentIds = recentActivitiesPrefs.map(pref => pref.typeId);
+    const recentIds = recentActivitiesPrefs.map((pref) => pref.typeId)
     return recentIds
-      .map(id => allActivities.find(a => a.id === id))
-      .filter((a): a is Activity => a !== undefined);
-  }, [recentActivitiesPrefs, allActivities]);
+      .map((id) => allActivities.find((a) => a.id === id))
+      .filter((a): a is Activity => a !== undefined)
+  }, [recentActivitiesPrefs, allActivities])
 
   // Sort all activities to show recent ones first
   const sortedAllActivities = React.useMemo(() => {
-    if (!recentActivitiesPrefs || !allActivities.length) return allActivities;
+    if (!recentActivitiesPrefs || !allActivities.length) return allActivities
 
-    const recentIds = new Set(recentActivitiesPrefs.map(pref => pref.typeId));
-    const recentMap = new Map(
-      recentActivitiesPrefs.map((pref, index) => [pref.typeId, index])
-    );
+    const recentIds = new Set(recentActivitiesPrefs.map((pref) => pref.typeId))
+    const recentMap = new Map(recentActivitiesPrefs.map((pref, index) => [pref.typeId, index]))
 
     return [...allActivities].sort((a, b) => {
-      const aIsRecent = recentIds.has(a.id);
-      const bIsRecent = recentIds.has(b.id);
+      const aIsRecent = recentIds.has(a.id)
+      const bIsRecent = recentIds.has(b.id)
 
       // Both recent - sort by recency order
       if (aIsRecent && bIsRecent) {
-        return (recentMap.get(a.id) ?? 0) - (recentMap.get(b.id) ?? 0);
+        return (recentMap.get(a.id) ?? 0) - (recentMap.get(b.id) ?? 0)
       }
 
       // One recent, one not - recent comes first
-      if (aIsRecent) return -1;
-      if (bIsRecent) return 1;
+      if (aIsRecent) return -1
+      if (bIsRecent) return 1
 
       // Neither recent - maintain original order
-      return 0;
-    });
-  }, [recentActivitiesPrefs, allActivities]);
+      return 0
+    })
+  }, [recentActivitiesPrefs, allActivities])
 
   const handleActivitySelect = (activityId: string) => {
-    setSelectedActivityId(activityId);
-    setShowDropdown(false);
-    onErrorClear?.();
-  };
+    setSelectedActivityId(activityId)
+    setShowDropdown(false)
+    onErrorClear?.()
+  }
 
   return (
     <div className="relative w-full">
@@ -125,19 +121,12 @@ export function ActivityPicker({
               className="w-6 h-6 text-gray-700 flex-shrink-0"
               aria-hidden="true"
             />
-            <span className="flex-1 text-left font-medium">
-              {selectedActivity.name}
-            </span>
+            <span className="flex-1 text-left font-medium">{selectedActivity.name}</span>
           </>
         ) : (
-          <span className="flex-1 text-left text-gray-500">
-            Select an activity
-          </span>
+          <span className="flex-1 text-left text-gray-500">Select an activity</span>
         )}
-        <ChevronDown
-          className="w-5 h-5 text-gray-400 flex-shrink-0"
-          aria-hidden="true"
-        />
+        <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" aria-hidden="true" />
       </button>
 
       {/* Dropdown Menu */}
@@ -176,7 +165,7 @@ export function ActivityPicker({
                       Recent
                     </p>
                     <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-                      {recentActivities.map(activity => (
+                      {recentActivities.map((activity) => (
                         <button
                           key={activity.id}
                           role="option"
@@ -208,10 +197,9 @@ export function ActivityPicker({
                   <p className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                     All Activities
                   </p>
-                  {sortedAllActivities.map(activity => {
+                  {sortedAllActivities.map((activity) => {
                     const isCustom =
-                      allActivitiesFromHook?.find(t => t.id === activity.id)
-                        ?.isSystem === false;
+                      allActivitiesFromHook?.find((t) => t.id === activity.id)?.isSystem === false
 
                     return (
                       <button
@@ -230,9 +218,7 @@ export function ActivityPicker({
                           aria-hidden="true"
                         />
                         <div className="flex-1 text-left min-w-0 flex items-center gap-2">
-                          <span className="text-sm font-medium text-gray-900">
-                            {activity.name}
-                          </span>
+                          <span className="text-sm font-medium text-gray-900">{activity.name}</span>
                           {isCustom && (
                             <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-600">
                               Custom
@@ -246,7 +232,7 @@ export function ActivityPicker({
                           />
                         )}
                       </button>
-                    );
+                    )
                   })}
                 </div>
 
@@ -256,10 +242,7 @@ export function ActivityPicker({
                   className="w-full flex items-center gap-3 px-3 py-3 border-t border-gray-200 hover:bg-gray-50 transition-colors text-gray-700"
                   aria-label="Add custom activity"
                 >
-                  <Plus
-                    className="w-5 h-5 text-gray-600 flex-shrink-0"
-                    aria-hidden="true"
-                  />
+                  <Plus className="w-5 h-5 text-gray-600 flex-shrink-0" aria-hidden="true" />
                   <span className="text-sm">Add custom activity</span>
                 </Link>
               </>
@@ -268,5 +251,5 @@ export function ActivityPicker({
         </>
       )}
     </div>
-  );
+  )
 }

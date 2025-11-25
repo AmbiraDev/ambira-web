@@ -7,22 +7,22 @@
  * - Cache invalidation on group join/leave
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { firebaseApi } from '@/lib/api';
-import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
-import type { Group } from '@/types';
+import { useQuery } from '@tanstack/react-query'
+import { firebaseApi } from '@/lib/api'
+import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient'
+import type { Group } from '@/types'
 
 interface UseUserGroupsOptions {
-  userId?: string;
-  enabled?: boolean;
-  limit?: number;
+  userId?: string
+  enabled?: boolean
+  limit?: number
 }
 
 interface UseUserGroupsReturn {
-  groups: Group[];
-  isLoading: boolean;
-  isError: boolean;
-  error: Error | null;
+  groups: Group[]
+  isLoading: boolean
+  isError: boolean
+  error: Error | null
 }
 
 export function useUserGroups({
@@ -39,20 +39,20 @@ export function useUserGroups({
     ],
     queryFn: () => {
       if (!userId) {
-        return [];
+        return []
       }
-      return firebaseApi.group.getUserGroups(userId, limit);
+      return firebaseApi.group.getUserGroups(userId, limit)
     },
     enabled: enabled && !!userId,
     staleTime: CACHE_TIMES.MEDIUM, // 5 minutes
     gcTime: CACHE_TIMES.LONG, // 15 minutes
     refetchOnWindowFocus: false,
-  });
+  })
 
   return {
     groups: data ?? [],
     isLoading,
     isError,
     error: error as Error | null,
-  };
+  }
 }

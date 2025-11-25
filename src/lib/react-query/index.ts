@@ -7,13 +7,8 @@
  * import { QueryOptions, STANDARD_CACHE_TIMES, createCacheKeyFactory } from '@/lib/react-query';
  */
 
-export * from './types';
-export * from './helpers';
+export * from './types'
+export * from './helpers'
 
 // Re-export commonly used React Query hooks for convenience
-export {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  useInfiniteQuery,
-} from '@tanstack/react-query';
+export { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'

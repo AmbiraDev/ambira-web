@@ -19,17 +19,17 @@ import {
   limit as limitFn,
   Timestamp,
   increment,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { Session } from '@/domain/entities/Session';
-import { SessionMapper } from '../mappers/SessionMapper';
+} from 'firebase/firestore'
+import { db } from '@/lib/firebase'
+import { Session } from '@/domain/entities/Session'
+import { SessionMapper } from '../mappers/SessionMapper'
 
 export class SessionRepository {
-  private readonly mapper: SessionMapper;
-  private readonly collectionName = 'sessions';
+  private readonly mapper: SessionMapper
+  private readonly collectionName = 'sessions'
 
   constructor() {
-    this.mapper = new SessionMapper();
+    this.mapper = new SessionMapper()
   }
 
   /**
@@ -37,18 +37,18 @@ export class SessionRepository {
    */
   async findById(sessionId: string): Promise<Session | null> {
     try {
-      const docRef = doc(db, this.collectionName, sessionId);
-      const docSnap = await getDoc(docRef);
+      const docRef = doc(db, this.collectionName, sessionId)
+      const docSnap = await getDoc(docRef)
 
       if (!docSnap.exists()) {
-        return null;
+        return null
       }
 
-      return this.mapper.toDomain(docSnap);
-    } catch (error) {
+      return this.mapper.toDomain(docSnap)
+    } catch (_error) {
       throw new Error(
         `Failed to find session: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -62,14 +62,14 @@ export class SessionRepository {
         where('userId', '==', userId),
         orderBy('createdAt', 'desc'),
         limitFn(limit)
-      );
+      )
 
-      const snapshot = await getDocs(q);
-      return this.mapper.toDomainListEnriched(snapshot.docs);
-    } catch (error) {
+      const snapshot = await getDocs(q)
+      return this.mapper.toDomainListEnriched(snapshot.docs)
+    } catch (_error) {
       throw new Error(
         `Failed to find sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -77,10 +77,7 @@ export class SessionRepository {
    * Find sessions by project ID (or activity ID - backward compatible)
    * Queries both activityId and projectId fields to support legacy data
    */
-  async findByProjectId(
-    projectId: string,
-    limit: number = 50
-  ): Promise<Session[]> {
+  async findByProjectId(projectId: string, limit: number = 50): Promise<Session[]> {
     try {
       // Query sessions where projectId matches (supports both new activityId and legacy projectId)
       // Since we always write both fields with the same value, querying projectId finds all sessions
@@ -89,14 +86,14 @@ export class SessionRepository {
         where('projectId', '==', projectId),
         orderBy('createdAt', 'desc'),
         limitFn(limit)
-      );
+      )
 
-      const snapshot = await getDocs(q);
-      return this.mapper.toDomainList(snapshot.docs);
-    } catch (error) {
+      const snapshot = await getDocs(q)
+      return this.mapper.toDomainList(snapshot.docs)
+    } catch (_error) {
       throw new Error(
         `Failed to find sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -110,14 +107,14 @@ export class SessionRepository {
         where('groupId', '==', groupId),
         orderBy('createdAt', 'desc'),
         limitFn(limit)
-      );
+      )
 
-      const snapshot = await getDocs(q);
-      return this.mapper.toDomainListEnriched(snapshot.docs);
-    } catch (error) {
+      const snapshot = await getDocs(q)
+      return this.mapper.toDomainListEnriched(snapshot.docs)
+    } catch (_error) {
       throw new Error(
         `Failed to find sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -127,34 +124,34 @@ export class SessionRepository {
   async findByUserIds(
     userIds: string[],
     options?: {
-      groupId?: string;
-      startDate?: Date;
-      endDate?: Date;
-      limit?: number;
+      groupId?: string
+      startDate?: Date
+      endDate?: Date
+      limit?: number
     }
   ): Promise<Session[]> {
     try {
       if (userIds.length === 0) {
-        return [];
+        return []
       }
 
       // Firestore 'in' queries are limited to 10 items
       // If we have more, we need to batch the requests
-      const batchSize = 10;
-      const batches: Promise<Session[]>[] = [];
+      const batchSize = 10
+      const batches: Promise<Session[]>[] = []
 
       for (let i = 0; i < userIds.length; i += batchSize) {
-        const batchUserIds = userIds.slice(i, i + batchSize);
-        const batchPromise = this.fetchSessionBatch(batchUserIds, options);
-        batches.push(batchPromise);
+        const batchUserIds = userIds.slice(i, i + batchSize)
+        const batchPromise = this.fetchSessionBatch(batchUserIds, options)
+        batches.push(batchPromise)
       }
 
-      const results = await Promise.all(batches);
-      return results.flat();
-    } catch (error) {
+      const results = await Promise.all(batches)
+      return results.flat()
+    } catch (_error) {
       throw new Error(
         `Failed to find sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -164,45 +161,36 @@ export class SessionRepository {
   private async fetchSessionBatch(
     userIds: string[],
     options?: {
-      groupId?: string;
-      startDate?: Date;
-      endDate?: Date;
-      limit?: number;
+      groupId?: string
+      startDate?: Date
+      endDate?: Date
+      limit?: number
     }
   ): Promise<Session[]> {
-    let q = query(
-      collection(db, this.collectionName),
-      where('userId', 'in', userIds)
-    );
+    let q = query(collection(db, this.collectionName), where('userId', 'in', userIds))
 
     // Add optional filters
     if (options?.groupId) {
-      q = query(q, where('groupId', '==', options.groupId));
+      q = query(q, where('groupId', '==', options.groupId))
     }
 
     if (options?.startDate) {
-      q = query(
-        q,
-        where('createdAt', '>=', Timestamp.fromDate(options.startDate))
-      );
+      q = query(q, where('createdAt', '>=', Timestamp.fromDate(options.startDate)))
     }
 
     if (options?.endDate) {
-      q = query(
-        q,
-        where('createdAt', '<=', Timestamp.fromDate(options.endDate))
-      );
+      q = query(q, where('createdAt', '<=', Timestamp.fromDate(options.endDate)))
     }
 
     // Add ordering and limit
-    q = query(q, orderBy('createdAt', 'desc'));
+    q = query(q, orderBy('createdAt', 'desc'))
 
     if (options?.limit) {
-      q = query(q, limitFn(options.limit));
+      q = query(q, limitFn(options.limit))
     }
 
-    const snapshot = await getDocs(q);
-    return this.mapper.toDomainList(snapshot.docs);
+    const snapshot = await getDocs(q)
+    return this.mapper.toDomainList(snapshot.docs)
   }
 
   /**
@@ -215,14 +203,14 @@ export class SessionRepository {
         where('visibility', '==', 'everyone'),
         orderBy('createdAt', 'desc'),
         limitFn(limit)
-      );
+      )
 
-      const snapshot = await getDocs(q);
-      return this.mapper.toDomainList(snapshot.docs);
-    } catch (error) {
+      const snapshot = await getDocs(q)
+      return this.mapper.toDomainList(snapshot.docs)
+    } catch (_error) {
       throw new Error(
         `Failed to find public sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -231,14 +219,14 @@ export class SessionRepository {
    */
   async save(session: Session): Promise<void> {
     try {
-      const docRef = doc(db, this.collectionName, session.id);
-      const data = this.mapper.toFirestore(session);
+      const docRef = doc(db, this.collectionName, session.id)
+      const data = this.mapper.toFirestore(session)
 
-      await setDoc(docRef, data, { merge: true });
-    } catch (error) {
+      await setDoc(docRef, data, { merge: true })
+    } catch (_error) {
       throw new Error(
         `Failed to save session: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -247,14 +235,14 @@ export class SessionRepository {
    */
   async updateSupportCount(sessionId: string, delta: number): Promise<void> {
     try {
-      const docRef = doc(db, this.collectionName, sessionId);
+      const docRef = doc(db, this.collectionName, sessionId)
       await updateDoc(docRef, {
         supportCount: increment(delta),
-      });
-    } catch (error) {
+      })
+    } catch (_error) {
       throw new Error(
         `Failed to update support count: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -263,14 +251,14 @@ export class SessionRepository {
    */
   async updateCommentCount(sessionId: string, delta: number): Promise<void> {
     try {
-      const docRef = doc(db, this.collectionName, sessionId);
+      const docRef = doc(db, this.collectionName, sessionId)
       await updateDoc(docRef, {
         commentCount: increment(delta),
-      });
-    } catch (error) {
+      })
+    } catch (_error) {
       throw new Error(
         `Failed to update comment count: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -279,12 +267,12 @@ export class SessionRepository {
    */
   async delete(sessionId: string): Promise<void> {
     try {
-      const docRef = doc(db, this.collectionName, sessionId);
-      await deleteDoc(docRef);
-    } catch (error) {
+      const docRef = doc(db, this.collectionName, sessionId)
+      await deleteDoc(docRef)
+    } catch (_error) {
       throw new Error(
         `Failed to delete session: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -293,11 +281,11 @@ export class SessionRepository {
    */
   async exists(sessionId: string): Promise<boolean> {
     try {
-      const docRef = doc(db, this.collectionName, sessionId);
-      const docSnap = await getDoc(docRef);
-      return docSnap.exists();
-    } catch (error) {
-      return false;
+      const docRef = doc(db, this.collectionName, sessionId)
+      const docSnap = await getDoc(docRef)
+      return docSnap.exists()
+    } catch (_error) {
+      return false
     }
   }
 
@@ -306,10 +294,10 @@ export class SessionRepository {
    */
   async getSessionCount(userId: string): Promise<number> {
     try {
-      const sessions = await this.findByUserId(userId, 1000); // Max limit
-      return sessions.length;
-    } catch (error) {
-      return 0;
+      const sessions = await this.findByUserId(userId, 1000) // Max limit
+      return sessions.length
+    } catch (_error) {
+      return 0
     }
   }
 
@@ -318,14 +306,11 @@ export class SessionRepository {
    */
   async getTotalHours(userId: string): Promise<number> {
     try {
-      const sessions = await this.findByUserId(userId, 1000); // Max limit
-      const totalSeconds = sessions.reduce(
-        (sum, session) => sum + session.duration,
-        0
-      );
-      return totalSeconds / 3600; // Convert to hours
-    } catch (error) {
-      return 0;
+      const sessions = await this.findByUserId(userId, 1000) // Max limit
+      const totalSeconds = sessions.reduce((sum, session) => sum + session.duration, 0)
+      return totalSeconds / 3600 // Convert to hours
+    } catch (_error) {
+      return 0
     }
   }
 }

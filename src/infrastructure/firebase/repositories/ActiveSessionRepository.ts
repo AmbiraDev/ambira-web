@@ -13,16 +13,16 @@ import {
   deleteDoc,
   query,
   limit as limitFn,
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { ActiveSession } from '@/domain/entities/ActiveSession';
-import { ActiveSessionMapper } from '../mappers/ActiveSessionMapper';
+} from 'firebase/firestore'
+import { db } from '@/lib/firebase'
+import { ActiveSession } from '@/domain/entities/ActiveSession'
+import { ActiveSessionMapper } from '../mappers/ActiveSessionMapper'
 
 export class ActiveSessionRepository {
-  private readonly mapper: ActiveSessionMapper;
+  private readonly mapper: ActiveSessionMapper
 
   constructor() {
-    this.mapper = new ActiveSessionMapper();
+    this.mapper = new ActiveSessionMapper()
   }
 
   /**
@@ -31,23 +31,23 @@ export class ActiveSessionRepository {
   async getActiveSession(userId: string): Promise<ActiveSession | null> {
     try {
       // Check subcollection: users/{userId}/activeSession
-      const activeSessionRef = collection(db, `users/${userId}/activeSession`);
-      const q = query(activeSessionRef, limitFn(1));
-      const snapshot = await getDocs(q);
+      const activeSessionRef = collection(db, `users/${userId}/activeSession`)
+      const q = query(activeSessionRef, limitFn(1))
+      const snapshot = await getDocs(q)
 
       if (snapshot.empty) {
-        return null;
+        return null
       }
 
-      const doc = snapshot.docs[0];
+      const doc = snapshot.docs[0]
       if (!doc) {
-        return null;
+        return null
       }
-      return this.mapper.toDomain(doc);
-    } catch (error) {
+      return this.mapper.toDomain(doc)
+    } catch (_error) {
       throw new Error(
         `Failed to get active session: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -56,18 +56,14 @@ export class ActiveSessionRepository {
    */
   async saveActiveSession(session: ActiveSession): Promise<void> {
     try {
-      const docRef = doc(
-        db,
-        `users/${session.userId}/activeSession`,
-        session.id
-      );
-      const data = this.mapper.toFirestore(session);
+      const docRef = doc(db, `users/${session.userId}/activeSession`, session.id)
+      const data = this.mapper.toFirestore(session)
 
-      await setDoc(docRef, data);
-    } catch (error) {
+      await setDoc(docRef, data)
+    } catch (_error) {
       throw new Error(
         `Failed to save active session: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -76,12 +72,12 @@ export class ActiveSessionRepository {
    */
   async deleteActiveSession(userId: string, sessionId: string): Promise<void> {
     try {
-      const docRef = doc(db, `users/${userId}/activeSession`, sessionId);
-      await deleteDoc(docRef);
-    } catch (error) {
+      const docRef = doc(db, `users/${userId}/activeSession`, sessionId)
+      await deleteDoc(docRef)
+    } catch (_error) {
       throw new Error(
         `Failed to delete active session: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -90,16 +86,16 @@ export class ActiveSessionRepository {
    */
   async clearActiveSession(userId: string): Promise<void> {
     try {
-      const activeSessionRef = collection(db, `users/${userId}/activeSession`);
-      const snapshot = await getDocs(activeSessionRef);
+      const activeSessionRef = collection(db, `users/${userId}/activeSession`)
+      const snapshot = await getDocs(activeSessionRef)
 
-      const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+      const deletePromises = snapshot.docs.map((doc) => deleteDoc(doc.ref))
 
-      await Promise.all(deletePromises);
-    } catch (error) {
+      await Promise.all(deletePromises)
+    } catch (_error) {
       throw new Error(
         `Failed to clear active sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      )
     }
   }
 
@@ -108,10 +104,10 @@ export class ActiveSessionRepository {
    */
   async hasActiveSession(userId: string): Promise<boolean> {
     try {
-      const session = await this.getActiveSession(userId);
-      return session !== null;
-    } catch (error) {
-      return false;
+      const session = await this.getActiveSession(userId)
+      return session !== null
+    } catch (_error) {
+      return false
     }
   }
 }

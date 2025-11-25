@@ -2,16 +2,13 @@
 // The config you add here will be used whenever the server handles a request.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
-import * as Sentry from '@sentry/nextjs';
-import {
-  getSentryConfig,
-  logSentryConfigWarnings,
-} from './src/lib/sentry-config';
+import * as Sentry from '@sentry/nextjs'
+import { getSentryConfig, logSentryConfigWarnings } from './src/lib/sentry-config'
 
-const config = getSentryConfig();
+const config = getSentryConfig()
 
 // Log configuration warnings in development
-logSentryConfigWarnings(config);
+logSentryConfigWarnings(config)
 
 // Only initialize Sentry if enabled
 if (config.enabled && config.dsn) {
@@ -43,5 +40,5 @@ if (config.enabled && config.dsn) {
         levels: ['error', 'warn'],
       }),
     ],
-  });
+  })
 }

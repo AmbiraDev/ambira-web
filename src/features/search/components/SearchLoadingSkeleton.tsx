@@ -6,22 +6,16 @@
  */
 
 interface SearchLoadingSkeletonProps {
-  type: 'people' | 'groups';
-  count?: number;
+  type: 'people' | 'groups'
+  count?: number
 }
 
-export function SearchLoadingSkeleton({
-  type,
-  count = 5,
-}: SearchLoadingSkeletonProps) {
+export function SearchLoadingSkeleton({ type, count = 5 }: SearchLoadingSkeletonProps) {
   if (type === 'people') {
     return (
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {Array.from({ length: count }).map((_, i) => (
-          <div
-            key={i}
-            className="p-4 border-b border-gray-100 last:border-0 animate-pulse"
-          >
+          <div key={i} className="p-4 border-b border-gray-100 last:border-0 animate-pulse">
             <div className="flex items-center space-x-4">
               {/* Avatar skeleton */}
               <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0" />
@@ -39,17 +33,14 @@ export function SearchLoadingSkeleton({
           </div>
         ))}
       </div>
-    );
+    )
   }
 
   // Groups skeleton
   return (
     <div className="space-y-1">
       {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          className="bg-white rounded-lg overflow-hidden p-3 animate-pulse"
-        >
+        <div key={i} className="bg-white rounded-lg overflow-hidden p-3 animate-pulse">
           <div className="flex items-center gap-3">
             {/* Group icon skeleton */}
             <div className="w-12 h-12 rounded-lg bg-gray-200 flex-shrink-0" />
@@ -66,7 +57,7 @@ export function SearchLoadingSkeleton({
         </div>
       ))}
     </div>
-  );
+  )
 }
 
 /**
@@ -80,5 +71,5 @@ export function SuggestionsLoadingSkeleton() {
       <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#0066CC]" />
       <p className="text-gray-600 mt-4">Loading suggestions...</p>
     </div>
-  );
+  )
 }

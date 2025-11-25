@@ -5,7 +5,7 @@
  * and Firestore compatibility.
  */
 
-import * as v from 'valibot';
+import * as v from 'valibot'
 
 /**
  * Custom validation error class with structured error information
@@ -14,12 +14,12 @@ export class ValidationError extends Error {
   constructor(
     message: string,
     public readonly issues: Array<{
-      path?: string;
-      message: string;
+      path?: string
+      message: string
     }>
   ) {
-    super(message);
-    this.name = 'ValidationError';
+    super(message)
+    this.name = 'ValidationError'
   }
 }
 
@@ -40,18 +40,18 @@ export class ValidationError extends Error {
 export function validateOrThrow<
   TSchema extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>,
 >(schema: TSchema, data: unknown): v.InferOutput<TSchema> {
-  const result = v.safeParse(schema, data);
+  const result = v.safeParse(schema, data)
 
   if (!result.success) {
-    const issues = result.issues.map(issue => ({
-      path: issue.path?.map(p => String(p.key)).join('.'),
+    const issues = result.issues.map((issue) => ({
+      path: issue.path?.map((p) => String(p.key)).join('.'),
       message: issue.message,
-    }));
+    }))
 
-    throw new ValidationError('Validation failed', issues);
+    throw new ValidationError('Validation failed', issues)
   }
 
-  return result.output;
+  return result.output
 }
 
 /**
@@ -69,32 +69,30 @@ export function validateOrThrow<
  * }
  * ```
  */
-export function validate<
-  TSchema extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>,
->(
+export function validate<TSchema extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>(
   schema: TSchema,
   data: unknown
 ):
   | { success: true; data: v.InferOutput<TSchema> }
   | {
-      success: false;
+      success: false
       errors: Array<{
-        path?: string;
-        message: string;
-      }>;
+        path?: string
+        message: string
+      }>
     } {
-  const result = v.safeParse(schema, data);
+  const result = v.safeParse(schema, data)
 
   if (!result.success) {
-    const errors = result.issues.map(issue => ({
-      path: issue.path?.map(p => String(p.key)).join('.'),
+    const errors = result.issues.map((issue) => ({
+      path: issue.path?.map((p) => String(p.key)).join('.'),
       message: issue.message,
-    }));
+    }))
 
-    return { success: false, errors };
+    return { success: false, errors }
   }
 
-  return { success: true, data: result.output };
+  return { success: true, data: result.output }
 }
 
 /**
@@ -113,25 +111,23 @@ export function validate<
  * // Result: { name: 'John', email: 'john@example.com' }
  * ```
  */
-export function stripUndefined<T extends Record<string, unknown>>(
-  data: T
-): Partial<T> {
-  const result: Record<string, unknown> = {};
+export function stripUndefined<T extends Record<string, unknown>>(data: T): Partial<T> {
+  const result: Record<string, unknown> = {}
 
   for (const [key, value] of Object.entries(data)) {
     if (value === undefined) {
-      continue;
+      continue
     }
 
     // Recursively strip undefined from nested objects
     if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-      result[key] = stripUndefined(value as Record<string, unknown>);
+      result[key] = stripUndefined(value as Record<string, unknown>)
     } else {
-      result[key] = value;
+      result[key] = value
     }
   }
 
-  return result as Partial<T>;
+  return result as Partial<T>
 }
 
 /**
@@ -151,10 +147,8 @@ export function stripUndefined<T extends Record<string, unknown>>(
  * );
  * ```
  */
-export function prepareForFirestore<T extends Record<string, unknown>>(
-  data: T
-): Partial<T> {
-  return stripUndefined(data);
+export function prepareForFirestore<T extends Record<string, unknown>>(data: T): Partial<T> {
+  return stripUndefined(data)
 }
 
 /**
@@ -175,12 +169,12 @@ export function prepareForFirestore<T extends Record<string, unknown>>(
  */
 export function formatValidationError(error: ValidationError): string {
   if (error.issues.length === 1) {
-    return error.issues[0]?.message ?? 'Validation failed';
+    return error.issues[0]?.message ?? 'Validation failed'
   }
 
   return error.issues
-    .map(issue => `${issue.path ? `${issue.path}: ` : ''}${issue.message}`)
-    .join('\n');
+    .map((issue) => `${issue.path ? `${issue.path}: ` : ''}${issue.message}`)
+    .join('\n')
 }
 
 /**
@@ -190,5 +184,5 @@ export function formatValidationError(error: ValidationError): string {
  * @returns True if error is a ValidationError
  */
 export function isValidationError(error: unknown): error is ValidationError {
-  return error instanceof ValidationError;
+  return error instanceof ValidationError
 }

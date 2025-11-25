@@ -15,18 +15,18 @@ This validation library provides:
 ## Quick Start
 
 ```typescript
-import { validateOrThrow, CreateSessionSchema } from '@/lib/validation';
+import { validateOrThrow, CreateSessionSchema } from '@/lib/validation'
 
 // Validate user input
-const sessionData = validateOrThrow(CreateSessionSchema, userInput);
+const sessionData = validateOrThrow(CreateSessionSchema, userInput)
 // sessionData is now type-safe and validated
 
 // Or use non-throwing validation
-const result = validate(CreateSessionSchema, userInput);
+const result = validate(CreateSessionSchema, userInput)
 if (result.success) {
-  console.log(result.data); // Type-safe validated data
+  console.log(result.data) // Type-safe validated data
 } else {
-  console.error(result.errors); // Structured error information
+  console.error(result.errors) // Structured error information
 }
 ```
 
@@ -59,14 +59,14 @@ src/lib/validation/
 Validates data and throws a `ValidationError` if validation fails.
 
 ```typescript
-import { validateOrThrow, CreateSessionSchema } from '@/lib/validation';
+import { validateOrThrow, CreateSessionSchema } from '@/lib/validation'
 
 try {
-  const validated = validateOrThrow(CreateSessionSchema, userInput);
+  const validated = validateOrThrow(CreateSessionSchema, userInput)
   // Use validated data
 } catch (error) {
   if (isValidationError(error)) {
-    console.error(formatValidationError(error));
+    console.error(formatValidationError(error))
   }
 }
 ```
@@ -76,16 +76,16 @@ try {
 Validates data and returns a result object (non-throwing).
 
 ```typescript
-import { validate, CreateSessionSchema } from '@/lib/validation';
+import { validate, CreateSessionSchema } from '@/lib/validation'
 
-const result = validate(CreateSessionSchema, userInput);
+const result = validate(CreateSessionSchema, userInput)
 
 if (result.success) {
   // result.data is type-safe
-  await createSession(result.data);
+  await createSession(result.data)
 } else {
   // result.errors contains structured error information
-  return { errors: result.errors };
+  return { errors: result.errors }
 }
 ```
 
@@ -94,15 +94,15 @@ if (result.success) {
 Removes `undefined` values from objects (Firestore compatibility).
 
 ```typescript
-import { stripUndefined } from '@/lib/validation';
+import { stripUndefined } from '@/lib/validation'
 
 const data = {
   title: 'Session',
   description: undefined,
   tags: ['tag1'],
-};
+}
 
-const cleaned = stripUndefined(data);
+const cleaned = stripUndefined(data)
 // Result: { title: 'Session', tags: ['tag1'] }
 ```
 
@@ -113,8 +113,8 @@ Alias for `stripUndefined` - use in schema transformations.
 ```typescript
 const FirestoreSessionSchema = v.pipe(
   CreateSessionSchema,
-  v.transform(data => prepareForFirestore(data))
-);
+  v.transform((data) => prepareForFirestore(data))
+)
 ```
 
 ## Common Schemas
@@ -133,7 +133,7 @@ import {
   LongTextSchema, // Max 5000 characters
   TagsSchema, // Array of tags (max 20)
   ImageUrlsSchema, // Array of image URLs (max 10)
-} from '@/lib/validation';
+} from '@/lib/validation'
 ```
 
 ## Session Schemas
@@ -145,7 +145,7 @@ Located in `schemas/session.schemas.ts`:
 Validates session creation data:
 
 ```typescript
-import { validateOrThrow, CreateSessionSchema } from '@/lib/validation';
+import { validateOrThrow, CreateSessionSchema } from '@/lib/validation'
 
 const sessionData = validateOrThrow(CreateSessionSchema, {
   activityId: '550e8400-e29b-41d4-a716-446655440000',
@@ -156,7 +156,7 @@ const sessionData = validateOrThrow(CreateSessionSchema, {
   visibility: 'everyone',
   tags: ['coding', 'deep-work'],
   howFelt: 4, // 1-5 rating
-});
+})
 ```
 
 **Required Fields:**
@@ -186,7 +186,7 @@ const updates = validateOrThrow(UpdateSessionSchema, {
   title: 'Updated Title',
   visibility: 'private',
   isArchived: true,
-});
+})
 ```
 
 ### `SessionFormSchema`
@@ -202,7 +202,7 @@ const formData = validateOrThrow(SessionFormSchema, {
   startTime: '2025-01-15T10:00:00Z', // String converted to Date
   tags: 'coding, algorithms', // String split into array
   showStartTime: 'true', // String converted to boolean
-});
+})
 ```
 
 ## User Schemas
@@ -214,14 +214,14 @@ Located in `schemas/user.schemas.ts`:
 Validates user registration:
 
 ```typescript
-import { validateOrThrow, SignupSchema } from '@/lib/validation';
+import { validateOrThrow, SignupSchema } from '@/lib/validation'
 
 const userData = validateOrThrow(SignupSchema, {
   email: 'user@example.com',
   password: 'securePassword123',
   name: 'John Doe',
   username: 'johndoe',
-});
+})
 ```
 
 ### `UpdateProfileSchema`
@@ -237,7 +237,7 @@ const updates = validateOrThrow(UpdateProfileSchema, {
     twitter: '@johnsmith',
     github: 'johnsmith',
   },
-});
+})
 ```
 
 ### `PrivacySettingsSchema`
@@ -251,7 +251,7 @@ const settings = validateOrThrow(PrivacySettingsSchema, {
   projectVisibility: 'private',
   showEmail: false,
   allowFollowRequests: true,
-});
+})
 ```
 
 ## Creating Custom Schemas
@@ -259,17 +259,17 @@ const settings = validateOrThrow(PrivacySettingsSchema, {
 ### Basic Schema
 
 ```typescript
-import * as v from 'valibot';
-import { NonEmptyStringSchema } from '@/lib/validation';
+import * as v from 'valibot'
+import { NonEmptyStringSchema } from '@/lib/validation'
 
 const MySchema = v.object({
   name: NonEmptyStringSchema,
   age: v.pipe(v.number(), v.minValue(0), v.maxValue(120)),
   email: v.optional(EmailSchema),
-});
+})
 
-export type MyInput = v.InferInput<typeof MySchema>;
-export type MyData = v.InferOutput<typeof MySchema>;
+export type MyInput = v.InferInput<typeof MySchema>
+export type MyData = v.InferOutput<typeof MySchema>
 ```
 
 ### Schema with Transformations
@@ -278,11 +278,11 @@ export type MyData = v.InferOutput<typeof MySchema>;
 const TransformSchema = v.object({
   title: v.pipe(
     v.string(),
-    v.transform(str => str.trim()), // Trim whitespace
-    v.transform(str => str.toLowerCase()), // Convert to lowercase
+    v.transform((str) => str.trim()), // Trim whitespace
+    v.transform((str) => str.toLowerCase()), // Convert to lowercase
     v.nonEmpty('Title is required')
   ),
-});
+})
 ```
 
 ### Schema with Custom Validation
@@ -296,12 +296,12 @@ const PasswordSchema = v.pipe(
   v.forward(
     v.partialCheck(
       [['password'], ['confirmPassword']],
-      input => input.password === input.confirmPassword,
+      (input) => input.password === input.confirmPassword,
       'Passwords must match'
     ),
     ['confirmPassword']
   )
-);
+)
 ```
 
 ## Error Handling
@@ -309,16 +309,16 @@ const PasswordSchema = v.pipe(
 ### ValidationError Class
 
 ```typescript
-import { ValidationError, isValidationError } from '@/lib/validation';
+import { ValidationError, isValidationError } from '@/lib/validation'
 
 try {
-  validateOrThrow(schema, data);
+  validateOrThrow(schema, data)
 } catch (error) {
   if (isValidationError(error)) {
     // error.issues contains detailed validation errors
-    error.issues.forEach(issue => {
-      console.log(`${issue.path}: ${issue.message}`);
-    });
+    error.issues.forEach((issue) => {
+      console.log(`${issue.path}: ${issue.message}`)
+    })
   }
 }
 ```
@@ -326,13 +326,13 @@ try {
 ### Formatting Errors for Users
 
 ```typescript
-import { formatValidationError } from '@/lib/validation';
+import { formatValidationError } from '@/lib/validation'
 
 try {
-  validateOrThrow(schema, data);
+  validateOrThrow(schema, data)
 } catch (error) {
   if (isValidationError(error)) {
-    toast.error(formatValidationError(error));
+    toast.error(formatValidationError(error))
   }
 }
 ```
@@ -373,19 +373,19 @@ function SessionForm() {
 
 ```typescript
 // src/features/sessions/services/SessionService.ts
-import { validateOrThrow, CreateSessionSchema } from '@/lib/validation';
+import { validateOrThrow, CreateSessionSchema } from '@/lib/validation'
 
 export async function createSession(input: unknown) {
   // Validate at service boundary
-  const data = validateOrThrow(CreateSessionSchema, input);
+  const data = validateOrThrow(CreateSessionSchema, input)
 
   // Data is now type-safe and validated
   const sessionData = {
     ...data,
     createdAt: serverTimestamp(),
-  };
+  }
 
-  return await sessionRepo.create(sessionData);
+  return await sessionRepo.create(sessionData)
 }
 ```
 
@@ -393,19 +393,19 @@ export async function createSession(input: unknown) {
 
 ```typescript
 // src/app/api/sessions/route.ts
-import { validate, CreateSessionSchema } from '@/lib/validation';
+import { validate, CreateSessionSchema } from '@/lib/validation'
 
 export async function POST(request: Request) {
-  const body = await request.json();
+  const body = await request.json()
 
-  const result = validate(CreateSessionSchema, body);
+  const result = validate(CreateSessionSchema, body)
 
   if (!result.success) {
-    return Response.json({ errors: result.errors }, { status: 400 });
+    return Response.json({ errors: result.errors }, { status: 400 })
   }
 
-  const session = await createSession(result.data);
-  return Response.json(session);
+  const session = await createSession(result.data)
+  return Response.json(session)
 }
 ```
 
@@ -425,7 +425,7 @@ npm test -- src/lib/validation/__tests__/session.schemas.test.ts
 ### Example Test
 
 ```typescript
-import { validate, CreateSessionSchema } from '@/lib/validation';
+import { validate, CreateSessionSchema } from '@/lib/validation'
 
 describe('CreateSessionSchema', () => {
   it('should validate valid session data', () => {
@@ -434,13 +434,13 @@ describe('CreateSessionSchema', () => {
       title: 'Test Session',
       duration: 3600,
       startTime: new Date(),
-    };
+    }
 
-    const result = validate(CreateSessionSchema, input);
+    const result = validate(CreateSessionSchema, input)
 
-    expect(result.success).toBe(true);
-  });
-});
+    expect(result.success).toBe(true)
+  })
+})
 ```
 
 ## Best Practices
@@ -452,13 +452,13 @@ Always validate data at system boundaries (forms, APIs, services):
 ```typescript
 // ✅ Good - Validate at service boundary
 export function createSession(input: unknown) {
-  const data = validateOrThrow(CreateSessionSchema, input);
-  return repo.create(data);
+  const data = validateOrThrow(CreateSessionSchema, input)
+  return repo.create(data)
 }
 
 // ❌ Bad - No validation
 export function createSession(data: CreateSessionData) {
-  return repo.create(data); // Trust user input
+  return repo.create(data) // Trust user input
 }
 ```
 
@@ -468,13 +468,13 @@ Let Valibot generate TypeScript types from schemas:
 
 ```typescript
 // ✅ Good - Single source of truth
-const MySchema = v.object({ name: v.string() });
-type MyData = v.InferOutput<typeof MySchema>;
+const MySchema = v.object({ name: v.string() })
+type MyData = v.InferOutput<typeof MySchema>
 
 // ❌ Bad - Duplicate definitions
-const MySchema = v.object({ name: v.string() });
+const MySchema = v.object({ name: v.string() })
 interface MyData {
-  name: string;
+  name: string
 } // Can drift out of sync
 ```
 
@@ -484,18 +484,18 @@ Build complex schemas from common building blocks:
 
 ```typescript
 // ✅ Good - Reuse common patterns
-import { UuidSchema, NonEmptyStringSchema } from '@/lib/validation';
+import { UuidSchema, NonEmptyStringSchema } from '@/lib/validation'
 
 const MySchema = v.object({
   id: UuidSchema,
   title: NonEmptyStringSchema,
-});
+})
 
 // ❌ Bad - Duplicate validation logic
 const MySchema = v.object({
   id: v.pipe(v.string(), v.uuid()),
   title: v.pipe(v.string(), v.nonEmpty()),
-});
+})
 ```
 
 ### 4. Transform Before Validate
@@ -506,10 +506,10 @@ Clean data before validation when needed:
 const FormSchema = v.object({
   title: v.pipe(
     v.string(),
-    v.transform(str => str.trim()), // Clean first
+    v.transform((str) => str.trim()), // Clean first
     v.nonEmpty('Title is required') // Then validate
   ),
-});
+})
 ```
 
 ## Performance

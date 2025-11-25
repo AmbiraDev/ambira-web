@@ -7,25 +7,25 @@
  * - Proper loading and error states
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { firebaseUserApi } from '@/lib/api';
-import { CACHE_TIMES } from '@/lib/queryClient';
-import type { UserSearchResult } from '@/types';
+import { useQuery } from '@tanstack/react-query'
+import { firebaseUserApi } from '@/lib/api'
+import { CACHE_TIMES } from '@/lib/queryClient'
+import type { UserSearchResult } from '@/types'
 
 interface UseSearchUsersOptions {
-  searchTerm: string;
-  enabled?: boolean;
-  page?: number;
-  limit?: number;
+  searchTerm: string
+  enabled?: boolean
+  page?: number
+  limit?: number
 }
 
 interface UseSearchUsersReturn {
-  users: UserSearchResult[];
-  totalCount: number;
-  hasMore: boolean;
-  isLoading: boolean;
-  isError: boolean;
-  error: Error | null;
+  users: UserSearchResult[]
+  totalCount: number
+  hasMore: boolean
+  isLoading: boolean
+  isError: boolean
+  error: Error | null
 }
 
 export function useSearchUsers({
@@ -34,22 +34,22 @@ export function useSearchUsers({
   page = 1,
   limit = 20,
 }: UseSearchUsersOptions): UseSearchUsersReturn {
-  const trimmedTerm = searchTerm.trim();
+  const trimmedTerm = searchTerm.trim()
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['search', 'users', trimmedTerm, page, limit],
     queryFn: async () => {
       if (!trimmedTerm) {
-        return { users: [], totalCount: 0, hasMore: false };
+        return { users: [], totalCount: 0, hasMore: false }
       }
       // searchUsers only takes searchTerm and limit (not page)
-      return firebaseUserApi.searchUsers(trimmedTerm, limit);
+      return firebaseUserApi.searchUsers(trimmedTerm, limit)
     },
     enabled: enabled && trimmedTerm.length > 0,
     staleTime: CACHE_TIMES.MEDIUM, // 5 minutes
     gcTime: CACHE_TIMES.LONG, // 15 minutes
     refetchOnWindowFocus: false, // Don't refetch on window focus for search results
-  });
+  })
 
   return {
     users: data?.users ?? [],
@@ -58,5 +58,5 @@ export function useSearchUsers({
     isLoading,
     isError,
     error: error as Error | null,
-  };
+  }
 }

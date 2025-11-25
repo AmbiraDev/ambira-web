@@ -5,30 +5,27 @@
  * It has been extracted from the route file to separate concerns.
  */
 
-'use client';
+'use client'
 
-import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
-import MobileHeader from '@/components/MobileHeader';
-import LeftSidebar from '@/components/LeftSidebar';
-import RightSidebar from '@/components/RightSidebar';
-import BottomNavigation from '@/components/BottomNavigation';
-import Footer from '@/components/Footer';
-import Feed from '@/components/Feed';
-import {
-  FeedFilterDropdown,
-  FeedFilterOption,
-} from '@/components/FeedFilterDropdown';
-import { StreakCard } from '@/components/StreakCard';
-import React, { useState, Suspense } from 'react';
+import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
+import MobileHeader from '@/components/MobileHeader'
+import LeftSidebar from '@/components/LeftSidebar'
+import RightSidebar from '@/components/RightSidebar'
+import BottomNavigation from '@/components/BottomNavigation'
+import Footer from '@/components/Footer'
+import Feed from '@/components/Feed'
+import { FeedFilterDropdown, FeedFilterOption } from '@/components/FeedFilterDropdown'
+import { StreakCard } from '@/components/StreakCard'
+import React, { useState, Suspense } from 'react'
 
 export function FeedPageContent() {
-  const { isAuthenticated, isLoading, user } = useAuth();
-  const router = useRouter();
+  const { isAuthenticated, isLoading, user } = useAuth()
+  const router = useRouter()
   const [selectedFilter, setSelectedFilter] = useState<FeedFilterOption>({
     type: 'following',
     label: 'Following',
-  });
+  })
 
   // Show loading spinner while checking authentication
   if (isLoading) {
@@ -39,14 +36,14 @@ export function FeedPageContent() {
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
-    );
+    )
   }
 
   // Show feed for authenticated users
   if (!isAuthenticated) {
     // Redirect to landing page
-    router.push('/about');
-    return null;
+    router.push('/about')
+    return null
   }
 
   return (
@@ -64,27 +61,19 @@ export function FeedPageContent() {
             </div>
 
             {/* Main Feed - Scrollable Container */}
-            <main
-              id="main-feed"
-              role="main"
-              className="flex-1 min-w-0 max-w-[600px] mx-auto"
-            >
+            <main id="main-feed" role="main" className="flex-1 min-w-0 max-w-[600px] mx-auto">
               {/* Filter Dropdown - Desktop only */}
               <div className="hidden md:block px-4 md:px-0 pt-3 pb-2 sticky top-0 z-10 bg-gray-50">
                 <FeedFilterDropdown
                   selectedFilter={selectedFilter}
-                  onFilterChange={filter => setSelectedFilter(filter)}
+                  onFilterChange={(filter) => setSelectedFilter(filter)}
                 />
               </div>
 
               {/* Streak Card - Mobile Only */}
               {user && (
                 <div className="md:hidden px-4 mb-4">
-                  <StreakCard
-                    userId={user.id}
-                    variant="compact"
-                    showProgress={false}
-                  />
+                  <StreakCard userId={user.id} variant="compact" showProgress={false} />
                 </div>
               )}
 
@@ -162,11 +151,7 @@ export function FeedPageContent() {
                 {/* Desktop: Show based on selected filter */}
                 <div className="hidden md:block">
                   {selectedFilter.type === 'all' && (
-                    <Feed
-                      filters={{ type: 'all' }}
-                      key="all-feed"
-                      showEndMessage={true}
-                    />
+                    <Feed filters={{ type: 'all' }} key="all-feed" showEndMessage={true} />
                   )}
 
                   {selectedFilter.type === 'following' && (
@@ -220,17 +205,16 @@ export function FeedPageContent() {
                     />
                   )}
 
-                  {selectedFilter.type === 'group' &&
-                    selectedFilter.groupId && (
-                      <Feed
-                        filters={{
-                          type: 'group',
-                          groupId: selectedFilter.groupId,
-                        }}
-                        key={`group-feed-${selectedFilter.groupId}`}
-                        showEndMessage={true}
-                      />
-                    )}
+                  {selectedFilter.type === 'group' && selectedFilter.groupId && (
+                    <Feed
+                      filters={{
+                        type: 'group',
+                        groupId: selectedFilter.groupId,
+                      }}
+                      key={`group-feed-${selectedFilter.groupId}`}
+                      showEndMessage={true}
+                    />
+                  )}
                 </div>
               </Suspense>
             </main>
@@ -252,5 +236,5 @@ export function FeedPageContent() {
       {/* Bottom Navigation */}
       <BottomNavigation />
     </div>
-  );
+  )
 }

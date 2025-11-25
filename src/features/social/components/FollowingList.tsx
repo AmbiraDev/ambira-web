@@ -4,20 +4,20 @@
  * Displays a list of users that the profile user is following.
  */
 
-'use client';
+'use client'
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useFollowing } from '../hooks/useFollowing';
-import { Users, Loader2 } from 'lucide-react';
+import React from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useFollowing } from '../hooks/useFollowing'
+import { Users, Loader2 } from 'lucide-react'
 
 interface FollowingListProps {
-  userId: string;
+  userId: string
 }
 
 export function FollowingList({ userId }: FollowingListProps) {
-  const { data: following, isLoading, error } = useFollowing(userId);
+  const { data: following, isLoading, error } = useFollowing(userId)
 
   if (isLoading) {
     return (
@@ -25,7 +25,7 @@ export function FollowingList({ userId }: FollowingListProps) {
         <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
         <span className="ml-2 text-gray-600">Loading following...</span>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -34,7 +34,7 @@ export function FollowingList({ userId }: FollowingListProps) {
         <p className="text-red-800 font-medium">Failed to load following</p>
         <p className="text-sm text-red-600 mt-1">Please try again later</p>
       </div>
-    );
+    )
   }
 
   if (!following || following.length === 0) {
@@ -46,13 +46,13 @@ export function FollowingList({ userId }: FollowingListProps) {
           When this user follows others, they'll appear here
         </p>
       </div>
-    );
+    )
   }
 
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
-        {following.map(user => (
+        {following.map((user) => (
           <Link
             key={user.id}
             href={`/profile/${user.username}`}
@@ -77,15 +77,9 @@ export function FollowingList({ userId }: FollowingListProps) {
 
             {/* User Info */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 truncate">
-                {user.name}
-              </h3>
+              <h3 className="font-semibold text-gray-900 truncate">{user.name}</h3>
               <p className="text-sm text-gray-600 truncate">@{user.username}</p>
-              {user.bio && (
-                <p className="text-sm text-gray-500 mt-1 line-clamp-1">
-                  {user.bio}
-                </p>
-              )}
+              {user.bio && <p className="text-sm text-gray-500 mt-1 line-clamp-1">{user.bio}</p>}
             </div>
 
             {/* Arrow indicator */}
@@ -95,16 +89,11 @@ export function FollowingList({ userId }: FollowingListProps) {
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </Link>
         ))}
       </div>
     </div>
-  );
+  )
 }

@@ -48,16 +48,16 @@ Use top-level imports instead of dynamic `require()` calls when possible:
 
 ```typescript
 // Good - proper ES6 import
-import { getDoc } from 'firebase/firestore';
+import { getDoc } from 'firebase/firestore'
 
-jest.mock('firebase/firestore');
+jest.mock('firebase/firestore')
 
-const mockGetDoc = getDoc as jest.Mock;
+const mockGetDoc = getDoc as jest.Mock
 ```
 
 ```typescript
 // Avoid - dynamic require inside test
-const { getDoc } = require('firebase/firestore');
+const { getDoc } = require('firebase/firestore')
 ```
 
 ### Type Safety
@@ -66,10 +66,10 @@ Even though `@typescript-eslint/no-explicit-any` is off, use specific types when
 
 ```typescript
 // Better - specific types
-const mockFetch = jest.fn<Promise<Response>, [string]>();
+const mockFetch = jest.fn<Promise<Response>, [string]>()
 
 // Acceptable in tests
-const mockData: any = createMockData();
+const mockData: any = createMockData()
 ```
 
 ### Unused Variables
@@ -78,7 +78,7 @@ While unused variable warnings are suppressed, clean up obvious unused imports:
 
 ```typescript
 // Remove unused imports
-import { render, screen } from '@testing-library/react'; // ✅ Remove if screen isn't used
+import { render, screen } from '@testing-library/react' // ✅ Remove if screen isn't used
 ```
 
 ### Mock Patterns
@@ -89,16 +89,16 @@ Use `jest.mock()` with proper TypeScript typing:
 
 ```typescript
 // Mock the module
-jest.mock('@/hooks/useAuth');
+jest.mock('@/hooks/useAuth')
 
 // Import and type the mocked function
-import { useAuth } from '@/hooks/useAuth';
-const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+import { useAuth } from '@/hooks/useAuth'
+const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>
 
 // Use in tests
 mockUseAuth.mockReturnValue({
   isAuthenticated: true,
-});
+})
 ```
 
 #### Firebase Firestore Mocks

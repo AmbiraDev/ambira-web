@@ -1,17 +1,17 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import Header from '@/components/HeaderComponent';
-import MobileHeader from '@/components/MobileHeader';
-import BottomNavigation from '@/components/BottomNavigation';
-import { ImageUpload } from '@/components/ImageUpload';
-import { CreateGroupData } from '@/types';
-import { firebaseApi } from '@/lib/api';
-import { uploadImage } from '@/lib/imageUpload';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
+import Header from '@/components/HeaderComponent'
+import MobileHeader from '@/components/MobileHeader'
+import BottomNavigation from '@/components/BottomNavigation'
+import { ImageUpload } from '@/components/ImageUpload'
+import { CreateGroupData } from '@/types'
+import { firebaseApi } from '@/lib/api'
+import { uploadImage } from '@/lib/imageUpload'
+import { ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 
 const categoryOptions = [
   { value: 'work', label: 'Work' },
@@ -19,20 +19,20 @@ const categoryOptions = [
   { value: 'side-project', label: 'Side Project' },
   { value: 'learning', label: 'Learning' },
   { value: 'other', label: 'Other' },
-];
+]
 
 const typeOptions = [
   { value: 'just-for-fun', label: 'Just for Fun' },
   { value: 'professional', label: 'Professional' },
   { value: 'competitive', label: 'Competitive' },
   { value: 'other', label: 'Other' },
-];
+]
 
 export default function CreateGroupPage() {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter()
+  const { user } = useAuth()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const [formData, setFormData] = useState<CreateGroupData>({
     name: '',
@@ -41,81 +41,79 @@ export default function CreateGroupPage() {
     category: 'work',
     type: 'just-for-fun',
     privacySetting: 'public', // Always public
-  });
+  })
 
   // Image upload state
-  const [groupImages, setGroupImages] = useState<File[]>([]);
-  const [groupImagePreviews, setGroupImagePreviews] = useState<string[]>([]);
+  const [groupImages, setGroupImages] = useState<File[]>([])
+  const [groupImagePreviews, setGroupImagePreviews] = useState<string[]>([])
 
   const handleChange = (field: keyof CreateGroupData, value: string) => {
     // For description, limit to 4 lines (3 newlines)
     if (field === 'description') {
-      const newlineCount = (value.match(/\n/g) || []).length;
+      const newlineCount = (value.match(/\n/g) || []).length
       if (newlineCount > 3) {
-        return; // Don't update if more than 3 newlines
+        return // Don't update if more than 3 newlines
       }
     }
-    setFormData(prev => ({ ...prev, [field]: value }));
-    setError(null); // Clear error when user makes changes
-  };
+    setFormData((prev) => ({ ...prev, [field]: value }))
+    setError(null) // Clear error when user makes changes
+  }
 
   const validateForm = (): string | null => {
     if (!formData.name.trim()) {
-      return 'Group name is required';
+      return 'Group name is required'
     }
     if (formData.name.length < 3) {
-      return 'Group name must be at least 3 characters';
+      return 'Group name must be at least 3 characters'
     }
     if (formData.name.length > 60) {
-      return 'Group name must be less than 60 characters';
+      return 'Group name must be less than 60 characters'
     }
     if (!formData.description.trim()) {
-      return 'Description is required';
+      return 'Description is required'
     }
     if (formData.description.length < 10) {
-      return 'Description must be at least 10 characters';
+      return 'Description must be at least 10 characters'
     }
     if (formData.description.length > 200) {
-      return 'Description must be less than 200 characters';
+      return 'Description must be less than 200 characters'
     }
-    return null;
-  };
+    return null
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!user) {
-      setError('You must be logged in to create a group');
-      return;
+      setError('You must be logged in to create a group')
+      return
     }
 
-    const validationError = validateForm();
+    const validationError = validateForm()
     if (validationError) {
-      setError(validationError);
-      return;
+      setError(validationError)
+      return
     }
 
     try {
-      setIsSubmitting(true);
-      setError(null);
+      setIsSubmitting(true)
+      setError(null)
 
       // Upload group image if provided
-      let imageUrl: string | undefined;
+      let imageUrl: string | undefined
       if (groupImages.length > 0) {
         try {
-          const imageFile = groupImages[0];
+          const imageFile = groupImages[0]
           if (imageFile !== undefined) {
-            const result = await uploadImage(imageFile, 'group-images');
-            imageUrl = result.url;
+            const result = await uploadImage(imageFile, 'group-images')
+            imageUrl = result.url
           }
         } catch (uploadError) {
           setError(
-            uploadError instanceof Error
-              ? uploadError.message
-              : 'Failed to upload group image'
-          );
-          setIsSubmitting(false);
-          return;
+            uploadError instanceof Error ? uploadError.message : 'Failed to upload group image'
+          )
+          setIsSubmitting(false)
+          return
         }
       }
 
@@ -123,38 +121,29 @@ export default function CreateGroupPage() {
       const groupDataWithImage: CreateGroupData = {
         ...formData,
         imageUrl,
-      };
+      }
 
-      const newGroup = await firebaseApi.group.createGroup(
-        groupDataWithImage,
-        user.id
-      );
+      const newGroup = await firebaseApi.group.createGroup(groupDataWithImage, user.id)
 
       // Navigate to the new group page
-      router.push(`/groups/${newGroup.id}`);
+      router.push(`/groups/${newGroup.id}`)
     } catch (_error) {
       setError(
-        _error instanceof Error
-          ? _error.message
-          : 'Failed to create group. Please try again.'
-      );
-      setIsSubmitting(false);
+        _error instanceof Error ? _error.message : 'Failed to create group. Please try again.'
+      )
+      setIsSubmitting(false)
     }
-  };
+  }
 
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Please log in
-          </h1>
-          <p className="text-gray-600">
-            You need to be logged in to create a group.
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Please log in</h1>
+          <p className="text-gray-600">You need to be logged in to create a group.</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -176,12 +165,9 @@ export default function CreateGroupPage() {
 
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Create Group
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Group</h1>
           <p className="text-sm text-gray-600">
-            Fields marked with <span className="text-red-500">*</span> are
-            required
+            Fields marked with <span className="text-red-500">*</span> are required
           </p>
         </div>
 
@@ -196,17 +182,15 @@ export default function CreateGroupPage() {
         <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
           {/* Group Picture */}
           <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Group Picture
-            </label>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">Group Picture</label>
             <ImageUpload
               singleImage={true}
               maxSizeMB={5}
               images={groupImages}
               previewUrls={groupImagePreviews}
               onImagesChange={(images, previews) => {
-                setGroupImages(images);
-                setGroupImagePreviews(previews);
+                setGroupImages(images)
+                setGroupImagePreviews(previews)
               }}
               placeholder="Upload group picture"
               disabled={isSubmitting}
@@ -218,17 +202,14 @@ export default function CreateGroupPage() {
 
           {/* Group Name */}
           <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-semibold text-gray-900 mb-2"
-            >
+            <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
               Group Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               id="name"
               value={formData.name}
-              onChange={e => handleChange('name', e.target.value)}
+              onChange={(e) => handleChange('name', e.target.value)}
               placeholder="e.g., Morning Productivity Club"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white transition-colors"
               maxLength={60}
@@ -238,17 +219,14 @@ export default function CreateGroupPage() {
 
           {/* Location */}
           <div>
-            <label
-              htmlFor="location"
-              className="block text-sm font-semibold text-gray-900 mb-2"
-            >
+            <label htmlFor="location" className="block text-sm font-semibold text-gray-900 mb-2">
               Location
             </label>
             <input
               type="text"
               id="location"
               value={formData.location || ''}
-              onChange={e => handleChange('location', e.target.value)}
+              onChange={(e) => handleChange('location', e.target.value)}
               placeholder="e.g., San Francisco, CA"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white transition-colors"
               disabled={isSubmitting}
@@ -257,20 +235,17 @@ export default function CreateGroupPage() {
 
           {/* Category */}
           <div>
-            <label
-              htmlFor="category"
-              className="block text-sm font-semibold text-gray-900 mb-2"
-            >
+            <label htmlFor="category" className="block text-sm font-semibold text-gray-900 mb-2">
               Category
             </label>
             <select
               id="category"
               value={formData.category}
-              onChange={e => handleChange('category', e.target.value)}
+              onChange={(e) => handleChange('category', e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white transition-colors"
               disabled={isSubmitting}
             >
-              {categoryOptions.map(option => (
+              {categoryOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -280,20 +255,17 @@ export default function CreateGroupPage() {
 
           {/* Group Type */}
           <div>
-            <label
-              htmlFor="type"
-              className="block text-sm font-semibold text-gray-900 mb-2"
-            >
+            <label htmlFor="type" className="block text-sm font-semibold text-gray-900 mb-2">
               Group Type
             </label>
             <select
               id="type"
               value={formData.type}
-              onChange={e => handleChange('type', e.target.value)}
+              onChange={(e) => handleChange('type', e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white transition-colors"
               disabled={isSubmitting}
             >
-              {typeOptions.map(option => (
+              {typeOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -303,16 +275,13 @@ export default function CreateGroupPage() {
 
           {/* Description */}
           <div>
-            <label
-              htmlFor="description"
-              className="block text-sm font-semibold text-gray-900 mb-2"
-            >
+            <label htmlFor="description" className="block text-sm font-semibold text-gray-900 mb-2">
               Description <span className="text-red-500">*</span>
             </label>
             <textarea
               id="description"
               value={formData.description}
-              onChange={e => handleChange('description', e.target.value)}
+              onChange={(e) => handleChange('description', e.target.value)}
               placeholder="Tell people what your group is about..."
               rows={4}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white transition-colors resize-none"
@@ -347,5 +316,5 @@ export default function CreateGroupPage() {
 
       <BottomNavigation />
     </div>
-  );
+  )
 }

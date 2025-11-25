@@ -1,6 +1,6 @@
-import { Page } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
-import type { AxeResults, NodeResult, Result } from 'axe-core';
+import { Page } from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
+import type { AxeResults, NodeResult, Result } from 'axe-core'
 
 /**
  * Run accessibility scan on the current page
@@ -11,26 +11,26 @@ import type { AxeResults, NodeResult, Result } from 'axe-core';
 export async function runAccessibilityScan(
   page: Page,
   options?: {
-    exclude?: string[];
-    disableRules?: string[];
+    exclude?: string[]
+    disableRules?: string[]
   }
 ): Promise<AxeResults> {
-  const builder = new AxeBuilder({ page });
+  const builder = new AxeBuilder({ page })
 
   // Exclude specific selectors if provided
   if (options?.exclude) {
-    options.exclude.forEach(selector => {
-      builder.exclude(selector);
-    });
+    options.exclude.forEach((selector) => {
+      builder.exclude(selector)
+    })
   }
 
   // Disable specific rules if provided
   if (options?.disableRules) {
-    builder.disableRules(options.disableRules);
+    builder.disableRules(options.disableRules)
   }
 
   // Run the accessibility scan
-  return builder.analyze();
+  return builder.analyze()
 }
 
 /**
@@ -38,25 +38,21 @@ export async function runAccessibilityScan(
  * @param violations - Array of axe violations
  * @returns Formatted string with violation details
  */
-export function formatA11yViolations(
-  violations: AxeResults['violations']
-): string {
+export function formatA11yViolations(violations: AxeResults['violations']): string {
   if (violations.length === 0) {
-    return 'No accessibility violations found';
+    return 'No accessibility violations found'
   }
 
   return violations
     .map((violation: Result) => {
-      const impactLabel = violation.impact
-        ? violation.impact.toUpperCase()
-        : 'UNKNOWN';
+      const impactLabel = violation.impact ? violation.impact.toUpperCase() : 'UNKNOWN'
       const nodes = violation.nodes
         .map((node: NodeResult) => {
-          const target = node.target.join(', ');
-          const html = node.html.substring(0, 100);
-          return `    Target: ${target}\n    HTML: ${html}${node.html.length > 100 ? '...' : ''}`;
+          const target = node.target.join(', ')
+          const html = node.html.substring(0, 100)
+          return `    Target: ${target}\n    HTML: ${html}${node.html.length > 100 ? '...' : ''}`
         })
-        .join('\n\n');
+        .join('\n\n')
 
       return `
 [${impactLabel}] ${violation.id}: ${violation.help}
@@ -65,9 +61,9 @@ export function formatA11yViolations(
   Affected elements (${violation.nodes.length}):
 ${nodes}
   Learn more: ${violation.helpUrl}
-`;
+`
     })
-    .join('\n' + '='.repeat(80) + '\n');
+    .join('\n' + '='.repeat(80) + '\n')
 }
 
 /**
@@ -80,25 +76,23 @@ export async function checkBasicAccessibility(page: Page) {
     hasMainLandmark: false,
     hasHeadings: false,
     hasSkipLink: false,
-  };
+  }
 
   // Check for page title
-  const title = await page.title();
-  checks.hasTitle = title.length > 0;
+  const title = await page.title()
+  checks.hasTitle = title.length > 0
 
   // Check for main landmark
-  const mainLandmark = await page.locator('main, [role="main"]').count();
-  checks.hasMainLandmark = mainLandmark > 0;
+  const mainLandmark = await page.locator('main, [role="main"]').count()
+  checks.hasMainLandmark = mainLandmark > 0
 
   // Check for heading structure
-  const headings = await page.locator('h1, h2, h3, h4, h5, h6').count();
-  checks.hasHeadings = headings > 0;
+  const headings = await page.locator('h1, h2, h3, h4, h5, h6').count()
+  checks.hasHeadings = headings > 0
 
   // Check for skip link
-  const skipLink = await page
-    .locator('a[href="#main"], a[href="#content"]')
-    .count();
-  checks.hasSkipLink = skipLink > 0;
+  const skipLink = await page.locator('a[href="#main"], a[href="#content"]').count()
+  checks.hasSkipLink = skipLink > 0
 
-  return checks;
+  return checks
 }

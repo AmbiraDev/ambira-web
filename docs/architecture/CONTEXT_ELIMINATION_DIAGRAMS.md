@@ -639,12 +639,12 @@ export const AUTH_KEYS = {
   all: () => ['auth'] as const,
   session: () => [...AUTH_KEYS.all(), 'session'] as const,
   user: (userId: string) => [...AUTH_KEYS.all(), 'user', userId] as const,
-};
+}
 
 // Usage
-queryClient.invalidateQueries({ queryKey: AUTH_KEYS.all() });
-queryClient.invalidateQueries({ queryKey: AUTH_KEYS.session() });
-queryClient.setQueryData(AUTH_KEYS.session(), newUser);
+queryClient.invalidateQueries({ queryKey: AUTH_KEYS.all() })
+queryClient.invalidateQueries({ queryKey: AUTH_KEYS.session() })
+queryClient.setQueryData(AUTH_KEYS.session(), newUser)
 ```
 
 ---

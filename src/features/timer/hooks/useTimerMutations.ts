@@ -4,25 +4,17 @@
  * All write operations for timer (start, pause, resume, complete, cancel).
  */
 
-import {
-  useMutation,
-  useQueryClient,
-  UseMutationOptions,
-} from '@tanstack/react-query';
-import {
-  TimerService,
-  StartTimerData,
-  CompleteTimerData,
-} from '../services/TimerService';
-import { ActiveSession } from '@/domain/entities/ActiveSession';
-import { Session } from '@/domain/entities/Session';
+import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query'
+import { TimerService, StartTimerData, CompleteTimerData } from '../services/TimerService'
+import { ActiveSession } from '@/domain/entities/ActiveSession'
+import { Session } from '@/domain/entities/Session'
 
-const timerService = new TimerService();
+const timerService = new TimerService()
 
 // Query keys for timer-related queries
 export const TIMER_KEYS = {
   active: (userId: string) => ['timer', 'active', userId] as const,
-};
+}
 
 /**
  * Start a new timer
@@ -39,21 +31,18 @@ export const TIMER_KEYS = {
 export function useStartTimer(
   options?: Partial<UseMutationOptions<ActiveSession, Error, StartTimerData>>
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation<ActiveSession, Error, StartTimerData>({
-    mutationFn: data => timerService.startTimer(data),
+    mutationFn: (data) => timerService.startTimer(data),
 
     onSuccess: (activeSession, variables) => {
       // Update cache with new active session
-      queryClient.setQueryData(
-        TIMER_KEYS.active(variables.userId),
-        activeSession
-      );
+      queryClient.setQueryData(TIMER_KEYS.active(variables.userId), activeSession)
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -65,64 +54,47 @@ export function useStartTimer(
  */
 export function usePauseTimer(
   options?: Partial<
-    UseMutationOptions<
-      ActiveSession,
-      Error,
-      string,
-      { previousSession: ActiveSession | undefined }
-    >
+    UseMutationOptions<ActiveSession, Error, string, { previousSession: ActiveSession | undefined }>
   >
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
-  return useMutation<
-    ActiveSession,
-    Error,
-    string,
-    { previousSession: ActiveSession | undefined }
-  >({
-    mutationFn: userId => timerService.pauseTimer(userId),
+  return useMutation<ActiveSession, Error, string, { previousSession: ActiveSession | undefined }>({
+    mutationFn: (userId) => timerService.pauseTimer(userId),
 
-    onMutate: async (
-      userId
-    ): Promise<{ previousSession: ActiveSession | undefined }> => {
+    onMutate: async (userId): Promise<{ previousSession: ActiveSession | undefined }> => {
       // Cancel outgoing queries
-      await queryClient.cancelQueries({ queryKey: TIMER_KEYS.active(userId) });
+      await queryClient.cancelQueries({ queryKey: TIMER_KEYS.active(userId) })
 
       // Snapshot
-      const previousSession = queryClient.getQueryData<ActiveSession>(
-        TIMER_KEYS.active(userId)
-      );
+      const previousSession = queryClient.getQueryData<ActiveSession>(TIMER_KEYS.active(userId))
 
       // Optimistically update
       queryClient.setQueryData(TIMER_KEYS.active(userId), (old: unknown) => {
-        if (!old) return old;
+        if (!old) return old
         return {
           ...(old as Record<string, unknown>),
           status: 'paused',
-        };
-      });
+        }
+      })
 
-      return { previousSession };
+      return { previousSession }
     },
 
     onError: (error, userId, context) => {
       // Rollback
       if (context?.previousSession) {
-        queryClient.setQueryData(
-          TIMER_KEYS.active(userId),
-          context.previousSession
-        );
+        queryClient.setQueryData(TIMER_KEYS.active(userId), context.previousSession)
       }
     },
 
     onSuccess: (pausedSession, userId) => {
       // Update with actual paused session
-      queryClient.setQueryData(TIMER_KEYS.active(userId), pausedSession);
+      queryClient.setQueryData(TIMER_KEYS.active(userId), pausedSession)
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -134,59 +106,42 @@ export function usePauseTimer(
  */
 export function useResumeTimer(
   options?: Partial<
-    UseMutationOptions<
-      ActiveSession,
-      Error,
-      string,
-      { previousSession: ActiveSession | undefined }
-    >
+    UseMutationOptions<ActiveSession, Error, string, { previousSession: ActiveSession | undefined }>
   >
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
-  return useMutation<
-    ActiveSession,
-    Error,
-    string,
-    { previousSession: ActiveSession | undefined }
-  >({
-    mutationFn: userId => timerService.resumeTimer(userId),
+  return useMutation<ActiveSession, Error, string, { previousSession: ActiveSession | undefined }>({
+    mutationFn: (userId) => timerService.resumeTimer(userId),
 
-    onMutate: async (
-      userId
-    ): Promise<{ previousSession: ActiveSession | undefined }> => {
-      await queryClient.cancelQueries({ queryKey: TIMER_KEYS.active(userId) });
+    onMutate: async (userId): Promise<{ previousSession: ActiveSession | undefined }> => {
+      await queryClient.cancelQueries({ queryKey: TIMER_KEYS.active(userId) })
 
-      const previousSession = queryClient.getQueryData<ActiveSession>(
-        TIMER_KEYS.active(userId)
-      );
+      const previousSession = queryClient.getQueryData<ActiveSession>(TIMER_KEYS.active(userId))
 
       queryClient.setQueryData(TIMER_KEYS.active(userId), (old: unknown) => {
-        if (!old) return old;
+        if (!old) return old
         return {
           ...(old as Record<string, unknown>),
           status: 'running',
-        };
-      });
+        }
+      })
 
-      return { previousSession };
+      return { previousSession }
     },
 
     onError: (error, userId, context) => {
       if (context?.previousSession) {
-        queryClient.setQueryData(
-          TIMER_KEYS.active(userId),
-          context.previousSession
-        );
+        queryClient.setQueryData(TIMER_KEYS.active(userId), context.previousSession)
       }
     },
 
     onSuccess: (resumedSession, userId) => {
-      queryClient.setQueryData(TIMER_KEYS.active(userId), resumedSession);
+      queryClient.setQueryData(TIMER_KEYS.active(userId), resumedSession)
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -204,26 +159,16 @@ export function useResumeTimer(
  * });
  */
 export function useCompleteTimer(
-  options?: Partial<
-    UseMutationOptions<
-      Session,
-      Error,
-      { userId: string; data: CompleteTimerData }
-    >
-  >
+  options?: Partial<UseMutationOptions<Session, Error, { userId: string; data: CompleteTimerData }>>
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
-  return useMutation<
-    Session,
-    Error,
-    { userId: string; data: CompleteTimerData }
-  >({
+  return useMutation<Session, Error, { userId: string; data: CompleteTimerData }>({
     mutationFn: ({ userId, data }) => timerService.completeTimer(userId, data),
 
     onSuccess: async (session, { userId }) => {
       // Clear active session
-      queryClient.setQueryData(TIMER_KEYS.active(userId), null);
+      queryClient.setQueryData(TIMER_KEYS.active(userId), null)
 
       // Force immediate refetch of feed queries to show new session at top
       // This creates an Instagram-like experience where posts appear immediately
@@ -231,15 +176,15 @@ export function useCompleteTimer(
       await queryClient.invalidateQueries({
         queryKey: ['feed'],
         refetchType: 'active', // Only refetch queries that are currently being observed
-      });
+      })
 
       // Invalidate other related data (these will refetch when needed)
-      queryClient.invalidateQueries({ queryKey: ['profile'] }); // Invalidate all profile-related queries
-      queryClient.invalidateQueries({ queryKey: ['sessions'] }); // Invalidate session queries
+      queryClient.invalidateQueries({ queryKey: ['profile'] }) // Invalidate all profile-related queries
+      queryClient.invalidateQueries({ queryKey: ['sessions'] }) // Invalidate session queries
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -249,21 +194,19 @@ export function useCompleteTimer(
  * const cancelMutation = useCancelTimer();
  * cancelMutation.mutate(userId);
  */
-export function useCancelTimer(
-  options?: Partial<UseMutationOptions<void, Error, string>>
-) {
-  const queryClient = useQueryClient();
+export function useCancelTimer(options?: Partial<UseMutationOptions<void, Error, string>>) {
+  const queryClient = useQueryClient()
 
   return useMutation<void, Error, string>({
-    mutationFn: userId => timerService.cancelTimer(userId),
+    mutationFn: (userId) => timerService.cancelTimer(userId),
 
     onSuccess: (_, userId) => {
       // Clear active session
-      queryClient.setQueryData(TIMER_KEYS.active(userId), null);
+      queryClient.setQueryData(TIMER_KEYS.active(userId), null)
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -275,30 +218,21 @@ export function useCancelTimer(
  */
 export function useAdjustStartTime(
   options?: Partial<
-    UseMutationOptions<
-      ActiveSession,
-      Error,
-      { userId: string; newStartTime: Date }
-    >
+    UseMutationOptions<ActiveSession, Error, { userId: string; newStartTime: Date }>
   >
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
-  return useMutation<
-    ActiveSession,
-    Error,
-    { userId: string; newStartTime: Date }
-  >({
-    mutationFn: ({ userId, newStartTime }) =>
-      timerService.adjustStartTime(userId, newStartTime),
+  return useMutation<ActiveSession, Error, { userId: string; newStartTime: Date }>({
+    mutationFn: ({ userId, newStartTime }) => timerService.adjustStartTime(userId, newStartTime),
 
     onSuccess: (adjustedSession, { userId }) => {
       // Update cache with adjusted session
-      queryClient.setQueryData(TIMER_KEYS.active(userId), adjustedSession);
+      queryClient.setQueryData(TIMER_KEYS.active(userId), adjustedSession)
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -309,9 +243,9 @@ export function useAdjustStartTime(
  * invalidateTimer(userId);
  */
 export function useInvalidateTimer() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return (userId: string) => {
-    queryClient.invalidateQueries({ queryKey: TIMER_KEYS.active(userId) });
-  };
+    queryClient.invalidateQueries({ queryKey: TIMER_KEYS.active(userId) })
+  }
 }

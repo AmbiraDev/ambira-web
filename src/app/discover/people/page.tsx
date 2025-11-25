@@ -1,51 +1,51 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Header from '@/components/HeaderComponent';
-import MobileHeader from '@/components/MobileHeader';
-import BottomNavigation from '@/components/BottomNavigation';
-import { firebaseUserApi } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
-import { UserCardCompact } from '@/components/UserCard';
-import { ArrowLeft, Users as UsersIcon } from 'lucide-react';
-import type { SuggestedUser } from '@/types';
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import Header from '@/components/HeaderComponent'
+import MobileHeader from '@/components/MobileHeader'
+import BottomNavigation from '@/components/BottomNavigation'
+import { firebaseUserApi } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
+import { UserCardCompact } from '@/components/UserCard'
+import { ArrowLeft, Users as UsersIcon } from 'lucide-react'
+import type { SuggestedUser } from '@/types'
 
 export default function DiscoverPeoplePage() {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter()
+  const { user } = useAuth()
+  const [suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const loadUsers = async () => {
       if (!user) {
-        setIsLoading(false);
-        return;
+        setIsLoading(false)
+        return
       }
 
       try {
-        setIsLoading(true);
+        setIsLoading(true)
 
         // Load suggested users (filters by profileVisibility and excludes following)
         // Limit to 5 to avoid revealing total user count
-        const suggestions = await firebaseUserApi.getSuggestedUsers(5);
+        const suggestions = await firebaseUserApi.getSuggestedUsers(5)
 
-        setSuggestedUsers(suggestions);
-      } catch (error: unknown) {
-        setSuggestedUsers([]);
+        setSuggestedUsers(suggestions)
+      } catch (_error: unknown) {
+        setSuggestedUsers([])
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    loadUsers();
-  }, [user]);
+    loadUsers()
+  }, [user])
 
   const handleFollowChange = (userId: string, isFollowing: boolean) => {
     // Update user data
-    setSuggestedUsers(prev =>
-      prev.map(u =>
+    setSuggestedUsers((prev) =>
+      prev.map((u) =>
         u.id === userId
           ? {
               ...u,
@@ -56,13 +56,13 @@ export default function DiscoverPeoplePage() {
             }
           : u
       )
-    );
+    )
 
     // Remove from suggestions after following
     if (isFollowing) {
-      setSuggestedUsers(prev => prev.filter(u => u.id !== userId));
+      setSuggestedUsers((prev) => prev.filter((u) => u.id !== userId))
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -86,12 +86,8 @@ export default function DiscoverPeoplePage() {
             </button>
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Discover People
-            </h1>
-            <p className="text-gray-600">
-              Here are some people you might want to follow
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Discover People</h1>
+            <p className="text-gray-600">Here are some people you might want to follow</p>
           </div>
         </div>
 
@@ -106,12 +102,9 @@ export default function DiscoverPeoplePage() {
             <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <UsersIcon className="w-10 h-10 text-[#0066CC]" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
-              No suggestions yet
-            </h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No suggestions yet</h3>
             <p className="text-gray-600 max-w-md mx-auto">
-              We'll show you people to connect with as the community grows.
-              Check back later!
+              We'll show you people to connect with as the community grows. Check back later!
             </p>
           </div>
         ) : (
@@ -125,7 +118,7 @@ export default function DiscoverPeoplePage() {
 
             {/* People List */}
             <div className="divide-y divide-gray-200">
-              {suggestedUsers.map(suggestedUser => (
+              {suggestedUsers.map((suggestedUser) => (
                 <div key={suggestedUser.id}>
                   <UserCardCompact
                     user={suggestedUser}
@@ -144,5 +137,5 @@ export default function DiscoverPeoplePage() {
 
       <BottomNavigation />
     </div>
-  );
+  )
 }

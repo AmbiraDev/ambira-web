@@ -1,24 +1,21 @@
-'use client';
+'use client'
 
-import React, { useEffect, useState } from 'react';
-import { Trophy, Lock } from 'lucide-react';
-import { firebaseApi } from '@/lib/api';
-import { Achievement, AchievementProgress } from '@/types';
-import { AchievementCard } from './AchievementCard';
+import React, { useEffect, useState } from 'react'
+import { Trophy, Lock } from 'lucide-react'
+import { firebaseApi } from '@/lib/api'
+import { Achievement, AchievementProgress } from '@/types'
+import { AchievementCard } from './AchievementCard'
 
 interface TrophyCaseProps {
-  userId: string;
-  onShareAchievement?: (achievementId: string) => void;
+  userId: string
+  onShareAchievement?: (achievementId: string) => void
 }
 
-export const TrophyCase: React.FC<TrophyCaseProps> = ({
-  userId,
-  onShareAchievement,
-}) => {
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [progress, setProgress] = useState<AchievementProgress[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'unlocked' | 'locked'>('all');
+export const TrophyCase: React.FC<TrophyCaseProps> = ({ userId, onShareAchievement }) => {
+  const [achievements, setAchievements] = useState<Achievement[]>([])
+  const [progress, setProgress] = useState<AchievementProgress[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [filter, setFilter] = useState<'all' | 'unlocked' | 'locked'>('all')
 
   useEffect(() => {
     const loadAchievements = async () => {
@@ -26,17 +23,17 @@ export const TrophyCase: React.FC<TrophyCaseProps> = ({
         const [achievementsData, progressData] = await Promise.all([
           firebaseApi.achievement.getUserAchievements(userId),
           firebaseApi.achievement.getAchievementProgress(userId),
-        ]);
-        setAchievements(achievementsData);
-        setProgress(progressData);
+        ])
+        setAchievements(achievementsData)
+        setProgress(progressData)
       } catch {
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    loadAchievements();
-  }, [userId]);
+    loadAchievements()
+  }, [userId])
 
   if (isLoading) {
     return (
@@ -47,40 +44,37 @@ export const TrophyCase: React.FC<TrophyCaseProps> = ({
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="h-32 bg-gray-100 rounded-lg animate-pulse"
-            ></div>
+            <div key={i} className="h-32 bg-gray-100 rounded-lg animate-pulse"></div>
           ))}
         </div>
       </div>
-    );
+    )
   }
 
-  const unlockedAchievements = achievements;
-  const lockedProgress = progress.filter(p => !p.isUnlocked);
+  const unlockedAchievements = achievements
+  const lockedProgress = progress.filter((p) => !p.isUnlocked)
 
   const getFilteredItems = () => {
     if (filter === 'unlocked') {
-      return unlockedAchievements.map(a => ({
+      return unlockedAchievements.map((a) => ({
         type: 'achievement' as const,
         data: a,
-      }));
+      }))
     }
     if (filter === 'locked') {
-      return lockedProgress.map(p => ({ type: 'progress' as const, data: p }));
+      return lockedProgress.map((p) => ({ type: 'progress' as const, data: p }))
     }
     // All: show unlocked first, then locked
     return [
-      ...unlockedAchievements.map(a => ({
+      ...unlockedAchievements.map((a) => ({
         type: 'achievement' as const,
         data: a,
       })),
-      ...lockedProgress.map(p => ({ type: 'progress' as const, data: p })),
-    ];
-  };
+      ...lockedProgress.map((p) => ({ type: 'progress' as const, data: p })),
+    ]
+  }
 
-  const filteredItems = getFilteredItems();
+  const filteredItems = getFilteredItems()
 
   return (
     <div className="space-y-6">
@@ -91,8 +85,7 @@ export const TrophyCase: React.FC<TrophyCaseProps> = ({
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Trophy Case</h2>
             <p className="text-sm text-gray-600">
-              {unlockedAchievements.length} of {progress.length} achievements
-              unlocked
+              {unlockedAchievements.length} of {progress.length} achievements unlocked
             </p>
           </div>
         </div>
@@ -135,9 +128,7 @@ export const TrophyCase: React.FC<TrophyCaseProps> = ({
       {/* Progress bar */}
       <div className="bg-white rounded-lg p-4 border border-gray-200">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">
-            Overall Progress
-          </span>
+          <span className="text-sm font-medium text-gray-700">Overall Progress</span>
           <span className="text-sm font-bold text-gray-900">
             {Math.round((unlockedAchievements.length / progress.length) * 100)}%
           </span>
@@ -171,5 +162,5 @@ export const TrophyCase: React.FC<TrophyCaseProps> = ({
         </div>
       )}
     </div>
-  );
-};
+  )
+}

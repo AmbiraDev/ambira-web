@@ -1,8 +1,8 @@
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query'
 
 // Type for cache filter objects
 interface CacheFilters {
-  [key: string]: unknown;
+  [key: string]: unknown
 }
 
 // Create a query client with optimized cache settings
@@ -27,19 +27,14 @@ export const queryClient = new QueryClient({
       retry: 1,
     },
   },
-});
+})
 
 // Cache keys for different data types
 export const CACHE_KEYS = {
   // User data
   USER_STATS: (userId: string) => ['user', 'stats', userId],
   USER_PROFILE: (userId: string) => ['user', 'profile', userId],
-  USER_SESSIONS: (userId: string, limit?: number) => [
-    'user',
-    'sessions',
-    userId,
-    limit,
-  ],
+  USER_SESSIONS: (userId: string, limit?: number) => ['user', 'sessions', userId, limit],
   USER_FOLLOWERS: (userId: string) => ['user', 'followers', userId],
   USER_FOLLOWING: (userId: string) => ['user', 'following', userId],
 
@@ -95,12 +90,7 @@ export const CACHE_KEYS = {
   STREAK: (userId: string) => ['streak', userId],
 
   // Analytics data (longer cache time)
-  ANALYTICS_CHART: (userId: string, period: string) => [
-    'analytics',
-    'chart',
-    userId,
-    period,
-  ],
+  ANALYTICS_CHART: (userId: string, period: string) => ['analytics', 'chart', userId, period],
   ANALYTICS_CATEGORIES: (userId: string, period: string) => [
     'analytics',
     'categories',
@@ -110,7 +100,7 @@ export const CACHE_KEYS = {
 
   // Notifications
   NOTIFICATIONS: (userId: string) => ['notifications', userId],
-};
+}
 
 // Cache time configurations for different data types
 export const CACHE_TIMES = {
@@ -131,4 +121,4 @@ export const CACHE_TIMES = {
 
   // Infinite cache - for data that rarely changes
   INFINITE: Infinity,
-};
+}

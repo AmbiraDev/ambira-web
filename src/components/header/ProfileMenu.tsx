@@ -1,17 +1,12 @@
-'use client';
+'use client'
 
-import { useState, useRef } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { ChevronDown } from 'lucide-react';
-import type { ProfileMenuProps } from './header.types';
-import {
-  TIMING,
-  DIMENSIONS,
-  PROFILE_MENU_LINKS,
-  ROUTES,
-} from './header.constants';
-import { getUserInitials } from './header.utils';
+import { useState, useRef } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { ChevronDown } from 'lucide-react'
+import type { ProfileMenuProps } from './header.types'
+import { TIMING, DIMENSIONS, PROFILE_MENU_LINKS, ROUTES } from './header.constants'
+import { getUserInitials } from './header.utils'
 
 /**
  * ProfileMenu Component
@@ -30,8 +25,8 @@ import { getUserInitials } from './header.utils';
  * ```
  */
 export default function ProfileMenu({ user }: ProfileMenuProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   /**
    * Handles mouse enter on profile container
@@ -39,11 +34,11 @@ export default function ProfileMenu({ user }: ProfileMenuProps) {
    */
   const handleMouseEnter = () => {
     if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
+      clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
     }
-    setIsMenuOpen(true);
-  };
+    setIsMenuOpen(true)
+  }
 
   /**
    * Handles mouse leave on profile container
@@ -51,19 +46,19 @@ export default function ProfileMenu({ user }: ProfileMenuProps) {
    */
   const handleMouseLeave = () => {
     if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
+      clearTimeout(closeTimerRef.current)
     }
     closeTimerRef.current = setTimeout(() => {
-      setIsMenuOpen(false);
-    }, TIMING.DROPDOWN_CLOSE_DELAY);
-  };
+      setIsMenuOpen(false)
+    }, TIMING.DROPDOWN_CLOSE_DELAY)
+  }
 
   /**
    * Toggles menu open/closed
    */
   const handleToggle = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+    setIsMenuOpen(!isMenuOpen)
+  }
 
   return (
     <div className="relative">
@@ -133,5 +128,5 @@ export default function ProfileMenu({ user }: ProfileMenuProps) {
         </div>
       )}
     </div>
-  );
+  )
 }

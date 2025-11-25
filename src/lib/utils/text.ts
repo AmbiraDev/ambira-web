@@ -20,6 +20,6 @@ export function truncateText(
   text: string | undefined | null,
   maxLength: number
 ): string | undefined | null {
-  if (!text) return text;
-  return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+  if (!text) return text
+  return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text
 }

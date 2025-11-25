@@ -1,19 +1,14 @@
-import { storage } from './firebase';
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-} from 'firebase/storage';
-import { auth } from './firebase';
-import { checkRateLimit } from './rateLimit';
-import { debug } from './debug';
-import { TIMEOUTS } from '@/config/constants';
-import { TIMEOUT_ERRORS } from '@/config/errorMessages';
+import { storage } from './firebase'
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
+import { auth } from './firebase'
+import { checkRateLimit } from './rateLimit'
+import { debug } from './debug'
+import { TIMEOUTS } from '@/config/constants'
+import { TIMEOUT_ERRORS } from '@/config/errorMessages'
 
 export interface ImageUploadResult {
-  url: string;
-  path: string;
+  url: string
+  path: string
 }
 
 /**
@@ -22,22 +17,22 @@ export interface ImageUploadResult {
 async function isActuallyHeic(file: File): Promise<boolean> {
   try {
     // Read the first 12 bytes of the file
-    const arrayBuffer = await file.slice(0, 12).arrayBuffer();
-    const bytes = new Uint8Array(arrayBuffer);
+    const arrayBuffer = await file.slice(0, 12).arrayBuffer()
+    const bytes = new Uint8Array(arrayBuffer)
 
     // Check for HEIC/HEIF file signatures
     // HEIC files start with: ftyp followed by heic, heix, hevc, hevx, heim, heis, hevm, or hevs
     // Bytes 4-11 should contain "ftypheic", "ftypheix", "ftyphevc", etc.
-    const signature = String.fromCharCode(...bytes.slice(4, 12));
+    const signature = String.fromCharCode(...bytes.slice(4, 12))
 
     return (
       signature.startsWith('ftyphei') ||
       signature.startsWith('ftyphev') ||
       signature.startsWith('ftypmif1')
-    ); // mif1 is also used for HEIF
+    ) // mif1 is also used for HEIF
   } catch (_error) {
-    debug.error('Error checking file signature:', _error);
-    return false;
+    debug.error('Error checking file signature:', _error)
+    return false
   }
 }
 
@@ -47,35 +42,32 @@ async function isActuallyHeic(file: File): Promise<boolean> {
 async function convertHeicToJpeg(file: File): Promise<File> {
   // Check if it's a HEIC/HEIF file by extension or type
   const hasHeicExtension =
-    file.name.toLowerCase().endsWith('.heic') ||
-    file.name.toLowerCase().endsWith('.heif');
-  const hasHeicType = file.type === 'image/heic' || file.type === 'image/heif';
+    file.name.toLowerCase().endsWith('.heic') || file.name.toLowerCase().endsWith('.heif')
+  const hasHeicType = file.type === 'image/heic' || file.type === 'image/heif'
 
   // Also check the actual file content (magic bytes)
-  const isActualHeic = await isActuallyHeic(file);
+  const isActualHeic = await isActuallyHeic(file)
 
-  const isHeic = hasHeicExtension || hasHeicType || isActualHeic;
+  const isHeic = hasHeicExtension || hasHeicType || isActualHeic
 
   if (!isHeic) {
-    return file;
+    return file
   }
 
   try {
-    const heic2any = (await import('heic2any')).default;
+    const heic2any = (await import('heic2any')).default
 
     const convertedBlob = await heic2any({
       blob: file,
       toType: 'image/jpeg',
       quality: 0.9,
-    });
+    })
 
     // heic2any can return Blob or Blob[]
-    const blob: Blob | undefined = Array.isArray(convertedBlob)
-      ? convertedBlob[0]
-      : convertedBlob;
+    const blob: Blob | undefined = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
 
     if (!blob) {
-      throw new Error('Failed to convert HEIC image: No blob data');
+      throw new Error('Failed to convert HEIC image: No blob data')
     }
 
     // Create a new File from the converted blob
@@ -83,14 +75,12 @@ async function convertHeicToJpeg(file: File): Promise<File> {
       [blob as Blob],
       file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'),
       { type: 'image/jpeg' }
-    );
+    )
 
-    return convertedFile;
+    return convertedFile
   } catch (_error) {
-    debug.error('Failed to convert HEIC:', _error);
-    throw new Error(
-      'Failed to convert HEIC image. Please use JPG or PNG format.'
-    );
+    debug.error('Failed to convert HEIC:', _error)
+    throw new Error('Failed to convert HEIC image. Please use JPG or PNG format.')
   }
 }
 
@@ -101,8 +91,8 @@ async function convertHeicToJpeg(file: File): Promise<File> {
  */
 function createTimeout(ms: number, errorMessage: string): Promise<never> {
   return new Promise((_, reject) => {
-    setTimeout(() => reject(new Error(errorMessage)), ms);
-  });
+    setTimeout(() => reject(new Error(errorMessage)), ms)
+  })
 }
 
 /**
@@ -116,79 +106,76 @@ export async function uploadImage(
   folder: string = 'session-images'
 ): Promise<ImageUploadResult> {
   if (!auth.currentUser) {
-    throw new Error('User must be authenticated to upload images');
+    throw new Error('User must be authenticated to upload images')
   }
 
   // Rate limit file uploads
-  checkRateLimit(auth.currentUser.uid, 'FILE_UPLOAD');
+  checkRateLimit(auth.currentUser.uid, 'FILE_UPLOAD')
 
   // Convert HEIC to JPEG if needed
-  let processedFile = file;
+  let processedFile = file
   try {
-    processedFile = await convertHeicToJpeg(file);
+    processedFile = await convertHeicToJpeg(file)
   } catch (error: unknown) {
-    throw error; // Re-throw conversion errors
+    throw error // Re-throw conversion errors
   }
 
   // Validate file type after conversion
   if (!processedFile.type.startsWith('image/')) {
-    throw new Error('File must be an image (JPG, PNG, GIF, WebP)');
+    throw new Error('File must be an image (JPG, PNG, GIF, WebP)')
   }
 
   // Compress if file is larger than 5MB
-  const maxSize = 5 * 1024 * 1024; // 5MB
+  const maxSize = 5 * 1024 * 1024 // 5MB
   if (processedFile.size > maxSize) {
-    const _sizeMB = (processedFile.size / 1024 / 1024).toFixed(1);
+    const _sizeMB = (processedFile.size / 1024 / 1024).toFixed(1)
     try {
-      processedFile = await compressToSize(processedFile, 5);
+      processedFile = await compressToSize(processedFile, 5)
     } catch (_error: unknown) {
-      debug.error('Compression failed:', _error);
-      throw new Error('Failed to compress image. Please try a smaller file.');
+      debug.error('Compression failed:', _error)
+      throw new Error('Failed to compress image. Please try a smaller file.')
     }
   }
 
   // Generate unique filename
-  const timestamp = Date.now();
-  const randomString = Math.random().toString(36).substring(7);
-  const extension = processedFile.name.split('.').pop();
-  const filename = `${timestamp}_${randomString}.${extension}`;
+  const timestamp = Date.now()
+  const randomString = Math.random().toString(36).substring(7)
+  const extension = processedFile.name.split('.').pop()
+  const filename = `${timestamp}_${randomString}.${extension}`
 
   // Create storage reference
-  const storageRef = ref(
-    storage,
-    `${folder}/${auth.currentUser.uid}/${filename}`
-  );
+  const storageRef = ref(storage, `${folder}/${auth.currentUser.uid}/${filename}`)
 
   try {
     // Upload with timeout protection (30 seconds)
     const uploadPromise = (async () => {
       // Upload the processed file (not the original)
-      const _snapshot = await uploadBytes(storageRef, processedFile);
+      const _snapshot = await uploadBytes(storageRef, processedFile)
       // Get download URL
-      const url = await getDownloadURL(storageRef);
-      return { url, path: storageRef.fullPath };
-    })();
+      const url = await getDownloadURL(storageRef)
+      return { url, path: storageRef.fullPath }
+    })()
 
     // Race between upload and timeout
     const result = await Promise.race([
       uploadPromise,
       createTimeout(TIMEOUTS.IMAGE_UPLOAD, TIMEOUT_ERRORS.IMAGE_UPLOAD),
-    ]);
+    ])
 
-    return result;
+    return result
   } catch (_error: unknown) {
-    debug.error('Error uploading image:', _error);
+    debug.error('Error uploading image:', _error)
 
     // Check if this is a timeout error
-    const error = _error as { message?: string; code?: string };
+    const error = _error as { message?: string; code?: string }
     if (error.message === TIMEOUT_ERRORS.IMAGE_UPLOAD) {
-      throw _error; // Re-throw timeout errors with user-friendly message
+      throw _error // Re-throw timeout errors with user-friendly message
     }
 
     if (error.code === 'storage/unauthorized') {
-      throw new Error('Permission denied. Please make sure you are logged in.');
+      throw new Error('Permission denied. Please make sure you are logged in.')
     }
-    throw new Error(error.message || 'Failed to upload image');
+    throw new Error(error.message || 'Failed to upload image')
   }
 }
 
@@ -203,11 +190,11 @@ export async function uploadImages(
   folder: string = 'session-images'
 ): Promise<ImageUploadResult[]> {
   if (files.length > 3) {
-    throw new Error('Maximum 3 images allowed');
+    throw new Error('Maximum 3 images allowed')
   }
 
-  const uploadPromises = files.map(file => uploadImage(file, folder));
-  return Promise.all(uploadPromises);
+  const uploadPromises = files.map((file) => uploadImage(file, folder))
+  return Promise.all(uploadPromises)
 }
 
 /**
@@ -216,15 +203,15 @@ export async function uploadImages(
  */
 export async function deleteImage(path: string): Promise<void> {
   if (!auth.currentUser) {
-    throw new Error('User must be authenticated to delete images');
+    throw new Error('User must be authenticated to delete images')
   }
 
   try {
-    const storageRef = ref(storage, path);
-    await deleteObject(storageRef);
+    const storageRef = ref(storage, path)
+    await deleteObject(storageRef)
   } catch (_error) {
-    debug.error('Error deleting image:', _error);
-    throw new Error('Failed to delete image');
+    debug.error('Error deleting image:', _error)
+    throw new Error('Failed to delete image')
   }
 }
 
@@ -233,8 +220,8 @@ export async function deleteImage(path: string): Promise<void> {
  * @param paths - Array of storage paths
  */
 export async function deleteImages(paths: string[]): Promise<void> {
-  const deletePromises = paths.map(path => deleteImage(path));
-  await Promise.all(deletePromises);
+  const deletePromises = paths.map((path) => deleteImage(path))
+  await Promise.all(deletePromises)
 }
 
 /**
@@ -252,82 +239,80 @@ export async function compressImage(
   quality: number = 0.8
 ): Promise<File> {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+    const reader = new FileReader()
 
-    reader.onload = e => {
-      const img = new Image();
+    reader.onload = (e) => {
+      const img = new Image()
 
       img.onload = () => {
         try {
           // Calculate new dimensions maintaining aspect ratio
-          let width = img.width;
-          let height = img.height;
+          let width = img.width
+          let height = img.height
 
           if (width > maxWidth || height > maxHeight) {
-            const aspectRatio = width / height;
+            const aspectRatio = width / height
 
             if (width > height) {
-              width = maxWidth;
-              height = width / aspectRatio;
+              width = maxWidth
+              height = width / aspectRatio
             } else {
-              height = maxHeight;
-              width = height * aspectRatio;
+              height = maxHeight
+              width = height * aspectRatio
             }
           }
 
           // Create canvas and draw resized image
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
+          const canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
 
-          const ctx = canvas.getContext('2d');
+          const ctx = canvas.getContext('2d')
           if (!ctx) {
-            throw new Error('Failed to get canvas context');
+            throw new Error('Failed to get canvas context')
           }
 
           // Use better image smoothing
-          ctx.imageSmoothingEnabled = true;
-          ctx.imageSmoothingQuality = 'high';
-          ctx.drawImage(img, 0, 0, width, height);
+          ctx.imageSmoothingEnabled = true
+          ctx.imageSmoothingQuality = 'high'
+          ctx.drawImage(img, 0, 0, width, height)
 
           // Convert to blob
           canvas.toBlob(
-            blob => {
+            (blob) => {
               if (!blob) {
-                reject(new Error('Failed to compress image'));
-                return;
+                reject(new Error('Failed to compress image'))
+                return
               }
 
               // Create new file from blob
-              const compressedFile = new File(
-                [blob],
-                file.name.replace(/\.[^.]+$/, '.jpg'),
-                { type: 'image/jpeg' }
-              );
+              const compressedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {
+                type: 'image/jpeg',
+              })
 
-              resolve(compressedFile);
+              resolve(compressedFile)
             },
             'image/jpeg',
             quality
-          );
+          )
         } catch (_error) {
-          reject(_error);
+          reject(_error)
         }
-      };
+      }
 
       img.onerror = () => {
-        reject(new Error('Failed to load image'));
-      };
+        reject(new Error('Failed to load image'))
+      }
 
-      img.src = e.target?.result as string;
-    };
+      img.src = e.target?.result as string
+    }
 
     reader.onerror = () => {
-      reject(new Error('Failed to read file'));
-    };
+      reject(new Error('Failed to read file'))
+    }
 
-    reader.readAsDataURL(file);
-  });
+    reader.readAsDataURL(file)
+  })
 }
 
 /**
@@ -336,19 +321,16 @@ export async function compressImage(
  * @param maxSizeMB - Maximum size in megabytes
  * @returns Compressed image file
  */
-async function compressToSize(
-  file: File,
-  maxSizeMB: number = 5
-): Promise<File> {
-  const maxSizeBytes = maxSizeMB * 1024 * 1024;
+async function compressToSize(file: File, maxSizeMB: number = 5): Promise<File> {
+  const maxSizeBytes = maxSizeMB * 1024 * 1024
 
   // If file is already under the limit, return it
   if (file.size <= maxSizeBytes) {
-    return file;
+    return file
   }
 
   // Start with aggressive compression settings
-  let compressedFile = file;
+  let compressedFile = file
 
   // Try progressively more aggressive compression
   const attempts = [
@@ -356,7 +338,7 @@ async function compressToSize(
     { quality: 0.7, maxDimension: 1600 },
     { quality: 0.6, maxDimension: 1400 },
     { quality: 0.5, maxDimension: 1200 },
-  ];
+  ]
 
   for (const attempt of attempts) {
     compressedFile = await compressImage(
@@ -364,16 +346,16 @@ async function compressToSize(
       attempt.maxDimension,
       attempt.maxDimension,
       attempt.quality
-    );
+    )
 
     if (compressedFile.size <= maxSizeBytes) {
-      return compressedFile;
+      return compressedFile
     }
   }
 
   // If still too large after all attempts, return the smallest version
   debug.warn(
     `Could not compress to under ${maxSizeMB}MB, using smallest version (${(compressedFile.size / 1024 / 1024).toFixed(2)}MB)`
-  );
-  return compressedFile;
+  )
+  return compressedFile
 }

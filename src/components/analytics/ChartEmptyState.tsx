@@ -1,11 +1,11 @@
-import { Activity } from 'lucide-react';
+import { Activity } from 'lucide-react'
 
 export interface ChartEmptyStateProps {
-  icon: React.ElementType;
-  title: string;
-  description: string;
-  onAction?: () => void;
-  actionLabel?: string;
+  icon: React.ElementType
+  title: string
+  description: string
+  onAction?: () => void
+  actionLabel?: string
 }
 
 export function ChartEmptyState({
@@ -22,13 +22,8 @@ export function ChartEmptyState({
       aria-label={`No data: ${title}`}
     >
       <div className="text-center max-w-md px-4">
-        <Icon
-          className="w-16 h-16 md:w-20 md:h-20 text-gray-300 mx-auto mb-4"
-          aria-hidden="true"
-        />
-        <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">
-          {title}
-        </h3>
+        <Icon className="w-16 h-16 md:w-20 md:h-20 text-gray-300 mx-auto mb-4" aria-hidden="true" />
+        <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">{title}</h3>
         <p className="text-sm md:text-base text-gray-600 mb-4">{description}</p>
         {onAction && (
           <button
@@ -42,5 +37,5 @@ export function ChartEmptyState({
         )}
       </div>
     </div>
-  );
+  )
 }

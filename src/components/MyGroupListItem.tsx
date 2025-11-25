@@ -1,15 +1,15 @@
-'use client';
+'use client'
 
-import React from 'react';
-import Link from 'next/link';
-import { Group } from '@/types';
-import GroupAvatar from './GroupAvatar';
-import { Users, MapPin } from 'lucide-react';
-import { truncateText } from '@/lib/utils/text';
-import { GROUP_DISPLAY_CONFIG } from '@/lib/constants/groupDisplay';
+import React from 'react'
+import Link from 'next/link'
+import { Group } from '@/types'
+import GroupAvatar from './GroupAvatar'
+import { Users, MapPin } from 'lucide-react'
+import { truncateText } from '@/lib/utils/text'
+import { GROUP_DISPLAY_CONFIG } from '@/lib/constants/groupDisplay'
 
 interface MyGroupListItemProps {
-  group: Group;
+  group: Group
 }
 
 export const MyGroupListItem: React.FC<MyGroupListItemProps> = ({ group }) => {
@@ -17,28 +17,28 @@ export const MyGroupListItem: React.FC<MyGroupListItemProps> = ({ group }) => {
   const displayNameMobile = truncateText(
     group.name,
     GROUP_DISPLAY_CONFIG.TRUNCATE_LENGTHS.NAME_MOBILE
-  );
+  )
 
   // Desktop: Truncate group name if longer than configured length
   const displayNameDesktop = truncateText(
     group.name,
     GROUP_DISPLAY_CONFIG.TRUNCATE_LENGTHS.NAME_DESKTOP
-  );
+  )
 
   // Mobile: Truncate location if longer than configured length
   const displayLocationMobile = truncateText(
     group.location,
     GROUP_DISPLAY_CONFIG.TRUNCATE_LENGTHS.LOCATION_MOBILE
-  );
+  )
 
   // Desktop: Don't truncate location
-  const displayLocationDesktop = group.location;
+  const displayLocationDesktop = group.location
 
   // Desktop: Truncate description if longer than configured length
   const displayDescription = truncateText(
     group.description,
     GROUP_DISPLAY_CONFIG.TRUNCATE_LENGTHS.DESCRIPTION_DESKTOP
-  );
+  )
 
   return (
     <Link
@@ -78,8 +78,7 @@ export const MyGroupListItem: React.FC<MyGroupListItemProps> = ({ group }) => {
             <div className="flex items-center gap-1.5 text-sm text-gray-600">
               <Users className="w-4 h-4" aria-hidden="true" />
               <span>
-                {group.memberCount || 0}{' '}
-                {group.memberCount === 1 ? 'Member' : 'Members'}
+                {group.memberCount || 0} {group.memberCount === 1 ? 'Member' : 'Members'}
               </span>
             </div>
 
@@ -102,5 +101,5 @@ export const MyGroupListItem: React.FC<MyGroupListItemProps> = ({ group }) => {
         </div>
       </div>
     </Link>
-  );
-};
+  )
+}

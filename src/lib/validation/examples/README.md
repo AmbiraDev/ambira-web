@@ -25,21 +25,21 @@ Full-featured session creation form with:
 - Success/error state management
 
 ```tsx
-import { validate, SessionFormSchema } from '@/lib/validation';
+import { validate, SessionFormSchema } from '@/lib/validation'
 
-const result = validate(SessionFormSchema, formData);
+const result = validate(SessionFormSchema, formData)
 if (!result.success) {
   // Map errors to form fields
-  result.errors.forEach(error => {
+  result.errors.forEach((error) => {
     if (error.path) {
-      setErrors(prev => ({ ...prev, [error.path]: error.message }));
+      setErrors((prev) => ({ ...prev, [error.path]: error.message }))
     }
-  });
-  return;
+  })
+  return
 }
 
 // Type-safe validated data
-const validatedData = result.data;
+const validatedData = result.data
 ```
 
 **Use this pattern when:**
@@ -58,17 +58,17 @@ Lightweight comment form with:
 - Optimistic UI updates
 
 ```tsx
-import { validate, CreateCommentSchema } from '@/lib/validation';
+import { validate, CreateCommentSchema } from '@/lib/validation'
 
 const handleBlur = () => {
-  const result = validate(CreateCommentSchema, { sessionId, content });
+  const result = validate(CreateCommentSchema, { sessionId, content })
   if (!result.success) {
-    const contentError = result.errors.find(err => err.path === 'content');
+    const contentError = result.errors.find((err) => err.path === 'content')
     if (contentError) {
-      setError(contentError.message);
+      setError(contentError.message)
     }
   }
-};
+}
 ```
 
 **Use this pattern when:**
@@ -88,22 +88,22 @@ Profile update form demonstrating:
 - Reset functionality
 
 ```tsx
-import { validate, UpdateProfileSchema } from '@/lib/validation';
+import { validate, UpdateProfileSchema } from '@/lib/validation'
 
 // Only include fields with values (optional field handling)
-const dataToValidate = {};
-if (formData.name.trim()) dataToValidate.name = formData.name;
-if (formData.bio.trim()) dataToValidate.bio = formData.bio;
+const dataToValidate = {}
+if (formData.name.trim()) dataToValidate.name = formData.name
+if (formData.bio.trim()) dataToValidate.bio = formData.bio
 
 // Validate nested objects
 if (formData.socialLinks.twitter) {
   dataToValidate.socialLinks = {
     twitter: formData.socialLinks.twitter,
     // ... other links
-  };
+  }
 }
 
-const result = validate(UpdateProfileSchema, dataToValidate);
+const result = validate(UpdateProfileSchema, dataToValidate)
 ```
 
 **Use this pattern when:**
@@ -127,29 +127,29 @@ Next.js App Router API examples with:
 #### Pattern A: Using `validate()` for explicit error handling
 
 ```typescript
-import { validate, CreateSessionSchema } from '@/lib/validation';
+import { validate, CreateSessionSchema } from '@/lib/validation'
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  const body = await request.json()
 
-  const result = validate(CreateSessionSchema, body);
+  const result = validate(CreateSessionSchema, body)
 
   if (!result.success) {
     return NextResponse.json(
       { error: 'Validation failed', details: result.errors },
       { status: 400 }
-    );
+    )
   }
 
   // Type-safe validated data
-  const validatedData = result.data;
+  const validatedData = result.data
 
   // Prepare for Firestore
   const firestoreData = prepareForFirestore({
     ...validatedData,
     userId: 'current-user-id',
     createdAt: new Date(),
-  });
+  })
 
   // Save to database...
 }
@@ -158,32 +158,22 @@ export async function POST(request: NextRequest) {
 #### Pattern B: Using `validateOrThrow()` with try-catch
 
 ```typescript
-import {
-  validateOrThrow,
-  isValidationError,
-  formatValidationError,
-} from '@/lib/validation';
+import { validateOrThrow, isValidationError, formatValidationError } from '@/lib/validation'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const validatedData = validateOrThrow(CreateCommentSchema, body);
+    const body = await request.json()
+    const validatedData = validateOrThrow(CreateCommentSchema, body)
 
     // Process validated data...
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true })
   } catch (error) {
     if (isValidationError(error)) {
-      return NextResponse.json(
-        { error: formatValidationError(error) },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: formatValidationError(error) }, { status: 400 })
     }
 
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 ```
@@ -200,23 +190,23 @@ function createErrorResponse(error: unknown, defaultMessage: string) {
         details: error.issues,
       },
       { status: 400 }
-    );
+    )
   }
 
   return NextResponse.json(
     { error: 'Internal server error', message: defaultMessage },
     { status: 500 }
-  );
+  )
 }
 
 // Usage
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const validatedData = validateOrThrow(CreateSessionSchema, body);
+    const body = await request.json()
+    const validatedData = validateOrThrow(CreateSessionSchema, body)
     // ...
   } catch (error) {
-    return createErrorResponse(error, 'Failed to create session');
+    return createErrorResponse(error, 'Failed to create session')
   }
 }
 ```
@@ -236,14 +226,14 @@ Clear errors as the user types:
 
 ```tsx
 const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const { name, value } = e.target;
-  setFormData(prev => ({ ...prev, [name]: value }));
+  const { name, value } = e.target
+  setFormData((prev) => ({ ...prev, [name]: value }))
 
   // Clear field-specific error
   if (errors[name]) {
-    setErrors(prev => ({ ...prev, [name]: undefined }));
+    setErrors((prev) => ({ ...prev, [name]: undefined }))
   }
-};
+}
 ```
 
 ### Pattern 2: Validation on Blur
@@ -252,14 +242,14 @@ Validate individual fields when user leaves the field:
 
 ```tsx
 const handleBlur = (field: string) => {
-  const result = validate(SomeSchema, { [field]: formData[field] });
+  const result = validate(SomeSchema, { [field]: formData[field] })
   if (!result.success) {
-    const error = result.errors.find(err => err.path === field);
+    const error = result.errors.find((err) => err.path === field)
     if (error) {
-      setErrors(prev => ({ ...prev, [field]: error.message }));
+      setErrors((prev) => ({ ...prev, [field]: error.message }))
     }
   }
-};
+}
 ```
 
 ### Pattern 3: Character Counter with Validation
@@ -267,14 +257,12 @@ const handleBlur = (field: string) => {
 Show remaining characters and warn at threshold:
 
 ```tsx
-const MAX_LENGTH = 2000;
-const remainingChars = MAX_LENGTH - content.length;
+const MAX_LENGTH = 2000
+const remainingChars = MAX_LENGTH - content.length
 
-<p
-  className={remainingChars < 100 ? 'text-orange-500' : 'text-muted-foreground'}
->
+;<p className={remainingChars < 100 ? 'text-orange-500' : 'text-muted-foreground'}>
   {remainingChars} characters remaining
-</p>;
+</p>
 ```
 
 ### Pattern 4: Optional Fields in Forms
@@ -282,11 +270,11 @@ const remainingChars = MAX_LENGTH - content.length;
 Only include fields with values:
 
 ```tsx
-const dataToValidate = {};
-if (formData.name.trim()) dataToValidate.name = formData.name;
-if (formData.bio.trim()) dataToValidate.bio = formData.bio;
+const dataToValidate = {}
+if (formData.name.trim()) dataToValidate.name = formData.name
+if (formData.bio.trim()) dataToValidate.bio = formData.bio
 
-const result = validate(UpdateSchema, dataToValidate);
+const result = validate(UpdateSchema, dataToValidate)
 ```
 
 ### Pattern 5: Nested Object Validation
@@ -300,7 +288,7 @@ if (formData.socialLinks.twitter || formData.socialLinks.github) {
       twitter: formData.socialLinks.twitter,
     }),
     ...(formData.socialLinks.github && { github: formData.socialLinks.github }),
-  };
+  }
 }
 ```
 
@@ -309,17 +297,17 @@ if (formData.socialLinks.twitter || formData.socialLinks.github) {
 Track if form has unsaved changes:
 
 ```tsx
-const [hasChanges, setHasChanges] = useState(false);
+const [hasChanges, setHasChanges] = useState(false)
 
 useEffect(() => {
-  const hasChanged = JSON.stringify(formData) !== JSON.stringify(initialData);
-  setHasChanges(hasChanged);
-}, [formData, initialData]);
+  const hasChanged = JSON.stringify(formData) !== JSON.stringify(initialData)
+  setHasChanges(hasChanged)
+}, [formData, initialData])
 
 // Disable submit if no changes
-<button type="submit" disabled={!hasChanges}>
+;<button type="submit" disabled={!hasChanges}>
   Save
-</button>;
+</button>
 ```
 
 ### Pattern 7: Success/Error State Management
@@ -327,24 +315,24 @@ useEffect(() => {
 Manage form submission states:
 
 ```tsx
-const [isSubmitting, setIsSubmitting] = useState(false);
-const [submitError, setSubmitError] = useState('');
-const [submitSuccess, setSubmitSuccess] = useState(false);
+const [isSubmitting, setIsSubmitting] = useState(false)
+const [submitError, setSubmitError] = useState('')
+const [submitSuccess, setSubmitSuccess] = useState(false)
 
 const handleSubmit = async () => {
-  setIsSubmitting(true);
-  setSubmitError('');
-  setSubmitSuccess(false);
+  setIsSubmitting(true)
+  setSubmitError('')
+  setSubmitSuccess(false)
 
   try {
     // Validate and submit...
-    setSubmitSuccess(true);
+    setSubmitSuccess(true)
   } catch (error) {
-    setSubmitError(error.message);
+    setSubmitError(error.message)
   } finally {
-    setIsSubmitting(false);
+    setIsSubmitting(false)
   }
-};
+}
 ```
 
 ## Available Schemas
@@ -397,15 +385,15 @@ const handleSubmit = async () => {
 Map validation errors to specific form fields:
 
 ```tsx
-const result = validate(schema, data);
+const result = validate(schema, data)
 if (!result.success) {
-  const newErrors = {};
-  result.errors.forEach(error => {
+  const newErrors = {}
+  result.errors.forEach((error) => {
     if (error.path) {
-      newErrors[error.path] = error.message;
+      newErrors[error.path] = error.message
     }
-  });
-  setErrors(newErrors);
+  })
+  setErrors(newErrors)
 }
 ```
 
@@ -419,7 +407,7 @@ Show generic errors at the form level:
     <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-md">
       {submitError}
     </div>
-  );
+  )
 }
 ```
 
@@ -450,19 +438,19 @@ Return consistent error structures:
 Always prepare data before writing to Firestore:
 
 ```typescript
-import { prepareForFirestore } from '@/lib/validation';
+import { prepareForFirestore } from '@/lib/validation'
 
-const validatedData = validateOrThrow(CreateSessionSchema, data);
+const validatedData = validateOrThrow(CreateSessionSchema, data)
 
 const firestoreData = prepareForFirestore({
   ...validatedData,
   userId: currentUser.uid,
   createdAt: new Date(),
   updatedAt: new Date(),
-});
+})
 
 // Safe to write - no undefined values
-await db.collection('sessions').add(firestoreData);
+await db.collection('sessions').add(firestoreData)
 ```
 
 ## TypeScript Types
@@ -491,8 +479,8 @@ const handleSubmit = (data: CreateSessionData) => { ... };
 **Solution:** Use `prepareForFirestore()` to strip undefined values:
 
 ```typescript
-const cleaned = prepareForFirestore(validatedData);
-await db.collection('sessions').add(cleaned);
+const cleaned = prepareForFirestore(validatedData)
+await db.collection('sessions').add(cleaned)
 ```
 
 ### Issue: Nested errors not showing
@@ -500,12 +488,12 @@ await db.collection('sessions').add(cleaned);
 **Solution:** Check for nested paths in errors:
 
 ```typescript
-result.errors.forEach(error => {
+result.errors.forEach((error) => {
   // error.path might be "socialLinks.twitter"
   if (error.path) {
-    setErrors(prev => ({ ...prev, [error.path]: error.message }));
+    setErrors((prev) => ({ ...prev, [error.path]: error.message }))
   }
-});
+})
 ```
 
 ### Issue: Optional fields causing validation errors
@@ -513,8 +501,8 @@ result.errors.forEach(error => {
 **Solution:** Only include fields with values:
 
 ```typescript
-const dataToValidate = {};
-if (value) dataToValidate.field = value;
+const dataToValidate = {}
+if (value) dataToValidate.field = value
 ```
 
 ### Issue: Date validation failing
@@ -527,9 +515,9 @@ startTime: v.union([
   v.date(),
   v.pipe(
     v.string(),
-    v.transform(str => new Date(str))
+    v.transform((str) => new Date(str))
   ),
-]);
+])
 ```
 
 ### Issue: Form resets too early
@@ -538,14 +526,14 @@ startTime: v.union([
 
 ```typescript
 try {
-  await submitForm();
-  setSuccess(true);
+  await submitForm()
+  setSuccess(true)
   // Only reset on success
-  resetForm();
+  resetForm()
 } catch (error) {
-  setError(error.message);
+  setError(error.message)
 } finally {
-  setIsSubmitting(false);
+  setIsSubmitting(false)
 }
 ```
 
@@ -554,83 +542,73 @@ try {
 ### Quick Form Setup
 
 ```tsx
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { validate, SomeSchema } from '@/lib/validation';
+import { useState } from 'react'
+import { validate, SomeSchema } from '@/lib/validation'
 
 export function MyForm() {
-  const [formData, setFormData] = useState({});
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
+  const [formData, setFormData] = useState({})
+  const [errors, setErrors] = useState({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
-  const handleChange = e => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: undefined }));
-    if (submitError) setSubmitError('');
-  };
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: undefined }))
+    if (submitError) setSubmitError('')
+  }
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setErrors({});
-    setSubmitError('');
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setErrors({})
+    setSubmitError('')
 
-    const result = validate(SomeSchema, formData);
+    const result = validate(SomeSchema, formData)
     if (!result.success) {
-      const newErrors = {};
-      result.errors.forEach(err => {
-        if (err.path) newErrors[err.path] = err.message;
-      });
-      setErrors(newErrors);
-      return;
+      const newErrors = {}
+      result.errors.forEach((err) => {
+        if (err.path) newErrors[err.path] = err.message
+      })
+      setErrors(newErrors)
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
     try {
       // Submit validated data
-      await submitData(result.data);
+      await submitData(result.data)
     } catch (error) {
-      setSubmitError(error.message);
+      setSubmitError(error.message)
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
-  return <form onSubmit={handleSubmit}>{/* fields */}</form>;
+  return <form onSubmit={handleSubmit}>{/* fields */}</form>
 }
 ```
 
 ### Quick API Route Setup
 
 ```typescript
-import { NextRequest, NextResponse } from 'next/server';
-import {
-  validateOrThrow,
-  isValidationError,
-  formatValidationError,
-} from '@/lib/validation';
+import { NextRequest, NextResponse } from 'next/server'
+import { validateOrThrow, isValidationError, formatValidationError } from '@/lib/validation'
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const validatedData = validateOrThrow(SomeSchema, body);
+    const body = await request.json()
+    const validatedData = validateOrThrow(SomeSchema, body)
 
     // Process data...
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true })
   } catch (error) {
     if (isValidationError(error)) {
-      return NextResponse.json(
-        { error: formatValidationError(error) },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: formatValidationError(error) }, { status: 400 })
     }
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 ```

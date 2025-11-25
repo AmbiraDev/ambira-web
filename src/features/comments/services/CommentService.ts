@@ -5,34 +5,22 @@
  * No React dependencies - pure TypeScript for testability.
  */
 
-import { firebaseApi } from '@/lib/api';
-import {
-  CreateCommentData,
-  UpdateCommentData,
-  CommentsResponse,
-  CommentWithDetails,
-} from '@/types';
-import {
-  validateOrThrow,
-  CreateCommentSchema,
-  UpdateCommentSchema,
-} from '@/lib/validation';
+import { firebaseApi } from '@/lib/api'
+import { CreateCommentData, UpdateCommentData, CommentsResponse, CommentWithDetails } from '@/types'
+import { validateOrThrow, CreateCommentSchema, UpdateCommentSchema } from '@/lib/validation'
 
 export class CommentService {
   /**
    * Get all comments for a session
    */
-  async getSessionComments(
-    sessionId: string,
-    limit: number = 20
-  ): Promise<CommentsResponse> {
+  async getSessionComments(sessionId: string, limit: number = 20): Promise<CommentsResponse> {
     try {
-      return await firebaseApi.comment.getSessionComments(sessionId, limit);
+      return await firebaseApi.comment.getSessionComments(sessionId, limit)
     } catch (_err) {
       return {
         comments: [],
         hasMore: false,
-      };
+      }
     }
   }
 
@@ -41,11 +29,9 @@ export class CommentService {
    */
   async createComment(data: unknown): Promise<CommentWithDetails> {
     // Validate input data
-    const validatedData = validateOrThrow(CreateCommentSchema, data);
+    const validatedData = validateOrThrow(CreateCommentSchema, data)
 
-    return firebaseApi.comment.createComment(
-      validatedData as CreateCommentData
-    );
+    return firebaseApi.comment.createComment(validatedData as CreateCommentData)
   }
 
   /**
@@ -53,37 +39,34 @@ export class CommentService {
    */
   async updateComment(commentId: string, data: unknown): Promise<void> {
     // Validate input data
-    const validatedData = validateOrThrow(UpdateCommentSchema, data);
+    const validatedData = validateOrThrow(UpdateCommentSchema, data)
 
-    await firebaseApi.comment.updateComment(
-      commentId,
-      validatedData as UpdateCommentData
-    );
+    await firebaseApi.comment.updateComment(commentId, validatedData as UpdateCommentData)
   }
 
   /**
    * Delete a comment
    */
   async deleteComment(commentId: string): Promise<void> {
-    return firebaseApi.comment.deleteComment(commentId);
+    return firebaseApi.comment.deleteComment(commentId)
   }
 
   /**
    * Like a comment
    */
   async likeComment(commentId: string): Promise<void> {
-    return firebaseApi.comment.likeComment(commentId);
+    return firebaseApi.comment.likeComment(commentId)
   }
 
   /**
    * Unlike a comment
    */
   async unlikeComment(commentId: string): Promise<void> {
-    return firebaseApi.comment.unlikeComment(commentId);
+    return firebaseApi.comment.unlikeComment(commentId)
   }
 }
 
 export interface CommentLikeData {
-  commentId: string;
-  action: 'like' | 'unlike';
+  commentId: string
+  action: 'like' | 'unlike'
 }

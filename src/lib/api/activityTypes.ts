@@ -24,22 +24,18 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
-  query,
-  where,
-  orderBy,
   serverTimestamp,
-  Timestamp,
-} from 'firebase/firestore';
+} from 'firebase/firestore'
 
 // Local Firebase config
-import { db, auth } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase'
 
 // Error handling
-import { handleError } from '@/lib/errorHandler';
-import { checkRateLimit } from '@/lib/rateLimit';
+import { handleError } from '@/lib/errorHandler'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 // Shared utilities
-import { convertTimestamp, removeUndefinedFields } from './shared/utils';
+import { convertTimestamp, removeUndefinedFields } from './shared/utils'
 
 // ============================================================================
 // TYPES
@@ -50,39 +46,39 @@ import { convertTimestamp, removeUndefinedFields } from './shared/utils';
  * Represents a global activity type (system default or user custom)
  */
 export interface ActivityType {
-  id: string; // e.g., 'work', 'study', 'coding'
-  name: string; // Display name
-  category: 'productivity' | 'learning' | 'creative'; // Category grouping
-  icon: string; // Emoji icon
-  defaultColor: string; // Hex color
-  isSystem: boolean; // true for defaults, false for custom
-  userId?: string; // Set for custom activities, undefined for system
-  order: number; // Display order
-  description?: string; // Brief description
-  createdAt: Date;
-  updatedAt: Date;
+  id: string // e.g., 'work', 'study', 'coding'
+  name: string // Display name
+  category: 'productivity' | 'learning' | 'creative' // Category grouping
+  icon: string // Emoji icon
+  defaultColor: string // Hex color
+  isSystem: boolean // true for defaults, false for custom
+  userId?: string // Set for custom activities, undefined for system
+  order: number // Display order
+  description?: string // Brief description
+  createdAt: Date
+  updatedAt: Date
 }
 
 /**
  * Data required to create a custom activity type
  */
 export interface CreateCustomActivityTypeData {
-  name: string;
-  icon: string;
-  defaultColor: string;
-  category?: 'productivity' | 'learning' | 'creative';
-  description?: string;
+  name: string
+  icon: string
+  defaultColor: string
+  category?: 'productivity' | 'learning' | 'creative'
+  description?: string
 }
 
 /**
  * Data for updating a custom activity type
  */
 export interface UpdateCustomActivityTypeData {
-  name?: string;
-  icon?: string;
-  defaultColor?: string;
-  category?: 'productivity' | 'learning' | 'creative';
-  description?: string;
+  name?: string
+  icon?: string
+  defaultColor?: string
+  category?: 'productivity' | 'learning' | 'creative'
+  description?: string
 }
 
 // ============================================================================
@@ -215,7 +211,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     createdAt: new Date(),
     updatedAt: new Date(),
   },
-];
+]
 
 // ============================================================================
 // API FUNCTIONS
@@ -234,12 +230,12 @@ export async function getSystemActivityTypes(): Promise<ActivityType[]> {
   try {
     // Return hardcoded defaults
     // In the future, these could be fetched from Firestore for dynamic updates
-    return SYSTEM_ACTIVITY_TYPES;
+    return SYSTEM_ACTIVITY_TYPES
   } catch (_error) {
     const apiError = handleError(_error, 'Get system activity types', {
       defaultMessage: 'Failed to get default activities',
-    });
-    throw new Error(apiError.userMessage);
+    })
+    throw new Error(apiError.userMessage)
   }
 }
 
@@ -253,22 +249,20 @@ export async function getSystemActivityTypes(): Promise<ActivityType[]> {
  * @example
  * const customs = await getUserCustomActivityTypes('user123');
  */
-export async function getUserCustomActivityTypes(
-  userId: string
-): Promise<ActivityType[]> {
+export async function getUserCustomActivityTypes(userId: string): Promise<ActivityType[]> {
   try {
     if (!userId) {
-      throw new Error('User ID is required');
+      throw new Error('User ID is required')
     }
 
     // BACKWARD COMPATIBILITY: Read from old /projects/{userId}/userProjects collection
     // This treats existing user activities as "custom activities" in the new system
-    const userProjectsRef = collection(db, `projects/${userId}/userProjects`);
-    const querySnapshot = await getDocs(userProjectsRef);
-    const customTypes: ActivityType[] = [];
+    const userProjectsRef = collection(db, `projects/${userId}/userProjects`)
+    const querySnapshot = await getDocs(userProjectsRef)
+    const customTypes: ActivityType[] = []
 
-    querySnapshot.forEach(doc => {
-      const data = doc.data();
+    querySnapshot.forEach((doc) => {
+      const data = doc.data()
       // Convert old Activity/Project to new ActivityType format
       customTypes.push({
         id: doc.id,
@@ -282,15 +276,15 @@ export async function getUserCustomActivityTypes(
         description: data.description || '',
         createdAt: convertTimestamp(data.createdAt),
         updatedAt: convertTimestamp(data.updatedAt),
-      });
-    });
+      })
+    })
 
-    return customTypes;
+    return customTypes
   } catch (_error) {
     const apiError = handleError(_error, 'Get user custom activity types', {
       defaultMessage: 'Failed to get custom activities',
-    });
-    throw new Error(apiError.userMessage);
+    })
+    throw new Error(apiError.userMessage)
   }
 }
 
@@ -305,31 +299,27 @@ export async function getUserCustomActivityTypes(
  * const allActivities = await getAllActivityTypes('user123');
  * // Returns 10 defaults + user's custom activities
  */
-export async function getAllActivityTypes(
-  userId: string
-): Promise<ActivityType[]> {
+export async function getAllActivityTypes(userId: string): Promise<ActivityType[]> {
   try {
     if (!userId) {
-      throw new Error('User ID is required');
+      throw new Error('User ID is required')
     }
 
     // Get both system defaults and user customs in parallel
     const [systemTypes, customTypes] = await Promise.all([
       getSystemActivityTypes(),
       getUserCustomActivityTypes(userId),
-    ]);
+    ])
 
     // Combine and sort by order
-    const allTypes = [...systemTypes, ...customTypes].sort(
-      (a, b) => a.order - b.order
-    );
+    const allTypes = [...systemTypes, ...customTypes].sort((a, b) => a.order - b.order)
 
-    return allTypes;
+    return allTypes
   } catch (_error) {
     const apiError = handleError(_error, 'Get all activity types', {
       defaultMessage: 'Failed to get activity types',
-    });
-    throw new Error(apiError.userMessage);
+    })
+    throw new Error(apiError.userMessage)
   }
 }
 
@@ -357,26 +347,26 @@ export async function createCustomActivityType(
 ): Promise<ActivityType> {
   try {
     if (!auth.currentUser || auth.currentUser.uid !== userId) {
-      throw new Error('User not authenticated or unauthorized');
+      throw new Error('User not authenticated or unauthorized')
     }
 
     if (!data.name || !data.icon || !data.defaultColor) {
-      throw new Error('Name, icon, and color are required');
+      throw new Error('Name, icon, and color are required')
     }
 
     // Rate limit custom activity creation
-    checkRateLimit(userId, 'CUSTOM_ACTIVITY_CREATE');
+    checkRateLimit(userId, 'CUSTOM_ACTIVITY_CREATE')
 
     // Check custom activity limit (max 10)
-    const existingCustoms = await getUserCustomActivityTypes(userId);
+    const existingCustoms = await getUserCustomActivityTypes(userId)
     if (existingCustoms.length >= 10) {
       throw new Error(
         'Maximum custom activities reached (10). Delete an existing custom activity to create a new one.'
-      );
+      )
     }
 
     // Calculate order (system defaults are 1-10, customs start at 11)
-    const order = 10 + existingCustoms.length + 1;
+    const order = 10 + existingCustoms.length + 1
 
     // Prepare activity data for old collection format
     const activityData = removeUndefinedFields({
@@ -389,13 +379,10 @@ export async function createCustomActivityType(
       status: 'active',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    });
+    })
 
     // BACKWARD COMPATIBILITY: Write to old /projects/{userId}/userProjects collection
-    const docRef = await addDoc(
-      collection(db, `projects/${userId}/userProjects`),
-      activityData
-    );
+    const docRef = await addDoc(collection(db, `projects/${userId}/userProjects`), activityData)
 
     // Return in new ActivityType format
     return {
@@ -410,12 +397,12 @@ export async function createCustomActivityType(
       order: order,
       createdAt: new Date(),
       updatedAt: new Date(),
-    };
+    }
   } catch (_error) {
     const apiError = handleError(_error, 'Create custom activity type', {
       defaultMessage: 'Failed to create custom activity',
-    });
-    throw new Error(apiError.userMessage);
+    })
+    throw new Error(apiError.userMessage)
   }
 }
 
@@ -442,30 +429,26 @@ export async function updateCustomActivityType(
 ): Promise<ActivityType> {
   try {
     if (!auth.currentUser || auth.currentUser.uid !== userId) {
-      throw new Error('User not authenticated or unauthorized');
+      throw new Error('User not authenticated or unauthorized')
     }
 
     if (!activityId) {
-      throw new Error('Activity ID is required');
+      throw new Error('Activity ID is required')
     }
 
     // BACKWARD COMPATIBILITY: Use old collection path
-    const activityDocRef = doc(
-      db,
-      `projects/${userId}/userProjects`,
-      activityId
-    );
-    const activityDoc = await getDoc(activityDocRef);
+    const activityDocRef = doc(db, `projects/${userId}/userProjects`, activityId)
+    const activityDoc = await getDoc(activityDocRef)
 
     if (!activityDoc.exists()) {
-      throw new Error('Activity type not found');
+      throw new Error('Activity type not found')
     }
 
-    const activityData = activityDoc.data();
+    const activityData = activityDoc.data()
 
     // In old system, isDefault=true means it's a system activity (can't edit)
     if (activityData.isDefault === true) {
-      throw new Error('Cannot update default activity types');
+      throw new Error('Cannot update default activity types')
     }
 
     // Prepare update data - map new field names to old schema
@@ -476,14 +459,14 @@ export async function updateCustomActivityType(
       category: data.category,
       description: data.description,
       updatedAt: serverTimestamp(),
-    });
+    })
 
     // Update in Firestore
-    await updateDoc(activityDocRef, updateData);
+    await updateDoc(activityDocRef, updateData)
 
     // Get updated document
-    const updatedDoc = await getDoc(activityDocRef);
-    const updatedData = updatedDoc.data()!;
+    const updatedDoc = await getDoc(activityDocRef)
+    const updatedData = updatedDoc.data()!
 
     return {
       id: activityId,
@@ -497,12 +480,12 @@ export async function updateCustomActivityType(
       order: updatedData.order,
       createdAt: convertTimestamp(updatedData.createdAt),
       updatedAt: convertTimestamp(updatedData.updatedAt),
-    };
+    }
   } catch (_error) {
     const apiError = handleError(_error, 'Update custom activity type', {
       defaultMessage: 'Failed to update custom activity',
-    });
-    throw new Error(apiError.userMessage);
+    })
+    throw new Error(apiError.userMessage)
   }
 }
 
@@ -520,48 +503,41 @@ export async function updateCustomActivityType(
  * @example
  * await deleteCustomActivityType('activity123', 'user123');
  */
-export async function deleteCustomActivityType(
-  activityId: string,
-  userId: string
-): Promise<void> {
+export async function deleteCustomActivityType(activityId: string, userId: string): Promise<void> {
   try {
     if (!auth.currentUser || auth.currentUser.uid !== userId) {
-      throw new Error('User not authenticated or unauthorized');
+      throw new Error('User not authenticated or unauthorized')
     }
 
     if (!activityId) {
-      throw new Error('Activity ID is required');
+      throw new Error('Activity ID is required')
     }
 
     // BACKWARD COMPATIBILITY: Use old collection path
-    const activityDocRef = doc(
-      db,
-      `projects/${userId}/userProjects`,
-      activityId
-    );
-    const activityDoc = await getDoc(activityDocRef);
+    const activityDocRef = doc(db, `projects/${userId}/userProjects`, activityId)
+    const activityDoc = await getDoc(activityDocRef)
 
     if (!activityDoc.exists()) {
-      throw new Error('Activity type not found');
+      throw new Error('Activity type not found')
     }
 
-    const activityData = activityDoc.data();
+    const activityData = activityDoc.data()
 
     // In old system, isDefault=true means it's a system activity (can't delete)
     if (activityData.isDefault === true) {
-      throw new Error('Cannot delete default activity types');
+      throw new Error('Cannot delete default activity types')
     }
 
     // Hard delete from Firestore
-    await deleteDoc(activityDocRef);
+    await deleteDoc(activityDocRef)
 
     // Note: Sessions using this activity will need to be handled by
     // application logic (mark as "Unassigned" or migrate to default)
   } catch (_error) {
     const apiError = handleError(_error, 'Delete custom activity type', {
       defaultMessage: 'Failed to delete custom activity',
-    });
-    throw new Error(apiError.userMessage);
+    })
+    throw new Error(apiError.userMessage)
   }
 }
 
@@ -588,29 +564,25 @@ export async function getActivityTypeById(
 ): Promise<ActivityType | null> {
   try {
     // Check system defaults first
-    const systemType = SYSTEM_ACTIVITY_TYPES.find(t => t.id === activityId);
+    const systemType = SYSTEM_ACTIVITY_TYPES.find((t) => t.id === activityId)
     if (systemType) {
-      return systemType;
+      return systemType
     }
 
     // Check custom activities
     if (!userId) {
-      return null; // Can't fetch custom without userId
+      return null // Can't fetch custom without userId
     }
 
     // BACKWARD COMPATIBILITY: Use old collection path
-    const activityDocRef = doc(
-      db,
-      `projects/${userId}/userProjects`,
-      activityId
-    );
-    const activityDoc = await getDoc(activityDocRef);
+    const activityDocRef = doc(db, `projects/${userId}/userProjects`, activityId)
+    const activityDoc = await getDoc(activityDocRef)
 
     if (!activityDoc.exists()) {
-      return null;
+      return null
     }
 
-    const data = activityDoc.data();
+    const data = activityDoc.data()
 
     // Convert from old schema to new ActivityType format
     return {
@@ -625,12 +597,12 @@ export async function getActivityTypeById(
       description: data.description || '',
       createdAt: convertTimestamp(data.createdAt),
       updatedAt: convertTimestamp(data.updatedAt),
-    };
+    }
   } catch (_error) {
     const apiError = handleError(_error, 'Get activity type by ID', {
       defaultMessage: 'Failed to get activity type',
-    });
-    throw new Error(apiError.userMessage);
+    })
+    throw new Error(apiError.userMessage)
   }
 }
 
@@ -650,23 +622,23 @@ export async function getActivityTypesByIds(
   userId?: string
 ): Promise<Map<string, ActivityType>> {
   try {
-    const activityMap = new Map<string, ActivityType>();
+    const activityMap = new Map<string, ActivityType>()
 
     // Process in parallel
     await Promise.all(
-      activityIds.map(async id => {
-        const activity = await getActivityTypeById(id, userId);
+      activityIds.map(async (id) => {
+        const activity = await getActivityTypeById(id, userId)
         if (activity) {
-          activityMap.set(id, activity);
+          activityMap.set(id, activity)
         }
       })
-    );
+    )
 
-    return activityMap;
+    return activityMap
   } catch (_error) {
     const apiError = handleError(_error, 'Get activity types by IDs', {
       defaultMessage: 'Failed to get activity types',
-    });
-    throw new Error(apiError.userMessage);
+    })
+    throw new Error(apiError.userMessage)
   }
 }

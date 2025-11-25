@@ -9,7 +9,7 @@ export {
   useChallengeProgress,
   useChallengeStats,
   CHALLENGE_KEYS,
-} from './useChallenges';
+} from './useChallenges'
 
 export {
   useCreateChallenge,
@@ -19,4 +19,4 @@ export {
   useLeaveChallenge,
   useInvalidateChallenge,
   useInvalidateAllChallenges,
-} from './useChallengeMutations';
+} from './useChallengeMutations'

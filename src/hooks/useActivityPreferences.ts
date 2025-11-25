@@ -15,18 +15,18 @@ import {
   useQueryClient,
   UseQueryOptions,
   UseMutationOptions,
-} from '@tanstack/react-query';
-import { Timestamp } from 'firebase/firestore';
-import { UserActivityPreference } from '@/types';
-import { CACHE_TIMES } from '@/lib/queryClient';
+} from '@tanstack/react-query'
+import { Timestamp } from 'firebase/firestore'
+import { UserActivityPreference } from '@/types'
+import { CACHE_TIMES } from '@/lib/queryClient'
 import {
   firebaseActivityPreferencesApi,
   getRecentActivities,
   getAllActivityPreferences,
   getActivityPreference,
   updateActivityPreference,
-} from '@/lib/api/activityPreferences';
-import { useAuth } from './useAuth';
+} from '@/lib/api/activityPreferences'
+import { useAuth } from './useAuth'
 
 // ==================== CACHE KEYS ====================
 
@@ -34,11 +34,10 @@ export const ACTIVITY_PREFERENCE_KEYS = {
   all: () => ['activityPreferences'] as const,
   recent: (userId: string, limit?: number) =>
     [...ACTIVITY_PREFERENCE_KEYS.all(), 'recent', userId, limit] as const,
-  list: (userId: string) =>
-    [...ACTIVITY_PREFERENCE_KEYS.all(), 'list', userId] as const,
+  list: (userId: string) => [...ACTIVITY_PREFERENCE_KEYS.all(), 'list', userId] as const,
   detail: (userId: string, typeId: string) =>
     [...ACTIVITY_PREFERENCE_KEYS.all(), 'detail', userId, typeId] as const,
-};
+}
 
 // ==================== QUERY HOOKS ====================
 
@@ -67,7 +66,7 @@ export function useRecentActivities(
     gcTime: CACHE_TIMES.LONG,
     enabled: !!userId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -92,7 +91,7 @@ export function useAllActivityPreferences(
     gcTime: CACHE_TIMES.LONG,
     enabled: !!userId,
     ...options,
-  });
+  })
 }
 
 /**
@@ -119,17 +118,17 @@ export function useActivityPreference(
     gcTime: CACHE_TIMES.LONG,
     enabled: !!userId && !!typeId,
     ...options,
-  });
+  })
 }
 
 // ==================== MUTATION HOOKS ====================
 
 // Context types for mutation rollbacks
 type UpdateActivityPreferenceContext = {
-  previousRecent: unknown;
-  previousList: unknown;
-  previousDetail: unknown;
-};
+  previousRecent: unknown
+  previousList: unknown
+  previousDetail: unknown
+}
 
 /**
  * Update activity preference (track usage)
@@ -157,8 +156,8 @@ export function useUpdateActivityPreference(
     >
   >
 ) {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
 
   return useMutation<
     void,
@@ -166,53 +165,48 @@ export function useUpdateActivityPreference(
     { typeId: string; userId?: string },
     UpdateActivityPreferenceContext
   >({
-    mutationFn: ({ typeId, userId }) =>
-      updateActivityPreference(typeId, userId),
+    mutationFn: ({ typeId, userId }) => updateActivityPreference(typeId, userId),
 
     onMutate: async ({ typeId, userId }) => {
-      const targetUserId = userId || user?.id;
+      const targetUserId = userId || user?.id
       if (!targetUserId) {
         return {
           previousRecent: null,
           previousList: null,
           previousDetail: null,
-        };
+        }
       }
 
       // Cancel outgoing queries for all preference queries
       await queryClient.cancelQueries({
         queryKey: ACTIVITY_PREFERENCE_KEYS.recent(targetUserId),
-      });
+      })
       await queryClient.cancelQueries({
         queryKey: ACTIVITY_PREFERENCE_KEYS.list(targetUserId),
-      });
+      })
       await queryClient.cancelQueries({
         queryKey: ACTIVITY_PREFERENCE_KEYS.detail(targetUserId, typeId),
-      });
+      })
 
       // Snapshot previous values
       const previousRecent = queryClient.getQueryData(
         ACTIVITY_PREFERENCE_KEYS.recent(targetUserId, 5)
-      );
-      const previousList = queryClient.getQueryData(
-        ACTIVITY_PREFERENCE_KEYS.list(targetUserId)
-      );
+      )
+      const previousList = queryClient.getQueryData(ACTIVITY_PREFERENCE_KEYS.list(targetUserId))
       const previousDetail = queryClient.getQueryData(
         ACTIVITY_PREFERENCE_KEYS.detail(targetUserId, typeId)
-      );
+      )
 
       // Helper to update a preference
-      const updatePreference = (
-        pref: UserActivityPreference
-      ): UserActivityPreference => {
-        if (pref.typeId !== typeId) return pref;
+      const updatePreference = (pref: UserActivityPreference): UserActivityPreference => {
+        if (pref.typeId !== typeId) return pref
         return {
           ...pref,
           lastUsed: Timestamp.fromDate(new Date()),
           useCount: pref.useCount + 1,
           updatedAt: Timestamp.fromDate(new Date()),
-        };
-      };
+        }
+      }
 
       // Helper to create new preference if doesn't exist
       const createPreference = (): UserActivityPreference => ({
@@ -222,106 +216,103 @@ export function useUpdateActivityPreference(
         useCount: 1,
         createdAt: Timestamp.fromDate(new Date()),
         updatedAt: Timestamp.fromDate(new Date()),
-      });
+      })
 
       // Optimistically update recent activities
       queryClient.setQueryData<UserActivityPreference[]>(
         ACTIVITY_PREFERENCE_KEYS.recent(targetUserId, 5),
-        old => {
-          if (!old) return [createPreference()];
+        (old) => {
+          if (!old) return [createPreference()]
 
           // Check if activity already in recent
-          const existingIndex = old.findIndex(p => p.typeId === typeId);
+          const existingIndex = old.findIndex((p) => p.typeId === typeId)
 
           if (existingIndex >= 0) {
             // Update existing and move to front
-            const existingPref = old[existingIndex];
-            if (!existingPref) return old;
-            const updated = updatePreference(existingPref);
-            return [updated, ...old.filter((_, i) => i !== existingIndex)];
+            const existingPref = old[existingIndex]
+            if (!existingPref) return old
+            const updated = updatePreference(existingPref)
+            return [updated, ...old.filter((_, i) => i !== existingIndex)]
           } else {
             // Add new to front, limit to 5
-            return [createPreference(), ...old].slice(0, 5);
+            return [createPreference(), ...old].slice(0, 5)
           }
         }
-      );
+      )
 
       // Optimistically update all preferences list
       queryClient.setQueryData<UserActivityPreference[]>(
         ACTIVITY_PREFERENCE_KEYS.list(targetUserId),
-        old => {
-          if (!old) return [createPreference()];
+        (old) => {
+          if (!old) return [createPreference()]
 
-          const existingIndex = old.findIndex(p => p.typeId === typeId);
+          const existingIndex = old.findIndex((p) => p.typeId === typeId)
 
           if (existingIndex >= 0) {
             // Update existing and move to front
-            const existingPref = old[existingIndex];
-            if (!existingPref) return old;
-            const updated = updatePreference(existingPref);
-            return [updated, ...old.filter((_, i) => i !== existingIndex)];
+            const existingPref = old[existingIndex]
+            if (!existingPref) return old
+            const updated = updatePreference(existingPref)
+            return [updated, ...old.filter((_, i) => i !== existingIndex)]
           } else {
             // Add new to front
-            return [createPreference(), ...old];
+            return [createPreference(), ...old]
           }
         }
-      );
+      )
 
       // Optimistically update detail
       queryClient.setQueryData<UserActivityPreference | null>(
         ACTIVITY_PREFERENCE_KEYS.detail(targetUserId, typeId),
-        old => {
-          if (!old) return createPreference();
-          return updatePreference(old);
+        (old) => {
+          if (!old) return createPreference()
+          return updatePreference(old)
         }
-      );
+      )
 
-      return { previousRecent, previousList, previousDetail };
+      return { previousRecent, previousList, previousDetail }
     },
 
     onError: (error, { typeId, userId }, context) => {
-      const targetUserId = userId || user?.id;
-      if (!targetUserId || !context) return;
+      const targetUserId = userId || user?.id
+      if (!targetUserId || !context) return
 
       // Rollback on error
       if (context.previousRecent !== undefined) {
         queryClient.setQueryData(
           ACTIVITY_PREFERENCE_KEYS.recent(targetUserId, 5),
           context.previousRecent
-        );
+        )
       }
       if (context.previousList !== undefined) {
-        queryClient.setQueryData(
-          ACTIVITY_PREFERENCE_KEYS.list(targetUserId),
-          context.previousList
-        );
+        queryClient.setQueryData(ACTIVITY_PREFERENCE_KEYS.list(targetUserId), context.previousList)
       }
       if (context.previousDetail !== undefined) {
         queryClient.setQueryData(
           ACTIVITY_PREFERENCE_KEYS.detail(targetUserId, typeId),
           context.previousDetail
-        );
+        )
       }
     },
 
     onSuccess: (_, { typeId, userId }) => {
-      const targetUserId = userId || user?.id;
-      if (!targetUserId) return;
+      const targetUserId = userId || user?.id
+      if (!targetUserId) return
 
       // Invalidate to fetch fresh data (server timestamps)
       queryClient.invalidateQueries({
         queryKey: ACTIVITY_PREFERENCE_KEYS.recent(targetUserId),
-      });
+      })
       queryClient.invalidateQueries({
         queryKey: ACTIVITY_PREFERENCE_KEYS.list(targetUserId),
-      });
+      })
       queryClient.invalidateQueries({
         queryKey: ACTIVITY_PREFERENCE_KEYS.detail(targetUserId, typeId),
-      });
+      })
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -334,18 +325,18 @@ export function useUpdateActivityPreference(
  * invalidatePreferences(userId);
  */
 export function useInvalidateActivityPreferences() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return (userId: string) => {
     queryClient.invalidateQueries({
       queryKey: ACTIVITY_PREFERENCE_KEYS.all(),
-      predicate: query => {
-        const key = query.queryKey as string[];
-        return key.includes(userId);
+      predicate: (query) => {
+        const key = query.queryKey as string[]
+        return key.includes(userId)
       },
-    });
-  };
+    })
+  }
 }
 
 // Export the API for direct usage if needed
-export { firebaseActivityPreferencesApi };
+export { firebaseActivityPreferencesApi }

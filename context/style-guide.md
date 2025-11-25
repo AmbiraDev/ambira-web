@@ -25,10 +25,10 @@ This document provides specific implementation guidelines for Ambira's visual de
 **Tailwind Classes:**
 
 ```jsx
-className = 'text-[#0066CC]';
-className = 'bg-[#0066CC]';
-className = 'border-[#0066CC]';
-className = 'ring-[#0066CC]';
+className = 'text-[#0066CC]'
+className = 'bg-[#0066CC]'
+className = 'border-[#0066CC]'
+className = 'ring-[#0066CC]'
 ```
 
 #### Success Green
@@ -104,9 +104,9 @@ className = 'ring-[#0066CC]';
 **Tailwind Usage:**
 
 ```jsx
-className = 'bg-background text-foreground';
-className = 'bg-card border-border';
-className = 'text-muted-foreground';
+className = 'bg-background text-foreground'
+className = 'bg-card border-border'
+className = 'text-muted-foreground'
 ```
 
 ### Avatar Gradient Colors
@@ -159,7 +159,7 @@ For user avatars without profile pictures:
 
 ```tsx
 // Configured in layout.tsx
-import { Inter } from 'next/font/google';
+import { Inter } from 'next/font/google'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -167,7 +167,7 @@ const inter = Inter({
   style: ['normal', 'italic'],
   variable: '--font-inter',
   display: 'swap',
-});
+})
 ```
 
 **CSS Variable:**
@@ -281,57 +281,57 @@ All spacing uses multiples of 4px (Tailwind's default scale).
 
 ```jsx
 // Card Padding
-className = 'p-6'; // 24px all sides
+className = 'p-6' // 24px all sides
 
 // Button Padding
-className = 'px-4 py-2'; // 16px horizontal, 8px vertical
+className = 'px-4 py-2' // 16px horizontal, 8px vertical
 
 // Large Button
-className = 'px-8 py-2'; // 32px horizontal, 8px vertical
+className = 'px-8 py-2' // 32px horizontal, 8px vertical
 
 // Mobile Page Padding
-className = 'px-4 py-4'; // 16px all sides
+className = 'px-4 py-4' // 16px all sides
 
 // Desktop Page Padding
-className = 'px-6 py-6 md:px-8'; // 24px mobile, 32px desktop
+className = 'px-6 py-6 md:px-8' // 24px mobile, 32px desktop
 
 // Input Padding
-className = 'px-3 py-2'; // 12px horizontal, 8px vertical
+className = 'px-3 py-2' // 12px horizontal, 8px vertical
 ```
 
 ### Gap & Space
 
 ```jsx
 // Flex/Grid Gap
-className = 'gap-2'; // 8px
-className = 'gap-4'; // 16px
-className = 'gap-6'; // 24px
-className = 'gap-8'; // 32px
+className = 'gap-2' // 8px
+className = 'gap-4' // 16px
+className = 'gap-6' // 24px
+className = 'gap-8' // 32px
 
 // Vertical Stack (Space Between)
-className = 'space-y-1.5'; // 6px between items
-className = 'space-y-2'; // 8px between items
-className = 'space-y-4'; // 16px between items
-className = 'space-y-6'; // 24px between items
+className = 'space-y-1.5' // 6px between items
+className = 'space-y-2' // 8px between items
+className = 'space-y-4' // 16px between items
+className = 'space-y-6' // 24px between items
 
 // Horizontal Stack
-className = 'space-x-2'; // 8px between items
-className = 'space-x-4'; // 16px between items
+className = 'space-x-2' // 8px between items
+className = 'space-x-4' // 16px between items
 ```
 
 ### Margin Examples
 
 ```jsx
 // Top margin for sections
-className = 'mt-6'; // 24px
-className = 'mt-8'; // 32px
+className = 'mt-6' // 24px
+className = 'mt-8' // 32px
 
 // Bottom margin for content
-className = 'mb-4'; // 16px
-className = 'mb-6'; // 24px
+className = 'mb-4' // 16px
+className = 'mb-6' // 24px
 
 // Auto-centering
-className = 'mx-auto'; // Center horizontally
+className = 'mx-auto' // Center horizontally
 ```
 
 ## Component Styling
@@ -502,7 +502,7 @@ className = 'mx-auto'; // Center horizontally
 ### Import Pattern
 
 ```tsx
-import { Heart, MessageCircle, Share2, Clock, TrendingUp } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Clock, TrendingUp } from 'lucide-react'
 ```
 
 ### Size Guidelines
@@ -604,9 +604,7 @@ import { Heart, MessageCircle, Share2, Clock, TrendingUp } from 'lucide-react';
 ```jsx
 <div className="hidden md:flex md:gap-8 max-w-7xl mx-auto px-6">
   {/* Left Sidebar */}
-  <aside className="w-64 sticky top-20 h-fit">
-    {/* Navigation, filters */}
-  </aside>
+  <aside className="w-64 sticky top-20 h-fit">{/* Navigation, filters */}</aside>
 
   {/* Main Feed */}
   <main className="flex-1 max-w-2xl">{/* Primary content */}</main>
@@ -656,25 +654,25 @@ import { Heart, MessageCircle, Share2, Clock, TrendingUp } from 'lucide-react';
 
 ```jsx
 // Hide on mobile, show on desktop
-className = 'hidden md:block';
+className = 'hidden md:block'
 
 // Show on mobile, hide on desktop
-className = 'block md:hidden';
+className = 'block md:hidden'
 
 // Responsive flex direction
-className = 'flex flex-col md:flex-row';
+className = 'flex flex-col md:flex-row'
 
 // Responsive grid columns
-className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
 
 // Responsive text size
-className = 'text-lg md:text-xl lg:text-2xl';
+className = 'text-lg md:text-xl lg:text-2xl'
 
 // Responsive padding
-className = 'px-4 md:px-6 lg:px-8';
+className = 'px-4 md:px-6 lg:px-8'
 
 // Responsive gap
-className = 'gap-4 md:gap-6 lg:gap-8';
+className = 'gap-4 md:gap-6 lg:gap-8'
 ```
 
 ## States & Interactions
@@ -683,17 +681,17 @@ className = 'gap-4 md:gap-6 lg:gap-8';
 
 ```jsx
 // Color change
-className = 'hover:text-[#0066CC]';
-className = 'hover:bg-gray-100';
+className = 'hover:text-[#0066CC]'
+className = 'hover:bg-gray-100'
 
 // Transform
-className = 'hover:scale-105 transition-transform';
+className = 'hover:scale-105 transition-transform'
 
 // Shadow
-className = 'hover:shadow-lg transition-shadow';
+className = 'hover:shadow-lg transition-shadow'
 
 // Border
-className = 'hover:border-[#0066CC] transition-colors';
+className = 'hover:border-[#0066CC] transition-colors'
 ```
 
 ### Focus States
@@ -701,29 +699,27 @@ className = 'hover:border-[#0066CC] transition-colors';
 ```jsx
 // Standard focus ring (all interactive elements)
 className =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2';
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2'
 
 // Focus without offset (tight spaces)
-className =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC]';
+className = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC]'
 ```
 
 ### Active States
 
 ```jsx
 // Button press
-className = 'active:scale-95 transition-transform';
+className = 'active:scale-95 transition-transform'
 
 // Background change
-className = 'active:bg-[#0051D5]';
+className = 'active:bg-[#0051D5]'
 ```
 
 ### Disabled States
 
 ```jsx
 // Buttons and inputs
-className =
-  'disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed';
+className = 'disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed'
 ```
 
 ### Loading States
@@ -789,32 +785,32 @@ rounded-full /* 50% - for avatars, badges, pills */
 
 ```jsx
 // Color transitions (buttons, links)
-className = 'transition-colors duration-200';
+className = 'transition-colors duration-200'
 
 // All properties (use sparingly)
-className = 'transition-all duration-300';
+className = 'transition-all duration-300'
 
 // Transform (hover scale, etc.)
-className = 'transition-transform duration-200';
+className = 'transition-transform duration-200'
 
 // Shadow transitions
-className = 'transition-shadow duration-300';
+className = 'transition-shadow duration-300'
 ```
 
 ### Common Animations
 
 ```jsx
 // Fade in
-className = 'animate-in fade-in duration-200';
+className = 'animate-in fade-in duration-200'
 
 // Slide up (modals, toasts)
-className = 'animate-in slide-in-from-bottom duration-300';
+className = 'animate-in slide-in-from-bottom duration-300'
 
 // Spin (loading)
-className = 'animate-spin';
+className = 'animate-spin'
 
 // Pulse (loading skeleton)
-className = 'animate-pulse';
+className = 'animate-pulse'
 ```
 
 ### Custom Keyframe (from globals.css)
@@ -844,7 +840,7 @@ className = 'animate-pulse';
 ```jsx
 // Always include on interactive elements
 className =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2';
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2'
 ```
 
 ### ARIA Labels
@@ -890,13 +886,13 @@ className =
 
 ```jsx
 // Minimum 44x44px for all tappable elements
-className = 'min-h-[44px] min-w-[44px]';
+className = 'min-h-[44px] min-w-[44px]'
 
 // Button
-className = 'h-10 min-h-[44px] px-4';
+className = 'h-10 min-h-[44px] px-4'
 
 // Icon button
-className = 'w-10 h-10 min-w-[44px] min-h-[44px]';
+className = 'w-10 h-10 min-w-[44px] min-h-[44px]'
 ```
 
 ## Utility Functions
@@ -904,21 +900,15 @@ className = 'w-10 h-10 min-w-[44px] min-h-[44px]';
 ### Class Name Merging
 
 ```tsx
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }
 
 // Usage
-<div
-  className={cn(
-    'base classes',
-    isActive && 'active classes',
-    'override classes'
-  )}
-/>;
+;<div className={cn('base classes', isActive && 'active classes', 'override classes')} />
 ```
 
 ## Quick Reference

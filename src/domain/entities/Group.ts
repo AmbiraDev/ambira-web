@@ -5,8 +5,8 @@
  * This entity is independent of infrastructure concerns (database, API, etc.)
  */
 
-export type GroupCategory = 'work' | 'study' | 'side-project' | 'learning';
-export type GroupPrivacy = 'public' | 'approval-required';
+export type GroupCategory = 'work' | 'study' | 'side-project' | 'learning'
+export type GroupPrivacy = 'public' | 'approval-required'
 
 export class Group {
   constructor(
@@ -23,7 +23,7 @@ export class Group {
     public readonly imageUrl?: string,
     public readonly memberCount?: number
   ) {
-    this.validateInvariants();
+    this.validateInvariants()
   }
 
   /**
@@ -31,24 +31,24 @@ export class Group {
    */
   private validateInvariants(): void {
     if (!this.name || this.name.trim().length === 0) {
-      throw new Error('Group name cannot be empty');
+      throw new Error('Group name cannot be empty')
     }
 
     if (this.memberIds.length === 0) {
-      throw new Error('Group must have at least one member');
+      throw new Error('Group must have at least one member')
     }
 
     if (this.adminUserIds.length === 0) {
-      throw new Error('Group must have at least one admin');
+      throw new Error('Group must have at least one admin')
     }
 
     // Creator must be an admin and member
     if (!this.adminUserIds.includes(this.createdByUserId)) {
-      throw new Error('Group creator must be an admin');
+      throw new Error('Group creator must be an admin')
     }
 
     if (!this.memberIds.includes(this.createdByUserId)) {
-      throw new Error('Group creator must be a member');
+      throw new Error('Group creator must be a member')
     }
   }
 
@@ -56,35 +56,35 @@ export class Group {
    * Business Logic: Check if user is a member
    */
   isMember(userId: string): boolean {
-    return this.memberIds.includes(userId);
+    return this.memberIds.includes(userId)
   }
 
   /**
    * Business Logic: Check if user is an admin
    */
   isAdmin(userId: string): boolean {
-    return this.adminUserIds.includes(userId);
+    return this.adminUserIds.includes(userId)
   }
 
   /**
    * Business Logic: Check if user is the owner/creator
    */
   isOwner(userId: string): boolean {
-    return this.createdByUserId === userId;
+    return this.createdByUserId === userId
   }
 
   /**
    * Business Logic: Get member count (from cache or array length)
    */
   getMemberCount(): number {
-    return this.memberCount ?? this.memberIds.length;
+    return this.memberCount ?? this.memberIds.length
   }
 
   /**
    * Business Logic: Check if user can edit group settings
    */
   canUserEdit(userId: string): boolean {
-    return this.isAdmin(userId) || this.isOwner(userId);
+    return this.isAdmin(userId) || this.isOwner(userId)
   }
 
   /**
@@ -93,11 +93,11 @@ export class Group {
   canUserInvite(userId: string): boolean {
     // Members can invite if group is public
     if (this.privacy === 'public' && this.isMember(userId)) {
-      return true;
+      return true
     }
 
     // Otherwise only admins can invite
-    return this.isAdmin(userId);
+    return this.isAdmin(userId)
   }
 
   /**
@@ -106,7 +106,7 @@ export class Group {
    */
   withAddedMember(userId: string): Group {
     if (this.isMember(userId)) {
-      throw new Error('User is already a member');
+      throw new Error('User is already a member')
     }
 
     return new Group(
@@ -122,7 +122,7 @@ export class Group {
       this.location,
       this.imageUrl,
       (this.memberCount ?? this.memberIds.length) + 1
-    );
+    )
   }
 
   /**
@@ -131,19 +131,19 @@ export class Group {
    */
   withRemovedMember(userId: string): Group {
     if (!this.isMember(userId)) {
-      throw new Error('User is not a member');
+      throw new Error('User is not a member')
     }
 
     if (this.isOwner(userId)) {
-      throw new Error('Cannot remove group owner');
+      throw new Error('Cannot remove group owner')
     }
 
     // Remove from members and admins
-    const newMemberIds = this.memberIds.filter(id => id !== userId);
-    const newAdminIds = this.adminUserIds.filter(id => id !== userId);
+    const newMemberIds = this.memberIds.filter((id) => id !== userId)
+    const newAdminIds = this.adminUserIds.filter((id) => id !== userId)
 
     if (newAdminIds.length === 0) {
-      throw new Error('Cannot remove last admin');
+      throw new Error('Cannot remove last admin')
     }
 
     return new Group(
@@ -159,7 +159,7 @@ export class Group {
       this.location,
       this.imageUrl,
       (this.memberCount ?? this.memberIds.length) - 1
-    );
+    )
   }
 
   /**
@@ -167,11 +167,11 @@ export class Group {
    */
   withPromotedAdmin(userId: string): Group {
     if (!this.isMember(userId)) {
-      throw new Error('User must be a member to become admin');
+      throw new Error('User must be a member to become admin')
     }
 
     if (this.isAdmin(userId)) {
-      throw new Error('User is already an admin');
+      throw new Error('User is already an admin')
     }
 
     return new Group(
@@ -187,7 +187,7 @@ export class Group {
       this.location,
       this.imageUrl,
       this.memberCount
-    );
+    )
   }
 
   /**
@@ -207,6 +207,6 @@ export class Group {
       location: this.location,
       imageUrl: this.imageUrl,
       memberCount: this.getMemberCount(),
-    };
+    }
   }
 }

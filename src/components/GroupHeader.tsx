@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
-import { Group, GroupStats } from '@/types';
-import GroupAvatar from '@/components/GroupAvatar';
+import React from 'react'
+import { useRouter } from 'next/navigation'
+import { Group, GroupStats } from '@/types'
+import GroupAvatar from '@/components/GroupAvatar'
 import {
   Users,
   MapPin,
@@ -15,18 +15,18 @@ import {
   ChevronLeft,
   MessageSquare,
   UserPlus,
-} from 'lucide-react';
+} from 'lucide-react'
 
 interface GroupHeaderProps {
-  group: Group;
-  stats?: GroupStats;
-  currentUserId?: string;
-  isJoined?: boolean;
-  onJoin?: () => Promise<void>;
-  onLeave?: () => Promise<void>;
-  onSettings?: () => void;
-  onInvite?: () => void;
-  isLoading?: boolean;
+  group: Group
+  stats?: GroupStats
+  currentUserId?: string
+  isJoined?: boolean
+  onJoin?: () => Promise<void>
+  onLeave?: () => Promise<void>
+  onSettings?: () => void
+  onInvite?: () => void
+  isLoading?: boolean
 }
 
 const categoryLabels = {
@@ -35,14 +35,14 @@ const categoryLabels = {
   'side-project': 'Side Project',
   learning: 'Learning',
   other: 'Other',
-};
+}
 
 const typeLabels = {
   'just-for-fun': 'Just for Fun',
   professional: 'Professional',
   competitive: 'Competitive',
   other: 'Other',
-};
+}
 
 export default function GroupHeader({
   group,
@@ -55,23 +55,23 @@ export default function GroupHeader({
   onInvite,
   isLoading = false,
 }: GroupHeaderProps) {
-  const router = useRouter();
-  const isAdmin = currentUserId && group.adminUserIds.includes(currentUserId);
-  const isCreator = currentUserId && group.createdByUserId === currentUserId;
-  const canJoin = currentUserId && !isJoined && !isAdmin;
-  const canLeave = currentUserId && isJoined && !isAdmin;
+  const router = useRouter()
+  const isAdmin = currentUserId && group.adminUserIds.includes(currentUserId)
+  const isCreator = currentUserId && group.createdByUserId === currentUserId
+  const canJoin = currentUserId && !isJoined && !isAdmin
+  const canLeave = currentUserId && isJoined && !isAdmin
 
   const handleJoin = async () => {
     if (onJoin && canJoin) {
-      await onJoin();
+      await onJoin()
     }
-  };
+  }
 
   const handleLeave = async () => {
     if (onLeave && canLeave) {
-      await onLeave();
+      await onLeave()
     }
-  };
+  }
 
   return (
     <div className="bg-white md:bg-gray-50">
@@ -83,9 +83,7 @@ export default function GroupHeader({
         >
           <ChevronLeft className="w-6 h-6 text-gray-700" />
         </button>
-        <h1 className="text-lg font-bold text-gray-900 truncate flex-1">
-          {group.name}
-        </h1>
+        <h1 className="text-lg font-bold text-gray-900 truncate flex-1">{group.name}</h1>
         {(isAdmin || isCreator) && (
           <button
             onClick={onSettings}
@@ -109,9 +107,7 @@ export default function GroupHeader({
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {group.name}
-                </h1>
+                <h1 className="text-2xl font-bold text-gray-900">{group.name}</h1>
                 {(isAdmin || isCreator) && (
                   <button
                     onClick={onSettings}
@@ -188,9 +184,7 @@ export default function GroupHeader({
                 disabled={isLoading}
                 className="flex-1 py-3 px-4 bg-[#0066CC] hover:bg-[#0051D5] text-white rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
               >
-                {group.privacySetting === 'public'
-                  ? 'Join Group'
-                  : 'Request to Join'}
+                {group.privacySetting === 'public' ? 'Join Group' : 'Request to Join'}
               </button>
             ) : canLeave ? (
               <>
@@ -225,9 +219,7 @@ export default function GroupHeader({
                 </div>
                 <span className="text-xs text-gray-600">Active Members</span>
               </div>
-              <div className="text-2xl font-bold text-gray-900">
-                {stats.activeMembers}
-              </div>
+              <div className="text-2xl font-bold text-gray-900">{stats.activeMembers}</div>
             </div>
 
             <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4">
@@ -249,9 +241,7 @@ export default function GroupHeader({
                 </div>
                 <span className="text-xs text-gray-600">Total Hours</span>
               </div>
-              <div className="text-2xl font-bold text-gray-900">
-                {stats.totalHours.toFixed(1)}h
-              </div>
+              <div className="text-2xl font-bold text-gray-900">{stats.totalHours.toFixed(1)}h</div>
             </div>
 
             <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4">
@@ -261,13 +251,11 @@ export default function GroupHeader({
                 </div>
                 <span className="text-xs text-gray-600">Posts</span>
               </div>
-              <div className="text-2xl font-bold text-gray-900">
-                {stats.totalPosts}
-              </div>
+              <div className="text-2xl font-bold text-gray-900">{stats.totalPosts}</div>
             </div>
           </div>
         )}
       </div>
     </div>
-  );
+  )
 }

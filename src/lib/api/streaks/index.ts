@@ -20,19 +20,19 @@ import {
   where,
   orderBy,
   limit as limitFn,
-} from 'firebase/firestore';
+} from 'firebase/firestore'
 
 // Local Firebase config
-import { db, auth } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase'
 
 // Error handling
-import { handleError, isPermissionError } from '@/lib/errorHandler';
+import { handleError, isPermissionError } from '@/lib/errorHandler'
 
 // Shared utilities
-import { convertTimestamp } from '../shared/utils';
+import { convertTimestamp } from '../shared/utils'
 
 // Types
-import type { StreakData, StreakStats } from '@/types';
+import type { StreakData, StreakStats } from '@/types'
 
 // ============================================================================
 // PUBLIC API
@@ -47,7 +47,7 @@ export const firebaseStreakApi = {
    */
   getStreakData: async (userId: string): Promise<StreakData> => {
     try {
-      const streakDoc = await getDoc(doc(db, 'streaks', userId));
+      const streakDoc = await getDoc(doc(db, 'streaks', userId))
 
       if (!streakDoc.exists()) {
         // Initialize streak data if it doesn't exist
@@ -59,29 +59,27 @@ export const firebaseStreakApi = {
           totalStreakDays: 0,
           streakHistory: [],
           isPublic: true,
-        };
+        }
 
         // Try to create the document, but if permission is denied (viewing another user's profile),
         // just return the initial streak without creating it
         try {
           await setDoc(doc(db, 'streaks', userId), {
             ...initialStreak,
-            lastActivityDate: Timestamp.fromDate(
-              initialStreak.lastActivityDate
-            ),
-          });
+            lastActivityDate: Timestamp.fromDate(initialStreak.lastActivityDate),
+          })
         } catch (createError) {
           // If we can't create (permission denied), just return the empty streak
           if (isPermissionError(createError)) {
-            return initialStreak;
+            return initialStreak
           }
-          throw createError;
+          throw createError
         }
 
-        return initialStreak;
+        return initialStreak
       }
 
-      const data = streakDoc.data();
+      const data = streakDoc.data()
       return {
         userId: data.userId,
         currentStreak: data.currentStreak || 0,
@@ -90,7 +88,7 @@ export const firebaseStreakApi = {
         totalStreakDays: data.totalStreakDays || 0,
         streakHistory: data.streakHistory || [],
         isPublic: data.isPublic !== false,
-      };
+      }
     } catch (_error) {
       // Handle permission errors gracefully - return empty streak
       if (isPermissionError(_error)) {
@@ -102,13 +100,13 @@ export const firebaseStreakApi = {
           totalStreakDays: 0,
           streakHistory: [],
           isPublic: true,
-        };
+        }
       }
 
       const apiError = handleError(_error, 'Get streak data', {
         defaultMessage: 'Failed to get streak data',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -128,107 +126,102 @@ export const firebaseStreakApi = {
         where('userId', '==', userId),
         orderBy('startTime', 'desc'),
         limitFn(365) // Get last year of sessions
-      );
-      const sessionsSnapshot = await getDocs(sessionsQuery);
-      const sessions = sessionsSnapshot.docs.map(doc => ({
+      )
+      const sessionsSnapshot = await getDocs(sessionsQuery)
+      const sessions = sessionsSnapshot.docs.map((doc) => ({
         ...doc.data(),
         startTime: convertTimestamp(doc.data().startTime),
-      }));
+      }))
 
       // Group sessions by day (YYYY-MM-DD)
-      const sessionsByDay = new Map<string, boolean>();
-      sessions.forEach(session => {
-        const date = new Date(session.startTime);
-        const dayKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-        sessionsByDay.set(dayKey, true);
-      });
+      const sessionsByDay = new Map<string, boolean>()
+      sessions.forEach((session) => {
+        const date = new Date(session.startTime)
+        const dayKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+        sessionsByDay.set(dayKey, true)
+      })
 
       // Calculate current streak by going backwards from today
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      let currentStreak = 0;
-      const checkDate = new Date(today);
-      let lastActivityDate: Date | null = null;
+      const now = new Date()
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      let currentStreak = 0
+      const checkDate = new Date(today)
+      let lastActivityDate: Date | null = null
 
       // Start checking from today, going backwards
       for (let i = 0; i < 365; i++) {
-        const dayKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
-        const hasSession = sessionsByDay.has(dayKey);
+        const dayKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`
+        const hasSession = sessionsByDay.has(dayKey)
 
         if (i === 0) {
           // Today - if no session, start checking from yesterday
           if (hasSession) {
-            currentStreak = 1;
-            lastActivityDate = new Date(checkDate);
+            currentStreak = 1
+            lastActivityDate = new Date(checkDate)
           } else {
           }
         } else {
           // Previous days
           if (hasSession) {
-            currentStreak++;
+            currentStreak++
             if (!lastActivityDate) {
-              lastActivityDate = new Date(checkDate);
+              lastActivityDate = new Date(checkDate)
             }
           } else {
             // Gap found - stop counting
-            break;
+            break
           }
         }
 
         // Move to previous day
-        checkDate.setDate(checkDate.getDate() - 1);
+        checkDate.setDate(checkDate.getDate() - 1)
       }
 
       // Calculate longest streak and total days
-      const sortedDays = Array.from(sessionsByDay.keys()).sort();
-      let longestStreak = 0;
-      let tempStreak = 0;
-      let prevDate: Date | null = null;
+      const sortedDays = Array.from(sessionsByDay.keys()).sort()
+      let longestStreak = 0
+      let tempStreak = 0
+      let prevDate: Date | null = null
 
       sortedDays.forEach((dayKey, _index) => {
-        const [year, month, day] = dayKey.split('-').map(Number);
+        const [year, month, day] = dayKey.split('-').map(Number)
         if (year === undefined || month === undefined || day === undefined) {
-          throw new Error(`Invalid date format in dayKey: ${dayKey}`);
+          throw new Error(`Invalid date format in dayKey: ${dayKey}`)
         }
-        const currentDate = new Date(year, month - 1, day);
+        const currentDate = new Date(year, month - 1, day)
 
         if (!prevDate) {
           // First day
-          tempStreak = 1;
+          tempStreak = 1
         } else {
           const daysDiff = Math.floor(
             (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24)
-          );
+          )
           if (daysDiff === 1) {
             // Consecutive day
-            tempStreak++;
+            tempStreak++
           } else {
             // Gap - reset streak
-            tempStreak = 1;
+            tempStreak = 1
           }
         }
 
-        longestStreak = Math.max(longestStreak, tempStreak);
-        prevDate = currentDate;
-      });
+        longestStreak = Math.max(longestStreak, tempStreak)
+        prevDate = currentDate
+      })
 
-      const totalStreakDays = sessionsByDay.size;
+      const totalStreakDays = sessionsByDay.size
 
       // Determine if streak is at risk
       const daysSinceActivity = lastActivityDate
-        ? Math.floor(
-            (today.getTime() - lastActivityDate.getTime()) /
-              (1000 * 60 * 60 * 24)
-          )
-        : 999;
-      const streakAtRisk = currentStreak > 0 && daysSinceActivity >= 1;
+        ? Math.floor((today.getTime() - lastActivityDate.getTime()) / (1000 * 60 * 60 * 24))
+        : 999
+      const streakAtRisk = currentStreak > 0 && daysSinceActivity >= 1
 
       // Calculate next milestone
-      const milestones = [7, 30, 100, 365, 500, 1000];
+      const milestones = [7, 30, 100, 365, 500, 1000]
       const nextMilestone =
-        milestones.find(m => m > currentStreak) ||
-        milestones[milestones.length - 1] ||
-        1000; // Fallback to 1000 if array is empty
+        milestones.find((m) => m > currentStreak) || milestones[milestones.length - 1] || 1000 // Fallback to 1000 if array is empty
 
       const result: StreakStats = {
         currentStreak,
@@ -237,14 +230,14 @@ export const firebaseStreakApi = {
         lastActivityDate,
         streakAtRisk,
         nextMilestone,
-      };
+      }
 
-      return result;
+      return result
     } catch (error: unknown) {
       const apiError = handleError(error, 'Get streak stats', {
         defaultMessage: 'Failed to get streak stats',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -257,80 +250,72 @@ export const firebaseStreakApi = {
    * @returns Promise resolving to the updated streak data
    * @throws Error if update fails
    */
-  updateStreak: async (
-    userId: string,
-    sessionDate: Date
-  ): Promise<StreakData> => {
+  updateStreak: async (userId: string, sessionDate: Date): Promise<StreakData> => {
     try {
-      const streakData = await firebaseStreakApi.getStreakData(userId);
+      const streakData = await firebaseStreakApi.getStreakData(userId)
 
       const sessionDay = new Date(
         sessionDate.getFullYear(),
         sessionDate.getMonth(),
         sessionDate.getDate()
-      );
+      )
       const lastActivityDay = new Date(
         streakData.lastActivityDate.getFullYear(),
         streakData.lastActivityDate.getMonth(),
         streakData.lastActivityDate.getDate()
-      );
+      )
 
       const daysDiff = Math.floor(
-        (sessionDay.getTime() - lastActivityDay.getTime()) /
-          (1000 * 60 * 60 * 24)
-      );
+        (sessionDay.getTime() - lastActivityDay.getTime()) / (1000 * 60 * 60 * 24)
+      )
 
-      let newCurrentStreak = streakData.currentStreak;
-      let newLongestStreak = streakData.longestStreak;
-      let newTotalStreakDays = streakData.totalStreakDays;
+      let newCurrentStreak = streakData.currentStreak
+      let newLongestStreak = streakData.longestStreak
+      let newTotalStreakDays = streakData.totalStreakDays
 
       // Special case: If current streak is 0 (first session ever or after long break)
       // Check if this is truly the first session or if we're restarting
-      const isFirstEverSession =
-        streakData.currentStreak === 0 && streakData.totalStreakDays === 0;
-      const isRestartingStreak =
-        streakData.currentStreak === 0 && streakData.totalStreakDays > 0;
+      const isFirstEverSession = streakData.currentStreak === 0 && streakData.totalStreakDays === 0
+      const isRestartingStreak = streakData.currentStreak === 0 && streakData.totalStreakDays > 0
 
       if (isFirstEverSession || isRestartingStreak) {
         // First session or restarting - start streak at 1
         if (isFirstEverSession) {
-          newTotalStreakDays = 1;
+          newTotalStreakDays = 1
         } else {
-          newTotalStreakDays += 1;
+          newTotalStreakDays += 1
         }
-        newCurrentStreak = 1;
-        newLongestStreak = Math.max(1, newLongestStreak);
+        newCurrentStreak = 1
+        newLongestStreak = Math.max(1, newLongestStreak)
       } else if (daysDiff === 0) {
         // Same day, no change to streak
       } else if (daysDiff === 1) {
         // Consecutive day, increment streak
-        newCurrentStreak += 1;
-        newTotalStreakDays += 1;
+        newCurrentStreak += 1
+        newTotalStreakDays += 1
         if (newCurrentStreak > newLongestStreak) {
-          newLongestStreak = newCurrentStreak;
+          newLongestStreak = newCurrentStreak
         }
       } else if (daysDiff > 1) {
         // Streak broken, reset to 1
-        newCurrentStreak = 1;
-        newTotalStreakDays += 1;
+        newCurrentStreak = 1
+        newTotalStreakDays += 1
       } else if (daysDiff < 0) {
         // Session is in the past before last activity
       }
 
       // Update streak history (keep last 365 days)
-      const dateStr = sessionDay.toISOString().split('T')[0];
+      const dateStr = sessionDay.toISOString().split('T')[0]
       if (!dateStr) {
-        throw new Error('Invalid date format');
+        throw new Error('Invalid date format')
       }
-      const existingDayIndex = streakData.streakHistory.findIndex(
-        d => d.date === dateStr
-      );
+      const existingDayIndex = streakData.streakHistory.findIndex((d) => d.date === dateStr)
 
-      let newHistory = [...streakData.streakHistory];
+      let newHistory = [...streakData.streakHistory]
       if (existingDayIndex >= 0) {
-        const existingDay = newHistory[existingDayIndex];
+        const existingDay = newHistory[existingDayIndex]
         if (existingDay) {
-          existingDay.sessionCount += 1;
+          existingDay.sessionCount += 1
         }
       } else {
         newHistory.push({
@@ -338,11 +323,11 @@ export const firebaseStreakApi = {
           hasActivity: true,
           sessionCount: 1,
           totalMinutes: 0,
-        });
+        })
       }
 
       // Keep only last 365 days
-      newHistory = newHistory.slice(-365);
+      newHistory = newHistory.slice(-365)
 
       const updatedStreak: StreakData = {
         ...streakData,
@@ -351,19 +336,19 @@ export const firebaseStreakApi = {
         lastActivityDate: sessionDate,
         totalStreakDays: newTotalStreakDays,
         streakHistory: newHistory,
-      };
+      }
 
       await setDoc(doc(db, 'streaks', userId), {
         ...updatedStreak,
         lastActivityDate: Timestamp.fromDate(sessionDate),
-      });
+      })
 
-      return updatedStreak;
+      return updatedStreak
     } catch (_error) {
       const apiError = handleError(_error, 'Update streak', {
         defaultMessage: 'Failed to update streak',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -377,22 +362,22 @@ export const firebaseStreakApi = {
   toggleStreakVisibility: async (userId: string): Promise<boolean> => {
     try {
       if (!auth.currentUser || auth.currentUser.uid !== userId) {
-        throw new Error('Unauthorized');
+        throw new Error('Unauthorized')
       }
 
-      const streakData = await firebaseStreakApi.getStreakData(userId);
-      const newVisibility = !streakData.isPublic;
+      const streakData = await firebaseStreakApi.getStreakData(userId)
+      const newVisibility = !streakData.isPublic
 
       await updateDoc(doc(db, 'streaks', userId), {
         isPublic: newVisibility,
-      });
+      })
 
-      return newVisibility;
+      return newVisibility
     } catch (_error) {
       const apiError = handleError(_error, 'Toggle streak visibility', {
         defaultMessage: 'Failed to toggle streak visibility',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -404,23 +389,20 @@ export const firebaseStreakApi = {
    * @returns Promise that resolves when visibility is updated
    * @throws Error if user is not authorized or update fails
    */
-  updateStreakVisibility: async (
-    userId: string,
-    isPublic: boolean
-  ): Promise<void> => {
+  updateStreakVisibility: async (userId: string, isPublic: boolean): Promise<void> => {
     try {
       if (!auth.currentUser || auth.currentUser.uid !== userId) {
-        throw new Error('Unauthorized');
+        throw new Error('Unauthorized')
       }
 
       await updateDoc(doc(db, 'streaks', userId), {
         isPublic,
-      });
+      })
     } catch (_error) {
       const apiError = handleError(_error, 'Update streak visibility', {
         defaultMessage: 'Failed to update streak visibility',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -436,7 +418,7 @@ export const firebaseStreakApi = {
   restoreStreak: async (userId: string, streakValue: number): Promise<void> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('Unauthorized');
+        throw new Error('Unauthorized')
       }
 
       // TODO: Add admin check
@@ -444,12 +426,12 @@ export const firebaseStreakApi = {
       await updateDoc(doc(db, 'streaks', userId), {
         currentStreak: streakValue,
         lastActivityDate: Timestamp.fromDate(new Date()),
-      });
+      })
     } catch (_error) {
       const apiError = handleError(_error, 'Restore streak', {
         defaultMessage: 'Failed to restore streak',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
-};
+}

@@ -23,36 +23,31 @@ import {
   serverTimestamp,
   Timestamp,
   setDoc,
-} from 'firebase/firestore';
+} from 'firebase/firestore'
 
 // Local Firebase config
-import { db, auth } from '@/lib/firebase';
+import { db, auth } from '@/lib/firebase'
 
 // Error handling
-import {
-  handleError,
-  isPermissionError,
-  isNotFoundError,
-  ErrorSeverity,
-} from '@/lib/errorHandler';
-import { checkRateLimit } from '@/lib/rateLimit';
+import { handleError, isPermissionError, isNotFoundError, ErrorSeverity } from '@/lib/errorHandler'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 // Error messages
-import { ERROR_MESSAGES } from '@/config/errorMessages';
+import { ERROR_MESSAGES } from '@/config/errorMessages'
 
 // Shared utilities
-import { convertTimestamp } from '../shared/utils';
-import { fetchUserDataForSocialContext } from '../social/helpers';
+import { convertTimestamp } from '../shared/utils'
+import { fetchUserDataForSocialContext } from '../social/helpers'
 
 // Import other API modules
-import { firebasePostApi } from './posts';
-import { firebaseChallengeApi } from '../challenges';
-import { updateActivityPreference } from '../activityPreferences';
-import { getAllActivityTypes } from '../activityTypes';
+import { firebasePostApi } from './posts'
+import { firebaseChallengeApi } from '../challenges'
+import { updateActivityPreference } from '../activityPreferences'
+import { getAllActivityTypes } from '../activityTypes'
 
 // Config
-import { TIMEOUTS } from '@/config/constants';
-import { TIMEOUT_ERRORS } from '@/config/errorMessages';
+import { TIMEOUTS } from '@/config/constants'
+import { TIMEOUT_ERRORS } from '@/config/errorMessages'
 
 // Types
 import type {
@@ -62,28 +57,13 @@ import type {
   SessionFilters,
   SessionListResponse,
   User,
-  Project,
   Post,
   Activity,
-} from '@/types';
+} from '@/types'
 
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
-
-/**
- * Validate and normalize project/activity status from Firestore
- * Ensures the status is one of the allowed values, falls back to 'active' if invalid
- *
- * @param status - The status value from Firestore (may be any string)
- * @returns A valid status value: 'active', 'completed', or 'archived'
- */
-function normalizeStatus(status: unknown): 'active' | 'completed' | 'archived' {
-  if (status === 'completed' || status === 'archived') {
-    return status;
-  }
-  return 'active';
-}
 
 /**
  * Create a timeout promise that rejects after a specified duration
@@ -95,8 +75,8 @@ function normalizeStatus(status: unknown): 'active' | 'completed' | 'archived' {
  */
 function createTimeout(ms: number, errorMessage: string): Promise<never> {
   return new Promise((_, reject) => {
-    setTimeout(() => reject(new Error(errorMessage)), ms);
-  });
+    setTimeout(() => reject(new Error(errorMessage)), ms)
+  })
 }
 
 /**
@@ -107,17 +87,14 @@ function createTimeout(ms: number, errorMessage: string): Promise<never> {
  * @param userId - The user ID (for fetching custom activities)
  * @returns Activity object or null if not found
  */
-async function fetchActivityData(
-  activityId: string,
-  userId: string
-): Promise<Activity | null> {
+async function fetchActivityData(activityId: string, userId: string): Promise<Activity | null> {
   try {
     // Get all activity types for the user (includes defaults + custom)
-    const activityTypes = await getAllActivityTypes(userId);
-    const activityType = activityTypes.find(at => at.id === activityId);
+    const activityTypes = await getAllActivityTypes(userId)
+    const activityType = activityTypes.find((at) => at.id === activityId)
 
     if (!activityType) {
-      return null;
+      return null
     }
 
     // Convert ActivityType to Activity
@@ -131,12 +108,12 @@ async function fetchActivityData(
       status: 'active' as const,
       createdAt: activityType.createdAt,
       updatedAt: activityType.updatedAt,
-    };
+    }
   } catch (error) {
     handleError(error, `Fetch activity ${activityId}`, {
       severity: ErrorSeverity.WARNING,
-    });
-    return null;
+    })
+    return null
   }
 }
 
@@ -152,10 +129,7 @@ async function withTimeout<T>(
   queryPromise: Promise<T>,
   timeoutMs: number = TIMEOUTS.FIREBASE_QUERY
 ): Promise<T> {
-  return Promise.race([
-    queryPromise,
-    createTimeout(timeoutMs, TIMEOUT_ERRORS.FIREBASE_QUERY),
-  ]);
+  return Promise.race([queryPromise, createTimeout(timeoutMs, TIMEOUT_ERRORS.FIREBASE_QUERY)])
 }
 
 // ============================================================================
@@ -167,14 +141,14 @@ export const firebaseSessionApi = {
   createSession: async (data: CreateSessionData): Promise<Session> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
       // Rate limitFn session creation
-      checkRateLimit(auth.currentUser.uid, 'SESSION_CREATE');
+      checkRateLimit(auth.currentUser.uid, 'SESSION_CREATE')
 
       // Prepare session data for Firestore
-      const activityId = data.activityId || data.projectId || ''; // Support both for backwards compatibility
+      const activityId = data.activityId || data.projectId || '' // Support both for backwards compatibility
 
       const sessionData: Record<string, unknown> = {
         userId: auth.currentUser.uid,
@@ -197,14 +171,14 @@ export const firebaseSessionApi = {
         commentCount: 0,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      };
+      }
 
       // Only add howFelt if it's defined (Firestore doesn't allow undefined values)
       if (data.howFelt !== undefined) {
-        (sessionData as Record<string, unknown>).howFelt = data.howFelt;
+        ;(sessionData as Record<string, unknown>).howFelt = data.howFelt
       }
 
-      const docRef = await addDoc(collection(db, 'sessions'), sessionData);
+      const docRef = await addDoc(collection(db, 'sessions'), sessionData)
 
       // NOTE: Active session clearing is handled by the caller (useFinishTimerMutation)
       // This prevents race conditions and ensures proper cache invalidation timing
@@ -233,28 +207,28 @@ export const firebaseSessionApi = {
           commentCount: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
-        };
+        }
 
         await firebaseChallengeApi.updateChallengeProgress(
           auth.currentUser.uid,
           sessionForChallenge
-        );
+        )
       } catch (_error) {
         handleError(_error, 'update challenge progress', {
           severity: ErrorSeverity.WARNING,
-        });
+        })
         // Don't fail session creation if challenge update fails
       }
 
       // Update activity preference (track usage)
       try {
         if (activityId) {
-          await updateActivityPreference(activityId, auth.currentUser.uid);
+          await updateActivityPreference(activityId, auth.currentUser.uid)
         }
       } catch (_error) {
         handleError(_error, 'update activity preference', {
           severity: ErrorSeverity.WARNING,
-        });
+        })
         // Don't fail session creation if preference update fails
       }
 
@@ -269,10 +243,7 @@ export const firebaseSessionApi = {
         duration: data.duration,
         startTime: data.startTime,
         // tags removed - no longer used
-        visibility: sessionData.visibility as
-          | 'private'
-          | 'everyone'
-          | 'followers',
+        visibility: sessionData.visibility as 'private' | 'everyone' | 'followers',
         showStartTime: sessionData.showStartTime as boolean | undefined,
         howFelt: data.howFelt,
         privateNotes: data.privateNotes,
@@ -284,14 +255,14 @@ export const firebaseSessionApi = {
         commentCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
-      };
+      }
 
-      return newSession;
+      return newSession
     } catch (error: unknown) {
       const apiError = handleError(error, 'Create session', {
         defaultMessage: ERROR_MESSAGES.SESSION_SAVE_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -314,9 +285,9 @@ export const firebaseSessionApi = {
       const session = await firebaseSessionApi.createSession({
         ...sessionData,
         visibility,
-      });
+      })
 
-      let post: Post | undefined;
+      let post: Post | undefined
 
       // Create post if not private
       if (visibility !== 'private') {
@@ -324,18 +295,18 @@ export const firebaseSessionApi = {
           sessionId: session.id,
           content: postContent,
           visibility,
-        });
+        })
       }
 
-      return { session, post };
+      return { session, post }
     } catch (_error) {
       handleError(_error, 'in createSessionWithPost', {
         severity: ErrorSeverity.ERROR,
-      });
+      })
       const apiError = handleError(_error, 'Create session with post', {
         defaultMessage: ERROR_MESSAGES.SESSION_SAVE_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -352,22 +323,22 @@ export const firebaseSessionApi = {
    * @throws Error if user is not authenticated or save fails
    */
   saveActiveSession: async (timerData: {
-    startTime: Date;
-    projectId: string;
-    activityId?: string;
-    selectedTaskIds: string[];
-    pausedDuration?: number;
-    isPaused?: boolean;
+    startTime: Date
+    projectId: string
+    activityId?: string
+    selectedTaskIds: string[]
+    pausedDuration?: number
+    isPaused?: boolean
   }): Promise<void> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const userId = auth.currentUser.uid;
+      const userId = auth.currentUser.uid
 
       // Ensure user document exists first (Firestore requires parent docs for subcollections)
-      const userRef = doc(db, 'users', userId);
+      const userRef = doc(db, 'users', userId)
       await setDoc(
         userRef,
         {
@@ -375,16 +346,10 @@ export const firebaseSessionApi = {
           updatedAt: serverTimestamp(),
         },
         { merge: true }
-      );
+      )
 
       // Save the active session
-      const activeSessionRef = doc(
-        db,
-        'users',
-        userId,
-        'activeSession',
-        'current'
-      );
+      const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current')
       await setDoc(activeSessionRef, {
         startTime: Timestamp.fromDate(timerData.startTime),
         projectId: timerData.projectId,
@@ -394,10 +359,10 @@ export const firebaseSessionApi = {
         isPaused: !!timerData.isPaused,
         lastUpdated: serverTimestamp(),
         createdAt: serverTimestamp(),
-      });
+      })
     } catch (_error) {
-      const apiError = handleError(_error, 'Save active session');
-      throw new Error(apiError.userMessage);
+      const apiError = handleError(_error, 'Save active session')
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -407,42 +372,34 @@ export const firebaseSessionApi = {
    * @returns Promise resolving to the active session data or null if no active session exists
    */
   getActiveSession: async (): Promise<{
-    startTime: Date;
-    projectId: string;
-    activityId?: string;
-    selectedTaskIds: string[];
-    pausedDuration: number;
-    isPaused: boolean;
+    startTime: Date
+    projectId: string
+    activityId?: string
+    selectedTaskIds: string[]
+    pausedDuration: number
+    isPaused: boolean
   } | null> => {
     try {
       if (!auth.currentUser) {
-        return null;
+        return null
       }
 
-      const userId = auth.currentUser.uid;
-      const activeSessionRef = doc(
-        db,
-        'users',
-        userId,
-        'activeSession',
-        'current'
-      );
-      const activeSessionDoc = await getDoc(activeSessionRef);
+      const userId = auth.currentUser.uid
+      const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current')
+      const activeSessionDoc = await getDoc(activeSessionRef)
 
       if (!activeSessionDoc.exists()) {
-        return null;
+        return null
       }
 
-      const data = activeSessionDoc.data();
+      const data = activeSessionDoc.data()
 
       // Validate data exists and has required fields
       if (!data || !data.startTime || !data.projectId) {
-        handleError(
-          new Error('Active session data is incomplete'),
-          'Get active session',
-          { severity: ErrorSeverity.WARNING }
-        );
-        return null;
+        handleError(new Error('Active session data is incomplete'), 'Get active session', {
+          severity: ErrorSeverity.WARNING,
+        })
+        return null
       }
 
       return {
@@ -452,16 +409,16 @@ export const firebaseSessionApi = {
         selectedTaskIds: data.selectedTaskIds || [],
         pausedDuration: data.pausedDuration || 0,
         isPaused: !!data.isPaused,
-      };
+      }
     } catch (error: unknown) {
       // If it's a permission error or document doesn't exist, silently return null
       if (isPermissionError(error) || isNotFoundError(error)) {
-        return null;
+        return null
       }
       handleError(error, 'Get active session', {
         severity: ErrorSeverity.ERROR,
-      });
-      return null;
+      })
+      return null
     }
   },
 
@@ -474,21 +431,15 @@ export const firebaseSessionApi = {
   clearActiveSession: async (): Promise<void> => {
     try {
       if (!auth.currentUser) {
-        return;
+        return
       }
 
-      const userId = auth.currentUser.uid;
-      const activeSessionRef = doc(
-        db,
-        'users',
-        userId,
-        'activeSession',
-        'current'
-      );
+      const userId = auth.currentUser.uid
+      const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current')
 
       // Delete the document immediately to prevent race conditions
       // This is atomic and prevents any in-flight auto-save from restoring the session
-      await deleteDoc(activeSessionRef);
+      await deleteDoc(activeSessionRef)
 
       // Broadcast cancellation to other tabs using localStorage event
       try {
@@ -496,18 +447,18 @@ export const firebaseSessionApi = {
           type: 'session-cancelled',
           timestamp: Date.now(),
           userId: userId,
-        };
-        localStorage.setItem('timer-event', JSON.stringify(event));
+        }
+        localStorage.setItem('timer-event', JSON.stringify(event))
         // Remove immediately to trigger the event
-        localStorage.removeItem('timer-event');
+        localStorage.removeItem('timer-event')
       } catch (_storageError) {
         // Ignore storage errors (e.g., in private browsing mode)
       }
     } catch (_error) {
       const apiError = handleError(_error, 'Clear active session', {
         defaultMessage: 'Failed to clear active session',
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -528,10 +479,10 @@ export const firebaseSessionApi = {
   ): Promise<SessionWithDetails[]> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      let sessionsQuery;
+      let sessionsQuery
 
       if (isOwnProfile) {
         // Show all sessions for own profile
@@ -540,7 +491,7 @@ export const firebaseSessionApi = {
           where('userId', '==', userId),
           orderBy('createdAt', 'desc'),
           limitFn(limitCount)
-        );
+        )
       } else {
         // Show only public sessions for other profiles
         sessionsQuery = query(
@@ -549,15 +500,15 @@ export const firebaseSessionApi = {
           where('visibility', '==', 'everyone'),
           orderBy('createdAt', 'desc'),
           limitFn(limitCount)
-        );
+        )
       }
 
-      const querySnapshot = await withTimeout(getDocs(sessionsQuery));
-      const sessions: SessionWithDetails[] = [];
+      const querySnapshot = await withTimeout(getDocs(sessionsQuery))
+      const sessions: SessionWithDetails[] = []
 
       // Get user data once (since all sessions are from the same user)
-      const userDoc = await withTimeout(getDoc(doc(db, 'users', userId)));
-      const userData = userDoc.data();
+      const userDoc = await withTimeout(getDoc(doc(db, 'users', userId)))
+      const userData = userDoc.data()
       const user: User = {
         id: userId,
         email: userData?.email || '',
@@ -568,17 +519,17 @@ export const firebaseSessionApi = {
         profilePicture: userData?.profilePicture,
         createdAt: convertTimestamp(userData?.createdAt) || new Date(),
         updatedAt: convertTimestamp(userData?.updatedAt) || new Date(),
-      };
+      }
 
       // Process each session
       for (const sessionDoc of querySnapshot.docs) {
-        const sessionData = sessionDoc.data();
+        const sessionData = sessionDoc.data()
 
         // Get activity data from activityTypes (supports defaults + custom)
-        const activityId = sessionData.activityId || sessionData.projectId;
-        let activity: Activity | null = null;
+        const activityId = sessionData.activityId || sessionData.projectId
+        let activity: Activity | null = null
         if (activityId) {
-          activity = await fetchActivityData(activityId, userId);
+          activity = await fetchActivityData(activityId, userId)
         }
 
         // Create default activity object if not found
@@ -592,9 +543,9 @@ export const firebaseSessionApi = {
           status: 'active',
           createdAt: new Date(),
           updatedAt: new Date(),
-        };
+        }
 
-        const finalActivity = activity || defaultActivity;
+        const finalActivity = activity || defaultActivity
 
         sessions.push({
           id: sessionDoc.id,
@@ -620,18 +571,18 @@ export const firebaseSessionApi = {
           user,
           project: finalActivity,
           activity: finalActivity,
-        });
+        })
       }
 
-      return sessions;
+      return sessions
     } catch (_error) {
       handleError(_error, 'get user sessions', {
         severity: ErrorSeverity.ERROR,
-      });
+      })
       const apiError = handleError(_error, 'Get user sessions', {
         defaultMessage: ERROR_MESSAGES.SESSION_LOAD_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -642,39 +593,33 @@ export const firebaseSessionApi = {
    * @param isOwnProfile - Whether viewing own profile (counts all sessions including private)
    * @returns Promise resolving to the session count (returns 0 on error)
    */
-  getUserSessionsCount: async (
-    userId: string,
-    isOwnProfile: boolean = false
-  ): Promise<number> => {
+  getUserSessionsCount: async (userId: string, isOwnProfile: boolean = false): Promise<number> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      let sessionsQuery;
+      let sessionsQuery
 
       if (isOwnProfile) {
         // Count all sessions for own profile
-        sessionsQuery = query(
-          collection(db, 'sessions'),
-          where('userId', '==', userId)
-        );
+        sessionsQuery = query(collection(db, 'sessions'), where('userId', '==', userId))
       } else {
         // Count only public sessions for other profiles
         sessionsQuery = query(
           collection(db, 'sessions'),
           where('userId', '==', userId),
           where('visibility', '==', 'everyone')
-        );
+        )
       }
 
-      const querySnapshot = await withTimeout(getDocs(sessionsQuery));
-      return querySnapshot.size;
+      const querySnapshot = await withTimeout(getDocs(sessionsQuery))
+      return querySnapshot.size
     } catch (_error) {
       handleError(_error, 'get user sessions count', {
         severity: ErrorSeverity.ERROR,
-      });
-      return 0;
+      })
+      return 0
     }
   },
 
@@ -693,7 +638,7 @@ export const firebaseSessionApi = {
   ): Promise<SessionListResponse> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
       let sessionsQuery = query(
@@ -701,11 +646,11 @@ export const firebaseSessionApi = {
         where('userId', '==', auth.currentUser.uid),
         orderBy('startTime', 'desc'),
         limitFn(limitCount)
-      );
+      )
 
       // Support both activityId (new) and projectId (legacy) for backward compatibility
       if (filters.projectId || filters.activityId) {
-        const activityId = filters.activityId || filters.projectId;
+        const activityId = filters.activityId || filters.projectId
 
         // Query for sessions matching either activityId or projectId field
         // This ensures we find sessions regardless of which field was used
@@ -715,14 +660,14 @@ export const firebaseSessionApi = {
           where('projectId', '==', activityId),
           orderBy('startTime', 'desc'),
           limitFn(limitCount)
-        );
+        )
       }
 
-      const querySnapshot = await withTimeout(getDocs(sessionsQuery));
-      const sessions: Session[] = [];
+      const querySnapshot = await withTimeout(getDocs(sessionsQuery))
+      const sessions: Session[] = []
 
-      querySnapshot.forEach(doc => {
-        const data = doc.data();
+      querySnapshot.forEach((doc) => {
+        const data = doc.data()
         sessions.push({
           id: doc.id,
           userId: data.userId,
@@ -744,19 +689,19 @@ export const firebaseSessionApi = {
           commentCount: data.commentCount || 0,
           createdAt: convertTimestamp(data.createdAt),
           updatedAt: convertTimestamp(data.updatedAt),
-        });
-      });
+        })
+      })
 
       return {
         sessions,
         totalCount: sessions.length,
         hasMore: querySnapshot.docs.length === limitCount,
-      };
+      }
     } catch (_error) {
       const apiError = handleError(_error, 'Get sessions', {
         defaultMessage: ERROR_MESSAGES.SESSION_LOAD_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -768,58 +713,47 @@ export const firebaseSessionApi = {
    * @returns Promise that resolves when the session is updated
    * @throws Error if user is not authenticated, session not found, or permission denied
    */
-  updateSession: async (
-    sessionId: string,
-    data: Partial<CreateSessionData>
-  ): Promise<void> => {
+  updateSession: async (sessionId: string, data: Partial<CreateSessionData>): Promise<void> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const sessionRef = doc(db, 'sessions', sessionId);
-      const sessionDoc = await getDoc(sessionRef);
+      const sessionRef = doc(db, 'sessions', sessionId)
+      const sessionDoc = await getDoc(sessionRef)
 
-      if (
-        !sessionDoc.exists() ||
-        sessionDoc.data().userId !== auth.currentUser.uid
-      ) {
-        throw new Error('Session not found or permission denied');
+      if (!sessionDoc.exists() || sessionDoc.data().userId !== auth.currentUser.uid) {
+        throw new Error('Session not found or permission denied')
       }
 
       // Prepare update data
       const updateData: Record<string, unknown> = {
         updatedAt: serverTimestamp(),
-      };
+      }
 
-      if (data.title !== undefined) updateData.title = data.title;
-      if (data.description !== undefined)
-        updateData.description = data.description;
-      if (data.projectId !== undefined) updateData.projectId = data.projectId;
-      if (data.visibility !== undefined)
-        updateData.visibility = data.visibility;
-      if (data.tags !== undefined) updateData.tags = data.tags;
-      if (data.howFelt !== undefined) updateData.howFelt = data.howFelt;
-      if (data.privateNotes !== undefined)
-        updateData.privateNotes = data.privateNotes;
-      if (data.images !== undefined) updateData.images = data.images;
-      if (data.allowComments !== undefined)
-        updateData.allowComments = data.allowComments;
-      if (data.startTime !== undefined)
-        updateData.startTime = Timestamp.fromDate(data.startTime);
-      if (data.duration !== undefined) updateData.duration = data.duration;
+      if (data.title !== undefined) updateData.title = data.title
+      if (data.description !== undefined) updateData.description = data.description
+      if (data.projectId !== undefined) updateData.projectId = data.projectId
+      if (data.visibility !== undefined) updateData.visibility = data.visibility
+      if (data.tags !== undefined) updateData.tags = data.tags
+      if (data.howFelt !== undefined) updateData.howFelt = data.howFelt
+      if (data.privateNotes !== undefined) updateData.privateNotes = data.privateNotes
+      if (data.images !== undefined) updateData.images = data.images
+      if (data.allowComments !== undefined) updateData.allowComments = data.allowComments
+      if (data.startTime !== undefined) updateData.startTime = Timestamp.fromDate(data.startTime)
+      if (data.duration !== undefined) updateData.duration = data.duration
 
       // Remove undefined values
       Object.keys(updateData).forEach(
-        key => updateData[key] === undefined && delete updateData[key]
-      );
+        (key) => updateData[key] === undefined && delete updateData[key]
+      )
 
-      await updateDoc(sessionRef, updateData);
+      await updateDoc(sessionRef, updateData)
     } catch (_error) {
       const apiError = handleError(_error, 'Update session', {
         defaultMessage: ERROR_MESSAGES.SESSION_UPDATE_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -833,25 +767,22 @@ export const firebaseSessionApi = {
   deleteSession: async (sessionId: string): Promise<void> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const sessionRef = doc(db, 'sessions', sessionId);
-      const sessionDoc = await getDoc(sessionRef);
+      const sessionRef = doc(db, 'sessions', sessionId)
+      const sessionDoc = await getDoc(sessionRef)
 
-      if (
-        !sessionDoc.exists() ||
-        sessionDoc.data().userId !== auth.currentUser.uid
-      ) {
-        throw new Error('Session not found or permission denied');
+      if (!sessionDoc.exists() || sessionDoc.data().userId !== auth.currentUser.uid) {
+        throw new Error('Session not found or permission denied')
       }
 
-      await deleteDoc(sessionRef);
+      await deleteDoc(sessionRef)
     } catch (_error) {
       const apiError = handleError(_error, 'Delete session', {
         defaultMessage: ERROR_MESSAGES.SESSION_DELETE_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -865,21 +796,21 @@ export const firebaseSessionApi = {
   getSession: async (sessionId: string): Promise<Session> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const sessionRef = doc(db, 'sessions', sessionId);
-      const sessionDoc = await getDoc(sessionRef);
+      const sessionRef = doc(db, 'sessions', sessionId)
+      const sessionDoc = await getDoc(sessionRef)
 
       if (!sessionDoc.exists()) {
-        throw new Error('Session not found');
+        throw new Error('Session not found')
       }
 
-      const data = sessionDoc.data();
+      const data = sessionDoc.data()
 
       // Check if user has permission to view
       if (data.userId !== auth.currentUser.uid) {
-        throw new Error('Permission denied');
+        throw new Error('Permission denied')
       }
 
       return {
@@ -903,12 +834,12 @@ export const firebaseSessionApi = {
         commentCount: data.commentCount || 0,
         createdAt: convertTimestamp(data.createdAt),
         updatedAt: convertTimestamp(data.updatedAt),
-      };
+      }
     } catch (_error) {
       const apiError = handleError(_error, 'Get session', {
         defaultMessage: ERROR_MESSAGES.SESSION_LOAD_FAILED,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
 
@@ -919,36 +850,34 @@ export const firebaseSessionApi = {
    * @returns Promise resolving to the session with user, project, and support status
    * @throws Error if user is not authenticated, session not found, or permission denied
    */
-  getSessionWithDetails: async (
-    sessionId: string
-  ): Promise<SessionWithDetails> => {
+  getSessionWithDetails: async (sessionId: string): Promise<SessionWithDetails> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated')
       }
 
-      const sessionRef = doc(db, 'sessions', sessionId);
-      const sessionDoc = await getDoc(sessionRef);
+      const sessionRef = doc(db, 'sessions', sessionId)
+      const sessionDoc = await getDoc(sessionRef)
 
       if (!sessionDoc.exists()) {
-        throw new Error('Session not found');
+        throw new Error('Session not found')
       }
 
-      const data = sessionDoc.data();
+      const data = sessionDoc.data()
 
       // Get user data
-      const userData = await fetchUserDataForSocialContext(data.userId);
+      const userData = await fetchUserDataForSocialContext(data.userId)
 
       // Get activity data from activityTypes (supports defaults + custom)
-      const activityId = data.activityId || data.projectId;
-      let activity: Activity | null = null;
+      const activityId = data.activityId || data.projectId
+      let activity: Activity | null = null
       if (activityId) {
-        activity = await fetchActivityData(activityId, data.userId);
+        activity = await fetchActivityData(activityId, data.userId)
       }
 
       // Check if current user has supported this session
-      const supportedBy = data.supportedBy || [];
-      const isSupported = supportedBy.includes(auth.currentUser.uid);
+      const supportedBy = data.supportedBy || []
+      const isSupported = supportedBy.includes(auth.currentUser.uid)
 
       // Create default activity object if not found
       const defaultActivity: Activity = {
@@ -961,7 +890,7 @@ export const firebaseSessionApi = {
         status: 'active' as const,
         createdAt: new Date(),
         updatedAt: new Date(),
-      };
+      }
 
       return {
         id: sessionDoc.id,
@@ -999,17 +928,17 @@ export const firebaseSessionApi = {
         },
         activity: activity || defaultActivity,
         project: activity || defaultActivity,
-      };
+      }
     } catch (error: unknown) {
       // Don't log permission errors - these are expected for private/restricted sessions
-      const silent = isPermissionError(error);
+      const silent = isPermissionError(error)
       const apiError = handleError(error, 'Get session with details', {
         defaultMessage: ERROR_MESSAGES.SESSION_LOAD_FAILED,
         silent,
-      });
-      throw new Error(apiError.userMessage);
+      })
+      throw new Error(apiError.userMessage)
     }
   },
-};
+}
 
 // Helper function to process post documents into PostWithDetails

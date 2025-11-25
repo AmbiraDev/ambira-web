@@ -4,20 +4,20 @@
  * Displays a list of group members with their profiles.
  */
 
-'use client';
+'use client'
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useGroupMembers } from '../hooks/useGroupMembers';
-import { Users, Loader2 } from 'lucide-react';
+import React from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useGroupMembers } from '../hooks/useGroupMembers'
+import { Users, Loader2 } from 'lucide-react'
 
 interface GroupMembersListProps {
-  groupId: string;
+  groupId: string
 }
 
 export function GroupMembersList({ groupId }: GroupMembersListProps) {
-  const { data: members, isLoading, error } = useGroupMembers(groupId);
+  const { data: members, isLoading, error } = useGroupMembers(groupId)
 
   if (isLoading) {
     return (
@@ -25,7 +25,7 @@ export function GroupMembersList({ groupId }: GroupMembersListProps) {
         <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
         <span className="ml-2 text-gray-600">Loading members...</span>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -34,7 +34,7 @@ export function GroupMembersList({ groupId }: GroupMembersListProps) {
         <p className="text-red-800 font-medium">Failed to load members</p>
         <p className="text-sm text-red-600 mt-1">Please try again later</p>
       </div>
-    );
+    )
   }
 
   if (!members || members.length === 0) {
@@ -42,11 +42,9 @@ export function GroupMembersList({ groupId }: GroupMembersListProps) {
       <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
         <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
         <p className="text-gray-600 font-medium">No members yet</p>
-        <p className="text-sm text-gray-500 mt-1">
-          Be the first to join this group!
-        </p>
+        <p className="text-sm text-gray-500 mt-1">Be the first to join this group!</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -56,7 +54,7 @@ export function GroupMembersList({ groupId }: GroupMembersListProps) {
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 divide-y divide-gray-200">
-        {members.map(member => (
+        {members.map((member) => (
           <Link
             key={member.id}
             href={`/profile/${member.username}`}
@@ -81,16 +79,10 @@ export function GroupMembersList({ groupId }: GroupMembersListProps) {
 
             {/* Member Info */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 truncate">
-                {member.name}
-              </h3>
-              <p className="text-sm text-gray-600 truncate">
-                @{member.username}
-              </p>
+              <h3 className="font-semibold text-gray-900 truncate">{member.name}</h3>
+              <p className="text-sm text-gray-600 truncate">@{member.username}</p>
               {member.bio && (
-                <p className="text-sm text-gray-500 mt-1 line-clamp-1">
-                  {member.bio}
-                </p>
+                <p className="text-sm text-gray-500 mt-1 line-clamp-1">{member.bio}</p>
               )}
             </div>
 
@@ -101,16 +93,11 @@ export function GroupMembersList({ groupId }: GroupMembersListProps) {
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </Link>
         ))}
       </div>
     </div>
-  );
+  )
 }

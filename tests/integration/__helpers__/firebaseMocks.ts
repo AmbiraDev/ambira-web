@@ -16,8 +16,8 @@ import {
   Challenge,
   ActivityType,
   UserActivityPreference,
-} from '@/types';
-import { Timestamp } from 'firebase/firestore';
+} from '@/types'
+import { Timestamp } from 'firebase/firestore'
 
 /**
  * Create a mock Timestamp object from a Date
@@ -29,279 +29,269 @@ function createMockTimestamp(date: Date): Timestamp {
     seconds: Math.floor(date.getTime() / 1000),
     nanoseconds: (date.getTime() % 1000) * 1000000,
     isEqual: (other: Timestamp) => date.getTime() === other.toMillis(),
-  } as Timestamp;
+  } as Timestamp
 }
 
 // Counter for unique IDs
-let mockProjectCounter = 0;
-let mockActivityIdCounter = 0;
+let mockProjectCounter = 0
+let mockActivityIdCounter = 0
 
 export function resetMockProjectCounter() {
-  mockProjectCounter = 0;
+  mockProjectCounter = 0
 }
 
 export function resetMockActivityIdCounter() {
-  mockActivityIdCounter = 0;
+  mockActivityIdCounter = 0
 }
 
 /**
  * In-memory Firebase store for integration tests
  */
 export class InMemoryFirebaseStore {
-  private users: Map<string, User> = new Map();
-  private sessions: Map<string, Session> = new Map();
-  private projects: Map<string, Project> = new Map();
-  private groups: Map<string, Group> = new Map();
-  private challenges: Map<string, Challenge> = new Map();
-  private activeSessions: Map<string, any> = new Map();
-  private follows: Map<string, { followerId: string; followingId: string }> =
-    new Map();
-  private supports: Map<string, { sessionId: string; userId: string }> =
-    new Map();
-  private comments: Map<string, any[]> = new Map();
-  private customActivities: Map<string, ActivityType> = new Map();
-  private activityPreferences: Map<string, UserActivityPreference[]> =
-    new Map();
+  private users: Map<string, User> = new Map()
+  private sessions: Map<string, Session> = new Map()
+  private projects: Map<string, Project> = new Map()
+  private groups: Map<string, Group> = new Map()
+  private challenges: Map<string, Challenge> = new Map()
+  private activeSessions: Map<string, any> = new Map()
+  private follows: Map<string, { followerId: string; followingId: string }> = new Map()
+  private supports: Map<string, { sessionId: string; userId: string }> = new Map()
+  private comments: Map<string, any[]> = new Map()
+  private customActivities: Map<string, ActivityType> = new Map()
+  private activityPreferences: Map<string, UserActivityPreference[]> = new Map()
 
   // User operations
   createUser(user: User): void {
-    this.users.set(user.id, user);
+    this.users.set(user.id, user)
   }
 
   getUser(userId: string): User | undefined {
-    return this.users.get(userId);
+    return this.users.get(userId)
   }
 
   updateUser(userId: string, updates: Partial<User>): void {
-    const user = this.users.get(userId);
+    const user = this.users.get(userId)
     if (user) {
-      this.users.set(userId, { ...user, ...updates });
+      this.users.set(userId, { ...user, ...updates })
     }
   }
 
   deleteUser(userId: string): void {
-    this.users.delete(userId);
+    this.users.delete(userId)
   }
 
   // Session operations
   createSession(session: Session): Session {
-    this.sessions.set(session.id, session);
-    return session;
+    this.sessions.set(session.id, session)
+    return session
   }
 
   getSession(sessionId: string): Session | undefined {
-    return this.sessions.get(sessionId);
+    return this.sessions.get(sessionId)
   }
 
   getSessions(filters?: { userId?: string; visibility?: string }): Session[] {
-    let sessions = Array.from(this.sessions.values());
+    let sessions = Array.from(this.sessions.values())
 
     if (filters?.userId) {
-      sessions = sessions.filter(s => s.userId === filters.userId);
+      sessions = sessions.filter((s) => s.userId === filters.userId)
     }
 
     if (filters?.visibility) {
-      sessions = sessions.filter(s => s.visibility === filters.visibility);
+      sessions = sessions.filter((s) => s.visibility === filters.visibility)
     }
 
-    return sessions.sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
-    );
+    return sessions.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
   }
 
   updateSession(sessionId: string, updates: Partial<Session>): void {
-    const session = this.sessions.get(sessionId);
+    const session = this.sessions.get(sessionId)
     if (session) {
-      this.sessions.set(sessionId, { ...session, ...updates });
+      this.sessions.set(sessionId, { ...session, ...updates })
     }
   }
 
   deleteSession(sessionId: string): void {
-    this.sessions.delete(sessionId);
+    this.sessions.delete(sessionId)
   }
 
   // Active session operations (for timer)
   saveActiveSession(userId: string, sessionData: any): void {
-    this.activeSessions.set(userId, sessionData);
+    this.activeSessions.set(userId, sessionData)
   }
 
   getActiveSession(userId: string): any | undefined {
-    return this.activeSessions.get(userId);
+    return this.activeSessions.get(userId)
   }
 
   clearActiveSession(userId: string): void {
-    this.activeSessions.delete(userId);
+    this.activeSessions.delete(userId)
   }
 
   // Project operations
   createProject(project: Project): void {
-    this.projects.set(project.id, project);
+    this.projects.set(project.id, project)
   }
 
   getProject(projectId: string): Project | undefined {
-    return this.projects.get(projectId);
+    return this.projects.get(projectId)
   }
 
   getProjects(userId: string): Project[] {
-    return Array.from(this.projects.values()).filter(p => p.userId === userId);
+    return Array.from(this.projects.values()).filter((p) => p.userId === userId)
   }
 
   updateProject(projectId: string, updates: Partial<Project>): void {
-    const project = this.projects.get(projectId);
+    const project = this.projects.get(projectId)
     if (project) {
-      this.projects.set(projectId, { ...project, ...updates });
+      this.projects.set(projectId, { ...project, ...updates })
     }
   }
 
   deleteProject(projectId: string): void {
-    this.projects.delete(projectId);
+    this.projects.delete(projectId)
   }
 
   // Follow operations
   createFollow(followerId: string, followingId: string): void {
-    const followId = `${followerId}_${followingId}`;
-    this.follows.set(followId, { followerId, followingId });
+    const followId = `${followerId}_${followingId}`
+    this.follows.set(followId, { followerId, followingId })
 
     // Update follower/following counts
-    const follower = this.users.get(followerId);
-    const following = this.users.get(followingId);
+    const follower = this.users.get(followerId)
+    const following = this.users.get(followingId)
 
     if (follower) {
-      follower.followingCount = (follower.followingCount || 0) + 1;
+      follower.followingCount = (follower.followingCount || 0) + 1
     }
     if (following) {
-      following.followersCount = (following.followersCount || 0) + 1;
+      following.followersCount = (following.followersCount || 0) + 1
     }
   }
 
   deleteFollow(followerId: string, followingId: string): void {
-    const followId = `${followerId}_${followingId}`;
-    this.follows.delete(followId);
+    const followId = `${followerId}_${followingId}`
+    this.follows.delete(followId)
 
     // Update follower/following counts
-    const follower = this.users.get(followerId);
-    const following = this.users.get(followingId);
+    const follower = this.users.get(followerId)
+    const following = this.users.get(followingId)
 
     if (follower) {
-      follower.followingCount = Math.max(0, (follower.followingCount || 0) - 1);
+      follower.followingCount = Math.max(0, (follower.followingCount || 0) - 1)
     }
     if (following) {
-      following.followersCount = Math.max(
-        0,
-        (following.followersCount || 0) - 1
-      );
+      following.followersCount = Math.max(0, (following.followersCount || 0) - 1)
     }
   }
 
   isFollowing(followerId: string, followingId: string): boolean {
-    const followId = `${followerId}_${followingId}`;
-    return this.follows.has(followId);
+    const followId = `${followerId}_${followingId}`
+    return this.follows.has(followId)
   }
 
   getFollowingIds(userId: string): string[] {
     return Array.from(this.follows.values())
-      .filter(f => f.followerId === userId)
-      .map(f => f.followingId);
+      .filter((f) => f.followerId === userId)
+      .map((f) => f.followingId)
   }
 
   // Support operations
   createSupport(sessionId: string, userId: string): void {
-    const supportId = `${sessionId}_${userId}`;
-    this.supports.set(supportId, { sessionId, userId });
+    const supportId = `${sessionId}_${userId}`
+    this.supports.set(supportId, { sessionId, userId })
 
     // Increment support count
-    const session = this.sessions.get(sessionId);
+    const session = this.sessions.get(sessionId)
     if (session) {
-      session.supportCount = (session.supportCount || 0) + 1;
+      session.supportCount = (session.supportCount || 0) + 1
     }
   }
 
   deleteSupport(sessionId: string, userId: string): void {
-    const supportId = `${sessionId}_${userId}`;
-    this.supports.delete(supportId);
+    const supportId = `${sessionId}_${userId}`
+    this.supports.delete(supportId)
 
     // Decrement support count
-    const session = this.sessions.get(sessionId);
+    const session = this.sessions.get(sessionId)
     if (session) {
-      session.supportCount = Math.max(0, (session.supportCount || 0) - 1);
+      session.supportCount = Math.max(0, (session.supportCount || 0) - 1)
     }
   }
 
   isSupported(sessionId: string, userId: string): boolean {
-    const supportId = `${sessionId}_${userId}`;
-    return this.supports.has(supportId);
+    const supportId = `${sessionId}_${userId}`
+    return this.supports.has(supportId)
   }
 
   // Comment operations
   addComment(sessionId: string, comment: any): void {
-    const existing = this.comments.get(sessionId) || [];
-    this.comments.set(sessionId, [...existing, comment]);
+    const existing = this.comments.get(sessionId) || []
+    this.comments.set(sessionId, [...existing, comment])
 
     // Increment comment count
-    const session = this.sessions.get(sessionId);
+    const session = this.sessions.get(sessionId)
     if (session) {
-      session.commentCount = (session.commentCount || 0) + 1;
+      session.commentCount = (session.commentCount || 0) + 1
     }
   }
 
   getComments(sessionId: string): any[] {
-    return this.comments.get(sessionId) || [];
+    return this.comments.get(sessionId) || []
   }
 
   deleteComment(sessionId: string, commentId: string): void {
-    const existing = this.comments.get(sessionId) || [];
-    const filtered = existing.filter(c => c.id !== commentId);
-    this.comments.set(sessionId, filtered);
+    const existing = this.comments.get(sessionId) || []
+    const filtered = existing.filter((c) => c.id !== commentId)
+    this.comments.set(sessionId, filtered)
 
     // Decrement comment count
-    const session = this.sessions.get(sessionId);
+    const session = this.sessions.get(sessionId)
     if (session) {
-      session.commentCount = Math.max(0, (session.commentCount || 0) - 1);
+      session.commentCount = Math.max(0, (session.commentCount || 0) - 1)
     }
   }
 
   // Group operations
   createGroup(group: Group): void {
-    this.groups.set(group.id, group);
+    this.groups.set(group.id, group)
   }
 
   getGroup(groupId: string): Group | undefined {
-    return this.groups.get(groupId);
+    return this.groups.get(groupId)
   }
 
   // Challenge operations
   createChallenge(challenge: Challenge): void {
-    this.challenges.set(challenge.id, challenge);
+    this.challenges.set(challenge.id, challenge)
   }
 
   getChallenge(challengeId: string): Challenge | undefined {
-    return this.challenges.get(challengeId);
+    return this.challenges.get(challengeId)
   }
 
   // Activity operations
   createActivity(activity: ActivityType): void {
-    this.customActivities.set(activity.id, activity);
+    this.customActivities.set(activity.id, activity)
   }
 
   getActivity(activityId: string): ActivityType | undefined {
-    return this.customActivities.get(activityId);
+    return this.customActivities.get(activityId)
   }
 
   getCustomActivities(userId: string): ActivityType[] {
-    return Array.from(this.customActivities.values()).filter(
-      a => a.userId === userId
-    );
+    return Array.from(this.customActivities.values()).filter((a) => a.userId === userId)
   }
 
   updateActivity(activityId: string, updates: Partial<ActivityType>): void {
-    const activity = this.customActivities.get(activityId);
+    const activity = this.customActivities.get(activityId)
     if (activity) {
-      this.customActivities.set(activityId, { ...activity, ...updates });
+      this.customActivities.set(activityId, { ...activity, ...updates })
     }
   }
 
   deleteActivity(activityId: string): void {
-    this.customActivities.delete(activityId);
+    this.customActivities.delete(activityId)
   }
 
   // Activity preference operations
@@ -310,11 +300,11 @@ export class InMemoryFirebaseStore {
     typeId: string,
     preference?: Partial<UserActivityPreference>
   ): UserActivityPreference {
-    const key = `${userId}-prefs`;
-    const prefs = this.activityPreferences.get(key) || [];
+    const key = `${userId}-prefs`
+    const prefs = this.activityPreferences.get(key) || []
 
-    const now = new Date();
-    const timestamp = createMockTimestamp(now);
+    const now = new Date()
+    const timestamp = createMockTimestamp(now)
     const newPref: UserActivityPreference = {
       typeId,
       userId,
@@ -323,44 +313,41 @@ export class InMemoryFirebaseStore {
       createdAt: timestamp,
       updatedAt: timestamp,
       ...preference,
-    };
-
-    // Check if already exists
-    const existingIndex = prefs.findIndex(p => p.typeId === typeId);
-    if (existingIndex >= 0) {
-      prefs[existingIndex] = newPref;
-    } else {
-      prefs.push(newPref);
     }
 
-    this.activityPreferences.set(key, prefs);
-    return newPref;
+    // Check if already exists
+    const existingIndex = prefs.findIndex((p) => p.typeId === typeId)
+    if (existingIndex >= 0) {
+      prefs[existingIndex] = newPref
+    } else {
+      prefs.push(newPref)
+    }
+
+    this.activityPreferences.set(key, prefs)
+    return newPref
   }
 
-  getActivityPreference(
-    userId: string,
-    typeId: string
-  ): UserActivityPreference | undefined {
-    const key = `${userId}-prefs`;
-    const prefs = this.activityPreferences.get(key) || [];
-    return prefs.find(p => p.typeId === typeId);
+  getActivityPreference(userId: string, typeId: string): UserActivityPreference | undefined {
+    const key = `${userId}-prefs`
+    const prefs = this.activityPreferences.get(key) || []
+    return prefs.find((p) => p.typeId === typeId)
   }
 
   getActivityPreferences(userId: string): UserActivityPreference[] {
-    const key = `${userId}-prefs`;
-    return this.activityPreferences.get(key) || [];
+    const key = `${userId}-prefs`
+    return this.activityPreferences.get(key) || []
   }
 
   updateActivityPreference(userId: string, typeId: string): void {
-    const key = `${userId}-prefs`;
-    const prefs = this.activityPreferences.get(key) || [];
-    const existingIndex = prefs.findIndex(p => p.typeId === typeId);
+    const key = `${userId}-prefs`
+    const prefs = this.activityPreferences.get(key) || []
+    const existingIndex = prefs.findIndex((p) => p.typeId === typeId)
 
     if (existingIndex >= 0) {
-      const existing = prefs[existingIndex];
-      if (!existing) return; // Type guard
+      const existing = prefs[existingIndex]
+      if (!existing) return // Type guard
 
-      const now = new Date();
+      const now = new Date()
       const updated: UserActivityPreference = {
         typeId: existing.typeId,
         userId: existing.userId,
@@ -368,65 +355,61 @@ export class InMemoryFirebaseStore {
         lastUsed: createMockTimestamp(now),
         createdAt: existing.createdAt,
         updatedAt: createMockTimestamp(now),
-      };
-      prefs[existingIndex] = updated;
+      }
+      prefs[existingIndex] = updated
     }
 
-    this.activityPreferences.set(key, prefs);
+    this.activityPreferences.set(key, prefs)
   }
 
   deleteActivityPreference(userId: string, typeId: string): void {
-    const key = `${userId}-prefs`;
-    const prefs = this.activityPreferences.get(key) || [];
+    const key = `${userId}-prefs`
+    const prefs = this.activityPreferences.get(key) || []
     this.activityPreferences.set(
       key,
-      prefs.filter(p => p.typeId !== typeId)
-    );
+      prefs.filter((p) => p.typeId !== typeId)
+    )
   }
 
   // Clear all data (for test cleanup)
   clear(): void {
-    this.users.clear();
-    this.sessions.clear();
-    this.projects.clear();
-    this.groups.clear();
-    this.challenges.clear();
-    this.activeSessions.clear();
-    this.follows.clear();
-    this.supports.clear();
-    this.comments.clear();
-    this.customActivities.clear();
-    this.activityPreferences.clear();
+    this.users.clear()
+    this.sessions.clear()
+    this.projects.clear()
+    this.groups.clear()
+    this.challenges.clear()
+    this.activeSessions.clear()
+    this.follows.clear()
+    this.supports.clear()
+    this.comments.clear()
+    this.customActivities.clear()
+    this.activityPreferences.clear()
   }
 }
 
 /**
  * Global store instance for tests
  */
-export const testFirebaseStore = new InMemoryFirebaseStore();
+export const testFirebaseStore = new InMemoryFirebaseStore()
 
 /**
  * Reset Firebase store between tests
  */
 export function resetFirebaseStore(): void {
-  testFirebaseStore.clear();
+  testFirebaseStore.clear()
 }
 
 /**
  * Create mock Firebase API that uses the in-memory store
  */
-export function createMockFirebaseApi(
-  store: InMemoryFirebaseStore = testFirebaseStore
-) {
+export function createMockFirebaseApi(store: InMemoryFirebaseStore = testFirebaseStore) {
   return {
     // Auth API
     auth: {
       signIn: jest.fn(async (email: string, _password: string) => {
-        const user = Array.from(store['users'].values()).find(
-          u => u.email === email
-        );
-        if (!user) throw new Error('Invalid credentials');
-        return user;
+        const user = Array.from(store['users'].values()).find((u) => u.email === email)
+        if (!user) throw new Error('Invalid credentials')
+        return user
       }),
       signUp: jest.fn(async (data: any) => {
         const newUser: User = {
@@ -438,17 +421,17 @@ export function createMockFirebaseApi(
           updatedAt: new Date(),
           followersCount: 0,
           followingCount: 0,
-        };
-        store.createUser(newUser);
-        return newUser;
+        }
+        store.createUser(newUser)
+        return newUser
       }),
       signOut: jest.fn(async () => {
         // Clear auth state
       }),
       getCurrentUser: jest.fn(async () => {
         // Return first user or null
-        const users = Array.from(store['users'].values());
-        return users[0] || null;
+        const users = Array.from(store['users'].values())
+        return users[0] || null
       }),
     },
 
@@ -466,35 +449,35 @@ export function createMockFirebaseApi(
           tags: sessionData.tags || [],
           images: sessionData.images || [],
           showStartTime: sessionData.showStartTime !== false,
-        };
-        store.createSession(newSession);
-        return newSession;
+        }
+        store.createSession(newSession)
+        return newSession
       }),
       get: jest.fn(async (sessionId: string) => {
-        return store.getSession(sessionId);
+        return store.getSession(sessionId)
       }),
       update: jest.fn(async (sessionId: string, updates: any) => {
-        store.updateSession(sessionId, updates);
-        return store.getSession(sessionId);
+        store.updateSession(sessionId, updates)
+        return store.getSession(sessionId)
       }),
       delete: jest.fn(async (sessionId: string) => {
-        store.deleteSession(sessionId);
+        store.deleteSession(sessionId)
       }),
       getFeed: jest.fn(async (filters?: any) => {
-        return store.getSessions(filters);
+        return store.getSessions(filters)
       }),
     },
 
     // Active session API (timer)
     activeSession: {
       save: jest.fn(async (userId: string, data: any) => {
-        store.saveActiveSession(userId, data);
+        store.saveActiveSession(userId, data)
       }),
       get: jest.fn(async (userId: string) => {
-        return store.getActiveSession(userId);
+        return store.getActiveSession(userId)
       }),
       clear: jest.fn(async (userId: string) => {
-        store.clearActiveSession(userId);
+        store.clearActiveSession(userId)
       }),
     },
 
@@ -502,10 +485,10 @@ export function createMockFirebaseApi(
     projects: {
       create: jest.fn(async (projectData: any) => {
         // Validate required fields
-        if (!projectData.name) throw new Error('Project name required');
-        if (!projectData.userId) throw new Error('User ID required');
+        if (!projectData.name) throw new Error('Project name required')
+        if (!projectData.userId) throw new Error('User ID required')
 
-        const now = new Date();
+        const now = new Date()
         const newProject: Project = {
           id: `project-${Date.now()}-${mockProjectCounter++}`,
           description: '',
@@ -515,50 +498,50 @@ export function createMockFirebaseApi(
           status: projectData.status ?? 'active',
           createdAt: new Date(),
           updatedAt: now,
-        };
-        store.createProject(newProject);
-        return newProject;
+        }
+        store.createProject(newProject)
+        return newProject
       }),
       get: jest.fn(async (projectId: string) => {
-        return store.getProject(projectId);
+        return store.getProject(projectId)
       }),
       getAll: jest.fn(async (userId: string) => {
-        return store.getProjects(userId);
+        return store.getProjects(userId)
       }),
       update: jest.fn(async (projectId: string, updates: any) => {
-        store.updateProject(projectId, updates);
-        return store.getProject(projectId);
+        store.updateProject(projectId, updates)
+        return store.getProject(projectId)
       }),
       delete: jest.fn(async (projectId: string) => {
-        store.deleteProject(projectId);
+        store.deleteProject(projectId)
       }),
     },
 
     // Social API
     social: {
       follow: jest.fn(async (followerId: string, followingId: string) => {
-        store.createFollow(followerId, followingId);
+        store.createFollow(followerId, followingId)
       }),
       unfollow: jest.fn(async (followerId: string, followingId: string) => {
-        store.deleteFollow(followerId, followingId);
+        store.deleteFollow(followerId, followingId)
       }),
       isFollowing: jest.fn(async (followerId: string, followingId: string) => {
-        return store.isFollowing(followerId, followingId);
+        return store.isFollowing(followerId, followingId)
       }),
       support: jest.fn(async (sessionId: string, userId: string) => {
-        store.createSupport(sessionId, userId);
+        store.createSupport(sessionId, userId)
       }),
       unsupport: jest.fn(async (sessionId: string, userId: string) => {
-        store.deleteSupport(sessionId, userId);
+        store.deleteSupport(sessionId, userId)
       }),
       comment: jest.fn(async (sessionId: string, commentData: any) => {
         const comment = {
           id: `comment-${Date.now()}`,
           ...commentData,
           createdAt: new Date(),
-        };
-        store.addComment(sessionId, comment);
-        return comment;
+        }
+        store.addComment(sessionId, comment)
+        return comment
       }),
     },
 
@@ -687,11 +670,11 @@ export function createMockFirebaseApi(
             createdAt: new Date(),
             updatedAt: new Date(),
           },
-        ];
+        ]
       }),
 
       getUserCustom: jest.fn(async (userId: string) => {
-        return store.getCustomActivities(userId);
+        return store.getCustomActivities(userId)
       }),
 
       getAll: jest.fn(async (userId: string) => {
@@ -817,11 +800,9 @@ export function createMockFirebaseApi(
             createdAt: new Date(),
             updatedAt: new Date(),
           },
-        ];
-        const customTypes = store.getCustomActivities(userId);
-        return [...systemTypes, ...customTypes].sort(
-          (a, b) => a.order - b.order
-        );
+        ]
+        const customTypes = store.getCustomActivities(userId)
+        return [...systemTypes, ...customTypes].sort((a, b) => a.order - b.order)
       }),
 
       create: jest.fn(async (userId: string, data: any) => {
@@ -834,15 +815,15 @@ export function createMockFirebaseApi(
           data.icon.trim() === '' ||
           data.defaultColor.trim() === ''
         ) {
-          throw new Error('Name, icon, and color are required');
+          throw new Error('Name, icon, and color are required')
         }
 
         // Check max limit
-        const custom = store.getCustomActivities(userId);
+        const custom = store.getCustomActivities(userId)
         if (custom.length >= 10) {
           throw new Error(
             'Maximum custom activities reached (10). Delete an existing custom activity to create a new one.'
-          );
+          )
         }
 
         const newActivity: ActivityType = {
@@ -857,71 +838,67 @@ export function createMockFirebaseApi(
           order: 10 + custom.length + 1,
           createdAt: new Date(),
           updatedAt: new Date(),
-        };
+        }
 
-        store.createActivity(newActivity);
-        return newActivity;
+        store.createActivity(newActivity)
+        return newActivity
       }),
 
       update: jest.fn(async (activityId: string, userId: string, data: any) => {
         // Check if is system activity
         if (activityId === 'work' || !activityId.includes('custom')) {
-          throw new Error('Cannot update default activity types');
+          throw new Error('Cannot update default activity types')
         }
 
-        const activity = store.getActivity(activityId);
+        const activity = store.getActivity(activityId)
         if (!activity) {
-          throw new Error('Activity not found');
+          throw new Error('Activity not found')
         }
 
         const updated = {
           ...activity,
           ...data,
           updatedAt: new Date(),
-        };
+        }
 
-        store.updateActivity(activityId, updated);
-        return updated;
+        store.updateActivity(activityId, updated)
+        return updated
       }),
 
       delete: jest.fn(async (activityId: string, userId: string) => {
         // Check if is system activity
         if (activityId === 'work' || !activityId.includes('custom')) {
-          throw new Error('Cannot delete default activity types');
+          throw new Error('Cannot delete default activity types')
         }
 
-        const activity = store.getActivity(activityId);
+        const activity = store.getActivity(activityId)
         if (!activity) {
-          throw new Error('Activity not found');
+          throw new Error('Activity not found')
         }
 
-        store.deleteActivity(activityId);
-        store.deleteActivityPreference(userId, activityId);
+        store.deleteActivity(activityId)
+        store.deleteActivityPreference(userId, activityId)
       }),
     },
 
     // Activity Preferences API
     activityPreferences: {
       getRecent: jest.fn(async (userId: string, limit: number = 5) => {
-        const prefs = store.getActivityPreferences(userId);
-        return prefs
-          .sort((a, b) => b.lastUsed.toMillis() - a.lastUsed.toMillis())
-          .slice(0, limit);
+        const prefs = store.getActivityPreferences(userId)
+        return prefs.sort((a, b) => b.lastUsed.toMillis() - a.lastUsed.toMillis()).slice(0, limit)
       }),
 
       getAll: jest.fn(async (userId: string) => {
-        const prefs = store.getActivityPreferences(userId);
-        return prefs.sort(
-          (a, b) => b.lastUsed.toMillis() - a.lastUsed.toMillis()
-        );
+        const prefs = store.getActivityPreferences(userId)
+        return prefs.sort((a, b) => b.lastUsed.toMillis() - a.lastUsed.toMillis())
       }),
 
       update: jest.fn(async (typeId: string, userId?: string) => {
         // userId might not be provided, but we'll use it if available
         if (userId) {
-          store.updateActivityPreference(userId, typeId);
+          store.updateActivityPreference(userId, typeId)
         }
       }),
     },
-  };
+  }
 }

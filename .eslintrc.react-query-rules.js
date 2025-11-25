@@ -95,8 +95,7 @@ module.exports = {
               },
               {
                 name: '@tanstack/react-query',
-                message:
-                  '❌ React Query not allowed in services. Use in feature hooks instead.',
+                message: '❌ React Query not allowed in services. Use in feature hooks instead.',
               },
             ],
             patterns: [
@@ -154,8 +153,7 @@ module.exports = {
               },
               {
                 group: ['@/features/**/hooks/*'],
-                message:
-                  '❌ Repositories cannot import hooks. Repositories are at the data layer.',
+                message: '❌ Repositories cannot import hooks. Repositories are at the data layer.',
               },
             ],
           },
@@ -163,4 +161,4 @@ module.exports = {
       },
     },
   ],
-};
+}

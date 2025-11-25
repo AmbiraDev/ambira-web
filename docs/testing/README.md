@@ -213,30 +213,30 @@ Reports are available in GitHub Actions:
 
    ```typescript
    // Good ✅
-   await page.getByRole('button', { name: 'Submit' }).click();
+   await page.getByRole('button', { name: 'Submit' }).click()
 
    // Avoid ❌
-   await page.locator('.btn-submit').click();
+   await page.locator('.btn-submit').click()
    ```
 
 2. **Include accessibility checks**
 
    ```typescript
-   const results = await makeAxeBuilder().analyze();
-   expect(results.violations).toHaveLength(0);
+   const results = await makeAxeBuilder().analyze()
+   expect(results.violations).toHaveLength(0)
    ```
 
 3. **Test responsive design**
 
    ```typescript
-   await page.setViewportSize({ width: 375, height: 667 });
+   await page.setViewportSize({ width: 375, height: 667 })
    // ... test mobile view
    ```
 
 4. **Use descriptive test names**
 
    ```typescript
-   test('should display error when email is invalid');
+   test('should display error when email is invalid')
    ```
 
 5. **Keep smoke tests fast**

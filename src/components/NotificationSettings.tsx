@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { NotificationPreferences } from '@/types';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+import React, { useState, useEffect } from 'react'
+import { NotificationPreferences } from '@/types'
+import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
 import {
   SettingsSection,
   SettingsHeader,
@@ -12,13 +12,13 @@ import {
   SettingsCardContent,
   SettingsRow,
   SettingsRowGroup,
-} from '@/components/ui/settings-section';
-import { Bell, Mail, BellRing, UserPlus, Trophy, Users } from 'lucide-react';
-import { debug } from '@/lib/debug';
+} from '@/components/ui/settings-section'
+import { Bell, Mail, BellRing, UserPlus, Trophy, Users } from 'lucide-react'
+import { debug } from '@/lib/debug'
 
 interface NotificationSettingsProps {
-  onClose?: () => void;
-  isModal?: boolean;
+  onClose?: () => void
+  isModal?: boolean
 }
 
 const defaultPreferences: NotificationPreferences = {
@@ -44,65 +44,60 @@ const defaultPreferences: NotificationPreferences = {
     groupPosts: true,
     challenges: true,
   },
-};
+}
 
 export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
   onClose,
   isModal = false,
 }) => {
-  const [preferences, setPreferences] =
-    useState<NotificationPreferences>(defaultPreferences);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [preferences, setPreferences] = useState<NotificationPreferences>(defaultPreferences)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
-    loadPreferences();
-  }, []);
+    loadPreferences()
+  }, [])
 
   const loadPreferences = async () => {
     try {
-      setIsLoading(true);
+      setIsLoading(true)
       // TODO: Implement notification preferences API in firebaseUserApi
       // Need to create getNotificationPreferences() and updateNotificationPreferences() methods
       // For now, use defaults
-      setPreferences(defaultPreferences);
+      setPreferences(defaultPreferences)
     } catch (_error) {
-      debug.error(
-        'NotificationSettings - Failed to load notification preferences'
-      );
+      debug.error('NotificationSettings - Failed to load notification preferences')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleToggle = (
     category: 'email' | 'inApp',
     key: keyof NotificationPreferences['email']
   ) => {
-    setPreferences(prev => ({
+    setPreferences((prev) => ({
       ...prev,
       [category]: {
         ...prev[category],
         [key]: !prev[category][key],
       },
-    }));
-  };
+    }))
+  }
 
   const handleSave = async () => {
     try {
-      setIsSaving(true);
+      setIsSaving(true)
       // TODO: Implement notification preferences save API in firebaseUserApi
       // Need updateNotificationPreferences() method to persist to Firestore
-      alert('Notification preferences saved successfully!');
+      alert('Notification preferences saved successfully!')
     } catch (_error) {
-      debug.error(
-        'NotificationSettings - Failed to save notification preferences'
-      );
-      alert('Failed to save notification preferences');
+      debug.error('NotificationSettings - Failed to save notification preferences')
+      alert('Failed to save notification preferences')
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   const NotificationToggle = ({
     label,
@@ -111,11 +106,11 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     inAppEnabled,
     settingKey,
   }: {
-    label: string;
-    description: string;
-    emailEnabled: boolean;
-    inAppEnabled: boolean;
-    settingKey: keyof NotificationPreferences['email'];
+    label: string
+    description: string
+    emailEnabled: boolean
+    inAppEnabled: boolean
+    settingKey: keyof NotificationPreferences['email']
   }) => (
     <SettingsRow label={label} description={description}>
       <div className="flex gap-4 items-center">
@@ -135,12 +130,12 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
         </div>
       </div>
     </SettingsRow>
-  );
+  )
 
   if (isLoading) {
     return (
       <SettingsSection>
-        {[1, 2].map(i => (
+        {[1, 2].map((i) => (
           <SettingsCard key={i} className="animate-pulse">
             <SettingsCardHeader title="" description="" />
             <SettingsCardContent>
@@ -153,7 +148,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           </SettingsCard>
         ))}
       </SettingsSection>
-    );
+    )
   }
 
   return (
@@ -308,7 +303,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
         </Button>
       </div>
     </SettingsSection>
-  );
-};
+  )
+}
 
-export default NotificationSettings;
+export default NotificationSettings

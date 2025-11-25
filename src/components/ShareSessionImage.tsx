@@ -1,16 +1,16 @@
-'use client';
+'use client'
 
-import React, { useRef, useState } from 'react';
-import { SessionWithDetails, User } from '@/types';
-import { toPng } from 'html-to-image';
-import { Download, X, Share2 } from 'lucide-react';
-import Image from 'next/image';
+import React, { useRef, useState } from 'react'
+import { SessionWithDetails, User } from '@/types'
+import { toPng } from 'html-to-image'
+import { Download, X, Share2 } from 'lucide-react'
+import Image from 'next/image'
 
 interface ShareSessionImageProps {
-  session: SessionWithDetails;
-  isOpen: boolean;
-  onClose: () => void;
-  isPage?: boolean;
+  session: SessionWithDetails
+  isOpen: boolean
+  onClose: () => void
+  isPage?: boolean
 }
 
 export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
@@ -19,44 +19,44 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
   onClose,
   isPage = false,
 }) => {
-  const imageRef = useRef<HTMLDivElement>(null);
-  const [isExporting, setIsExporting] = useState(false);
-  const [exportError, setExportError] = useState<string | null>(null);
+  const imageRef = useRef<HTMLDivElement>(null)
+  const [isExporting, setIsExporting] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const formatTime = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
 
     if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}h ${minutes}m`
     }
-    return `${minutes}m`;
-  };
+    return `${minutes}m`
+  }
 
   const getUserInitials = (user: User): string => {
     return user.name
       .split(' ')
-      .map(word => word.charAt(0))
+      .map((word) => word.charAt(0))
       .join('')
       .toUpperCase()
-      .slice(0, 2);
-  };
+      .slice(0, 2)
+  }
 
   const formatDate = (date: Date): string => {
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
-    }).format(date);
-  };
+    }).format(date)
+  }
 
   const handleExport = async () => {
-    if (!imageRef.current) return;
+    if (!imageRef.current) return
 
-    setIsExporting(true);
-    setExportError(null);
+    setIsExporting(true)
+    setExportError(null)
 
     try {
       const dataUrl = await toPng(imageRef.current, {
@@ -64,25 +64,25 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
         pixelRatio: 2,
         cacheBust: true,
         backgroundColor: '#ffffff',
-      });
+      })
 
       // Create download link
-      const link = document.createElement('a');
-      link.download = `ambira-session-${session.id}.png`;
-      link.href = dataUrl;
-      link.click();
+      const link = document.createElement('a')
+      link.download = `ambira-session-${session.id}.png`
+      link.href = dataUrl
+      link.click()
     } catch {
-      setExportError('Failed to export image. Please try again.');
+      setExportError('Failed to export image. Please try again.')
     } finally {
-      setIsExporting(false);
+      setIsExporting(false)
     }
-  };
+  }
 
   const handleShare = async () => {
-    if (!imageRef.current) return;
+    if (!imageRef.current) return
 
-    setIsExporting(true);
-    setExportError(null);
+    setIsExporting(true)
+    setExportError(null)
 
     try {
       const dataUrl = await toPng(imageRef.current, {
@@ -90,14 +90,14 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
         pixelRatio: 2,
         cacheBust: true,
         backgroundColor: '#ffffff',
-      });
+      })
 
       // Convert data URL to blob
-      const response = await fetch(dataUrl);
-      const blob = await response.blob();
+      const response = await fetch(dataUrl)
+      const blob = await response.blob()
       const file = new File([blob], `ambira-session-${session.id}.png`, {
         type: 'image/png',
-      });
+      })
 
       // Check if Web Share API is supported
       if (navigator.share && navigator.canShare({ files: [file] })) {
@@ -105,18 +105,18 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
           files: [file],
           title: session.title || 'My Ambira Session',
           text: `Check out my session on Ambira: ${session.title}`,
-        });
+        })
       } else {
         // Fallback to download
-        await handleExport();
+        await handleExport()
       }
     } catch {
-      setExportError('Failed to share image. Downloading instead...');
-      await handleExport();
+      setExportError('Failed to share image. Downloading instead...')
+      await handleExport()
     } finally {
-      setIsExporting(false);
+      setIsExporting(false)
     }
-  };
+  }
 
   const content = (
     <>
@@ -169,15 +169,11 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-white">Ambira</h1>
-                  <p className="text-sm text-white/90">
-                    Track your productivity
-                  </p>
+                  <p className="text-sm text-white/90">Track your productivity</p>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-white/90 text-sm">
-                  {formatDate(session.createdAt)}
-                </div>
+                <div className="text-white/90 text-sm">{formatDate(session.createdAt)}</div>
               </div>
             </div>
           </div>
@@ -203,9 +199,7 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
                 </div>
               )}
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {session.user.name}
-                </h2>
+                <h2 className="text-2xl font-bold text-gray-900">{session.user.name}</h2>
                 <p className="text-gray-600">@{session.user.username}</p>
               </div>
             </div>
@@ -217,9 +211,7 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
               {session.title || 'Focus Session'}
             </h3>
             {session.description && (
-              <p className="text-gray-600 text-base mb-4 line-clamp-3">
-                {session.description}
-              </p>
+              <p className="text-gray-600 text-base mb-4 line-clamp-3">{session.description}</p>
             )}
 
             {/* Images - Show if session has images */}
@@ -277,9 +269,7 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
                       d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <span className="text-green-800 font-semibold">
-                    0 task(s) completed
-                  </span>
+                  <span className="text-green-800 font-semibold">0 task(s) completed</span>
                 </div>
               </div>
             )}
@@ -287,11 +277,7 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
             {/* Social Proof */}
             {session.supportCount > 0 && (
               <div className="flex items-center gap-2 text-gray-600">
-                <svg
-                  className="w-5 h-5 text-red-500"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
                 </svg>
                 <span className="font-semibold">{session.supportCount}</span>
@@ -304,9 +290,7 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
           <div className="px-8 py-6 bg-gray-50 border-t border-gray-200">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-600">Join me on Ambira</div>
-              <div className="text-sm font-semibold text-[#0066CC]">
-                ambira.app
-              </div>
+              <div className="text-sm font-semibold text-[#0066CC]">ambira.app</div>
             </div>
           </div>
         </div>
@@ -350,10 +334,10 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
         </button>
       </div>
     </>
-  );
+  )
 
   if (isPage) {
-    return content;
+    return content
   }
 
   return (
@@ -362,7 +346,7 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
         {content}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ShareSessionImage;
+export default ShareSessionImage

@@ -5,10 +5,10 @@
  * This component is maintained for backward compatibility only.
  */
 
-'use client';
+'use client'
 
-import { LoadingScreen } from './LoadingScreen';
+import { LoadingScreen } from './LoadingScreen'
 
 export function MobileLoadingScreen() {
-  return <LoadingScreen />;
+  return <LoadingScreen />
 }

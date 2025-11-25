@@ -11,20 +11,16 @@
  * - Optimistic UI updates
  */
 
-'use client';
+'use client'
 
-import { useState } from 'react';
-import {
-  validate,
-  CreateCommentSchema,
-  type CreateCommentInput,
-} from '@/lib/validation';
+import { useState } from 'react'
+import { validate, CreateCommentSchema, type CreateCommentInput } from '@/lib/validation'
 
 interface CommentFormProps {
-  sessionId: string;
-  parentCommentId?: string;
-  onCommentCreated?: (commentId: string) => void;
-  onCancel?: () => void;
+  sessionId: string
+  parentCommentId?: string
+  onCommentCreated?: (commentId: string) => void
+  onCancel?: () => void
 }
 
 export function CommentFormExample({
@@ -33,28 +29,28 @@ export function CommentFormExample({
   onCommentCreated,
   onCancel,
 }: CommentFormProps) {
-  const [content, setContent] = useState('');
-  const [error, setError] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showValidation, setShowValidation] = useState(false);
+  const [content, setContent] = useState('')
+  const [error, setError] = useState<string>('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showValidation, setShowValidation] = useState(false)
 
-  const MAX_LENGTH = 2000;
-  const remainingChars = MAX_LENGTH - content.length;
+  const MAX_LENGTH = 2000
+  const remainingChars = MAX_LENGTH - content.length
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newContent = e.target.value;
-    setContent(newContent);
+    const newContent = e.target.value
+    setContent(newContent)
 
     // Clear error when user starts typing
     if (error) {
-      setError('');
+      setError('')
     }
 
     // Show validation after user has typed something
     if (!showValidation && newContent.length > 0) {
-      setShowValidation(true);
+      setShowValidation(true)
     }
-  };
+  }
 
   const handleBlur = () => {
     // Validate on blur if there's content
@@ -63,82 +59,82 @@ export function CommentFormExample({
         sessionId,
         content,
         ...(parentCommentId && { parentCommentId }),
-      });
+      })
 
       if (!result.success) {
-        const contentError = result.errors.find(err => err.path === 'content');
+        const contentError = result.errors.find((err) => err.path === 'content')
         if (contentError) {
-          setError(contentError.message);
+          setError(contentError.message)
         }
       }
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setShowValidation(true);
+    e.preventDefault()
+    setError('')
+    setShowValidation(true)
 
     // Prepare data for validation
     const formData: CreateCommentInput = {
       sessionId,
       content,
       ...(parentCommentId && { parentCommentId }),
-    };
+    }
 
     // Validate with schema
-    const result = validate(CreateCommentSchema, formData);
+    const result = validate(CreateCommentSchema, formData)
 
     if (!result.success) {
       // Show first error
-      const firstError = result.errors[0];
+      const firstError = result.errors[0]
       if (firstError) {
-        setError(firstError.message);
+        setError(firstError.message)
       }
-      return;
+      return
     }
 
     // Type-safe validated data
-    const validatedData = result.data;
+    const validatedData = result.data
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
 
     try {
       const response = await fetch('/api/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(validatedData),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error('Failed to post comment');
+        throw new Error('Failed to post comment')
       }
 
-      const { commentId } = await response.json();
+      const { commentId } = await response.json()
 
       // Reset form
-      setContent('');
-      setShowValidation(false);
+      setContent('')
+      setShowValidation(false)
 
       // Notify parent
       if (onCommentCreated) {
-        onCommentCreated(commentId);
+        onCommentCreated(commentId)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to post comment');
+      setError(err instanceof Error ? err.message : 'Failed to post comment')
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const handleCancel = () => {
-    setContent('');
-    setError('');
-    setShowValidation(false);
+    setContent('')
+    setError('')
+    setShowValidation(false)
     if (onCancel) {
-      onCancel();
+      onCancel()
     }
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
@@ -152,17 +148,13 @@ export function CommentFormExample({
           className={`w-full px-4 py-3 border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-primary ${
             error ? 'border-destructive' : 'border-border'
           }`}
-          placeholder={
-            parentCommentId ? 'Write a reply...' : 'Write a comment...'
-          }
+          placeholder={parentCommentId ? 'Write a reply...' : 'Write a comment...'}
           disabled={isSubmitting}
         />
 
         {/* Character Counter & Error */}
         <div className="flex items-center justify-between mt-2">
-          <div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
-          </div>
+          <div>{error && <p className="text-sm text-destructive">{error}</p>}</div>
           <div className="text-sm text-muted-foreground">
             {showValidation && (
               <span className={remainingChars < 100 ? 'text-orange-500' : ''}>
@@ -194,55 +186,55 @@ export function CommentFormExample({
         </button>
       </div>
     </form>
-  );
+  )
 }
 
 /**
  * Simple inline comment example for quick replies
  */
 export function InlineCommentExample({ sessionId }: { sessionId: string }) {
-  const [content, setContent] = useState('');
-  const [error, setError] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [content, setContent] = useState('')
+  const [error, setError] = useState<string>('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleSubmit = async () => {
-    setError('');
+    setError('')
 
     // Quick validation
-    const result = validate(CreateCommentSchema, { sessionId, content });
+    const result = validate(CreateCommentSchema, { sessionId, content })
 
     if (!result.success) {
-      const firstError = result.errors[0];
+      const firstError = result.errors[0]
       if (firstError) {
-        setError(firstError.message);
+        setError(firstError.message)
       }
-      return;
+      return
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
 
     try {
       await fetch('/api/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(result.data),
-      });
+      })
 
-      setContent('');
+      setContent('')
     } catch (_err) {
-      setError('Failed to post comment');
+      setError('Failed to post comment')
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     // Submit on Cmd/Ctrl + Enter
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-      e.preventDefault();
-      handleSubmit();
+      e.preventDefault()
+      handleSubmit()
     }
-  };
+  }
 
   return (
     <div className="space-y-2">
@@ -250,9 +242,9 @@ export function InlineCommentExample({ sessionId }: { sessionId: string }) {
         <input
           type="text"
           value={content}
-          onChange={e => {
-            setContent(e.target.value);
-            if (error) setError('');
+          onChange={(e) => {
+            setContent(e.target.value)
+            if (error) setError('')
           }}
           onKeyDown={handleKeyDown}
           className={`w-full px-4 py-2 pr-20 border rounded-full ${
@@ -272,5 +264,5 @@ export function InlineCommentExample({ sessionId }: { sessionId: string }) {
       </div>
       {error && <p className="text-sm text-destructive px-4">{error}</p>}
     </div>
-  );
+  )
 }

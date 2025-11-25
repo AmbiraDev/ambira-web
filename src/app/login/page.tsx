@@ -1,15 +1,14 @@
-import { Metadata } from 'next';
-import { LoginForm } from '@/components/LoginForm';
-import { Suspense } from 'react';
-import Image from 'next/image';
-import PWAInstallPrompt from '@/components/PWAInstallPrompt';
-import { LoadingScreen } from '@/components/LoadingScreen';
+import { Metadata } from 'next'
+import { LoginForm } from '@/components/LoginForm'
+import { Suspense } from 'react'
+import Image from 'next/image'
+import PWAInstallPrompt from '@/components/PWAInstallPrompt'
+import { LoadingScreen } from '@/components/LoadingScreen'
 
 export const metadata: Metadata = {
   title: 'Sign In - Ambira',
-  description:
-    'Sign in to Ambira to track your productivity and stay motivated with friends',
-};
+  description: 'Sign in to Ambira to track your productivity and stay motivated with friends',
+}
 
 function LoginContent() {
   return (
@@ -25,30 +24,19 @@ function LoginContent() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-4">
-            <Image
-              src="/logo.svg"
-              alt="Ambira"
-              width={64}
-              height={64}
-              className="w-16 h-16"
-            />
+            <Image src="/logo.svg" alt="Ambira" width={64} height={64} className="w-16 h-16" />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">
-            Sign in to Ambira
-          </h2>
+          <h2 className="text-3xl font-bold text-gray-900">Sign in to Ambira</h2>
           <p className="mt-2 text-sm text-gray-600">
             Welcome back! Sign in to continue tracking your productivity.
           </p>
         </div>
-        <div
-          id="login-form"
-          className="bg-white p-10 rounded-xl shadow-lg border border-gray-200"
-        >
+        <div id="login-form" className="bg-white p-10 rounded-xl shadow-lg border border-gray-200">
           <LoginForm />
         </div>
       </div>
     </main>
-  );
+  )
 }
 
 export default function LoginPage() {
@@ -60,5 +48,5 @@ export default function LoginPage() {
       {/* PWA Install Prompt - Always show on mobile login page */}
       <PWAInstallPrompt alwaysShowOnMobile={true} />
     </>
-  );
+  )
 }

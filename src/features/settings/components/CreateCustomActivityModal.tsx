@@ -13,34 +13,37 @@
  * - Max 10 custom activities limit (enforced at API level)
  */
 
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
-import { useCreateCustomActivity } from '@/hooks/useActivityTypes';
-import { IconRenderer } from '@/components/IconRenderer';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react'
+import { X } from 'lucide-react'
+import { useCreateCustomActivity } from '@/hooks/useActivityTypes'
+import { IconRenderer } from '@/components/IconRenderer'
+import { Button } from '@/components/ui/button'
 
 interface CreateCustomActivityModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess?: () => void;
-  existingNames?: string[]; // For duplicate validation
+  isOpen: boolean
+  onClose: () => void
+  onSuccess?: () => void
+  existingNames?: string[] // For duplicate validation
 }
 
-export const CreateCustomActivityModal: React.FC<
-  CreateCustomActivityModalProps
-> = ({ isOpen, onClose, onSuccess, existingNames = [] }) => {
-  const createMutation = useCreateCustomActivity();
+export const CreateCustomActivityModal: React.FC<CreateCustomActivityModalProps> = ({
+  isOpen,
+  onClose,
+  onSuccess,
+  existingNames = [],
+}) => {
+  const createMutation = useCreateCustomActivity()
 
   const [formData, setFormData] = useState({
     name: '',
     icon: 'mdi:folder',
     description: '',
-  });
+  })
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Reset form when modal opens
   useEffect(() => {
@@ -49,28 +52,28 @@ export const CreateCustomActivityModal: React.FC<
         name: '',
         icon: 'mdi:folder',
         description: '',
-      });
-      setErrors({});
-      setIsSubmitting(false);
+      })
+      setErrors({})
+      setIsSubmitting(false)
     }
-  }, [isOpen]);
+  }, [isOpen])
 
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen && !isSubmitting) {
-        onClose();
+        onClose()
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleEscape)
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, onClose, isSubmitting]);
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, onClose, isSubmitting])
 
   // Preset flat-color-icons
   const availableIcons = [
@@ -114,44 +117,42 @@ export const CreateCustomActivityModal: React.FC<
     'flat-color-icons:cafe',
     'flat-color-icons:travel',
     'flat-color-icons:automotive',
-  ];
+  ]
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: Record<string, string> = {}
 
     // Name validation
     if (!formData.name.trim()) {
-      newErrors.name = 'Activity name is required';
+      newErrors.name = 'Activity name is required'
     } else if (formData.name.length > 50) {
-      newErrors.name = 'Activity name must be less than 50 characters';
+      newErrors.name = 'Activity name must be less than 50 characters'
     } else if (
-      existingNames
-        .map(n => n.toLowerCase().trim())
-        .includes(formData.name.toLowerCase().trim())
+      existingNames.map((n) => n.toLowerCase().trim()).includes(formData.name.toLowerCase().trim())
     ) {
-      newErrors.name = 'An activity with this name already exists';
+      newErrors.name = 'An activity with this name already exists'
     }
 
     // Icon validation
     if (!formData.icon) {
-      newErrors.icon = 'Please select an icon';
+      newErrors.icon = 'Please select an icon'
     }
 
     // Description validation (optional but has max length)
     if (formData.description.length > 200) {
-      newErrors.description = 'Description must be less than 200 characters';
+      newErrors.description = 'Description must be less than 200 characters'
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    if (!validateForm()) return;
+    if (!validateForm()) return
 
-    setIsSubmitting(true);
+    setIsSubmitting(true)
 
     try {
       await createMutation.mutateAsync({
@@ -159,24 +160,22 @@ export const CreateCustomActivityModal: React.FC<
         icon: formData.icon,
         defaultColor: '#0066CC', // Default blue color for custom activities
         description: formData.description.trim() || undefined,
-      });
+      })
 
       // Success
-      onSuccess?.();
-      onClose();
+      onSuccess?.()
+      onClose()
     } catch (error) {
       // Error handling
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Failed to create custom activity';
-      setErrors({ submit: errorMessage });
+        error instanceof Error ? error.message : 'Failed to create custom activity'
+      setErrors({ submit: errorMessage })
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div
@@ -187,14 +186,11 @@ export const CreateCustomActivityModal: React.FC<
     >
       <div
         className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2
-            id="create-activity-title"
-            className="text-xl font-semibold text-gray-900"
-          >
+          <h2 id="create-activity-title" className="text-xl font-semibold text-gray-900">
             Create Custom Activity
           </h2>
           <button
@@ -211,17 +207,14 @@ export const CreateCustomActivityModal: React.FC<
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Name Field */}
           <div>
-            <label
-              htmlFor="activity-name"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+            <label htmlFor="activity-name" className="block text-sm font-medium text-gray-700 mb-2">
               Activity Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               id="activity-name"
               value={formData.name}
-              onChange={e => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               disabled={isSubmitting}
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] disabled:opacity-50 disabled:bg-gray-50 ${
                 errors.name ? 'border-red-500' : 'border-gray-300'
@@ -232,25 +225,16 @@ export const CreateCustomActivityModal: React.FC<
               aria-describedby={errors.name ? 'activity-name-error' : undefined}
             />
             {errors.name && (
-              <p
-                id="activity-name-error"
-                className="mt-1 text-sm text-red-500"
-                role="alert"
-              >
+              <p id="activity-name-error" className="mt-1 text-sm text-red-500" role="alert">
                 {errors.name}
               </p>
             )}
-            <p className="mt-1 text-xs text-gray-500">
-              {formData.name.length}/50 characters
-            </p>
+            <p className="mt-1 text-xs text-gray-500">{formData.name.length}/50 characters</p>
           </div>
 
           {/* Icon Picker */}
           <div>
-            <label
-              id="icon-picker-label"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+            <label id="icon-picker-label" className="block text-sm font-medium text-gray-700 mb-2">
               Icon <span className="text-red-500">*</span>
             </label>
             <div
@@ -259,7 +243,7 @@ export const CreateCustomActivityModal: React.FC<
               aria-labelledby="icon-picker-label"
               aria-required="true"
             >
-              {availableIcons.map(icon => (
+              {availableIcons.map((icon) => (
                 <button
                   key={icon}
                   type="button"
@@ -283,11 +267,7 @@ export const CreateCustomActivityModal: React.FC<
               ))}
             </div>
             {errors.icon && (
-              <p
-                id="icon-error"
-                className="mt-1 text-sm text-red-500"
-                role="alert"
-              >
+              <p id="icon-error" className="mt-1 text-sm text-red-500" role="alert">
                 {errors.icon}
               </p>
             )}
@@ -304,9 +284,7 @@ export const CreateCustomActivityModal: React.FC<
             <textarea
               id="activity-description"
               value={formData.description}
-              onChange={e =>
-                setFormData({ ...formData, description: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               disabled={isSubmitting}
               className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] disabled:opacity-50 disabled:bg-gray-50 resize-none ${
                 errors.description ? 'border-red-500' : 'border-gray-300'
@@ -315,16 +293,10 @@ export const CreateCustomActivityModal: React.FC<
               rows={3}
               maxLength={200}
               aria-invalid={!!errors.description}
-              aria-describedby={
-                errors.description ? 'activity-description-error' : undefined
-              }
+              aria-describedby={errors.description ? 'activity-description-error' : undefined}
             />
             {errors.description && (
-              <p
-                id="activity-description-error"
-                className="mt-1 text-sm text-red-500"
-                role="alert"
-              >
+              <p id="activity-description-error" className="mt-1 text-sm text-red-500" role="alert">
                 {errors.description}
               </p>
             )}
@@ -338,19 +310,14 @@ export const CreateCustomActivityModal: React.FC<
             <p className="text-xs font-medium text-gray-500 mb-2">Preview:</p>
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-white border border-gray-200">
-                <IconRenderer
-                  iconName={formData.icon}
-                  className="w-5 h-5 text-gray-700"
-                />
+                <IconRenderer iconName={formData.icon} className="w-5 h-5 text-gray-700" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900 truncate">
                   {formData.name || 'Activity Name'}
                 </p>
                 {formData.description && (
-                  <p className="text-sm text-gray-500 truncate">
-                    {formData.description}
-                  </p>
+                  <p className="text-sm text-gray-500 truncate">{formData.description}</p>
                 )}
               </div>
             </div>
@@ -358,10 +325,7 @@ export const CreateCustomActivityModal: React.FC<
 
           {/* Submit Error */}
           {errors.submit && (
-            <div
-              className="p-3 bg-red-50 border border-red-200 rounded-lg"
-              role="alert"
-            >
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg" role="alert">
               <p className="text-sm text-red-600">{errors.submit}</p>
             </div>
           )}
@@ -384,5 +348,5 @@ export const CreateCustomActivityModal: React.FC<
         </form>
       </div>
     </div>
-  );
-};
+  )
+}

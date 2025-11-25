@@ -1,13 +1,13 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { Lock, Share2 } from 'lucide-react';
-import { Achievement, AchievementProgress } from '@/types';
+import React from 'react'
+import { Lock, Share2 } from 'lucide-react'
+import { Achievement, AchievementProgress } from '@/types'
 
 interface AchievementCardProps {
-  achievement?: Achievement;
-  progress?: AchievementProgress;
-  onShare?: (achievementId: string) => void;
+  achievement?: Achievement
+  progress?: AchievementProgress
+  onShare?: (achievementId: string) => void
 }
 
 export const AchievementCard: React.FC<AchievementCardProps> = ({
@@ -15,10 +15,10 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
   progress,
   onShare,
 }) => {
-  const isUnlocked = achievement !== undefined || progress?.isUnlocked;
-  const displayData = achievement || progress;
+  const isUnlocked = achievement !== undefined || progress?.isUnlocked
+  const displayData = achievement || progress
 
-  if (!displayData) return null;
+  if (!displayData) return null
 
   return (
     <div
@@ -37,20 +37,14 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
 
       <div className="flex items-start gap-3">
         {/* Icon */}
-        <div
-          className={`text-4xl flex-shrink-0 ${
-            isUnlocked ? 'filter-none' : 'grayscale'
-          }`}
-        >
+        <div className={`text-4xl flex-shrink-0 ${isUnlocked ? 'filter-none' : 'grayscale'}`}>
           {displayData.icon}
         </div>
 
         {/* Content */}
         <div className="flex-1 min-w-0">
           <h3 className="font-bold text-gray-900 mb-1">{displayData.name}</h3>
-          <p className="text-sm text-gray-600 mb-2">
-            {displayData.description}
-          </p>
+          <p className="text-sm text-gray-600 mb-2">{displayData.description}</p>
 
           {/* Progress bar for locked achievements */}
           {!isUnlocked && progress && (
@@ -90,5 +84,5 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

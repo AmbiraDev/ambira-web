@@ -4,16 +4,16 @@
  * Shows all activities with usage statistics
  */
 
-import { Metadata } from 'next';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import Header from '@/components/HeaderComponent';
-import MobileHeader from '@/components/MobileHeader';
-import BottomNavigation from '@/components/BottomNavigation';
+import { Metadata } from 'next'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import Header from '@/components/HeaderComponent'
+import MobileHeader from '@/components/MobileHeader'
+import BottomNavigation from '@/components/BottomNavigation'
 
 export const metadata: Metadata = {
   title: 'Activities - Ambira',
   description: 'View all your activities and usage statistics',
-};
+}
 
 export default function ActivitiesPage() {
   return (
@@ -30,12 +30,8 @@ export default function ActivitiesPage() {
         {/* Main Content */}
         <main className="max-w-5xl mx-auto px-4 py-8 pb-24 lg:pb-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Activities
-            </h1>
-            <p className="text-gray-600">
-              Track your productivity across all activities
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Activities</h1>
+            <p className="text-gray-600">Track your productivity across all activities</p>
           </div>
 
           {/* Placeholder content */}
@@ -50,5 +46,5 @@ export default function ActivitiesPage() {
         </div>
       </div>
     </ProtectedRoute>
-  );
+  )
 }

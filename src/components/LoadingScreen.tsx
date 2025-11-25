@@ -12,9 +12,9 @@
  * - Includes header for semantic HTML compliance
  */
 
-'use client';
+'use client'
 
-import Image from 'next/image';
+import Image from 'next/image'
 
 export function LoadingScreen() {
   return (
@@ -26,10 +26,7 @@ export function LoadingScreen() {
         </nav>
       </header>
 
-      <main
-        role="main"
-        className="fixed inset-0 bg-white flex items-center justify-center"
-      >
+      <main role="main" className="fixed inset-0 bg-white flex items-center justify-center">
         <div className="flex flex-col items-center justify-center">
           {/* Pulsing Ambira Logo */}
           <div className="mb-6 animate-pulse">
@@ -44,11 +41,9 @@ export function LoadingScreen() {
           </div>
 
           {/* Bold "Ambira" Text */}
-          <h1 className="text-[#305CDE] text-3xl font-bold tracking-wide">
-            Ambira
-          </h1>
+          <h1 className="text-[#305CDE] text-3xl font-bold tracking-wide">Ambira</h1>
         </div>
       </main>
     </>
-  );
+  )
 }

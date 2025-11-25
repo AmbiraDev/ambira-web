@@ -5,13 +5,13 @@
  * All business logic is delegated to the FeedPageContent component.
  */
 
-'use client';
+'use client'
 
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import Header from '@/components/HeaderComponent';
-import MobileHeader from '@/components/MobileHeader';
-import BottomNavigation from '@/components/BottomNavigation';
-import FeedPageContent from './page-content';
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import Header from '@/components/HeaderComponent'
+import MobileHeader from '@/components/MobileHeader'
+import BottomNavigation from '@/components/BottomNavigation'
+import FeedPageContent from './page-content'
 
 export default function FeedPage() {
   return (
@@ -35,5 +35,5 @@ export default function FeedPage() {
         <BottomNavigation />
       </div>
     </ProtectedRoute>
-  );
+  )
 }

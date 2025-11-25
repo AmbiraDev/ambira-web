@@ -1,26 +1,17 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import { CreateChallengeData, Project } from '@/types';
-import { Button } from '@/components/ui/button';
-import {
-  X,
-  Target,
-  TrendingUp,
-  Zap,
-  Timer,
-  Award,
-  Plus,
-  Trash2,
-} from 'lucide-react';
+import React, { useState } from 'react'
+import { CreateChallengeData, Project } from '@/types'
+import { Button } from '@/components/ui/button'
+import { X, Target, TrendingUp, Zap, Timer, Award, Plus, Trash2 } from 'lucide-react'
 
 interface CreateChallengeModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmit: (data: CreateChallengeData) => Promise<void>;
-  groupId?: string;
-  projects: Project[];
-  isLoading: boolean;
+  isOpen: boolean
+  onClose: () => void
+  onSubmit: (data: CreateChallengeData) => Promise<void>
+  groupId?: string
+  projects: Project[]
+  isLoading: boolean
 }
 
 const challengeTypes = [
@@ -56,7 +47,7 @@ const challengeTypes = [
     goalLabel: 'Total Hours Goal',
     goalPlaceholder: 'e.g., 1000',
   },
-];
+]
 
 export default function CreateChallengeModal({
   isOpen,
@@ -77,87 +68,87 @@ export default function CreateChallengeModal({
     rules: '',
     projectIds: [],
     rewards: [],
-  });
+  })
 
-  const [newReward, setNewReward] = useState('');
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [newReward, setNewReward] = useState('')
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Handle ESC key to close modal
   React.useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose();
+        onClose()
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleEscape)
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, onClose]);
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, onClose])
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: Record<string, string> = {}
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Challenge name is required';
+      newErrors.name = 'Challenge name is required'
     } else if (formData.name.length < 3) {
-      newErrors.name = 'Challenge name must be at least 3 characters';
+      newErrors.name = 'Challenge name must be at least 3 characters'
     } else if (formData.name.length > 100) {
-      newErrors.name = 'Challenge name must be less than 100 characters';
+      newErrors.name = 'Challenge name must be less than 100 characters'
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = 'Challenge description is required';
+      newErrors.description = 'Challenge description is required'
     } else if (formData.description.length < 10) {
-      newErrors.description = 'Description must be at least 10 characters';
+      newErrors.description = 'Description must be at least 10 characters'
     } else if (formData.description.length > 500) {
-      newErrors.description = 'Description must be less than 500 characters';
+      newErrors.description = 'Description must be less than 500 characters'
     }
 
     if (formData.startDate >= formData.endDate) {
-      newErrors.endDate = 'End date must be after start date';
+      newErrors.endDate = 'End date must be after start date'
     }
 
-    const now = new Date();
+    const now = new Date()
     if (formData.startDate < now) {
-      newErrors.startDate = 'Start date cannot be in the past';
+      newErrors.startDate = 'Start date cannot be in the past'
     }
 
     if (formData.goalValue !== undefined && formData.goalValue <= 0) {
-      newErrors.goalValue = 'Goal value must be greater than 0';
+      newErrors.goalValue = 'Goal value must be greater than 0'
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleInputChange = (
     field: string,
     value: string | Date | number | undefined | string[]
   ) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }))
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: '' }))
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!validateForm()) {
-      return;
+      return
     }
 
     try {
-      await onSubmit(formData);
-      onClose();
+      await onSubmit(formData)
+      onClose()
       // Reset form
       setFormData({
         groupId,
@@ -170,41 +161,41 @@ export default function CreateChallengeModal({
         rules: '',
         projectIds: [],
         rewards: [],
-      });
-      setNewReward('');
-      setErrors({});
+      })
+      setNewReward('')
+      setErrors({})
     } catch (_err) {
-      setErrors({ submit: 'Failed to create challenge. Please try again.' });
+      setErrors({ submit: 'Failed to create challenge. Please try again.' })
     }
-  };
+  }
 
-  const selectedType = challengeTypes.find(t => t.type === formData.type)!;
+  const selectedType = challengeTypes.find((t) => t.type === formData.type)!
 
   const addReward = () => {
     if (newReward.trim() && !formData.rewards?.includes(newReward.trim())) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         rewards: [...(prev.rewards || []), newReward.trim()],
-      }));
-      setNewReward('');
+      }))
+      setNewReward('')
     }
-  };
+  }
 
   const removeReward = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       rewards: prev.rewards?.filter((_, i) => i !== index) || [],
-    }));
-  };
+    }))
+  }
 
   const toggleProject = (projectId: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       projectIds: prev.projectIds?.includes(projectId)
-        ? prev.projectIds.filter(id => id !== projectId)
+        ? prev.projectIds.filter((id) => id !== projectId)
         : [...(prev.projectIds || []), projectId],
-    }));
-  };
+    }))
+  }
 
   return (
     <div
@@ -251,36 +242,28 @@ export default function CreateChallengeModal({
                 type="text"
                 id="challenge-name"
                 value={formData.name}
-                onChange={e => handleInputChange('name', e.target.value)}
+                onChange={(e) => handleInputChange('name', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter challenge name"
                 aria-required="true"
                 aria-invalid={!!errors.name}
-                aria-describedby={
-                  errors.name ? 'challenge-name-error' : undefined
-                }
+                aria-describedby={errors.name ? 'challenge-name-error' : undefined}
                 autoFocus
               />
               {errors.name && (
-                <p
-                  id="challenge-name-error"
-                  className="text-red-500 text-sm mt-1"
-                  role="alert"
-                >
+                <p id="challenge-name-error" className="text-red-500 text-sm mt-1" role="alert">
                   {errors.name}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
               <textarea
                 value={formData.description}
-                onChange={e => handleInputChange('description', e.target.value)}
+                onChange={(e) => handleInputChange('description', e.target.value)}
                 rows={3}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.description ? 'border-red-500' : 'border-gray-300'
@@ -288,9 +271,7 @@ export default function CreateChallengeModal({
                 placeholder="Describe what this challenge is about"
               />
               {errors.description && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.description}
-                </p>
+                <p className="text-red-500 text-sm mt-1">{errors.description}</p>
               )}
               <p className="text-sm text-gray-500 mt-1">
                 {formData.description.length}/500 characters
@@ -311,9 +292,9 @@ export default function CreateChallengeModal({
               role="radiogroup"
               aria-labelledby="challenge-type-label"
             >
-              {challengeTypes.map(type => {
-                const Icon = type.icon;
-                const isSelected = formData.type === type.type;
+              {challengeTypes.map((type) => {
+                const Icon = type.icon
+                const isSelected = formData.type === type.type
 
                 return (
                   <button
@@ -321,9 +302,7 @@ export default function CreateChallengeModal({
                     type="button"
                     role="radio"
                     aria-checked={isSelected}
-                    onClick={() =>
-                      setFormData(prev => ({ ...prev, type: type.type }))
-                    }
+                    onClick={() => setFormData((prev) => ({ ...prev, type: type.type }))}
                     className={`p-4 border-2 rounded-lg text-left transition-colors ${
                       isSelected
                         ? 'border-blue-500 bg-blue-50'
@@ -342,13 +321,11 @@ export default function CreateChallengeModal({
                         {type.label}
                       </span>
                     </div>
-                    <p
-                      className={`text-sm ${isSelected ? 'text-blue-700' : 'text-gray-600'}`}
-                    >
+                    <p className={`text-sm ${isSelected ? 'text-blue-700' : 'text-gray-600'}`}>
                       {type.description}
                     </p>
                   </button>
-                );
+                )
               })}
             </div>
           </div>
@@ -363,7 +340,7 @@ export default function CreateChallengeModal({
               step="0.1"
               min="0"
               value={formData.goalValue || ''}
-              onChange={e =>
+              onChange={(e) =>
                 handleInputChange(
                   'goalValue',
                   e.target.value ? parseFloat(e.target.value) : undefined
@@ -374,51 +351,35 @@ export default function CreateChallengeModal({
               }`}
               placeholder={selectedType.goalPlaceholder}
             />
-            {errors.goalValue && (
-              <p className="text-red-500 text-sm mt-1">{errors.goalValue}</p>
-            )}
-            <p className="text-sm text-gray-500 mt-1">
-              Leave empty for no specific target goal
-            </p>
+            {errors.goalValue && <p className="text-red-500 text-sm mt-1">{errors.goalValue}</p>}
+            <p className="text-sm text-gray-500 mt-1">Leave empty for no specific target goal</p>
           </div>
 
           {/* Date Range */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Start Date *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Start Date *</label>
               <input
                 type="datetime-local"
                 value={formData.startDate.toISOString().slice(0, 16)}
-                onChange={e =>
-                  handleInputChange('startDate', new Date(e.target.value))
-                }
+                onChange={(e) => handleInputChange('startDate', new Date(e.target.value))}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.startDate ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
-              {errors.startDate && (
-                <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>
-              )}
+              {errors.startDate && <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                End Date *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">End Date *</label>
               <input
                 type="datetime-local"
                 value={formData.endDate.toISOString().slice(0, 16)}
-                onChange={e =>
-                  handleInputChange('endDate', new Date(e.target.value))
-                }
+                onChange={(e) => handleInputChange('endDate', new Date(e.target.value))}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   errors.endDate ? 'border-red-500' : 'border-gray-300'
                 }`}
               />
-              {errors.endDate && (
-                <p className="text-red-500 text-sm mt-1">{errors.endDate}</p>
-              )}
+              {errors.endDate && <p className="text-red-500 text-sm mt-1">{errors.endDate}</p>}
             </div>
           </div>
 
@@ -429,11 +390,11 @@ export default function CreateChallengeModal({
                 Eligible Projects (Optional)
               </label>
               <p className="text-sm text-gray-500 mb-3">
-                Select which projects count toward this challenge. Leave empty
-                to include all projects.
+                Select which projects count toward this challenge. Leave empty to include all
+                projects.
               </p>
               <div className="flex flex-wrap gap-2">
-                {projects.map(project => (
+                {projects.map((project) => (
                   <button
                     key={project.id}
                     type="button"
@@ -458,9 +419,7 @@ export default function CreateChallengeModal({
             </label>
             <textarea
               value={formData.rules || ''}
-              onChange={e =>
-                setFormData(prev => ({ ...prev, rules: e.target.value }))
-              }
+              onChange={(e) => setFormData((prev) => ({ ...prev, rules: e.target.value }))}
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Any specific rules or requirements for this challenge"
@@ -477,12 +436,10 @@ export default function CreateChallengeModal({
                 <input
                   type="text"
                   value={newReward}
-                  onChange={e => setNewReward(e.target.value)}
+                  onChange={(e) => setNewReward(e.target.value)}
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Add a reward (e.g., Badge, Recognition, Prize)"
-                  onKeyPress={e =>
-                    e.key === 'Enter' && (e.preventDefault(), addReward())
-                  }
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addReward())}
                 />
                 <Button type="button" onClick={addReward} size="sm">
                   <Plus className="w-4 h-4" />
@@ -497,9 +454,7 @@ export default function CreateChallengeModal({
                     >
                       <div className="flex items-center gap-2">
                         <Award className="w-4 h-4 text-yellow-600" />
-                        <span className="text-sm text-yellow-800">
-                          {reward}
-                        </span>
+                        <span className="text-sm text-yellow-800">{reward}</span>
                       </div>
                       <button
                         type="button"
@@ -517,12 +472,7 @@ export default function CreateChallengeModal({
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isLoading}
-            >
+            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading}>
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading}>
@@ -532,5 +482,5 @@ export default function CreateChallengeModal({
         </form>
       </div>
     </div>
-  );
+  )
 }

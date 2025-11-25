@@ -1,158 +1,142 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useActivities } from '@/hooks/useActivitiesQuery';
-import { firebaseChallengeApi } from '@/lib/api';
-import {
-  Challenge,
-  ChallengeProgress,
-  Group,
-  CreateChallengeData,
-} from '@/types';
-import ChallengeCard from './ChallengeCard';
-import CreateChallengeModal from './CreateChallengeModal';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Trophy } from 'lucide-react';
+import React, { useState, useEffect } from 'react'
+import { useAuth } from '@/hooks/useAuth'
+import { useActivities } from '@/hooks/useActivitiesQuery'
+import { firebaseChallengeApi } from '@/lib/api'
+import { Challenge, ChallengeProgress, Group, CreateChallengeData } from '@/types'
+import ChallengeCard from './ChallengeCard'
+import CreateChallengeModal from './CreateChallengeModal'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Plus, Trophy } from 'lucide-react'
 
 interface GroupChallengesProps {
-  group: Group;
-  isAdmin: boolean;
+  group: Group
+  isAdmin: boolean
 }
 
-export default function GroupChallenges({
-  group,
-  isAdmin,
-}: GroupChallengesProps) {
-  const { user } = useAuth();
-  const { data: projects = [] } = useActivities(user?.id);
-  const [challenges, setChallenges] = useState<Challenge[]>([]);
-  const [userProgress, setUserProgress] = useState<
-    Record<string, ChallengeProgress>
-  >({});
-  const [participatingChallenges, setParticipatingChallenges] = useState<
-    Set<string>
-  >(new Set());
-  const [isLoading, setIsLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<
-    'all' | 'active' | 'upcoming' | 'completed'
-  >('all');
+export default function GroupChallenges({ group, isAdmin }: GroupChallengesProps) {
+  const { user } = useAuth()
+  const { data: projects = [] } = useActivities(user?.id)
+  const [challenges, setChallenges] = useState<Challenge[]>([])
+  const [userProgress, setUserProgress] = useState<Record<string, ChallengeProgress>>({})
+  const [participatingChallenges, setParticipatingChallenges] = useState<Set<string>>(new Set())
+  const [isLoading, setIsLoading] = useState(true)
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'upcoming' | 'completed'>(
+    'all'
+  )
 
   const loadGroupChallenges = React.useCallback(async () => {
     try {
-      setIsLoading(true);
+      setIsLoading(true)
 
       const filters = {
         groupId: group.id,
         status: activeFilter === 'all' ? undefined : activeFilter,
-      };
+      }
 
-      const challengesList = await firebaseChallengeApi.getChallenges(filters);
-      setChallenges(challengesList);
+      const challengesList = await firebaseChallengeApi.getChallenges(filters)
+      setChallenges(challengesList)
 
       // Load user progress for participating challenges
       if (user) {
-        const progressMap: Record<string, ChallengeProgress> = {};
-        const participatingSet = new Set<string>();
+        const progressMap: Record<string, ChallengeProgress> = {}
+        const participatingSet = new Set<string>()
 
         for (const challenge of challengesList) {
-          const progress = await firebaseChallengeApi.getChallengeProgress(
-            challenge.id
-          );
+          const progress = await firebaseChallengeApi.getChallengeProgress(challenge.id)
           if (progress) {
-            progressMap[challenge.id] = progress;
-            participatingSet.add(challenge.id);
+            progressMap[challenge.id] = progress
+            participatingSet.add(challenge.id)
           }
         }
 
-        setUserProgress(progressMap);
-        setParticipatingChallenges(participatingSet);
+        setUserProgress(progressMap)
+        setParticipatingChallenges(participatingSet)
       }
-    } catch (error) {
+    } catch (_error) {
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, [group.id, activeFilter, user]);
+  }, [group.id, activeFilter, user])
 
   useEffect(() => {
-    loadGroupChallenges();
-  }, [loadGroupChallenges]);
+    loadGroupChallenges()
+  }, [loadGroupChallenges])
 
   const handleCreateChallenge = async (data: CreateChallengeData) => {
     try {
       await firebaseChallengeApi.createChallenge({
         ...data,
         groupId: group.id,
-      });
-      await loadGroupChallenges();
-      setShowCreateModal(false);
-    } catch (error) {
-      throw error;
+      })
+      await loadGroupChallenges()
+      setShowCreateModal(false)
+    } catch (_error) {
+      throw error
     }
-  };
+  }
 
   const handleJoinChallenge = async (challengeId: string) => {
     try {
-      await firebaseChallengeApi.joinChallenge(challengeId);
-      await loadGroupChallenges();
-    } catch (error) {
-      alert('Failed to join challenge. Please try again.');
+      await firebaseChallengeApi.joinChallenge(challengeId)
+      await loadGroupChallenges()
+    } catch (_error) {
+      alert('Failed to join challenge. Please try again.')
     }
-  };
+  }
 
   const handleLeaveChallenge = async (challengeId: string) => {
     try {
-      await firebaseChallengeApi.leaveChallenge(challengeId);
-      await loadGroupChallenges();
-    } catch (error) {
-      alert('Failed to leave challenge. Please try again.');
+      await firebaseChallengeApi.leaveChallenge(challengeId)
+      await loadGroupChallenges()
+    } catch (_error) {
+      alert('Failed to leave challenge. Please try again.')
     }
-  };
+  }
 
-  const activeChallenges = challenges.filter(c => {
-    const now = new Date();
-    const startDate = new Date(c.startDate);
-    const endDate = new Date(c.endDate);
-    return now >= startDate && now <= endDate && c.isActive;
-  });
+  const activeChallenges = challenges.filter((c) => {
+    const now = new Date()
+    const startDate = new Date(c.startDate)
+    const endDate = new Date(c.endDate)
+    return now >= startDate && now <= endDate && c.isActive
+  })
 
-  const upcomingChallenges = challenges.filter(c => {
-    const now = new Date();
-    const startDate = new Date(c.startDate);
-    return now < startDate && c.isActive;
-  });
+  const upcomingChallenges = challenges.filter((c) => {
+    const now = new Date()
+    const startDate = new Date(c.startDate)
+    return now < startDate && c.isActive
+  })
 
-  const completedChallenges = challenges.filter(c => {
-    const now = new Date();
-    const endDate = new Date(c.endDate);
-    return now > endDate || !c.isActive;
-  });
+  const completedChallenges = challenges.filter((c) => {
+    const now = new Date()
+    const endDate = new Date(c.endDate)
+    return now > endDate || !c.isActive
+  })
 
   const getFilteredChallenges = () => {
     switch (activeFilter) {
       case 'active':
-        return activeChallenges;
+        return activeChallenges
       case 'upcoming':
-        return upcomingChallenges;
+        return upcomingChallenges
       case 'completed':
-        return completedChallenges;
+        return completedChallenges
       default:
-        return challenges;
+        return challenges
     }
-  };
+  }
 
-  const filteredChallenges = getFilteredChallenges();
+  const filteredChallenges = getFilteredChallenges()
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">
-            Group Challenges
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900">Group Challenges</h3>
           <p className="text-sm text-gray-600">
             Compete with group members in productivity challenges
           </p>
@@ -168,27 +152,19 @@ export default function GroupChallenges({
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-blue-50 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600">
-            {activeChallenges.length}
-          </div>
+          <div className="text-2xl font-bold text-blue-600">{activeChallenges.length}</div>
           <div className="text-sm text-blue-600">Active</div>
         </div>
         <div className="bg-green-50 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-green-600">
-            {upcomingChallenges.length}
-          </div>
+          <div className="text-2xl font-bold text-green-600">{upcomingChallenges.length}</div>
           <div className="text-sm text-green-600">Upcoming</div>
         </div>
         <div className="bg-purple-50 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-purple-600">
-            {completedChallenges.length}
-          </div>
+          <div className="text-2xl font-bold text-purple-600">{completedChallenges.length}</div>
           <div className="text-sm text-purple-600">Completed</div>
         </div>
         <div className="bg-orange-50 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-orange-600">
-            {participatingChallenges.size}
-          </div>
+          <div className="text-2xl font-bold text-orange-600">{participatingChallenges.size}</div>
           <div className="text-sm text-orange-600">Participating</div>
         </div>
       </div>
@@ -208,13 +184,11 @@ export default function GroupChallenges({
             label: 'Completed',
             count: completedChallenges.length,
           },
-        ].map(filter => (
+        ].map((filter) => (
           <button
             key={filter.key}
             onClick={() =>
-              setActiveFilter(
-                filter.key as 'all' | 'active' | 'upcoming' | 'completed'
-              )
+              setActiveFilter(filter.key as 'all' | 'active' | 'upcoming' | 'completed')
             }
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
               activeFilter === filter.key
@@ -234,10 +208,7 @@ export default function GroupChallenges({
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse"
-            >
+            <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
               <div className="h-4 bg-gray-200 rounded mb-4"></div>
               <div className="h-3 bg-gray-200 rounded mb-2"></div>
               <div className="h-3 bg-gray-200 rounded mb-4"></div>
@@ -247,7 +218,7 @@ export default function GroupChallenges({
         </div>
       ) : filteredChallenges.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filteredChallenges.map(challenge => (
+          {filteredChallenges.map((challenge) => (
             <ChallengeCard
               key={challenge.id}
               challenge={challenge}
@@ -263,9 +234,7 @@ export default function GroupChallenges({
         <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
           <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {activeFilter === 'all'
-              ? 'No challenges yet'
-              : `No ${activeFilter} challenges`}
+            {activeFilter === 'all' ? 'No challenges yet' : `No ${activeFilter} challenges`}
           </h3>
           <p className="text-gray-500 mb-6">
             {isAdmin
@@ -291,5 +260,5 @@ export default function GroupChallenges({
         isLoading={false}
       />
     </div>
-  );
+  )
 }

@@ -1,24 +1,20 @@
-'use client';
+'use client'
 
-import React from 'react';
+import React from 'react'
 
 interface TooltipPayload {
-  color: string;
-  name: string;
-  value: number;
+  color: string
+  name: string
+  value: number
 }
 
 interface ActivityChartTooltipProps {
-  active?: boolean;
-  payload?: TooltipPayload[];
-  label?: string;
+  active?: boolean
+  payload?: TooltipPayload[]
+  label?: string
 }
 
-export function ActivityChartTooltip({
-  active,
-  payload,
-  label,
-}: ActivityChartTooltipProps) {
+export function ActivityChartTooltip({ active, payload, label }: ActivityChartTooltipProps) {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
@@ -29,7 +25,7 @@ export function ActivityChartTooltip({
           </p>
         ))}
       </div>
-    );
+    )
   }
-  return null;
+  return null
 }

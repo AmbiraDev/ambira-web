@@ -1,19 +1,19 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import Image from 'next/image';
-import { SessionWithDetails, User } from '@/types';
-import PostStats from './PostStats';
-import PostInteractions from './PostInteractions';
-import CommentList from './CommentList';
+import React, { useState } from 'react'
+import Image from 'next/image'
+import { SessionWithDetails, User } from '@/types'
+import PostStats from './PostStats'
+import PostInteractions from './PostInteractions'
+import CommentList from './CommentList'
 
 interface PostCardProps {
-  post: SessionWithDetails;
-  onSupport: (postId: string) => Promise<void>;
-  onRemoveSupport: (postId: string) => Promise<void>;
-  onShare: (postId: string) => Promise<void>;
-  className?: string;
-  showComments?: boolean;
+  post: SessionWithDetails
+  onSupport: (postId: string) => Promise<void>
+  onRemoveSupport: (postId: string) => Promise<void>
+  onShare: (postId: string) => Promise<void>
+  className?: string
+  showComments?: boolean
 }
 
 export const PostCard: React.FC<PostCardProps> = ({
@@ -24,36 +24,32 @@ export const PostCard: React.FC<PostCardProps> = ({
   className = '',
   showComments = false,
 }) => {
-  const [showMenu, setShowMenu] = useState(false);
-  const [showCommentSection, setShowCommentSection] = useState(showComments);
+  const [showMenu, setShowMenu] = useState(false)
+  const [showCommentSection, setShowCommentSection] = useState(showComments)
 
   const formatTimeAgo = (date: Date): string => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
 
-    const postDate = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate()
-    );
+    const postDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
 
     // Format time as "h:mm am/pm"
     const timeStr = date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
-    });
+    })
 
     // Check if today
     if (postDate.getTime() === today.getTime()) {
-      return `Today at ${timeStr}`;
+      return `Today at ${timeStr}`
     }
 
     // Check if yesterday
     if (postDate.getTime() === yesterday.getTime()) {
-      return `Yesterday at ${timeStr}`;
+      return `Yesterday at ${timeStr}`
     }
 
     // Otherwise show full date: "Month Day, Year at h:mm am/pm"
@@ -61,19 +57,19 @@ export const PostCard: React.FC<PostCardProps> = ({
       month: 'long',
       day: 'numeric',
       year: 'numeric',
-    });
+    })
 
-    return `${dateStr} at ${timeStr}`;
-  };
+    return `${dateStr} at ${timeStr}`
+  }
 
   const getUserInitials = (user: User): string => {
     return user.name
       .split(' ')
-      .map(word => word.charAt(0))
+      .map((word) => word.charAt(0))
       .join('')
       .toUpperCase()
-      .slice(0, 2);
-  };
+      .slice(0, 2)
+  }
 
   const getUserColor = (userId: string): string => {
     // Generate consistent color based on user ID
@@ -86,16 +82,12 @@ export const PostCard: React.FC<PostCardProps> = ({
       'bg-gradient-to-br from-indigo-400 to-indigo-600',
       'bg-gradient-to-br from-teal-400 to-teal-600',
       'bg-gradient-to-br from-cyan-400 to-cyan-600',
-    ];
-    const hash = (userId || '')
-      .split('')
-      .reduce((a, b) => a + b.charCodeAt(0), 0);
+    ]
+    const hash = (userId || '').split('').reduce((a, b) => a + b.charCodeAt(0), 0)
     return (
-      colors[hash % colors.length] ||
-      colors[0] ||
-      'bg-gradient-to-br from-orange-400 to-orange-600'
-    );
-  };
+      colors[hash % colors.length] || colors[0] || 'bg-gradient-to-br from-orange-400 to-orange-600'
+    )
+  }
 
   return (
     <article
@@ -153,12 +145,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               onClick={() => setShowMenu(!showMenu)}
               className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-1 transition-colors"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -187,9 +174,7 @@ export const PostCard: React.FC<PostCardProps> = ({
         {/* Post Description */}
         {post.description && (
           <div className="mt-4">
-            <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">
-              {post.description}
-            </p>
+            <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">{post.description}</p>
           </div>
         )}
       </div>
@@ -213,8 +198,7 @@ export const PostCard: React.FC<PostCardProps> = ({
               ))}
             </div>
             <span className="font-medium">
-              {post.supportCount}{' '}
-              {post.supportCount === 1 ? 'person' : 'people'} gave support
+              {post.supportCount} {post.supportCount === 1 ? 'person' : 'people'} gave support
             </span>
           </div>
         </div>
@@ -235,14 +219,11 @@ export const PostCard: React.FC<PostCardProps> = ({
       {/* Comments Section */}
       {showCommentSection && (
         <div className="border-t border-gray-200">
-          <CommentList
-            sessionId={post.id}
-            initialCommentCount={post.commentCount}
-          />
+          <CommentList sessionId={post.id} initialCommentCount={post.commentCount} />
         </div>
       )}
     </article>
-  );
-};
+  )
+}
 
-export default PostCard;
+export default PostCard

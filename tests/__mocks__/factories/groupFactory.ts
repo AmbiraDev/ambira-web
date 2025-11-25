@@ -3,14 +3,14 @@
  * Creates mock groups for testing
  */
 
-import type { Group, GroupMembership } from '@/types';
+import type { Group, GroupMembership } from '@/types'
 
-let groupIdCounter = 0;
-let membershipIdCounter = 0;
+let groupIdCounter = 0
+let membershipIdCounter = 0
 
 export function createMockGroup(overrides: Partial<Group> = {}): Group {
-  const id = overrides.id || `group-${Date.now()}-${++groupIdCounter}`;
-  const adminUserId = overrides.createdByUserId || `user-${Date.now()}`;
+  const id = overrides.id || `group-${Date.now()}-${++groupIdCounter}`
+  const adminUserId = overrides.createdByUserId || `user-${Date.now()}`
 
   return {
     id,
@@ -30,7 +30,7 @@ export function createMockGroup(overrides: Partial<Group> = {}): Group {
     createdByUserId: adminUserId,
     createdAt: overrides.createdAt || new Date(),
     updatedAt: overrides.updatedAt || new Date(),
-  };
+  }
 }
 
 export function createMockGroupMembership(
@@ -43,19 +43,16 @@ export function createMockGroupMembership(
     role: overrides.role || 'member',
     joinedAt: overrides.joinedAt || new Date(),
     status: overrides.status || 'active',
-  };
+  }
 }
 
-export function createMockGroupBatch(
-  count: number,
-  baseOverrides: Partial<Group> = {}
-): Group[] {
+export function createMockGroupBatch(count: number, baseOverrides: Partial<Group> = {}): Group[] {
   return Array.from({ length: count }, (_, i) =>
     createMockGroup({ ...baseOverrides, name: `Group ${i + 1}` })
-  );
+  )
 }
 
 export function resetGroupFactory() {
-  groupIdCounter = 0;
-  membershipIdCounter = 0;
+  groupIdCounter = 0
+  membershipIdCounter = 0
 }

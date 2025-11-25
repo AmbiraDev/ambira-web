@@ -1,136 +1,132 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Download, Share2 } from 'lucide-react';
-import { SessionWithDetails, User } from '@/types';
-import { firebaseApi } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
-import Header from '@/components/HeaderComponent';
-import MobileHeader from '@/components/MobileHeader';
-import { toPng } from 'html-to-image';
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft, Download, Share2 } from 'lucide-react'
+import { SessionWithDetails, User } from '@/types'
+import { firebaseApi } from '@/lib/api'
+import { useAuth } from '@/hooks/useAuth'
+import Header from '@/components/HeaderComponent'
+import MobileHeader from '@/components/MobileHeader'
+import { toPng } from 'html-to-image'
 
 interface SessionSharePageProps {
   params: Promise<{
-    id: string;
-  }>;
+    id: string
+  }>
 }
 
-type LayoutType = 'minimal' | 'square';
+type LayoutType = 'minimal' | 'square'
 
 function SessionShareContent({ sessionId }: { sessionId: string }) {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [session, setSession] = useState<SessionWithDetails | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedLayout, setSelectedLayout] = useState<LayoutType | null>(
-    'square'
-  );
-  const [isExporting, setIsExporting] = useState(false);
-  const [exportError, setExportError] = useState<string | null>(null);
+  const router = useRouter()
+  const { user } = useAuth()
+  const [session, setSession] = useState<SessionWithDetails | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedLayout, setSelectedLayout] = useState<LayoutType | null>('square')
+  const [isExporting, setIsExporting] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
 
-  const minimalRef = useRef<HTMLDivElement>(null);
-  const squareRef = useRef<HTMLDivElement>(null);
+  const minimalRef = useRef<HTMLDivElement>(null)
+  const squareRef = useRef<HTMLDivElement>(null)
 
   const loadSession = useCallback(async () => {
     try {
-      setIsLoading(true);
-      setError(null);
+      setIsLoading(true)
+      setError(null)
 
-      const sessionData =
-        await firebaseApi.session.getSessionWithDetails(sessionId);
-      setSession(sessionData as unknown as SessionWithDetails);
+      const sessionData = await firebaseApi.session.getSessionWithDetails(sessionId)
+      setSession(sessionData as unknown as SessionWithDetails)
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to load session';
-      setError(errorMessage);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to load session'
+      setError(errorMessage)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, [sessionId]);
+  }, [sessionId])
 
   useEffect(() => {
     if (sessionId && user) {
-      loadSession();
+      loadSession()
     }
-  }, [sessionId, user, loadSession]);
+  }, [sessionId, user, loadSession])
 
   const formatTime = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
 
     if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}h ${minutes}m`
     }
-    return `${minutes}m`;
-  };
+    return `${minutes}m`
+  }
 
   const getUserInitials = (user: User): string => {
     return user.name
       .split(' ')
-      .map(word => word.charAt(0))
+      .map((word) => word.charAt(0))
       .join('')
       .toUpperCase()
-      .slice(0, 2);
-  };
+      .slice(0, 2)
+  }
 
   const formatDate = (date: Date): string => {
     const dateStr = new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
-    }).format(date);
+    }).format(date)
 
     const timeStr = new Intl.DateTimeFormat('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
-    }).format(date);
+    }).format(date)
 
-    return `${dateStr} at ${timeStr}`;
-  };
+    return `${dateStr} at ${timeStr}`
+  }
 
   // Get activity display name with fallback
   const getActivityDisplayName = (session: SessionWithDetails): string => {
-    if (session.activity?.name) return session.activity.name;
-    if (session.project?.name) return session.project.name;
+    if (session.activity?.name) return session.activity.name
+    if (session.project?.name) return session.project.name
 
     // Fallback: format the activityId or projectId
-    const id = session.activityId || session.projectId;
+    const id = session.activityId || session.projectId
     if (id) {
       // Convert kebab-case to Title Case (e.g., "side-project" -> "Side Project")
-      return id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
+      return id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ')
     }
 
-    return 'N/A';
-  };
+    return 'N/A'
+  }
 
   const getCurrentRef = () => {
-    if (selectedLayout === 'square') return squareRef;
-    if (selectedLayout === 'minimal') return minimalRef;
-    return null;
-  };
+    if (selectedLayout === 'square') return squareRef
+    if (selectedLayout === 'minimal') return minimalRef
+    return null
+  }
 
   const handleExport = async () => {
-    const imageRef = getCurrentRef();
-    if (!imageRef || !imageRef.current) return;
+    const imageRef = getCurrentRef()
+    if (!imageRef || !imageRef.current) return
 
-    setIsExporting(true);
-    setExportError(null);
+    setIsExporting(true)
+    setExportError(null)
 
     try {
       // Create a temporary container off-screen with the full-size layout
-      const tempContainer = document.createElement('div');
-      tempContainer.style.position = 'fixed';
-      tempContainer.style.left = '-9999px';
-      tempContainer.style.top = '0';
-      document.body.appendChild(tempContainer);
+      const tempContainer = document.createElement('div')
+      tempContainer.style.position = 'fixed'
+      tempContainer.style.left = '-9999px'
+      tempContainer.style.top = '0'
+      document.body.appendChild(tempContainer)
 
       // Clone the layout content
-      const clonedLayout = imageRef.current.cloneNode(true) as HTMLElement;
-      tempContainer.appendChild(clonedLayout);
+      const clonedLayout = imageRef.current.cloneNode(true) as HTMLElement
+      tempContainer.appendChild(clonedLayout)
 
       // Generate the image from the full-size layout
       const dataUrl = await toPng(clonedLayout, {
@@ -140,40 +136,40 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         backgroundColor: '#ffffff',
         width: selectedLayout === 'square' ? 1080 : 1080,
         height: selectedLayout === 'square' ? 1110 : 1080,
-      });
+      })
 
       // Clean up
-      document.body.removeChild(tempContainer);
+      document.body.removeChild(tempContainer)
 
-      const link = document.createElement('a');
-      link.download = `ambira-${session?.title?.toLowerCase().replace(/\s+/g, '-') || 'session'}-${selectedLayout}.png`;
-      link.href = dataUrl;
-      link.click();
+      const link = document.createElement('a')
+      link.download = `ambira-${session?.title?.toLowerCase().replace(/\s+/g, '-') || 'session'}-${selectedLayout}.png`
+      link.href = dataUrl
+      link.click()
     } catch {
-      setExportError('Failed to export image. Please try again.');
+      setExportError('Failed to export image. Please try again.')
     } finally {
-      setIsExporting(false);
+      setIsExporting(false)
     }
-  };
+  }
 
   const handleShare = async () => {
-    const imageRef = getCurrentRef();
-    if (!imageRef || !imageRef.current) return;
+    const imageRef = getCurrentRef()
+    if (!imageRef || !imageRef.current) return
 
-    setIsExporting(true);
-    setExportError(null);
+    setIsExporting(true)
+    setExportError(null)
 
     try {
       // Create a temporary container off-screen with the full-size layout
-      const tempContainer = document.createElement('div');
-      tempContainer.style.position = 'fixed';
-      tempContainer.style.left = '-9999px';
-      tempContainer.style.top = '0';
-      document.body.appendChild(tempContainer);
+      const tempContainer = document.createElement('div')
+      tempContainer.style.position = 'fixed'
+      tempContainer.style.left = '-9999px'
+      tempContainer.style.top = '0'
+      document.body.appendChild(tempContainer)
 
       // Clone the layout content
-      const clonedLayout = imageRef.current.cloneNode(true) as HTMLElement;
-      tempContainer.appendChild(clonedLayout);
+      const clonedLayout = imageRef.current.cloneNode(true) as HTMLElement
+      tempContainer.appendChild(clonedLayout)
 
       // Generate the image from the full-size layout
       const dataUrl = await toPng(clonedLayout, {
@@ -183,35 +179,35 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         backgroundColor: '#ffffff',
         width: selectedLayout === 'square' ? 1080 : 1080,
         height: selectedLayout === 'square' ? 1110 : 1080,
-      });
+      })
 
       // Clean up
-      document.body.removeChild(tempContainer);
+      document.body.removeChild(tempContainer)
 
-      const response = await fetch(dataUrl);
-      const blob = await response.blob();
+      const response = await fetch(dataUrl)
+      const blob = await response.blob()
       const file = new File([blob], `ambira-session.png`, {
         type: 'image/png',
-      });
+      })
 
       if (navigator.share && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
           title: session?.title || 'My Ambira Session',
           text: `Check out my productivity session on Ambira!`,
-        });
+        })
       } else {
-        await handleExport();
+        await handleExport()
       }
     } catch (_error) {
       if (!(_error instanceof Error && _error.name === 'AbortError')) {
-        setExportError('Failed to share. Downloading instead...');
-        await handleExport();
+        setExportError('Failed to share. Downloading instead...')
+        await handleExport()
       }
     } finally {
-      setIsExporting(false);
+      setIsExporting(false)
     }
-  };
+  }
 
   if (isLoading) {
     return (
@@ -232,7 +228,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   if (error || !session) {
@@ -274,7 +270,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   // Check if the current user owns this session
@@ -316,7 +312,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   // Square Mobile Post Layout
@@ -328,8 +324,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         height: '1110px',
         backgroundColor: '#ffffff',
         overflow: 'hidden',
-        fontFamily:
-          'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       }}
     >
       <div
@@ -397,9 +392,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
                 </span>
               </div>
             )}
-            <div
-              style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}
-            >
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
               <div
                 style={{
                   fontWeight: 700,
@@ -608,9 +601,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
               >
                 Time
               </div>
-              <div
-                style={{ fontSize: '32px', fontWeight: 600, color: '#111827' }}
-              >
+              <div style={{ fontSize: '32px', fontWeight: 600, color: '#111827' }}>
                 {formatTime(session.duration)}
               </div>
             </div>
@@ -642,7 +633,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         </div>
       </div>
     </div>
-  );
+  )
 
   // Minimal Clean Layout (no images)
   const MinimalLayout = () => (
@@ -689,9 +680,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
               />
             </svg>
           </div>
-          <div style={{ color: '#4b5563', fontSize: '22px' }}>
-            {formatDate(session.createdAt)}
-          </div>
+          <div style={{ color: '#4b5563', fontSize: '22px' }}>{formatDate(session.createdAt)}</div>
         </div>
 
         <div
@@ -898,7 +887,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         </div>
       </div>
     </div>
-  );
+  )
 
   return (
     <div className="min-h-screen bg-white">
@@ -919,12 +908,8 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
 
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            Share Your Session
-          </h1>
-          <p className="text-gray-600 text-lg">
-            Download or share your session card
-          </p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Share Your Session</h1>
+          <p className="text-gray-600 text-lg">Download or share your session card</p>
         </div>
 
         {/* Error Message */}
@@ -998,17 +983,15 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         )}
       </div>
     </div>
-  );
+  )
 }
 
-export default function SessionSharePageWrapper({
-  params,
-}: SessionSharePageProps) {
-  const [sessionId, setSessionId] = React.useState<string>('');
+export default function SessionSharePageWrapper({ params }: SessionSharePageProps) {
+  const [sessionId, setSessionId] = React.useState<string>('')
 
   React.useEffect(() => {
-    params.then(({ id }) => setSessionId(id));
-  }, [params]);
+    params.then(({ id }) => setSessionId(id))
+  }, [params])
 
   return (
     <>
@@ -1033,5 +1016,5 @@ export default function SessionSharePageWrapper({
         <SessionShareContent sessionId={sessionId} />
       )}
     </>
-  );
+  )
 }

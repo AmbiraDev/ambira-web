@@ -19,14 +19,14 @@
  */
 
 // Query hooks
-export { useStreakData, useStreakStats, STREAK_KEYS } from './useStreaks';
+export { useStreakData, useStreakStats, STREAK_KEYS } from './useStreaks'
 
 // Mutation hooks
 export {
   useUpdateStreakVisibility,
   useInvalidateStreak,
   useInvalidateAllStreaks,
-} from './useStreakMutations';
+} from './useStreakMutations'
 
 // Types
-export type { UpdateStreakVisibilityData } from './useStreakMutations';
+export type { UpdateStreakVisibilityData } from './useStreakMutations'

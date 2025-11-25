@@ -6,7 +6,7 @@
 /**
  * Check if running in development environment
  */
-export const isDevelopment: boolean = process.env.NODE_ENV === 'development';
+export const isDevelopment: boolean = process.env.NODE_ENV === 'development'
 
 /**
  * Debug logging functions that only output in development mode
@@ -18,7 +18,7 @@ export const debug = {
    */
   log: (...args: unknown[]): void => {
     if (isDevelopment) {
-      console.log(...args);
+      console.log(...args)
     }
   },
 
@@ -28,7 +28,7 @@ export const debug = {
    */
   warn: (...args: unknown[]): void => {
     if (isDevelopment) {
-      console.warn(...args);
+      console.warn(...args)
     }
   },
 
@@ -38,7 +38,7 @@ export const debug = {
    */
   error: (...args: unknown[]): void => {
     if (isDevelopment) {
-      console.error(...args);
+      console.error(...args)
     }
   },
-};
+}

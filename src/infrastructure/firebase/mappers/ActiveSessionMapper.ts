@@ -4,17 +4,17 @@
  * Converts between Firestore documents and ActiveSession domain entities.
  */
 
-import { DocumentSnapshot, Timestamp } from 'firebase/firestore';
-import { ActiveSession, TimerStatus } from '@/domain/entities/ActiveSession';
+import { DocumentSnapshot, Timestamp } from 'firebase/firestore'
+import { ActiveSession, TimerStatus } from '@/domain/entities/ActiveSession'
 
 export class ActiveSessionMapper {
   /**
    * Convert Firestore document to ActiveSession domain entity
    */
   toDomain(doc: DocumentSnapshot): ActiveSession {
-    const data = doc.data();
+    const data = doc.data()
     if (!data) {
-      throw new Error(`ActiveSession document ${doc.id} does not exist`);
+      throw new Error(`ActiveSession document ${doc.id} does not exist`)
     }
 
     return new ActiveSession(
@@ -28,7 +28,7 @@ export class ActiveSessionMapper {
       data.activityId,
       data.title,
       data.description
-    );
+    )
   }
 
   /**
@@ -41,26 +41,26 @@ export class ActiveSessionMapper {
       startTime: Timestamp.fromDate(session.startTime),
       status: session.status,
       pausedDuration: session.pausedDuration,
-    };
+    }
 
     // Add optional fields only if defined
     if (session.lastPausedAt) {
-      data.lastPausedAt = Timestamp.fromDate(session.lastPausedAt);
+      data.lastPausedAt = Timestamp.fromDate(session.lastPausedAt)
     }
 
     if (session.activityId !== null && session.activityId !== undefined) {
-      data.activityId = session.activityId;
+      data.activityId = session.activityId
     }
 
     if (session.title !== undefined) {
-      data.title = session.title;
+      data.title = session.title
     }
 
     if (session.description !== undefined) {
-      data.description = session.description;
+      data.description = session.description
     }
 
-    return data;
+    return data
   }
 
   /**
@@ -68,13 +68,13 @@ export class ActiveSessionMapper {
    */
   private timestampToDate(timestamp: Timestamp | Date | undefined): Date {
     if (!timestamp) {
-      return new Date();
+      return new Date()
     }
 
     if (timestamp instanceof Date) {
-      return timestamp;
+      return timestamp
     }
 
-    return timestamp.toDate();
+    return timestamp.toDate()
   }
 }

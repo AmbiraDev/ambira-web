@@ -20,9 +20,9 @@ import {
   Timestamp,
   serverTimestamp,
   increment,
-} from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
-import { UserActivityPreference } from '@/types';
+} from 'firebase/firestore'
+import { db, auth } from '@/lib/firebase'
+import { UserActivityPreference } from '@/types'
 
 /**
  * Convert Firestore document to UserActivityPreference
@@ -38,7 +38,7 @@ function convertToUserActivityPreference(
     useCount: data.useCount as number,
     createdAt: data.createdAt as Timestamp,
     updatedAt: data.updatedAt as Timestamp,
-  };
+  }
 }
 
 /**
@@ -58,12 +58,10 @@ export async function getRecentActivities(
     collection(db, `users/${userId}/activityPreferences`),
     orderBy('lastUsed', 'desc'),
     firestoreLimit(limit)
-  );
+  )
 
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc =>
-    convertToUserActivityPreference(doc.id, doc.data())
-  );
+  const snapshot = await getDocs(q)
+  return snapshot.docs.map((doc) => convertToUserActivityPreference(doc.id, doc.data()))
 }
 
 /**
@@ -71,18 +69,14 @@ export async function getRecentActivities(
  *
  * @param userId - User ID
  */
-export async function getAllActivityPreferences(
-  userId: string
-): Promise<UserActivityPreference[]> {
+export async function getAllActivityPreferences(userId: string): Promise<UserActivityPreference[]> {
   const q = query(
     collection(db, `users/${userId}/activityPreferences`),
     orderBy('lastUsed', 'desc')
-  );
+  )
 
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc =>
-    convertToUserActivityPreference(doc.id, doc.data())
-  );
+  const snapshot = await getDocs(q)
+  return snapshot.docs.map((doc) => convertToUserActivityPreference(doc.id, doc.data()))
 }
 
 /**
@@ -95,14 +89,14 @@ export async function getActivityPreference(
   userId: string,
   typeId: string
 ): Promise<UserActivityPreference | null> {
-  const docRef = doc(db, `users/${userId}/activityPreferences/${typeId}`);
-  const snapshot = await getDoc(docRef);
+  const docRef = doc(db, `users/${userId}/activityPreferences/${typeId}`)
+  const snapshot = await getDoc(docRef)
 
   if (!snapshot.exists()) {
-    return null;
+    return null
   }
 
-  return convertToUserActivityPreference(snapshot.id, snapshot.data());
+  return convertToUserActivityPreference(snapshot.id, snapshot.data())
 }
 
 /**
@@ -114,23 +108,20 @@ export async function getActivityPreference(
  * @param typeId - Activity type ID
  * @param userId - User ID (optional, defaults to current user)
  */
-export async function updateActivityPreference(
-  typeId: string,
-  userId?: string
-): Promise<void> {
-  const currentUser = auth.currentUser;
+export async function updateActivityPreference(typeId: string, userId?: string): Promise<void> {
+  const currentUser = auth.currentUser
   if (!currentUser) {
-    throw new Error('User must be authenticated to update activity preference');
+    throw new Error('User must be authenticated to update activity preference')
   }
 
-  const targetUserId = userId || currentUser.uid;
+  const targetUserId = userId || currentUser.uid
 
   // Verify current user is updating their own preference
   if (targetUserId !== currentUser.uid) {
-    throw new Error('Cannot update activity preferences for other users');
+    throw new Error('Cannot update activity preferences for other users')
   }
 
-  const docRef = doc(db, `users/${targetUserId}/activityPreferences/${typeId}`);
+  const docRef = doc(db, `users/${targetUserId}/activityPreferences/${typeId}`)
 
   // Use setDoc with merge to create if doesn't exist, update if exists
   await setDoc(
@@ -145,7 +136,7 @@ export async function updateActivityPreference(
       createdAt: serverTimestamp(),
     },
     { merge: true }
-  );
+  )
 }
 
 /**
@@ -160,24 +151,22 @@ export async function batchUpdateActivityPreferences(
   typeIds: string[],
   userId?: string
 ): Promise<void> {
-  const currentUser = auth.currentUser;
+  const currentUser = auth.currentUser
   if (!currentUser) {
-    throw new Error(
-      'User must be authenticated to update activity preferences'
-    );
+    throw new Error('User must be authenticated to update activity preferences')
   }
 
-  const targetUserId = userId || currentUser.uid;
+  const targetUserId = userId || currentUser.uid
 
   // Verify current user is updating their own preferences
   if (targetUserId !== currentUser.uid) {
-    throw new Error('Cannot update activity preferences for other users');
+    throw new Error('Cannot update activity preferences for other users')
   }
 
   // Update preferences sequentially
   // Note: Could be optimized with batched writes if needed
   for (const typeId of typeIds) {
-    await updateActivityPreference(typeId, targetUserId);
+    await updateActivityPreference(typeId, targetUserId)
   }
 }
 
@@ -190,4 +179,4 @@ export const firebaseActivityPreferencesApi = {
   getActivityPreference,
   updateActivityPreference,
   batchUpdateActivityPreferences,
-};
+}

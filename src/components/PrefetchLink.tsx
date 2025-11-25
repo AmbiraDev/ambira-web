@@ -1,13 +1,13 @@
-import React, { useCallback } from 'react';
-import Link from 'next/link';
-import { useQueryClient } from '@tanstack/react-query';
-import { firebaseUserApi } from '@/lib/api';
-import { CACHE_KEYS } from '@/lib/queryClient';
+import React, { useCallback } from 'react'
+import Link from 'next/link'
+import { useQueryClient } from '@tanstack/react-query'
+import { firebaseUserApi } from '@/lib/api'
+import { CACHE_KEYS } from '@/lib/queryClient'
 
 interface PrefetchLinkProps extends React.ComponentProps<typeof Link> {
-  prefetchProfile?: string; // username to prefetch
-  prefetchUserId?: string; // user ID to prefetch stats
-  children: React.ReactNode;
+  prefetchProfile?: string // username to prefetch
+  prefetchUserId?: string // user ID to prefetch stats
+  children: React.ReactNode
 }
 
 /**
@@ -20,7 +20,7 @@ export function PrefetchLink({
   children,
   ...linkProps
 }: PrefetchLinkProps) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   const handleMouseEnter = useCallback(() => {
     // Prefetch user profile by username
@@ -29,7 +29,7 @@ export function PrefetchLink({
         queryKey: ['user', 'profile', 'username', prefetchProfile],
         queryFn: () => firebaseUserApi.getUserProfile(prefetchProfile),
         staleTime: 15 * 60 * 1000, // 15 minutes
-      });
+      })
     }
 
     // Prefetch user stats by ID
@@ -38,13 +38,13 @@ export function PrefetchLink({
         queryKey: CACHE_KEYS.USER_STATS(prefetchUserId),
         queryFn: () => firebaseUserApi.getUserStats(prefetchUserId),
         staleTime: 60 * 60 * 1000, // 1 hour
-      });
+      })
     }
-  }, [prefetchProfile, prefetchUserId, queryClient]);
+  }, [prefetchProfile, prefetchUserId, queryClient])
 
   return (
     <Link {...linkProps} onMouseEnter={handleMouseEnter}>
       {children}
     </Link>
-  );
+  )
 }

@@ -113,13 +113,13 @@ describe('Integration: Session Creation', () => {
 ```typescript
 describe('Challenges API Contract', () => {
   it('should return challenges with correct structure', async () => {
-    const response = await getChallenges();
-    response.forEach(challenge => {
-      expect(challenge).toHaveProperty('id');
-      expect(challenge.type).toMatch(/^(most-activity|fastest-effort)$/);
-    });
-  });
-});
+    const response = await getChallenges()
+    response.forEach((challenge) => {
+      expect(challenge).toHaveProperty('id')
+      expect(challenge.type).toMatch(/^(most-activity|fastest-effort)$/)
+    })
+  })
+})
 ```
 
 **Speed**: Individual tests should complete in < 1 second
@@ -172,18 +172,18 @@ open coverage/lcov-report/index.html
 1. **Clear Test Names** - Test name clearly describes what is being tested
 
    ```typescript
-   it('should display error when email is invalid');
-   it('should disable submit button while loading');
+   it('should display error when email is invalid')
+   it('should disable submit button while loading')
    ```
 
 2. **Single Responsibility** - Each test should verify one behavior
 
    ```typescript
    // Bad - tests multiple behaviors
-   it('should render and submit', () => {});
+   it('should render and submit', () => {})
 
    // Good - focused on one behavior
-   it('should submit form with valid data', () => {});
+   it('should submit form with valid data', () => {})
    ```
 
 3. **No Flakiness** - Tests pass consistently every time
@@ -215,8 +215,8 @@ All UI tests include accessibility checks:
 Use axe-core for automated accessibility scanning:
 
 ```typescript
-const results = await makeAxeBuilder().analyze();
-expect(results.violations).toHaveLength(0);
+const results = await makeAxeBuilder().analyze()
+expect(results.violations).toHaveLength(0)
 ```
 
 ## Testing Workflows
@@ -396,16 +396,16 @@ describe('LoginForm', () => {
 ### Pattern: Firebase Testing
 
 ```typescript
-jest.mock('firebase/firestore');
+jest.mock('firebase/firestore')
 
 it('should save data to Firestore', async () => {
-  firebaseMock.db.collection('items').add.mockResolvedValue({ id: 'new-id' });
+  firebaseMock.db.collection('items').add.mockResolvedValue({ id: 'new-id' })
 
-  await performAction();
+  await performAction()
 
-  expect(firebaseMock.db.collection).toHaveBeenCalledWith('items');
-  expect(firebaseMock.db.collection().add).toHaveBeenCalled();
-});
+  expect(firebaseMock.db.collection).toHaveBeenCalledWith('items')
+  expect(firebaseMock.db.collection().add).toHaveBeenCalled()
+})
 ```
 
 ### Pattern: React Query Testing

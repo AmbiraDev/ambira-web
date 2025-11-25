@@ -552,7 +552,7 @@ jest.mock('@/lib/api', () => ({
     uploadProfilePicture: jest.fn(),
     deleteAccount: jest.fn(),
   },
-}));
+}))
 ```
 
 ### Mocking useAuth
@@ -563,26 +563,26 @@ jest.mock('@/hooks/useAuth', () => ({
     user: mockUser,
     logout: jest.fn(),
   }),
-}));
+}))
 ```
 
 ### Testing Form Input Changes
 
 ```typescript
-const user = userEvent.setup();
-const input = screen.getByLabel(/Name/i);
-await user.clear(input);
-await user.type(input, 'New Value');
-expect(input).toHaveValue('New Value');
+const user = userEvent.setup()
+const input = screen.getByLabel(/Name/i)
+await user.clear(input)
+await user.type(input, 'New Value')
+expect(input).toHaveValue('New Value')
 ```
 
 ### Testing Toast Notifications
 
 ```typescript
-await user.click(saveButton);
+await user.click(saveButton)
 await waitFor(() => {
-  expect(toast.success).toHaveBeenCalledWith('Saved!');
-});
+  expect(toast.success).toHaveBeenCalledWith('Saved!')
+})
 ```
 
 ## Maintenance Notes

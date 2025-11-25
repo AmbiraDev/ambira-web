@@ -157,7 +157,7 @@ The fix is implemented in these locations in `src/components/SessionTimerEnhance
 1. **Line 29:** State declaration
 
    ```typescript
-   const [showFinishModal, setShowFinishModal] = useState(false);
+   const [showFinishModal, setShowFinishModal] = useState(false)
    ```
 
 2. **Line 41:** Primary fix - pausePolling parameter
@@ -171,21 +171,21 @@ The fix is implemented in these locations in `src/components/SessionTimerEnhance
    ```typescript
    useEffect(() => {
      if (showFinishModal) {
-       const elapsed = getElapsedTime();
-       setAdjustedDuration(elapsed);
+       const elapsed = getElapsedTime()
+       setAdjustedDuration(elapsed)
        // ... calculate startTime from frozen elapsed
      }
-   }, [showFinishModal, getElapsedTime]);
+   }, [showFinishModal, getElapsedTime])
    ```
 
 4. **Lines 122-124:** Stop displayTime updates when modal is open
    ```typescript
    useEffect(() => {
      if (showFinishModal) {
-       return; // Stop all timer updates
+       return // Stop all timer updates
      }
      // ... interval setup
-   }, [, /* dependencies */ showFinishModal]);
+   }, [, /* dependencies */ showFinishModal])
    ```
 
 ## Questions?

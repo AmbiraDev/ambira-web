@@ -1,54 +1,49 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { useTimer } from '@/features/timer/hooks';
+import React, { useState, useEffect } from 'react'
+import { useTimer } from '@/features/timer/hooks'
 
 interface TimerDisplayProps {
-  className?: string;
-  showMilliseconds?: boolean;
+  className?: string
+  showMilliseconds?: boolean
 }
 
 export const TimerDisplay: React.FC<TimerDisplayProps> = ({
   className = '',
   showMilliseconds = false,
 }) => {
-  const { timerState, getElapsedTime, getFormattedTime } = useTimer();
-  const [displayTime, setDisplayTime] = useState(0);
+  const { timerState, getElapsedTime, getFormattedTime } = useTimer()
+  const [displayTime, setDisplayTime] = useState(0)
 
   // Update display time every second
   useEffect(() => {
     if (!timerState.isRunning) {
-      setDisplayTime(timerState.pausedDuration);
-      return;
+      setDisplayTime(timerState.pausedDuration)
+      return
     }
 
     const interval = setInterval(() => {
-      setDisplayTime(getElapsedTime());
-    }, 1000);
+      setDisplayTime(getElapsedTime())
+    }, 1000)
 
     // Set initial time
-    setDisplayTime(getElapsedTime());
+    setDisplayTime(getElapsedTime())
 
-    return () => clearInterval(interval);
-  }, [
-    timerState.isRunning,
-    timerState.startTime,
-    timerState.pausedDuration,
-    getElapsedTime,
-  ]);
+    return () => clearInterval(interval)
+  }, [timerState.isRunning, timerState.startTime, timerState.pausedDuration, getElapsedTime])
 
   const formatTime = (seconds: number): string => {
     if (showMilliseconds) {
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-      const secs = Math.floor(seconds % 60);
-      const ms = Math.floor((seconds % 1) * 100);
+      const hours = Math.floor(seconds / 3600)
+      const minutes = Math.floor((seconds % 3600) / 60)
+      const secs = Math.floor(seconds % 60)
+      const ms = Math.floor((seconds % 1) * 100)
 
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`
     }
 
-    return getFormattedTime(seconds);
-  };
+    return getFormattedTime(seconds)
+  }
 
   return (
     <div className={`font-mono text-center ${className}`}>
@@ -64,10 +59,8 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
         {formatTime(displayTime)}
       </div>
       {timerState.currentProject && (
-        <div className="text-sm text-gray-600 mt-1">
-          {timerState.currentProject.name}
-        </div>
+        <div className="text-sm text-gray-600 mt-1">{timerState.currentProject.name}</div>
       )}
     </div>
-  );
-};
+  )
+}

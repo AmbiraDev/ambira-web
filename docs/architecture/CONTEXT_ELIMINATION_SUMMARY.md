@@ -148,7 +148,7 @@ export function useActiveTimer() {
     queryKey: ['timer', 'active'],
     queryFn: () => timerService.getActiveSession(),
     refetchInterval: 10000, // Cross-tab sync
-  });
+  })
 }
 ```
 
@@ -157,19 +157,19 @@ export function useActiveTimer() {
 ```typescript
 // src/features/timer/hooks/useTimerState.ts
 export function useTimerState() {
-  const { data: activeSession } = useActiveTimer();
-  const [isRunning, setIsRunning] = useState(false);
-  const [elapsed, setElapsed] = useState(0);
+  const { data: activeSession } = useActiveTimer()
+  const [isRunning, setIsRunning] = useState(false)
+  const [elapsed, setElapsed] = useState(0)
 
   // Timer tick logic (pure client state)
   useEffect(() => {
     if (isRunning) {
-      const interval = setInterval(() => setElapsed(e => e + 1), 1000);
-      return () => clearInterval(interval);
+      const interval = setInterval(() => setElapsed((e) => e + 1), 1000)
+      return () => clearInterval(interval)
     }
-  }, [isRunning]);
+  }, [isRunning])
 
-  return { activeSession, isRunning, elapsed };
+  return { activeSession, isRunning, elapsed }
 }
 ```
 

@@ -6,15 +6,15 @@
  */
 
 export interface RateLimitConfig {
-  maxRequests: number;
-  windowMs: number;
-  message?: string;
+  maxRequests: number
+  windowMs: number
+  message?: string
 }
 
 export interface RateLimitEntry {
-  count: number;
-  resetTime: number;
-  violations: number;
+  count: number
+  resetTime: number
+  violations: number
 }
 
 export class RateLimitError extends Error {
@@ -23,8 +23,8 @@ export class RateLimitError extends Error {
     public retryAfter: number,
     public limit: number
   ) {
-    super(message);
-    this.name = 'RateLimitError';
+    super(message)
+    this.name = 'RateLimitError'
   }
 }
 
@@ -33,25 +33,25 @@ export class RateLimitError extends Error {
  * Key format: `${userId}:${operation}`
  */
 class RateLimiter {
-  private store: Map<string, RateLimitEntry> = new Map();
-  private cleanupInterval: NodeJS.Timeout | null = null;
+  private store: Map<string, RateLimitEntry> = new Map()
+  private cleanupInterval: NodeJS.Timeout | null = null
 
   constructor() {
     // Clean up expired entries every 5 minutes
     this.cleanupInterval = setInterval(
       () => {
-        this.cleanup();
+        this.cleanup()
       },
       5 * 60 * 1000
-    );
+    )
   }
 
   /**
    * Check if a request is allowed
    */
   check(key: string, config: RateLimitConfig): boolean {
-    const now = Date.now();
-    const entry = this.store.get(key);
+    const now = Date.now()
+    const entry = this.store.get(key)
 
     // No previous requests or window expired
     if (!entry || now >= entry.resetTime) {
@@ -59,65 +59,65 @@ class RateLimiter {
         count: 1,
         resetTime: now + config.windowMs,
         violations: entry?.violations || 0,
-      });
-      return true;
+      })
+      return true
     }
 
     // Within rate limit
     if (entry.count < config.maxRequests) {
-      entry.count++;
-      return true;
+      entry.count++
+      return true
     }
 
     // Rate limit exceeded
-    entry.violations++;
-    return false;
+    entry.violations++
+    return false
   }
 
   /**
    * Get remaining requests for a key
    */
   getRemaining(key: string, config: RateLimitConfig): number {
-    const entry = this.store.get(key);
+    const entry = this.store.get(key)
     if (!entry || Date.now() >= entry.resetTime) {
-      return config.maxRequests;
+      return config.maxRequests
     }
-    return Math.max(0, config.maxRequests - entry.count);
+    return Math.max(0, config.maxRequests - entry.count)
   }
 
   /**
    * Get time until reset (in milliseconds)
    */
   getResetTime(key: string): number | null {
-    const entry = this.store.get(key);
-    if (!entry) return null;
+    const entry = this.store.get(key)
+    if (!entry) return null
 
-    const remaining = entry.resetTime - Date.now();
-    return remaining > 0 ? remaining : null;
+    const remaining = entry.resetTime - Date.now()
+    return remaining > 0 ? remaining : null
   }
 
   /**
    * Get violation count
    */
   getViolations(key: string): number {
-    return this.store.get(key)?.violations || 0;
+    return this.store.get(key)?.violations || 0
   }
 
   /**
    * Reset rate limit for a key
    */
   reset(key: string): void {
-    this.store.delete(key);
+    this.store.delete(key)
   }
 
   /**
    * Clean up expired entries
    */
   private cleanup(): void {
-    const now = Date.now();
+    const now = Date.now()
     for (const [key, entry] of this.store.entries()) {
       if (now >= entry.resetTime) {
-        this.store.delete(key);
+        this.store.delete(key)
       }
     }
   }
@@ -127,15 +127,15 @@ class RateLimiter {
    */
   destroy(): void {
     if (this.cleanupInterval) {
-      clearInterval(this.cleanupInterval);
-      this.cleanupInterval = null;
+      clearInterval(this.cleanupInterval)
+      this.cleanupInterval = null
     }
-    this.store.clear();
+    this.store.clear()
   }
 }
 
 // Global rate limiter instance
-const rateLimiter = new RateLimiter();
+const rateLimiter = new RateLimiter()
 
 /**
  * Rate limit configurations for different operations
@@ -217,9 +217,9 @@ export const RATE_LIMITS = {
     windowMs: 60 * 1000, // 1 minute
     message: 'Too many search requests. Please slow down.',
   },
-} as const;
+} as const
 
-export type RateLimitOperation = keyof typeof RATE_LIMITS;
+export type RateLimitOperation = keyof typeof RATE_LIMITS
 
 /**
  * Check rate limit and throw error if exceeded
@@ -228,29 +228,26 @@ export type RateLimitOperation = keyof typeof RATE_LIMITS;
  * @param operation - Type of operation being rate limited
  * @throws {RateLimitError} If rate limit is exceeded
  */
-export function checkRateLimit(
-  userId: string,
-  operation: RateLimitOperation
-): void {
-  const config = RATE_LIMITS[operation];
-  const key = `${userId}:${operation}`;
+export function checkRateLimit(userId: string, operation: RateLimitOperation): void {
+  const config = RATE_LIMITS[operation]
+  const key = `${userId}:${operation}`
 
-  const allowed = rateLimiter.check(key, config);
+  const allowed = rateLimiter.check(key, config)
 
   if (!allowed) {
-    const resetTime = rateLimiter.getResetTime(key);
-    const retryAfter = resetTime ? Math.ceil(resetTime / 1000) : 60;
-    const violations = rateLimiter.getViolations(key);
+    const resetTime = rateLimiter.getResetTime(key)
+    const retryAfter = resetTime ? Math.ceil(resetTime / 1000) : 60
+    const violations = rateLimiter.getViolations(key)
 
     // Apply exponential backoff for repeated violations
-    const backoffMultiplier = Math.min(Math.pow(2, violations - 1), 8);
-    const adjustedRetryAfter = retryAfter * backoffMultiplier;
+    const backoffMultiplier = Math.min(Math.pow(2, violations - 1), 8)
+    const adjustedRetryAfter = retryAfter * backoffMultiplier
 
     throw new RateLimitError(
       config.message || 'Rate limit exceeded',
       adjustedRetryAfter,
       config.maxRequests
-    );
+    )
   }
 }
 
@@ -267,8 +264,8 @@ export async function withRateLimit<T>(
   operation: RateLimitOperation,
   fn: () => Promise<T>
 ): Promise<T> {
-  checkRateLimit(userId, operation);
-  return fn();
+  checkRateLimit(userId, operation)
+  return fn()
 }
 
 /**
@@ -278,31 +275,28 @@ export function getRateLimitInfo(
   userId: string,
   operation: RateLimitOperation
 ): {
-  remaining: number;
-  limit: number;
-  resetTime: number | null;
-  violations: number;
+  remaining: number
+  limit: number
+  resetTime: number | null
+  violations: number
 } {
-  const config = RATE_LIMITS[operation];
-  const key = `${userId}:${operation}`;
+  const config = RATE_LIMITS[operation]
+  const key = `${userId}:${operation}`
 
   return {
     remaining: rateLimiter.getRemaining(key, config),
     limit: config.maxRequests,
     resetTime: rateLimiter.getResetTime(key),
     violations: rateLimiter.getViolations(key),
-  };
+  }
 }
 
 /**
  * Reset rate limit for a user and operation
  */
-export function resetRateLimit(
-  userId: string,
-  operation: RateLimitOperation
-): void {
-  const key = `${userId}:${operation}`;
-  rateLimiter.reset(key);
+export function resetRateLimit(userId: string, operation: RateLimitOperation): void {
+  const key = `${userId}:${operation}`
+  rateLimiter.reset(key)
 }
 
 /**
@@ -310,11 +304,11 @@ export function resetRateLimit(
  */
 export function formatRetryAfter(seconds: number): string {
   if (seconds < 60) {
-    return `${seconds} second${seconds !== 1 ? 's' : ''}`;
+    return `${seconds} second${seconds !== 1 ? 's' : ''}`
   }
-  const minutes = Math.ceil(seconds / 60);
-  return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+  const minutes = Math.ceil(seconds / 60)
+  return `${minutes} minute${minutes !== 1 ? 's' : ''}`
 }
 
 // Export the limiter for testing purposes
-export { rateLimiter };
+export { rateLimiter }

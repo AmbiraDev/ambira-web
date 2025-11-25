@@ -18,49 +18,47 @@
  *     └── types/<feature>.types.ts (optional)
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 // Get feature name from command line
-const featureName = process.argv[2];
+const featureName = process.argv[2]
 
 if (!featureName) {
-  console.error('❌ Error: Feature name is required');
-  console.log('Usage: npm run create-feature <feature-name>');
-  console.log('Example: npm run create-feature sessions');
-  process.exit(1);
+  console.error('❌ Error: Feature name is required')
+  console.log('Usage: npm run create-feature <feature-name>')
+  console.log('Example: npm run create-feature sessions')
+  process.exit(1)
 }
 
 // Convert to different cases
-const kebabCase = featureName.toLowerCase();
-const PascalCase = featureName.charAt(0).toUpperCase() + featureName.slice(1);
-const UPPER_SNAKE_CASE = featureName.toUpperCase();
-const camelCase = featureName.charAt(0).toLowerCase() + featureName.slice(1);
+const kebabCase = featureName.toLowerCase()
+const PascalCase = featureName.charAt(0).toUpperCase() + featureName.slice(1)
+const UPPER_SNAKE_CASE = featureName.toUpperCase()
+const camelCase = featureName.charAt(0).toLowerCase() + featureName.slice(1)
 
 // Define paths
-const featureDir = path.join(__dirname, '..', 'src', 'features', kebabCase);
-const servicesDir = path.join(featureDir, 'services');
-const hooksDir = path.join(featureDir, 'hooks');
-const typesDir = path.join(featureDir, 'types');
+const featureDir = path.join(__dirname, '..', 'src', 'features', kebabCase)
+const servicesDir = path.join(featureDir, 'services')
+const hooksDir = path.join(featureDir, 'hooks')
+const typesDir = path.join(featureDir, 'types')
 
 // Check if feature already exists
 if (fs.existsSync(featureDir)) {
-  console.error(
-    `❌ Error: Feature '${kebabCase}' already exists at ${featureDir}`
-  );
-  process.exit(1);
+  console.error(`❌ Error: Feature '${kebabCase}' already exists at ${featureDir}`)
+  process.exit(1)
 }
 
 // Create directories
-console.log(`📁 Creating feature structure for '${kebabCase}'...`);
-fs.mkdirSync(servicesDir, { recursive: true });
-fs.mkdirSync(hooksDir, { recursive: true });
-fs.mkdirSync(typesDir, { recursive: true });
+console.log(`📁 Creating feature structure for '${kebabCase}'...`)
+fs.mkdirSync(servicesDir, { recursive: true })
+fs.mkdirSync(hooksDir, { recursive: true })
+fs.mkdirSync(typesDir, { recursive: true })
 
 // Template: Service
 const serviceTemplate = `/**
@@ -122,7 +120,7 @@ export class ${PascalCase}Service {
 export interface Create${PascalCase}Data {
   // Add fields here
 }
-`;
+`
 
 // Template: Query Hooks
 const queryHooksTemplate = `/**
@@ -190,7 +188,7 @@ export function useUser${PascalCase}s(
     ...options,
   });
 }
-`;
+`
 
 // Template: Mutation Hooks
 const mutationHooksTemplate = `/**
@@ -315,7 +313,7 @@ export function useInvalidate${PascalCase}s() {
     queryClient.invalidateQueries({ queryKey: ${UPPER_SNAKE_CASE}_KEYS.all() });
   };
 }
-`;
+`
 
 // Template: Index
 const indexTemplate = `/**
@@ -341,7 +339,7 @@ export {
   useDelete${PascalCase},
   useInvalidate${PascalCase}s,
 } from './use${PascalCase}Mutations';
-`;
+`
 
 // Template: Types
 const typesTemplate = `/**
@@ -358,34 +356,25 @@ export interface ${PascalCase}Filters {
 export interface ${PascalCase}Stats {
   // Example stats fields
 }
-`;
+`
 
 // Write files
-console.log('📝 Writing files...');
+console.log('📝 Writing files...')
 
-fs.writeFileSync(
-  path.join(servicesDir, `${PascalCase}Service.ts`),
-  serviceTemplate
-);
-console.log(`  ✅ Created ${PascalCase}Service.ts`);
+fs.writeFileSync(path.join(servicesDir, `${PascalCase}Service.ts`), serviceTemplate)
+console.log(`  ✅ Created ${PascalCase}Service.ts`)
 
-fs.writeFileSync(
-  path.join(hooksDir, `use${PascalCase}.ts`),
-  queryHooksTemplate
-);
-console.log(`  ✅ Created use${PascalCase}.ts`);
+fs.writeFileSync(path.join(hooksDir, `use${PascalCase}.ts`), queryHooksTemplate)
+console.log(`  ✅ Created use${PascalCase}.ts`)
 
-fs.writeFileSync(
-  path.join(hooksDir, `use${PascalCase}Mutations.ts`),
-  mutationHooksTemplate
-);
-console.log(`  ✅ Created use${PascalCase}Mutations.ts`);
+fs.writeFileSync(path.join(hooksDir, `use${PascalCase}Mutations.ts`), mutationHooksTemplate)
+console.log(`  ✅ Created use${PascalCase}Mutations.ts`)
 
-fs.writeFileSync(path.join(hooksDir, 'index.ts'), indexTemplate);
-console.log(`  ✅ Created hooks/index.ts`);
+fs.writeFileSync(path.join(hooksDir, 'index.ts'), indexTemplate)
+console.log(`  ✅ Created hooks/index.ts`)
 
-fs.writeFileSync(path.join(typesDir, `${kebabCase}.types.ts`), typesTemplate);
-console.log(`  ✅ Created ${kebabCase}.types.ts`);
+fs.writeFileSync(path.join(typesDir, `${kebabCase}.types.ts`), typesTemplate)
+console.log(`  ✅ Created ${kebabCase}.types.ts`)
 
 // Create README
 const readmeTemplate = `# ${PascalCase} Feature
@@ -425,22 +414,18 @@ function ${PascalCase}Component({ id }: { id: string }) {
 - [ ] Add tests for service
 - [ ] Add tests for hooks
 - [ ] Update components to use new hooks
-`;
+`
 
-fs.writeFileSync(path.join(featureDir, 'README.md'), readmeTemplate);
-console.log(`  ✅ Created README.md`);
+fs.writeFileSync(path.join(featureDir, 'README.md'), readmeTemplate)
+console.log(`  ✅ Created README.md`)
 
-console.log('\n✨ Feature scaffolded successfully!\n');
-console.log('📍 Location:', featureDir);
-console.log('\n📋 Next steps:');
-console.log(
-  `  1. Create ${PascalCase}Repository in src/infrastructure/firebase/repositories/`
-);
-console.log(`  2. Create ${PascalCase} entity in src/domain/entities/`);
-console.log(`  3. Implement the service methods in ${PascalCase}Service.ts`);
-console.log(
-  `  4. Customize the hooks in use${PascalCase}.ts and use${PascalCase}Mutations.ts`
-);
-console.log(`  5. Add tests for your service and hooks`);
-console.log(`  6. Update components to use the new hooks`);
-console.log('\n📖 See docs/architecture/EXAMPLES.md for complete examples');
+console.log('\n✨ Feature scaffolded successfully!\n')
+console.log('📍 Location:', featureDir)
+console.log('\n📋 Next steps:')
+console.log(`  1. Create ${PascalCase}Repository in src/infrastructure/firebase/repositories/`)
+console.log(`  2. Create ${PascalCase} entity in src/domain/entities/`)
+console.log(`  3. Implement the service methods in ${PascalCase}Service.ts`)
+console.log(`  4. Customize the hooks in use${PascalCase}.ts and use${PascalCase}Mutations.ts`)
+console.log(`  5. Add tests for your service and hooks`)
+console.log(`  6. Update components to use the new hooks`)
+console.log('\n📖 See docs/architecture/EXAMPLES.md for complete examples')

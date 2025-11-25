@@ -1,10 +1,10 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { PrivacySettings as PrivacySettingsType, UserProfile } from '@/types';
-import { firebaseUserApi } from '@/lib/api';
-import { Button } from '@/components/ui/button';
+import React, { useState, useEffect } from 'react'
+import Image from 'next/image'
+import { PrivacySettings as PrivacySettingsType, UserProfile } from '@/types'
+import { firebaseUserApi } from '@/lib/api'
+import { Button } from '@/components/ui/button'
 import {
   SettingsSection,
   SettingsHeader,
@@ -12,85 +12,72 @@ import {
   SettingsCardHeader,
   SettingsCardContent,
   SettingsField,
-} from '@/components/ui/settings-section';
-import {
-  Shield,
-  Eye,
-  UserX,
-  Check,
-  Activity,
-  FolderKanban,
-} from 'lucide-react';
+} from '@/components/ui/settings-section'
+import { Shield, Eye, UserX, Check, Activity, FolderKanban } from 'lucide-react'
 
 interface PrivacySettingsProps {
-  onClose?: () => void;
-  isModal?: boolean;
+  onClose?: () => void
+  isModal?: boolean
 }
 
-export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
-  onClose,
-  isModal = false,
-}) => {
+export const PrivacySettings: React.FC<PrivacySettingsProps> = ({ onClose, isModal = false }) => {
   const [settings, setSettings] = useState<PrivacySettingsType>({
     profileVisibility: 'everyone',
     activityVisibility: 'everyone',
     projectVisibility: 'everyone',
     blockedUsers: [],
-  });
-  const [blockedUsers, setBlockedUsers] = useState<UserProfile[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  })
+  const [blockedUsers, setBlockedUsers] = useState<UserProfile[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
-    loadSettings();
-  }, []);
+    loadSettings()
+  }, [])
 
   const loadSettings = async () => {
     try {
-      setIsLoading(true);
+      setIsLoading(true)
       // TODO: Implement privacy settings fetching when Firebase getPrivacySettings() is available
       // Currently uses firebaseUserApi.getPrivacySettings() - verify implementation status
-      const settings = await firebaseUserApi.getPrivacySettings();
-      setSettings(settings);
+      const settings = await firebaseUserApi.getPrivacySettings()
+      setSettings(settings)
     } catch (_error) {
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
-  const handleSettingChange = (
-    key: keyof PrivacySettingsType,
-    value: string
-  ) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
-  };
+  const handleSettingChange = (key: keyof PrivacySettingsType, value: string) => {
+    setSettings((prev) => ({ ...prev, [key]: value }))
+  }
 
   const handleSave = async () => {
     try {
-      setIsSaving(true);
-      await firebaseUserApi.updatePrivacySettings(settings);
+      setIsSaving(true)
+      await firebaseUserApi.updatePrivacySettings(settings)
     } catch (_error) {
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   const handleUnblockUser = async (userId: string) => {
     try {
       // TODO: Implement unblock user API endpoint in firebaseUserApi
       // Need to add unblockUser() method to handle Firebase user blocking/unblocking
-      setBlockedUsers(prev => prev.filter(user => user.id !== userId));
-      setSettings(prev => ({
+      setBlockedUsers((prev) => prev.filter((user) => user.id !== userId))
+      setSettings((prev) => ({
         ...prev,
-        blockedUsers: prev.blockedUsers.filter(id => id !== userId),
-      }));
+        blockedUsers: prev.blockedUsers.filter((id) => id !== userId),
+      }))
     } catch (_error) {}
-  };
+  }
 
   if (isLoading) {
     return (
       <SettingsSection>
-        {[1, 2, 3].map(i => (
+        {[1, 2, 3].map((i) => (
           <SettingsCard key={i} className="animate-pulse">
             <SettingsCardHeader title="" description="" />
             <SettingsCardContent>
@@ -102,7 +89,7 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
           </SettingsCard>
         ))}
       </SettingsSection>
-    );
+    )
   }
 
   return (
@@ -132,20 +119,12 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
           <SettingsField label="Profile Access">
             <select
               value={settings.profileVisibility}
-              onChange={e =>
-                handleSettingChange('profileVisibility', e.target.value)
-              }
+              onChange={(e) => handleSettingChange('profileVisibility', e.target.value)}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="everyone">
-                Everyone - Anyone can view your profile
-              </option>
-              <option value="followers">
-                Followers Only - Only people you follow back
-              </option>
-              <option value="private">
-                Private - Only you can view your profile
-              </option>
+              <option value="everyone">Everyone - Anyone can view your profile</option>
+              <option value="followers">Followers Only - Only people you follow back</option>
+              <option value="private">Private - Only you can view your profile</option>
             </select>
           </SettingsField>
         </SettingsCardContent>
@@ -162,20 +141,12 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
           <SettingsField label="Activity Access">
             <select
               value={settings.activityVisibility}
-              onChange={e =>
-                handleSettingChange('activityVisibility', e.target.value)
-              }
+              onChange={(e) => handleSettingChange('activityVisibility', e.target.value)}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="everyone">
-                Everyone - Your activity is public
-              </option>
-              <option value="followers">
-                Followers Only - Only your followers can see
-              </option>
-              <option value="private">
-                Private - Your activity is completely private
-              </option>
+              <option value="everyone">Everyone - Your activity is public</option>
+              <option value="followers">Followers Only - Only your followers can see</option>
+              <option value="private">Private - Your activity is completely private</option>
             </select>
           </SettingsField>
         </SettingsCardContent>
@@ -192,20 +163,12 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
           <SettingsField label="Project Access">
             <select
               value={settings.projectVisibility}
-              onChange={e =>
-                handleSettingChange('projectVisibility', e.target.value)
-              }
+              onChange={(e) => handleSettingChange('projectVisibility', e.target.value)}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <option value="everyone">
-                Everyone - Your projects are public
-              </option>
-              <option value="followers">
-                Followers Only - Only your followers can see
-              </option>
-              <option value="private">
-                Private - Your projects are completely private
-              </option>
+              <option value="everyone">Everyone - Your projects are public</option>
+              <option value="followers">Followers Only - Only your followers can see</option>
+              <option value="private">Private - Your projects are completely private</option>
             </select>
           </SettingsField>
         </SettingsCardContent>
@@ -221,7 +184,7 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
         <SettingsCardContent>
           {blockedUsers.length > 0 ? (
             <div className="space-y-3">
-              {blockedUsers.map(blockedUser => (
+              {blockedUsers.map((blockedUser) => (
                 <div
                   key={blockedUser.id}
                   className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
@@ -241,12 +204,8 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
                       </div>
                     )}
                     <div>
-                      <h4 className="font-medium text-gray-900">
-                        {blockedUser.name}
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        @{blockedUser.username}
-                      </p>
+                      <h4 className="font-medium text-gray-900">{blockedUser.name}</h4>
+                      <p className="text-sm text-gray-600">@{blockedUser.username}</p>
                     </div>
                   </div>
                   <Button
@@ -264,12 +223,8 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
           ) : (
             <div className="text-center py-8">
               <UserX className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-              <h3 className="font-medium text-gray-900 mb-1">
-                No blocked users
-              </h3>
-              <p className="text-sm text-gray-600">
-                Users you block will appear here
-              </p>
+              <h3 className="font-medium text-gray-900 mb-1">No blocked users</h3>
+              <p className="text-sm text-gray-600">Users you block will appear here</p>
             </div>
           )}
         </SettingsCardContent>
@@ -293,20 +248,17 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
         </Button>
       </div>
     </SettingsSection>
-  );
-};
+  )
+}
 
 // Modal wrapper
 interface PrivacySettingsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen: boolean
+  onClose: () => void
 }
 
-export const PrivacySettingsModal: React.FC<PrivacySettingsModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
-  if (!isOpen) return null;
+export const PrivacySettingsModal: React.FC<PrivacySettingsModalProps> = ({ isOpen, onClose }) => {
+  if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -316,5 +268,5 @@ export const PrivacySettingsModal: React.FC<PrivacySettingsModalProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

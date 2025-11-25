@@ -34,7 +34,7 @@ export const COLORS = {
     '#AF52DE', // Purple
     '#FF2D55', // Pink
   ] as const,
-} as const;
+} as const
 
 /**
  * Cache time-to-live (TTL) values in milliseconds
@@ -82,7 +82,7 @@ export const CACHE_TIMES = {
    * Use for: weekly statistics, historical data
    */
   WEEKLY: 7 * 24 * 60 * 60 * 1000,
-} as const;
+} as const
 
 /**
  * Pagination configuration
@@ -124,7 +124,7 @@ export const PAGINATION = {
    * Notifications per page
    */
   NOTIFICATIONS_PER_PAGE: 20,
-} as const;
+} as const
 
 /**
  * Timeout values in milliseconds
@@ -169,7 +169,7 @@ export const TIMEOUTS = {
    * Toast notification duration (3 seconds)
    */
   TOAST_DURATION: 3000,
-} as const;
+} as const
 
 /**
  * File size limits in bytes
@@ -189,7 +189,7 @@ export const FILE_LIMITS = {
    * Maximum total upload size for multiple files (20MB)
    */
   MAX_TOTAL_UPLOAD: 20 * 1024 * 1024,
-} as const;
+} as const
 
 /**
  * Text length limits
@@ -224,7 +224,7 @@ export const TEXT_LIMITS = {
    * Username maximum length
    */
   USERNAME_MAX: 30,
-} as const;
+} as const
 
 /**
  * Animation durations in milliseconds
@@ -249,4 +249,4 @@ export const ANIMATION = {
    * Page transition duration
    */
   PAGE_TRANSITION: 400,
-} as const;
+} as const

@@ -10,35 +10,35 @@
  * - No refetching on mount/focus
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { getFollowingIds } from '@/lib/api/users/getFollowingIds';
-import { CACHE_TIMES } from '@/lib/queryClient';
+import { useQuery } from '@tanstack/react-query'
+import { getFollowingIds } from '@/lib/api/users/getFollowingIds'
+import { CACHE_TIMES } from '@/lib/queryClient'
 
 interface UseFollowingListOptions {
-  userId?: string;
-  enabled?: boolean;
+  userId?: string
+  enabled?: boolean
 }
 
 interface UseFollowingListReturn {
-  followingIds: Set<string>;
-  isLoading: boolean;
-  isError: boolean;
-  error: Error | null;
+  followingIds: Set<string>
+  isLoading: boolean
+  isError: boolean
+  error: Error | null
 }
 
 export function useFollowingList({
   userId,
   enabled = true,
 }: UseFollowingListOptions): UseFollowingListReturn {
-  const queryKey = ['following-ids', userId] as const;
+  const queryKey = ['following-ids', userId] as const
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey,
     queryFn: async () => {
       if (!userId) {
-        return new Set<string>();
+        return new Set<string>()
       }
-      return await getFollowingIds(userId);
+      return await getFollowingIds(userId)
     },
     enabled: enabled && !!userId,
     staleTime: CACHE_TIMES.VERY_LONG, // 30 minutes - following changes infrequently
@@ -46,12 +46,12 @@ export function useFollowingList({
     refetchOnWindowFocus: false,
     refetchOnMount: false, // Critical: don't refetch if we have data
     refetchOnReconnect: false,
-  });
+  })
 
   return {
     followingIds: data ?? new Set<string>(),
     isLoading,
     isError,
     error: error as Error | null,
-  };
+  }
 }

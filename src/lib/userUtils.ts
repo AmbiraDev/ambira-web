@@ -3,7 +3,7 @@
  * Consolidates duplicate user utility logic from across components
  */
 
-import { COLORS } from '@/config/constants';
+import { COLORS } from '@/config/constants'
 
 /**
  * Generate user initials from name
@@ -15,17 +15,17 @@ import { COLORS } from '@/config/constants';
  */
 export function getUserInitials(name: string): string {
   if (!name || name.trim().length === 0) {
-    return 'NA';
+    return 'NA'
   }
 
   return name
     .trim()
     .split(' ')
-    .filter(word => word.length > 0)
-    .map(word => word.charAt(0))
+    .filter((word) => word.length > 0)
+    .map((word) => word.charAt(0))
     .join('')
     .toUpperCase()
-    .slice(0, 2);
+    .slice(0, 2)
 }
 
 /**
@@ -38,21 +38,21 @@ export function getUserInitials(name: string): string {
  */
 export function getUserColor(userId: string): string {
   if (!userId || userId.length === 0) {
-    return COLORS.USER_AVATAR_GRADIENTS[0];
+    return COLORS.USER_AVATAR_GRADIENTS[0]
   }
 
   // Simple hash function to convert userId to a number
   const hash = userId.split('').reduce((acc, char) => {
-    return acc + char.charCodeAt(0);
-  }, 0);
+    return acc + char.charCodeAt(0)
+  }, 0)
 
   // Use modulo to select a color from the array
-  const index = hash % COLORS.USER_AVATAR_GRADIENTS.length;
+  const index = hash % COLORS.USER_AVATAR_GRADIENTS.length
   return (
     COLORS.USER_AVATAR_GRADIENTS[index] ??
     COLORS.USER_AVATAR_GRADIENTS[0] ??
     'bg-gradient-to-br from-brand-primary to-brand-primary-dark'
-  );
+  )
 }
 
 /**
@@ -64,19 +64,17 @@ export function getUserColor(userId: string): string {
  */
 export function getUserColorHex(userId: string): string {
   if (!userId || userId.length === 0) {
-    return COLORS.USER_AVATAR_HEX[0];
+    return COLORS.USER_AVATAR_HEX[0]
   }
 
   // Simple hash function to convert userId to a number
   const hash = userId.split('').reduce((acc, char) => {
-    return acc + char.charCodeAt(0);
-  }, 0);
+    return acc + char.charCodeAt(0)
+  }, 0)
 
   // Use modulo to select a color from the array
-  const index = hash % COLORS.USER_AVATAR_HEX.length;
-  return (
-    COLORS.USER_AVATAR_HEX[index] ?? COLORS.USER_AVATAR_HEX[0] ?? '#FC4C02'
-  );
+  const index = hash % COLORS.USER_AVATAR_HEX.length
+  return COLORS.USER_AVATAR_HEX[index] ?? COLORS.USER_AVATAR_HEX[0] ?? '#FC4C02'
 }
 
 /**
@@ -87,12 +85,12 @@ export function getUserColorHex(userId: string): string {
  * @returns React CSSProperties object with background gradient
  */
 export function getUserAvatarStyle(userId: string): React.CSSProperties {
-  const colorHex = getUserColorHex(userId);
+  const colorHex = getUserColorHex(userId)
 
   // Generate a gradient from the base color
   return {
     background: `linear-gradient(135deg, ${colorHex}dd, ${colorHex})`,
-  };
+  }
 }
 
 /**
@@ -102,8 +100,8 @@ export function getUserAvatarStyle(userId: string): React.CSSProperties {
  * @returns Username with @ prefix
  */
 export function formatUsername(username: string): string {
-  if (!username) return '';
-  return username.startsWith('@') ? username : `@${username}`;
+  if (!username) return ''
+  return username.startsWith('@') ? username : `@${username}`
 }
 
 /**
@@ -114,19 +112,19 @@ export function formatUsername(username: string): string {
  * @returns True if valid, false otherwise
  */
 export function isValidUsername(username: string): boolean {
-  if (!username) return false;
+  if (!username) return false
 
   // Remove @ prefix if present
-  const cleanUsername = username.startsWith('@') ? username.slice(1) : username;
+  const cleanUsername = username.startsWith('@') ? username.slice(1) : username
 
   // Check length (3-30 characters)
   if (cleanUsername.length < 3 || cleanUsername.length > 30) {
-    return false;
+    return false
   }
 
   // Check format: alphanumeric + underscores only
-  const usernameRegex = /^[a-zA-Z0-9_]+$/;
-  return usernameRegex.test(cleanUsername);
+  const usernameRegex = /^[a-zA-Z0-9_]+$/
+  return usernameRegex.test(cleanUsername)
 }
 
 /**
@@ -137,25 +135,25 @@ export function isValidUsername(username: string): boolean {
  */
 export function getUsernameError(username: string): string | null {
   if (!username || username.trim().length === 0) {
-    return 'Username is required';
+    return 'Username is required'
   }
 
-  const cleanUsername = username.startsWith('@') ? username.slice(1) : username;
+  const cleanUsername = username.startsWith('@') ? username.slice(1) : username
 
   if (cleanUsername.length < 3) {
-    return 'Username must be at least 3 characters';
+    return 'Username must be at least 3 characters'
   }
 
   if (cleanUsername.length > 30) {
-    return 'Username must be 30 characters or less';
+    return 'Username must be 30 characters or less'
   }
 
-  const usernameRegex = /^[a-zA-Z0-9_]+$/;
+  const usernameRegex = /^[a-zA-Z0-9_]+$/
   if (!usernameRegex.test(cleanUsername)) {
-    return 'Username can only contain letters, numbers, and underscores';
+    return 'Username can only contain letters, numbers, and underscores'
   }
 
-  return null;
+  return null
 }
 
 /**
@@ -166,9 +164,9 @@ export function getUsernameError(username: string): string | null {
  * @returns Truncated name with ellipsis if needed
  */
 export function truncateName(name: string, maxLength: number = 20): string {
-  if (!name) return '';
-  if (name.length <= maxLength) return name;
-  return `${name.slice(0, maxLength)}...`;
+  if (!name) return ''
+  if (name.length <= maxLength) return name
+  return `${name.slice(0, maxLength)}...`
 }
 
 /**
@@ -180,16 +178,16 @@ export function truncateName(name: string, maxLength: number = 20): string {
  */
 export function formatFollowerCount(count: number): string {
   if (count < 1000) {
-    return count.toString();
+    return count.toString()
   }
 
   if (count < 1000000) {
-    const k = count / 1000;
-    return k % 1 === 0 ? `${k}K` : `${k.toFixed(1)}K`;
+    const k = count / 1000
+    return k % 1 === 0 ? `${k}K` : `${k.toFixed(1)}K`
   }
 
-  const m = count / 1000000;
-  return m % 1 === 0 ? `${m}M` : `${m.toFixed(1)}M`;
+  const m = count / 1000000
+  return m % 1 === 0 ? `${m}M` : `${m.toFixed(1)}M`
 }
 
 /**
@@ -198,9 +196,6 @@ export function formatFollowerCount(count: number): string {
  * @param user - User object with name and username
  * @returns Display name (name if available, otherwise username)
  */
-export function getUserDisplayName(user: {
-  name?: string;
-  username?: string;
-}): string {
-  return user.name || user.username || 'Unknown User';
+export function getUserDisplayName(user: { name?: string; username?: string }): string {
+  return user.name || user.username || 'Unknown User'
 }

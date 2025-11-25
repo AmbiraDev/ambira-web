@@ -1,53 +1,41 @@
-'use client';
+'use client'
 
-import React, { useState, useRef } from 'react';
-import { Group } from '@/types';
-import {
-  X,
-  Copy,
-  Check,
-  Share2,
-  Download,
-  QrCode,
-  Image as ImageIcon,
-} from 'lucide-react';
-import { QRCodeCanvas } from 'qrcode.react';
-import Image from 'next/image';
+import React, { useState, useRef } from 'react'
+import { Group } from '@/types'
+import { X, Copy, Check, Share2, Download, QrCode, Image as ImageIcon } from 'lucide-react'
+import { QRCodeCanvas } from 'qrcode.react'
+import Image from 'next/image'
 
 interface GroupInviteModalProps {
-  group: Group;
-  isOpen: boolean;
-  onClose: () => void;
+  group: Group
+  isOpen: boolean
+  onClose: () => void
 }
 
-type ShareTab = 'link' | 'qr' | 'image';
+type ShareTab = 'link' | 'qr' | 'image'
 
-export default function GroupInviteModal({
-  group,
-  isOpen,
-  onClose,
-}: GroupInviteModalProps) {
-  const [copied, setCopied] = useState(false);
-  const [activeTab, setActiveTab] = useState<ShareTab>('link');
-  const qrCodeRef = useRef<HTMLDivElement>(null);
-  const inviteCardRef = useRef<HTMLDivElement>(null);
+export default function GroupInviteModal({ group, isOpen, onClose }: GroupInviteModalProps) {
+  const [copied, setCopied] = useState(false)
+  const [activeTab, setActiveTab] = useState<ShareTab>('link')
+  const qrCodeRef = useRef<HTMLDivElement>(null)
+  const inviteCardRef = useRef<HTMLDivElement>(null)
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const baseUrl =
     typeof window !== 'undefined'
       ? window.location.origin
-      : process.env.NEXT_PUBLIC_BASE_URL || 'https://ambira.com';
+      : process.env.NEXT_PUBLIC_BASE_URL || 'https://ambira.com'
 
-  const inviteLink = `${baseUrl}/invite/group/${group.id}`;
+  const inviteLink = `${baseUrl}/invite/group/${group.id}`
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(inviteLink);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (error) {}
-  };
+      await navigator.clipboard.writeText(inviteLink)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (_error) {}
+  }
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -56,58 +44,58 @@ export default function GroupInviteModal({
           title: `Join ${group.name} on Ambira`,
           text: `I'd like to invite you to join ${group.name} on Ambira!`,
           url: inviteLink,
-        });
+        })
       } catch {
         // User cancelled or error occurred
       }
     } else {
       // Fallback to copy
-      handleCopy();
+      handleCopy()
     }
-  };
+  }
 
   const handleDownloadQR = () => {
-    const canvas = qrCodeRef.current?.querySelector('canvas');
-    if (!canvas) return;
+    const canvas = qrCodeRef.current?.querySelector('canvas')
+    if (!canvas) return
 
-    canvas.toBlob(blob => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${group.name.replace(/\s+/g, '-').toLowerCase()}-qr-code.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    });
-  };
+    canvas.toBlob((blob) => {
+      if (!blob) return
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${group.name.replace(/\s+/g, '-').toLowerCase()}-qr-code.png`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    })
+  }
 
   const handleDownloadInviteCard = async () => {
-    if (!inviteCardRef.current) return;
+    if (!inviteCardRef.current) return
 
     try {
       // Use html2canvas for better rendering
-      const html2canvas = (await import('html2canvas')).default;
+      const html2canvas = (await import('html2canvas')).default
       const canvas = await html2canvas(inviteCardRef.current, {
         backgroundColor: '#ffffff',
         scale: 2,
         logging: false,
-      });
+      })
 
-      canvas.toBlob(blob => {
-        if (!blob) return;
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${group.name.replace(/\s+/g, '-').toLowerCase()}-invite.png`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      });
-    } catch (error) {}
-  };
+      canvas.toBlob((blob) => {
+        if (!blob) return
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `${group.name.replace(/\s+/g, '-').toLowerCase()}-invite.png`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+      })
+    } catch (_error) {}
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
@@ -115,10 +103,7 @@ export default function GroupInviteModal({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">Invite People</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <X className="w-5 h-5 text-gray-600" />
           </button>
         </div>
@@ -186,12 +171,9 @@ export default function GroupInviteModal({
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 truncate">
-                {group.name}
-              </h3>
+              <h3 className="font-semibold text-gray-900 truncate">{group.name}</h3>
               <p className="text-sm text-gray-600 truncate">
-                {group.memberCount}{' '}
-                {group.memberCount === 1 ? 'member' : 'members'}
+                {group.memberCount} {group.memberCount === 1 ? 'member' : 'members'}
               </p>
             </div>
           </div>
@@ -210,7 +192,7 @@ export default function GroupInviteModal({
                     value={inviteLink}
                     readOnly
                     className="flex-1 px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#0066CC]"
-                    onClick={e => e.currentTarget.select()}
+                    onClick={(e) => e.currentTarget.select()}
                   />
                   <button
                     onClick={handleCopy}
@@ -232,22 +214,21 @@ export default function GroupInviteModal({
               </div>
 
               {/* Share Button (shows on mobile with Web Share API support) */}
-              {typeof navigator !== 'undefined' &&
-                typeof navigator.share !== 'undefined' && (
-                  <button
-                    onClick={handleShare}
-                    className="w-full px-4 py-3 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 font-medium"
-                  >
-                    <Share2 className="w-4 h-4" />
-                    Share Link
-                  </button>
-                )}
+              {typeof navigator !== 'undefined' && typeof navigator.share !== 'undefined' && (
+                <button
+                  onClick={handleShare}
+                  className="w-full px-4 py-3 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 font-medium"
+                >
+                  <Share2 className="w-4 h-4" />
+                  Share Link
+                </button>
+              )}
 
               {/* Info Text */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-900">
-                  Anyone with this link can join <strong>{group.name}</strong>.
-                  They'll need to sign up or log in to Ambira first.
+                  Anyone with this link can join <strong>{group.name}</strong>. They'll need to sign
+                  up or log in to Ambira first.
                 </p>
               </div>
             </div>
@@ -257,10 +238,7 @@ export default function GroupInviteModal({
             <div className="space-y-4">
               {/* QR Code */}
               <div className="flex flex-col items-center">
-                <div
-                  ref={qrCodeRef}
-                  className="p-6 bg-white border-2 border-gray-200 rounded-2xl"
-                >
+                <div ref={qrCodeRef} className="p-6 bg-white border-2 border-gray-200 rounded-2xl">
                   <QRCodeCanvas
                     value={inviteLink}
                     size={256}
@@ -275,8 +253,7 @@ export default function GroupInviteModal({
                   />
                 </div>
                 <p className="text-sm text-gray-600 mt-4 text-center">
-                  Scan this QR code with a mobile device to join{' '}
-                  <strong>{group.name}</strong>
+                  Scan this QR code with a mobile device to join <strong>{group.name}</strong>
                 </p>
               </div>
 
@@ -292,8 +269,8 @@ export default function GroupInviteModal({
               {/* Info Text */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-900">
-                  Share this QR code in presentations, posters, or print
-                  materials. Anyone can scan it to join your group.
+                  Share this QR code in presentations, posters, or print materials. Anyone can scan
+                  it to join your group.
                 </p>
               </div>
             </div>
@@ -309,9 +286,7 @@ export default function GroupInviteModal({
                 >
                   {/* Logo/Branding */}
                   <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold mb-2">
-                      Join us on Ambira
-                    </h3>
+                    <h3 className="text-2xl font-bold mb-2">Join us on Ambira</h3>
                     <div className="h-1 w-16 bg-white/50 mx-auto rounded-full"></div>
                   </div>
 
@@ -332,9 +307,7 @@ export default function GroupInviteModal({
                     </div>
                     <h2 className="text-3xl font-bold mb-2">{group.name}</h2>
                     {group.description && (
-                      <p className="text-white/90 text-sm line-clamp-2 mb-3">
-                        {group.description}
-                      </p>
+                      <p className="text-white/90 text-sm line-clamp-2 mb-3">{group.description}</p>
                     )}
                     <div className="flex items-center justify-center gap-4 text-sm text-white/80">
                       <span>{group.memberCount} members</span>
@@ -359,12 +332,8 @@ export default function GroupInviteModal({
 
                   {/* Footer */}
                   <div className="text-center">
-                    <p className="text-sm text-white/80 mb-1">
-                      Scan to join the group
-                    </p>
-                    <p className="text-xs text-white/60 font-mono break-all">
-                      {inviteLink}
-                    </p>
+                    <p className="text-sm text-white/80 mb-1">Scan to join the group</p>
+                    <p className="text-xs text-white/60 font-mono break-all">{inviteLink}</p>
                   </div>
                 </div>
               </div>
@@ -378,24 +347,22 @@ export default function GroupInviteModal({
                   <Download className="w-4 h-4" />
                   Download Image
                 </button>
-                {typeof navigator !== 'undefined' &&
-                  typeof navigator.share !== 'undefined' && (
-                    <button
-                      onClick={handleShare}
-                      className="flex-1 px-4 py-3 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 font-medium"
-                    >
-                      <Share2 className="w-4 h-4" />
-                      Share
-                    </button>
-                  )}
+                {typeof navigator !== 'undefined' && typeof navigator.share !== 'undefined' && (
+                  <button
+                    onClick={handleShare}
+                    className="flex-1 px-4 py-3 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 font-medium"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    Share
+                  </button>
+                )}
               </div>
 
               {/* Info Text */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-900">
-                  Download and share this invite card on social media, messaging
-                  apps, or email to invite people to join{' '}
-                  <strong>{group.name}</strong>.
+                  Download and share this invite card on social media, messaging apps, or email to
+                  invite people to join <strong>{group.name}</strong>.
                 </p>
               </div>
             </div>
@@ -403,5 +370,5 @@ export default function GroupInviteModal({
         </div>
       </div>
     </div>
-  );
+  )
 }

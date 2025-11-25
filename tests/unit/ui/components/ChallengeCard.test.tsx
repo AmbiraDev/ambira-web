@@ -1,19 +1,15 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import ChallengeCard from '@/components/ChallengeCard';
-import type { Challenge, ChallengeStats } from '@/types';
+import React from 'react'
+import { render, screen, fireEvent } from '@testing-library/react'
+import ChallengeCard from '@/components/ChallengeCard'
+import type { Challenge, ChallengeStats } from '@/types'
 
 jest.mock('next/link', () => {
-  const LinkMock = ({
-    children,
-    href,
-  }: {
-    children: React.ReactNode;
-    href: string;
-  }) => <a href={href}>{children}</a>;
-  LinkMock.displayName = 'NextLinkMock';
-  return LinkMock;
-});
+  const LinkMock = ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  )
+  LinkMock.displayName = 'NextLinkMock'
+  return LinkMock
+})
 
 const baseChallenge = (overrides: Partial<Challenge> = {}): Challenge => ({
   id: 'challenge-1',
@@ -29,7 +25,7 @@ const baseChallenge = (overrides: Partial<Challenge> = {}): Challenge => ({
   updatedAt: new Date('2023-12-20T00:00:00Z'),
   isActive: true,
   ...overrides,
-});
+})
 
 const createUser = (id: string, name: string) => ({
   id,
@@ -38,7 +34,7 @@ const createUser = (id: string, name: string) => ({
   username: id,
   createdAt: new Date(),
   updatedAt: new Date(),
-});
+})
 
 const sampleStats: ChallengeStats = {
   totalParticipants: 23,
@@ -69,35 +65,35 @@ const sampleStats: ChallengeStats = {
   ],
   timeRemaining: 0,
   daysRemaining: 0,
-};
+}
 
 describe('components/ChallengeCard', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date('2024-01-05T00:00:00Z'));
-  });
+    jest.useFakeTimers()
+    jest.setSystemTime(new Date('2024-01-05T00:00:00Z'))
+  })
 
   afterEach(() => {
-    jest.useRealTimers();
-  });
+    jest.useRealTimers()
+  })
 
   it('renders active challenge details and triggers join handler', () => {
-    const joinHandler = jest.fn();
+    const joinHandler = jest.fn()
 
-    render(<ChallengeCard challenge={baseChallenge()} onJoin={joinHandler} />);
+    render(<ChallengeCard challenge={baseChallenge()} onJoin={joinHandler} />)
 
-    expect(screen.getByText('Active')).toBeInTheDocument();
-    expect(screen.getByText('Join Challenge')).toBeEnabled();
+    expect(screen.getByText('Active')).toBeInTheDocument()
+    expect(screen.getByText('Join Challenge')).toBeEnabled()
 
-    fireEvent.click(screen.getByText('Join Challenge'));
-    expect(joinHandler).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByText('Join Challenge'))
+    expect(joinHandler).toHaveBeenCalledTimes(1)
 
-    expect(screen.getByText('Goal: 12.0h')).toBeInTheDocument();
-    expect(screen.getByText('23 participants')).toBeInTheDocument();
-  });
+    expect(screen.getByText('Goal: 12.0h')).toBeInTheDocument()
+    expect(screen.getByText('23 participants')).toBeInTheDocument()
+  })
 
   it('shows progress and leave action for participating users', () => {
-    const leaveHandler = jest.fn();
+    const leaveHandler = jest.fn()
 
     render(
       <ChallengeCard
@@ -107,35 +103,33 @@ describe('components/ChallengeCard', () => {
         onLeave={leaveHandler}
         stats={sampleStats}
       />
-    );
+    )
 
-    expect(screen.getByText('Your Progress')).toBeInTheDocument();
-    expect(screen.getByText('6.0h / 12.0h')).toBeInTheDocument();
-    expect(screen.getByText('#1')).toBeInTheDocument();
-    expect(screen.getByText('Ada Lovelace')).toBeInTheDocument();
+    expect(screen.getByText('Your Progress')).toBeInTheDocument()
+    expect(screen.getByText('6.0h / 12.0h')).toBeInTheDocument()
+    expect(screen.getByText('#1')).toBeInTheDocument()
+    expect(screen.getByText('Ada Lovelace')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('Leave Challenge'));
-    expect(leaveHandler).toHaveBeenCalledTimes(1);
-  });
+    fireEvent.click(screen.getByText('Leave Challenge'))
+    expect(leaveHandler).toHaveBeenCalledTimes(1)
+  })
 
   it('shows upcoming and completed labels based on schedule', () => {
-    jest.setSystemTime(new Date('2023-12-30T00:00:00Z'));
-    const upcomingChallenge = baseChallenge();
-    const { rerender } = render(
-      <ChallengeCard challenge={upcomingChallenge} />
-    );
+    jest.setSystemTime(new Date('2023-12-30T00:00:00Z'))
+    const upcomingChallenge = baseChallenge()
+    const { rerender } = render(<ChallengeCard challenge={upcomingChallenge} />)
 
-    expect(screen.getByText('Upcoming')).toBeInTheDocument();
+    expect(screen.getByText('Upcoming')).toBeInTheDocument()
 
-    jest.setSystemTime(new Date('2024-01-12T00:00:00Z'));
+    jest.setSystemTime(new Date('2024-01-12T00:00:00Z'))
     rerender(
       <ChallengeCard
         challenge={baseChallenge({
           isActive: false,
         })}
       />
-    );
+    )
 
-    expect(screen.getByText('Completed')).toBeInTheDocument();
-  });
-});
+    expect(screen.getByText('Completed')).toBeInTheDocument()
+  })
+})

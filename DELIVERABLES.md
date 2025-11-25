@@ -256,17 +256,17 @@ Execution Time: ~2.5 seconds
 const session = createMockSession({
   userId: 'user-123',
   duration: 3600,
-});
+})
 ```
 
 ### 2. Mock Strategy ✅
 
 ```typescript
 // Clear mocks between tests
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => jest.clearAllMocks())
 
 // Mock repositories at module level
-jest.mock('@/infrastructure/firebase/repositories/SessionRepository');
+jest.mock('@/infrastructure/firebase/repositories/SessionRepository')
 ```
 
 ### 3. Test Isolation ✅
@@ -282,7 +282,7 @@ jest.mock('@/infrastructure/firebase/repositories/SessionRepository');
 ```typescript
 it('should pause a running timer', async () => {
   // Clear intent from test name alone
-});
+})
 ```
 
 ---

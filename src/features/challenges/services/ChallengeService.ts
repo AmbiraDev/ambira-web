@@ -5,7 +5,7 @@
  * No React dependencies - pure TypeScript for testability.
  */
 
-import { firebaseApi } from '@/lib/api';
+import { firebaseApi } from '@/lib/api'
 import {
   Challenge,
   ChallengeFilters,
@@ -14,7 +14,7 @@ import {
   ChallengeStats,
   CreateChallengeData,
   UpdateChallengeData,
-} from '@/types';
+} from '@/types'
 
 export class ChallengeService {
   /**
@@ -22,9 +22,9 @@ export class ChallengeService {
    */
   async getChallenges(filters?: ChallengeFilters): Promise<Challenge[]> {
     try {
-      return await firebaseApi.challenge.getChallenges(filters);
+      return await firebaseApi.challenge.getChallenges(filters)
     } catch (_err) {
-      return [];
+      return []
     }
   }
 
@@ -33,22 +33,20 @@ export class ChallengeService {
    */
   async getChallenge(challengeId: string): Promise<Challenge | null> {
     try {
-      return await firebaseApi.challenge.getChallenge(challengeId);
+      return await firebaseApi.challenge.getChallenge(challengeId)
     } catch (_err) {
-      return null;
+      return null
     }
   }
 
   /**
    * Get challenge leaderboard
    */
-  async getChallengeLeaderboard(
-    challengeId: string
-  ): Promise<ChallengeLeaderboard | null> {
+  async getChallengeLeaderboard(challengeId: string): Promise<ChallengeLeaderboard | null> {
     try {
-      return await firebaseApi.challenge.getChallengeLeaderboard(challengeId);
+      return await firebaseApi.challenge.getChallengeLeaderboard(challengeId)
     } catch (_err) {
-      return null;
+      return null
     }
   }
 
@@ -60,12 +58,9 @@ export class ChallengeService {
     userId: string
   ): Promise<ChallengeProgress | null> {
     try {
-      return await firebaseApi.challenge.getChallengeProgress(
-        challengeId,
-        userId
-      );
+      return await firebaseApi.challenge.getChallengeProgress(challengeId, userId)
     } catch (_err) {
-      return null;
+      return null
     }
   }
 
@@ -74,9 +69,9 @@ export class ChallengeService {
    */
   async getChallengeStats(challengeId: string): Promise<ChallengeStats | null> {
     try {
-      return await firebaseApi.challenge.getChallengeStats(challengeId);
+      return await firebaseApi.challenge.getChallengeStats(challengeId)
     } catch (_err) {
-      return null;
+      return null
     }
   }
 
@@ -84,37 +79,34 @@ export class ChallengeService {
    * Create a new challenge
    */
   async createChallenge(data: CreateChallengeData): Promise<Challenge> {
-    return firebaseApi.challenge.createChallenge(data);
+    return firebaseApi.challenge.createChallenge(data)
   }
 
   /**
    * Update a challenge
    */
-  async updateChallenge(
-    challengeId: string,
-    data: UpdateChallengeData
-  ): Promise<Challenge> {
-    return firebaseApi.challenge.updateChallenge(challengeId, data);
+  async updateChallenge(challengeId: string, data: UpdateChallengeData): Promise<Challenge> {
+    return firebaseApi.challenge.updateChallenge(challengeId, data)
   }
 
   /**
    * Delete a challenge
    */
   async deleteChallenge(challengeId: string): Promise<void> {
-    return firebaseApi.challenge.deleteChallenge(challengeId);
+    return firebaseApi.challenge.deleteChallenge(challengeId)
   }
 
   /**
    * Join a challenge
    */
   async joinChallenge(challengeId: string): Promise<void> {
-    return firebaseApi.challenge.joinChallenge(challengeId);
+    return firebaseApi.challenge.joinChallenge(challengeId)
   }
 
   /**
    * Leave a challenge
    */
   async leaveChallenge(challengeId: string): Promise<void> {
-    return firebaseApi.challenge.leaveChallenge(challengeId);
+    return firebaseApi.challenge.leaveChallenge(challengeId)
   }
 }

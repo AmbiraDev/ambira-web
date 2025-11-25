@@ -77,27 +77,27 @@ grep -r "useGroup\|firebaseApi.group" src/app src/components --include="*.tsx"
 
 ```typescript
 // BEFORE
-import { useGroup, useUserGroups } from '@/hooks/useCache';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { useGroup, useUserGroups } from '@/hooks/useCache'
+import { firebaseApi } from '@/lib/firebaseApi'
 
 function GroupsPage() {
-  const { data: userGroups } = useUserGroups(userId);
+  const { data: userGroups } = useUserGroups(userId)
 
   const handleJoin = async (groupId: string) => {
-    await firebaseApi.group.joinGroup(groupId, userId);
-  };
+    await firebaseApi.group.joinGroup(groupId, userId)
+  }
 }
 
 // AFTER
-import { useUserGroups, useJoinGroup } from '@/features/groups/hooks';
+import { useUserGroups, useJoinGroup } from '@/features/groups/hooks'
 
 function GroupsPage() {
-  const { data: userGroups, isLoading } = useUserGroups(userId);
-  const joinMutation = useJoinGroup();
+  const { data: userGroups, isLoading } = useUserGroups(userId)
+  const joinMutation = useJoinGroup()
 
   const handleJoin = (groupId: string) => {
-    joinMutation.mutate({ groupId, userId });
-  };
+    joinMutation.mutate({ groupId, userId })
+  }
 }
 ```
 
@@ -117,22 +117,18 @@ mkdir -p src/features/feed/hooks
 Create `src/features/feed/hooks/useFeed.ts`:
 
 ```typescript
-import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
-import { FeedService } from '../services/FeedService';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query'
+import { FeedService } from '../services/FeedService'
 
-const feedService = new FeedService();
+const feedService = new FeedService()
 
 export const FEED_KEYS = {
   all: () => ['feed'] as const,
   lists: () => [...FEED_KEYS.all(), 'list'] as const,
   list: (filters: any) => [...FEED_KEYS.lists(), { filters }] as const,
-};
+}
 
-export function useFeedSessions(
-  currentUserId: string,
-  filters?: any,
-  options?: any
-) {
+export function useFeedSessions(currentUserId: string, filters?: any, options?: any) {
   return useInfiniteQuery({
     queryKey: FEED_KEYS.list(filters),
     queryFn: ({ pageParam }) =>
@@ -140,11 +136,10 @@ export function useFeedSessions(
         limit: 20,
         cursor: pageParam,
       }),
-    getNextPageParam: lastPage =>
-      lastPage.hasMore ? lastPage.nextCursor : undefined,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextCursor : undefined),
     staleTime: 1 * 60 * 1000, // 1 minute
     ...options,
-  });
+  })
 }
 ```
 
@@ -152,10 +147,10 @@ export function useFeedSessions(
 
 ```typescript
 // BEFORE - src/components/Feed.tsx
-import { useFeedSessions } from '@/hooks/useCache';
+import { useFeedSessions } from '@/hooks/useCache'
 
 // AFTER
-import { useFeedSessions } from '@/features/feed/hooks';
+import { useFeedSessions } from '@/features/feed/hooks'
 ```
 
 ### Phase 3: Profile/User Feature
@@ -171,19 +166,18 @@ mkdir -p src/features/profile/hooks
 Create `src/features/profile/hooks/useProfile.ts`:
 
 ```typescript
-import { useQuery } from '@tanstack/react-query';
-import { ProfileService } from '../services/ProfileService';
+import { useQuery } from '@tanstack/react-query'
+import { ProfileService } from '../services/ProfileService'
 
-const profileService = new ProfileService();
+const profileService = new ProfileService()
 
 export const PROFILE_KEYS = {
   all: () => ['profile'] as const,
   details: () => [...PROFILE_KEYS.all(), 'detail'] as const,
   detail: (userId: string) => [...PROFILE_KEYS.details(), userId] as const,
   stats: (userId: string) => [...PROFILE_KEYS.detail(userId), 'stats'] as const,
-  sessions: (userId: string) =>
-    [...PROFILE_KEYS.detail(userId), 'sessions'] as const,
-};
+  sessions: (userId: string) => [...PROFILE_KEYS.detail(userId), 'sessions'] as const,
+}
 
 export function useUserProfile(userId: string) {
   return useQuery({
@@ -191,7 +185,7 @@ export function useUserProfile(userId: string) {
     queryFn: () => profileService.getUserProfile(userId),
     staleTime: 15 * 60 * 1000, // 15 minutes
     enabled: !!userId,
-  });
+  })
 }
 
 export function useUserStats(userId: string) {
@@ -200,7 +194,7 @@ export function useUserStats(userId: string) {
     queryFn: () => profileService.getUserStats(userId),
     staleTime: 60 * 60 * 1000, // 1 hour
     enabled: !!userId,
-  });
+  })
 }
 ```
 
@@ -219,26 +213,26 @@ Find and replace:
 Create `src/features/sessions/services/SessionService.ts`:
 
 ```typescript
-import { SessionRepository } from '@/infrastructure/firebase/repositories/SessionRepository';
+import { SessionRepository } from '@/infrastructure/firebase/repositories/SessionRepository'
 
 export class SessionService {
-  private readonly sessionRepo: SessionRepository;
+  private readonly sessionRepo: SessionRepository
 
   constructor() {
-    this.sessionRepo = new SessionRepository();
+    this.sessionRepo = new SessionRepository()
   }
 
   async getSession(sessionId: string) {
-    return this.sessionRepo.findById(sessionId);
+    return this.sessionRepo.findById(sessionId)
   }
 
   async createSession(data: CreateSessionData) {
     // Business logic
-    return this.sessionRepo.create(data);
+    return this.sessionRepo.create(data)
   }
 
   async deleteSession(sessionId: string) {
-    return this.sessionRepo.delete(sessionId);
+    return this.sessionRepo.delete(sessionId)
   }
 }
 ```
@@ -252,14 +246,14 @@ export const SESSION_KEYS = {
   all: () => ['sessions'] as const,
   details: () => [...SESSION_KEYS.all(), 'detail'] as const,
   detail: (id: string) => [...SESSION_KEYS.details(), id] as const,
-};
+}
 
 export function useSession(sessionId: string) {
   return useQuery({
     queryKey: SESSION_KEYS.detail(sessionId),
     queryFn: () => sessionService.getSession(sessionId),
     staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  })
 }
 ```
 
@@ -281,35 +275,35 @@ Similar pattern - create service, hooks, and migrate components.
 
 ```typescript
 // BEFORE
-import { useCache } from '@/hooks/useCache';
-const { data, isLoading } = useCache.useGroup(groupId);
+import { useCache } from '@/hooks/useCache'
+const { data, isLoading } = useCache.useGroup(groupId)
 
 // AFTER
-import { useGroupDetails } from '@/features/groups/hooks';
-const { data, isLoading } = useGroupDetails(groupId);
+import { useGroupDetails } from '@/features/groups/hooks'
+const { data, isLoading } = useGroupDetails(groupId)
 ```
 
 ### Pattern 2: Mutation Migration
 
 ```typescript
 // BEFORE
-import { firebaseApi } from '@/lib/firebaseApi';
+import { firebaseApi } from '@/lib/firebaseApi'
 
 const handleUpdate = async () => {
-  await firebaseApi.group.joinGroup(groupId, userId);
+  await firebaseApi.group.joinGroup(groupId, userId)
   // Manual cache invalidation
-  queryClient.invalidateQueries(['groups']);
-};
+  queryClient.invalidateQueries(['groups'])
+}
 
 // AFTER
-import { useJoinGroup } from '@/features/groups/hooks';
+import { useJoinGroup } from '@/features/groups/hooks'
 
-const joinMutation = useJoinGroup();
+const joinMutation = useJoinGroup()
 
 const handleUpdate = () => {
-  joinMutation.mutate({ groupId, userId });
+  joinMutation.mutate({ groupId, userId })
   // Cache invalidation handled automatically
-};
+}
 ```
 
 ### Pattern 3: Optimistic Updates
@@ -321,25 +315,25 @@ const handleSupport = async () => {
   queryClient.setQueryData(['session', sessionId], (old: any) => ({
     ...old,
     supportCount: old.supportCount + 1,
-  }));
+  }))
 
   try {
-    await firebaseApi.post.supportSession(sessionId);
+    await firebaseApi.post.supportSession(sessionId)
   } catch (error) {
     // Manual rollback
-    queryClient.invalidateQueries(['session', sessionId]);
+    queryClient.invalidateQueries(['session', sessionId])
   }
-};
+}
 
 // AFTER - Hook handles optimistic update
-import { useSupportSession } from '@/features/sessions/hooks';
+import { useSupportSession } from '@/features/sessions/hooks'
 
-const supportMutation = useSupportSession();
+const supportMutation = useSupportSession()
 
 const handleSupport = () => {
-  supportMutation.mutate(sessionId);
+  supportMutation.mutate(sessionId)
   // Optimistic update and rollback handled in the hook
-};
+}
 ```
 
 ## Testing During Migration
@@ -472,11 +466,11 @@ Update README and other docs to reference the new pattern.
 
 ```typescript
 // In feature A's mutation
-import { GROUPS_KEYS } from '@/features/groups/hooks';
+import { GROUPS_KEYS } from '@/features/groups/hooks'
 
 onSuccess: () => {
-  queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.all() });
-};
+  queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.all() })
+}
 ```
 
 ### Q: Should I create a hook for every service method?
@@ -489,16 +483,16 @@ onSuccess: () => {
 
 ```typescript
 export function useGroupLiveUpdates(groupId: string) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(doc(db, 'groups', groupId), snapshot => {
-      const group = snapshot.data();
-      queryClient.setQueryData(GROUPS_KEYS.detail(groupId), group);
-    });
+    const unsubscribe = onSnapshot(doc(db, 'groups', groupId), (snapshot) => {
+      const group = snapshot.data()
+      queryClient.setQueryData(GROUPS_KEYS.detail(groupId), group)
+    })
 
-    return unsubscribe;
-  }, [groupId, queryClient]);
+    return unsubscribe
+  }, [groupId, queryClient])
 }
 ```
 

@@ -1,10 +1,10 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { PrivacySettings } from '@/components/PrivacySettings';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import React from 'react'
+import { PrivacySettings } from '@/components/PrivacySettings'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 
 export default function PrivacySettingsPage() {
   return (
@@ -24,5 +24,5 @@ export default function PrivacySettingsPage() {
         <PrivacySettings />
       </div>
     </div>
-  );
+  )
 }

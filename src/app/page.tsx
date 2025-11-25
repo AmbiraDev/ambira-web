@@ -5,16 +5,16 @@
  * All business logic is delegated to FeedPageContent and LandingPageContent components.
  */
 
-'use client';
+'use client'
 
-import { useAuth } from '@/hooks/useAuth';
-import Header from '@/components/HeaderComponent';
-import { FeedPageContent } from '@/features/feed/components/FeedPageContent';
-import { LandingPageContent } from '@/features/feed/components/LandingPageContent';
-import { LoadingScreen } from '@/components/LoadingScreen';
+import { useAuth } from '@/hooks/useAuth'
+import Header from '@/components/HeaderComponent'
+import { FeedPageContent } from '@/features/feed/components/FeedPageContent'
+import { LandingPageContent } from '@/features/feed/components/LandingPageContent'
+import { LoadingScreen } from '@/components/LoadingScreen'
 
 export default function Home() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth()
 
   return (
     <>
@@ -43,5 +43,5 @@ export default function Home() {
       {/* Show landing page for unauthenticated users */}
       {!isLoading && !isAuthenticated && <LandingPageContent />}
     </>
-  );
+  )
 }

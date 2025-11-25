@@ -1,21 +1,17 @@
-'use client';
+'use client'
 
-import React, { useState, useRef } from 'react';
-import Image from 'next/image';
-import { ImageIcon, X, AlertCircle, Loader2 } from 'lucide-react';
+import React, { useState, useRef } from 'react'
+import Image from 'next/image'
+import { ImageIcon, X, AlertCircle, Loader2 } from 'lucide-react'
 
 interface DeleteConfirmProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onDelete: () => void;
+  isOpen: boolean
+  onClose: () => void
+  onDelete: () => void
 }
 
-const DeleteConfirm: React.FC<DeleteConfirmProps> = ({
-  isOpen,
-  onClose,
-  onDelete,
-}) => {
-  if (!isOpen) return null;
+const DeleteConfirm: React.FC<DeleteConfirmProps> = ({ isOpen, onClose, onDelete }) => {
+  if (!isOpen) return null
 
   return (
     <>
@@ -27,11 +23,9 @@ const DeleteConfirm: React.FC<DeleteConfirmProps> = ({
         {/* Modal */}
         <div
           className="bg-white rounded-lg p-5 w-full max-w-sm shadow-xl"
-          onClick={e => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
         >
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Delete Image?
-          </h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Delete Image?</h3>
           <p className="text-sm text-gray-600 mb-6">
             This image will be removed from your session.
           </p>
@@ -45,8 +39,8 @@ const DeleteConfirm: React.FC<DeleteConfirmProps> = ({
             </button>
             <button
               onClick={() => {
-                onDelete();
-                onClose();
+                onDelete()
+                onClose()
               }}
               className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 active:bg-red-700 transition-colors"
             >
@@ -56,36 +50,36 @@ const DeleteConfirm: React.FC<DeleteConfirmProps> = ({
         </div>
       </div>
     </>
-  );
-};
+  )
+}
 
 interface ImageUploadProps {
   /** Maximum number of images allowed */
-  maxImages?: number;
+  maxImages?: number
   /** Maximum file size in MB */
-  maxSizeMB?: number;
+  maxSizeMB?: number
   /** Accepted file types (e.g., ['image/jpeg', 'image/png']) */
-  acceptedTypes?: string[];
+  acceptedTypes?: string[]
   /** Current images (for controlled component) */
-  images?: File[];
+  images?: File[]
   /** Preview URLs (for controlled component) */
-  previewUrls?: string[];
+  previewUrls?: string[]
   /** Callback when images change */
-  onImagesChange?: (images: File[], previewUrls: string[]) => void;
+  onImagesChange?: (images: File[], previewUrls: string[]) => void
   /** Upload mode: 'instant' uploads immediately, 'deferred' waits for form submission */
-  uploadMode?: 'instant' | 'deferred';
+  uploadMode?: 'instant' | 'deferred'
   /** Upload function for instant mode */
-  onUpload?: (files: File[]) => Promise<string[]>;
+  onUpload?: (files: File[]) => Promise<string[]>
   /** Label text */
-  label?: string;
+  label?: string
   /** Show upload progress */
-  showProgress?: boolean;
+  showProgress?: boolean
   /** Custom placeholder text */
-  placeholder?: string;
+  placeholder?: string
   /** Disabled state */
-  disabled?: boolean;
+  disabled?: boolean
   /** Show as single image picker (for profile pictures) */
-  singleImage?: boolean;
+  singleImage?: boolean
 }
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -110,32 +104,32 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   disabled = false,
   singleImage = false,
 }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [error, setError] = useState<string>('');
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [actionSheetIndex, setActionSheetIndex] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [error, setError] = useState<string>('')
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<number>(0)
+  const [actionSheetIndex, setActionSheetIndex] = useState<number | null>(null)
 
-  const maxSize = maxSizeMB * 1024 * 1024;
-  const effectiveMaxImages = singleImage ? 1 : maxImages;
+  const maxSize = maxSizeMB * 1024 * 1024
+  const effectiveMaxImages = singleImage ? 1 : maxImages
 
   const formatFileTypes = () => {
-    const types = acceptedTypes.map(type => {
-      const ext = type.split('/')[1]?.toUpperCase();
-      if (ext === 'JPEG') return 'JPG';
-      return ext;
-    });
-    return types.join(', ');
-  };
+    const types = acceptedTypes.map((type) => {
+      const ext = type.split('/')[1]?.toUpperCase()
+      if (ext === 'JPEG') return 'JPG'
+      return ext
+    })
+    return types.join(', ')
+  }
 
   const validateFile = (file: File): { valid: boolean; error?: string } => {
     // Check file size
     if (file.size > maxSize) {
-      const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+      const sizeMB = (file.size / 1024 / 1024).toFixed(1)
       return {
         valid: false,
         error: `"${file.name}" is too large (${sizeMB}MB). Maximum size is ${maxSizeMB}MB.`,
-      };
+      }
     }
 
     // Check file type
@@ -143,134 +137,120 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       file.type === 'image/heic' ||
       file.type === 'image/heif' ||
       file.name.toLowerCase().endsWith('.heic') ||
-      file.name.toLowerCase().endsWith('.heif');
+      file.name.toLowerCase().endsWith('.heif')
 
-    if (
-      !acceptedTypes.includes(file.type) &&
-      !isHeic &&
-      !file.type.startsWith('image/')
-    ) {
+    if (!acceptedTypes.includes(file.type) && !isHeic && !file.type.startsWith('image/')) {
       return {
         valid: false,
         error: `"${file.name}" is not a supported file type. Please use ${formatFileTypes()}.`,
-      };
+      }
     }
 
-    return { valid: true };
-  };
+    return { valid: true }
+  }
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setError('');
+    const files = Array.from(e.target.files || [])
+    setError('')
 
     if (files.length + images.length > effectiveMaxImages) {
       setError(
         `Maximum ${effectiveMaxImages} ${effectiveMaxImages === 1 ? 'image' : 'images'} allowed`
-      );
-      return;
+      )
+      return
     }
 
-    const validFiles: File[] = [];
-    const newPreviewUrls: string[] = [];
+    const validFiles: File[] = []
+    const newPreviewUrls: string[] = []
 
     // Validate each file
     for (const file of files) {
-      const validation = validateFile(file);
+      const validation = validateFile(file)
       if (!validation.valid) {
-        setError(validation.error || 'Invalid file');
-        continue;
+        setError(validation.error || 'Invalid file')
+        continue
       }
 
-      validFiles.push(file);
+      validFiles.push(file)
 
       // Create preview URL
-      const previewUrl = URL.createObjectURL(file);
-      newPreviewUrls.push(previewUrl);
+      const previewUrl = URL.createObjectURL(file)
+      newPreviewUrls.push(previewUrl)
     }
 
     if (validFiles.length === 0) {
-      return;
+      return
     }
 
     // Handle instant upload mode
     if (uploadMode === 'instant' && onUpload) {
       try {
-        setIsUploading(true);
-        setUploadProgress(0);
+        setIsUploading(true)
+        setUploadProgress(0)
 
         // Simulate progress (you can replace with actual upload progress)
         const progressInterval = setInterval(() => {
-          setUploadProgress(prev => Math.min(prev + 10, 90));
-        }, 200);
+          setUploadProgress((prev) => Math.min(prev + 10, 90))
+        }, 200)
 
-        const uploadedUrls = await onUpload(validFiles);
+        const uploadedUrls = await onUpload(validFiles)
 
-        clearInterval(progressInterval);
-        setUploadProgress(100);
+        clearInterval(progressInterval)
+        setUploadProgress(100)
 
         // Call onChange with uploaded URLs (you might want to handle this differently)
-        onImagesChange?.(
-          [...images, ...validFiles],
-          [...previewUrls, ...uploadedUrls]
-        );
+        onImagesChange?.([...images, ...validFiles], [...previewUrls, ...uploadedUrls])
 
         setTimeout(() => {
-          setIsUploading(false);
-          setUploadProgress(0);
-        }, 500);
+          setIsUploading(false)
+          setUploadProgress(0)
+        }, 500)
       } catch (err: unknown) {
-        setError((err as Error).message || 'Failed to upload images');
-        setIsUploading(false);
-        setUploadProgress(0);
+        setError((err as Error).message || 'Failed to upload images')
+        setIsUploading(false)
+        setUploadProgress(0)
         // Clean up preview URLs on error
-        newPreviewUrls.forEach(url => URL.revokeObjectURL(url));
+        newPreviewUrls.forEach((url) => URL.revokeObjectURL(url))
       }
     } else {
       // Deferred mode - just store files and previews
-      onImagesChange?.(
-        [...images, ...validFiles],
-        [...previewUrls, ...newPreviewUrls]
-      );
+      onImagesChange?.([...images, ...validFiles], [...previewUrls, ...newPreviewUrls])
     }
 
     // Reset file input
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = ''
     }
-  };
+  }
 
   const handleRemoveImage = (index: number) => {
-    const newImages = images.filter((_, i) => i !== index);
+    const newImages = images.filter((_, i) => i !== index)
     const newPreviewUrls = previewUrls.filter((_, i) => {
       if (i === index) {
         // Revoke object URL to free memory
-        const url = previewUrls[i];
+        const url = previewUrls[i]
         if (url) {
-          URL.revokeObjectURL(url);
+          URL.revokeObjectURL(url)
         }
-        return false;
+        return false
       }
-      return true;
-    });
+      return true
+    })
 
-    onImagesChange?.(newImages, newPreviewUrls);
-    setError('');
-  };
+    onImagesChange?.(newImages, newPreviewUrls)
+    setError('')
+  }
 
   const getPlaceholderText = () => {
-    if (placeholder) return placeholder;
-    if (singleImage) return 'Upload profile picture';
-    if (previewUrls.length === 0) return 'Add images';
-    return `Add ${effectiveMaxImages - previewUrls.length} more`;
-  };
+    if (placeholder) return placeholder
+    if (singleImage) return 'Upload profile picture'
+    if (previewUrls.length === 0) return 'Add images'
+    return `Add ${effectiveMaxImages - previewUrls.length} more`
+  }
 
   return (
     <div className="space-y-3">
-      {label && (
-        <label className="block text-sm font-medium text-gray-700">
-          {label}
-        </label>
-      )}
+      {label && <label className="block text-sm font-medium text-gray-700">{label}</label>}
 
       {/* Error Message */}
       {error && (
@@ -282,9 +262,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
       {/* Image Previews */}
       {previewUrls.length > 0 && (
-        <div
-          className={`grid gap-2 ${singleImage ? 'grid-cols-1' : 'grid-cols-3'}`}
-        >
+        <div className={`grid gap-2 ${singleImage ? 'grid-cols-1' : 'grid-cols-3'}`}>
           {previewUrls.map((url, index) => (
             <div
               key={index}
@@ -338,8 +316,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         onClose={() => setActionSheetIndex(null)}
         onDelete={() => {
           if (actionSheetIndex !== null) {
-            handleRemoveImage(actionSheetIndex);
-            setActionSheetIndex(null);
+            handleRemoveImage(actionSheetIndex)
+            setActionSheetIndex(null)
           }
         }}
       />
@@ -372,16 +350,12 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           {isUploading ? (
             <>
               <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-              <span className="text-sm font-medium text-blue-600">
-                Uploading...
-              </span>
+              <span className="text-sm font-medium text-blue-600">Uploading...</span>
             </>
           ) : (
             <>
               <ImageIcon className="w-8 h-8 text-[#0066CC]" />
-              <span className="text-sm font-medium text-[#0066CC]">
-                {getPlaceholderText()}
-              </span>
+              <span className="text-sm font-medium text-[#0066CC]">{getPlaceholderText()}</span>
             </>
           )}
           <input
@@ -397,13 +371,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       )}
 
       {/* Helper text for max images */}
-      {!singleImage &&
-        previewUrls.length > 0 &&
-        previewUrls.length < effectiveMaxImages && (
-          <p className="text-xs text-gray-500 text-center">
-            {previewUrls.length} of {effectiveMaxImages} images selected
-          </p>
-        )}
+      {!singleImage && previewUrls.length > 0 && previewUrls.length < effectiveMaxImages && (
+        <p className="text-xs text-gray-500 text-center">
+          {previewUrls.length} of {effectiveMaxImages} images selected
+        </p>
+      )}
     </div>
-  );
-};
+  )
+}

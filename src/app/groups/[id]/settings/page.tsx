@@ -1,62 +1,57 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import Header from '@/components/HeaderComponent';
-import { ImageUpload } from '@/components/ImageUpload';
-import { Group, UpdateGroupData } from '@/types';
-import { firebaseApi } from '@/lib/api';
-import { uploadImage } from '@/lib/imageUpload';
+import React, { useState, useEffect, useCallback } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
+import Header from '@/components/HeaderComponent'
+import { ImageUpload } from '@/components/ImageUpload'
+import { Group, UpdateGroupData } from '@/types'
+import { firebaseApi } from '@/lib/api'
+import { uploadImage } from '@/lib/imageUpload'
 
 export default function GroupSettingsPage() {
-  const params = useParams();
-  const router = useRouter();
-  const { user } = useAuth();
-  const [group, setGroup] = useState<Group | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const params = useParams()
+  const router = useRouter()
+  const { user } = useAuth()
+  const [group, setGroup] = useState<Group | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const groupId = params.id as string;
+  const groupId = params.id as string
 
   // Form state
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     location: '',
-    category: 'other' as
-      | 'work'
-      | 'study'
-      | 'side-project'
-      | 'learning'
-      | 'other',
+    category: 'other' as 'work' | 'study' | 'side-project' | 'learning' | 'other',
     type: 'other' as 'just-for-fun' | 'professional' | 'competitive' | 'other',
     privacySetting: 'public' as 'public' | 'approval-required',
     imageUrl: '',
-  });
+  })
 
   // Image upload state
-  const [groupImages, setGroupImages] = useState<File[]>([]);
-  const [groupImagePreviews, setGroupImagePreviews] = useState<string[]>([]);
+  const [groupImages, setGroupImages] = useState<File[]>([])
+  const [groupImagePreviews, setGroupImagePreviews] = useState<string[]>([])
 
   const loadGroup = useCallback(async () => {
     try {
-      setIsLoading(true);
-      const groupData = await firebaseApi.group.getGroup(groupId);
+      setIsLoading(true)
+      const groupData = await firebaseApi.group.getGroup(groupId)
 
       if (!groupData) {
-        router.push('/groups');
-        return;
+        router.push('/groups')
+        return
       }
 
       // Check if user is admin
       if (!groupData.adminUserIds.includes(user!.id)) {
-        router.push(`/groups/${groupId}`);
-        return;
+        router.push(`/groups/${groupId}`)
+        return
       }
 
-      setGroup(groupData);
+      setGroup(groupData)
       setFormData({
         name: groupData.name,
         description: groupData.description,
@@ -65,51 +60,49 @@ export default function GroupSettingsPage() {
         type: groupData.type,
         privacySetting: groupData.privacySetting,
         imageUrl: groupData.imageUrl || '',
-      });
+      })
 
       // Set existing image as preview if it exists
       if (groupData.imageUrl) {
-        setGroupImagePreviews([groupData.imageUrl]);
+        setGroupImagePreviews([groupData.imageUrl])
       }
     } catch {
-      setError('Failed to load group');
+      setError('Failed to load group')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, [groupId, user, router]);
+  }, [groupId, user, router])
 
   useEffect(() => {
     if (groupId && user) {
-      loadGroup();
+      loadGroup()
     }
-  }, [groupId, user, loadGroup]);
+  }, [groupId, user, loadGroup])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    if (!group || !user) return;
+    if (!group || !user) return
 
-    setIsSaving(true);
-    setError(null);
+    setIsSaving(true)
+    setError(null)
 
     try {
       // Upload new group image if provided
-      let imageUrl = formData.imageUrl;
+      let imageUrl = formData.imageUrl
       if (groupImages.length > 0) {
         try {
-          const imageFile = groupImages[0];
+          const imageFile = groupImages[0]
           if (imageFile !== undefined) {
-            const result = await uploadImage(imageFile, 'group-images');
-            imageUrl = result.url;
+            const result = await uploadImage(imageFile, 'group-images')
+            imageUrl = result.url
           }
         } catch (uploadError) {
           setError(
-            uploadError instanceof Error
-              ? uploadError.message
-              : 'Failed to upload group image'
-          );
-          setIsSaving(false);
-          return;
+            uploadError instanceof Error ? uploadError.message : 'Failed to upload group image'
+          )
+          setIsSaving(false)
+          return
         }
       }
 
@@ -121,33 +114,29 @@ export default function GroupSettingsPage() {
         type: formData.type,
         privacySetting: formData.privacySetting,
         imageUrl: imageUrl || undefined,
-      };
+      }
 
-      await firebaseApi.group.updateGroup(groupId, updateData);
-      router.push(`/groups/${groupId}`);
+      await firebaseApi.group.updateGroup(groupId, updateData)
+      router.push(`/groups/${groupId}`)
     } catch (_error) {
-      setError('Failed to update group. Please try again.');
-      setIsSaving(false);
+      setError('Failed to update group. Please try again.')
+      setIsSaving(false)
     }
-  };
+  }
 
   const handleCancel = () => {
-    router.push(`/groups/${groupId}`);
-  };
+    router.push(`/groups/${groupId}`)
+  }
 
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Please log in
-          </h1>
-          <p className="text-gray-600">
-            You need to be logged in to edit groups.
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Please log in</h1>
+          <p className="text-gray-600">You need to be logged in to edit groups.</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (isLoading) {
@@ -161,7 +150,7 @@ export default function GroupSettingsPage() {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   if (!group) {
@@ -170,9 +159,7 @@ export default function GroupSettingsPage() {
         <Header />
         <div className="max-w-3xl mx-auto px-4 py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Group not found
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Group not found</h1>
             <button
               onClick={() => router.push('/groups')}
               className="bg-[#0066CC] text-white px-4 py-2 rounded-lg hover:bg-[#0051D5]"
@@ -182,7 +169,7 @@ export default function GroupSettingsPage() {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -194,46 +181,34 @@ export default function GroupSettingsPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Edit Group</h1>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-lg border border-gray-200 p-8"
-        >
+        <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-8">
           {/* Image Upload */}
           <div className="mb-8">
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Group Picture
-            </label>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">Group Picture</label>
             <ImageUpload
               singleImage={true}
               maxSizeMB={5}
               images={groupImages}
               previewUrls={groupImagePreviews}
               onImagesChange={(images, previews) => {
-                setGroupImages(images);
-                setGroupImagePreviews(previews);
+                setGroupImages(images)
+                setGroupImagePreviews(previews)
                 // Clear the imageUrl from formData when user uploads a new image
                 if (images.length > 0) {
-                  setFormData({ ...formData, imageUrl: '' });
+                  setFormData({ ...formData, imageUrl: '' })
                 }
               }}
               placeholder="Upload group picture"
               disabled={isSaving}
             />
-            <p className="text-xs text-gray-500 mt-2">
-              Recommended size: 248×248 px (max 5MB)
-            </p>
+            <p className="text-xs text-gray-500 mt-2">Recommended size: 248×248 px (max 5MB)</p>
           </div>
 
-          <p className="text-sm text-gray-600 mb-6 italic">
-            Fields marked with * are required
-          </p>
+          <p className="text-sm text-gray-600 mb-6 italic">Fields marked with * are required</p>
 
           {/* Group Name */}
           <div className="mb-6">
-            <label
-              htmlFor="name"
-              className="block text-sm font-semibold text-gray-900 mb-2"
-            >
+            <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
               Group Name *
             </label>
             <input
@@ -241,7 +216,7 @@ export default function GroupSettingsPage() {
               id="name"
               required
               value={formData.name}
-              onChange={e => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
               placeholder="Enter group name"
             />
@@ -249,19 +224,14 @@ export default function GroupSettingsPage() {
 
           {/* Location */}
           <div className="mb-6">
-            <label
-              htmlFor="location"
-              className="block text-sm font-semibold text-gray-900 mb-2"
-            >
+            <label htmlFor="location" className="block text-sm font-semibold text-gray-900 mb-2">
               Location
             </label>
             <input
               type="text"
               id="location"
               value={formData.location}
-              onChange={e =>
-                setFormData({ ...formData, location: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
               placeholder="Enter location"
             />
@@ -269,16 +239,13 @@ export default function GroupSettingsPage() {
 
           {/* Category */}
           <div className="mb-6">
-            <label
-              htmlFor="category"
-              className="block text-sm font-semibold text-gray-900 mb-2"
-            >
+            <label htmlFor="category" className="block text-sm font-semibold text-gray-900 mb-2">
               Category
             </label>
             <select
               id="category"
               value={formData.category}
-              onChange={e =>
+              onChange={(e) =>
                 setFormData({
                   ...formData,
                   category: e.target.value as
@@ -301,23 +268,16 @@ export default function GroupSettingsPage() {
 
           {/* Type */}
           <div className="mb-6">
-            <label
-              htmlFor="type"
-              className="block text-sm font-semibold text-gray-900 mb-2"
-            >
+            <label htmlFor="type" className="block text-sm font-semibold text-gray-900 mb-2">
               Group Type
             </label>
             <select
               id="type"
               value={formData.type}
-              onChange={e =>
+              onChange={(e) =>
                 setFormData({
                   ...formData,
-                  type: e.target.value as
-                    | 'just-for-fun'
-                    | 'professional'
-                    | 'competitive'
-                    | 'other',
+                  type: e.target.value as 'just-for-fun' | 'professional' | 'competitive' | 'other',
                 })
               }
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent bg-white"
@@ -331,21 +291,18 @@ export default function GroupSettingsPage() {
 
           {/* Description */}
           <div className="mb-8">
-            <label
-              htmlFor="description"
-              className="block text-sm font-semibold text-gray-900 mb-2"
-            >
+            <label htmlFor="description" className="block text-sm font-semibold text-gray-900 mb-2">
               Description *
             </label>
             <textarea
               id="description"
               required
               value={formData.description}
-              onChange={e => {
+              onChange={(e) => {
                 // Limit to 4 lines (3 newlines)
-                const newlineCount = (e.target.value.match(/\n/g) || []).length;
+                const newlineCount = (e.target.value.match(/\n/g) || []).length
                 if (newlineCount <= 3) {
-                  setFormData({ ...formData, description: e.target.value });
+                  setFormData({ ...formData, description: e.target.value })
                 }
               }}
               rows={4}
@@ -386,5 +343,5 @@ export default function GroupSettingsPage() {
         </form>
       </div>
     </div>
-  );
+  )
 }

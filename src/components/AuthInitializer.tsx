@@ -116,7 +116,7 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
           navigateToHome()
           return // Exit early - redirect handled
         }
-      } catch (err) {
+      } catch (_err) {
         // Clear timeout since we're done initializing
         if (timeoutId) clearTimeout(timeoutId)
         // Continue with normal auth flow even if redirect check fails
@@ -144,7 +144,7 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
               // Clear React Query cache
               queryClient.setQueryData(AUTH_KEYS.session(), null)
             }
-          } catch (err) {
+          } catch (_err) {
             // On error, assume user is not authenticated
             queryClient.setQueryData(AUTH_KEYS.session(), null)
           } finally {
@@ -153,7 +153,7 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
             setIsInitializing(false)
           }
         })
-      } catch (err) {
+      } catch (_err) {
         // Clear timeout since we're done initializing
         if (timeoutId) clearTimeout(timeoutId)
 
@@ -175,7 +175,7 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
         authUnsubscribe()
       }
     }
-  }, [queryClient, navigateToHome, pathname])
+  }, [queryClient, navigateToHome, pathname, isPublicPage])
 
   // Public pages should render immediately without loading screen
   // This prevents test timeouts and provides better UX

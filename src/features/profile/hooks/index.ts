@@ -20,7 +20,7 @@ export {
   useIsFollowing,
   useCanViewProfile,
   PROFILE_KEYS,
-} from './useProfile';
+} from './useProfile'
 
 // Mutation hooks
 export {
@@ -28,4 +28,4 @@ export {
   useUnfollowUser,
   useInvalidateProfile,
   useInvalidateAllProfiles,
-} from './useProfileMutations';
+} from './useProfileMutations'

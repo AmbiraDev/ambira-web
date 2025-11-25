@@ -1,14 +1,14 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect } from 'react';
-import { SessionFormData, Project } from '@/types';
-import { parseLocalDateTime } from '@/lib/utils';
-import { ERROR_MESSAGES } from '@/config/errorMessages';
+import React, { useState, useEffect } from 'react'
+import { SessionFormData, Project } from '@/types'
+import { parseLocalDateTime } from '@/lib/utils'
+import { ERROR_MESSAGES } from '@/config/errorMessages'
 
 interface ManualEntryProps {
-  onSave: (data: SessionFormData) => Promise<void>;
-  onCancel: () => void;
-  isLoading?: boolean;
+  onSave: (data: SessionFormData) => Promise<void>
+  onCancel: () => void
+  isLoading?: boolean
 }
 
 const TAGS = [
@@ -20,7 +20,7 @@ const TAGS = [
   'Exercise',
   'Creative',
   'Other',
-];
+]
 
 const PRIVACY_OPTIONS = [
   { value: 'everyone', label: 'Everyone', description: 'Visible to all users' },
@@ -30,7 +30,7 @@ const PRIVACY_OPTIONS = [
     description: 'Visible to your followers',
   },
   { value: 'private', label: 'Only You', description: 'Private to you only' },
-];
+]
 
 export const ManualEntry: React.FC<ManualEntryProps> = ({
   onSave,
@@ -48,147 +48,144 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
     visibility: 'everyone',
     howFelt: 3,
     privateNotes: '',
-  });
+  })
 
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [projects, setProjects] = useState<Project[]>([])
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Time inputs
-  const [durationHours, setDurationHours] = useState(0);
-  const [durationMinutes, setDurationMinutes] = useState(0);
-  const [durationSeconds, setDurationSeconds] = useState(0);
-  const [startDate, setStartDate] = useState(
-    new Date().toISOString().split('T')[0]
-  );
-  const [startTime, setStartTime] = useState('12:00');
+  const [durationHours, setDurationHours] = useState(0)
+  const [durationMinutes, setDurationMinutes] = useState(0)
+  const [durationSeconds, setDurationSeconds] = useState(0)
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0])
+  const [startTime, setStartTime] = useState('12:00')
 
   // TODO: Implement Firebase API calls
   // Helper function to get auth token
   const getAuthToken = (): string => {
     // For now, return empty string since we're not using Firebase sessions yet
-    return '';
-  };
+    return ''
+  }
 
   // Load projects on mount
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        getAuthToken();
+        getAuthToken()
         // TODO: Load projects from Firebase
-        const projectList: Project[] = []; // await mockProjectApiLocal.getProjects(token);
-        setProjects(projectList);
-      } catch (error) {}
-    };
+        const projectList: Project[] = [] // await mockProjectApiLocal.getProjects(token);
+        setProjects(projectList)
+      } catch (_error) {}
+    }
 
-    loadProjects();
-  }, []);
+    loadProjects()
+  }, [])
 
   // Update duration when time inputs change
   useEffect(() => {
-    const totalSeconds =
-      durationHours * 3600 + durationMinutes * 60 + durationSeconds;
-    setFormData(prev => ({ ...prev, duration: totalSeconds }));
-  }, [durationHours, durationMinutes, durationSeconds]);
+    const totalSeconds = durationHours * 3600 + durationMinutes * 60 + durationSeconds
+    setFormData((prev) => ({ ...prev, duration: totalSeconds }))
+  }, [durationHours, durationMinutes, durationSeconds])
 
   // Update start time when date/time inputs change
   useEffect(() => {
     // Parse date and time in local timezone to avoid UTC interpretation issues
-    const dateTime = parseLocalDateTime(startDate || '', startTime || '00:00');
-    setFormData(prev => ({ ...prev, startTime: dateTime }));
-  }, [startDate, startTime]);
+    const dateTime = parseLocalDateTime(startDate || '', startTime || '00:00')
+    setFormData((prev) => ({ ...prev, startTime: dateTime }))
+  }, [startDate, startTime])
 
   // Generate smart title based on time of day and project
   useEffect(() => {
     if (!formData.title && formData.projectId) {
-      const project = projects.find(p => p.id === formData.projectId);
-      const hour = new Date().getHours();
+      const project = projects.find((p) => p.id === formData.projectId)
+      const hour = new Date().getHours()
 
-      let timeOfDay = '';
-      if (hour < 12) timeOfDay = 'Morning';
-      else if (hour < 17) timeOfDay = 'Afternoon';
-      else timeOfDay = 'Evening';
+      let timeOfDay = ''
+      if (hour < 12) timeOfDay = 'Morning'
+      else if (hour < 17) timeOfDay = 'Afternoon'
+      else timeOfDay = 'Evening'
 
       const smartTitle = project
         ? `${timeOfDay} ${project.name} Session`
-        : `${timeOfDay} Work Session`;
-      setFormData(prev => ({ ...prev, title: smartTitle }));
+        : `${timeOfDay} Work Session`
+      setFormData((prev) => ({ ...prev, title: smartTitle }))
     }
-  }, [formData.projectId, formData.title, projects]);
+  }, [formData.projectId, formData.title, projects])
 
   const handleInputChange = (
     field: keyof SessionFormData,
     value: string | number | Date | string[] | undefined
   ) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }))
 
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: '' }))
     }
-  };
+  }
 
   const handleTagToggle = (tag: string) => {
-    const tags = formData.tags || [];
-    const isSelected = tags.includes(tag);
-    const newTags = isSelected ? tags.filter(t => t !== tag) : [...tags, tag];
+    const tags = formData.tags || []
+    const isSelected = tags.includes(tag)
+    const newTags = isSelected ? tags.filter((t) => t !== tag) : [...tags, tag]
 
-    setFormData(prev => ({ ...prev, tags: newTags }));
-  };
+    setFormData((prev) => ({ ...prev, tags: newTags }))
+  }
 
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: Record<string, string> = {}
 
     if (!formData.projectId) {
-      newErrors.projectId = 'Please select a project';
+      newErrors.projectId = 'Please select a project'
     }
 
     if (!formData.title.trim()) {
-      newErrors.title = 'Please enter a session title';
+      newErrors.title = 'Please enter a session title'
     }
 
     if (formData.duration <= 0) {
-      newErrors.duration = 'Duration must be greater than 0';
+      newErrors.duration = 'Duration must be greater than 0'
     }
 
     if (!startDate) {
-      newErrors.startDate = 'Please select a date';
+      newErrors.startDate = 'Please select a date'
     }
 
     if (!startTime) {
-      newErrors.startTime = 'Please select a time';
+      newErrors.startTime = 'Please select a time'
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     if (!validateForm()) {
-      return;
+      return
     }
 
     try {
-      await onSave(formData);
-    } catch (error) {
-      setErrors({ submit: ERROR_MESSAGES.SESSION_SAVE_FAILED });
+      await onSave(formData)
+    } catch (_error) {
+      setErrors({ submit: ERROR_MESSAGES.SESSION_SAVE_FAILED })
     }
-  };
+  }
 
   const formatDuration = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
 
     if (hours > 0) {
-      return `${hours}h ${minutes}m ${secs}s`;
+      return `${hours}h ${minutes}m ${secs}s`
     } else if (minutes > 0) {
-      return `${minutes}m ${secs}s`;
+      return `${minutes}m ${secs}s`
     } else {
-      return `${secs}s`;
+      return `${secs}s`
     }
-  };
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -199,27 +196,23 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Project Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Project *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Project *</label>
               <select
                 value={formData.projectId}
-                onChange={e => handleInputChange('projectId', e.target.value)}
+                onChange={(e) => handleInputChange('projectId', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.projectId ? 'border-red-500' : 'border-gray-300'
                 }`}
                 disabled={isLoading}
               >
                 <option value="">Select a project...</option>
-                {projects.map(project => (
+                {projects.map((project) => (
                   <option key={project.id} value={project.id}>
                     {project.name}
                   </option>
                 ))}
               </select>
-              {errors.projectId && (
-                <p className="text-red-500 text-sm mt-1">{errors.projectId}</p>
-              )}
+              {errors.projectId && <p className="text-red-500 text-sm mt-1">{errors.projectId}</p>}
             </div>
 
             {/* Session Title */}
@@ -230,121 +223,97 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
               <input
                 type="text"
                 value={formData.title}
-                onChange={e => handleInputChange('title', e.target.value)}
+                onChange={(e) => handleInputChange('title', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                   errors.title ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="What did you work on?"
                 disabled={isLoading}
               />
-              {errors.title && (
-                <p className="text-red-500 text-sm mt-1">{errors.title}</p>
-              )}
+              {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
             </div>
 
             {/* Date and Time */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
                 <input
                   type="date"
                   value={startDate}
-                  onChange={e => setStartDate(e.target.value)}
+                  onChange={(e) => setStartDate(e.target.value)}
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.startDate ? 'border-red-500' : 'border-gray-300'
                   }`}
                   disabled={isLoading}
                 />
                 {errors.startDate && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.startDate}
-                  </p>
+                  <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Time *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Time *</label>
                 <select
                   value={startTime}
-                  onChange={e => setStartTime(e.target.value)}
+                  onChange={(e) => setStartTime(e.target.value)}
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.startTime ? 'border-red-500' : 'border-gray-300'
                   }`}
                   disabled={isLoading}
                 >
                   {Array.from({ length: 48 }, (_, i) => {
-                    const hour = Math.floor(i / 2);
-                    const minute = (i % 2) * 30;
-                    const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    const hour = Math.floor(i / 2)
+                    const minute = (i % 2) * 30
+                    const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`
                     return (
                       <option key={i} value={timeString}>
                         {timeString}
                       </option>
-                    );
+                    )
                   })}
                 </select>
                 {errors.startTime && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.startTime}
-                  </p>
+                  <p className="text-red-500 text-sm mt-1">{errors.startTime}</p>
                 )}
               </div>
             </div>
 
             {/* Duration Input */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Duration *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Duration *</label>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Hours
-                  </label>
+                  <label className="block text-xs text-gray-500 mb-1">Hours</label>
                   <input
                     type="number"
                     min="0"
                     max="24"
                     value={durationHours}
-                    onChange={e =>
-                      setDurationHours(parseInt(e.target.value) || 0)
-                    }
+                    onChange={(e) => setDurationHours(parseInt(e.target.value) || 0)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={isLoading}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Minutes
-                  </label>
+                  <label className="block text-xs text-gray-500 mb-1">Minutes</label>
                   <input
                     type="number"
                     min="0"
                     max="59"
                     value={durationMinutes}
-                    onChange={e =>
-                      setDurationMinutes(parseInt(e.target.value) || 0)
-                    }
+                    onChange={(e) => setDurationMinutes(parseInt(e.target.value) || 0)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={isLoading}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Seconds
-                  </label>
+                  <label className="block text-xs text-gray-500 mb-1">Seconds</label>
                   <input
                     type="number"
                     min="0"
                     max="59"
                     value={durationSeconds}
-                    onChange={e =>
-                      setDurationSeconds(parseInt(e.target.value) || 0)
-                    }
+                    onChange={(e) => setDurationSeconds(parseInt(e.target.value) || 0)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={isLoading}
                   />
@@ -355,19 +324,15 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
                   Total: {formatDuration(formData.duration)}
                 </p>
               )}
-              {errors.duration && (
-                <p className="text-red-500 text-sm mt-1">{errors.duration}</p>
-              )}
+              {errors.duration && <p className="text-red-500 text-sm mt-1">{errors.duration}</p>}
             </div>
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
               <textarea
                 value={formData.description || ''}
-                onChange={e => handleInputChange('description', e.target.value)}
+                onChange={(e) => handleInputChange('description', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 rows={3}
                 placeholder="What did you accomplish?"
@@ -377,11 +342,9 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
 
             {/* Tags */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tags
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
               <div className="flex flex-wrap gap-2">
-                {TAGS.map(tag => (
+                {TAGS.map((tag) => (
                   <button
                     key={tag}
                     type="button"
@@ -401,12 +364,10 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
 
             {/* Privacy Settings */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Privacy
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Privacy</label>
               <select
                 value={formData.visibility}
-                onChange={e =>
+                onChange={(e) =>
                   handleInputChange(
                     'visibility',
                     e.target.value as 'everyone' | 'followers' | 'private'
@@ -415,7 +376,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isLoading}
               >
-                {PRIVACY_OPTIONS.map(option => (
+                {PRIVACY_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label} - {option.description}
                   </option>
@@ -429,7 +390,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
                 How did it feel? (Private)
               </label>
               <div className="flex space-x-2">
-                {[1, 2, 3, 4, 5].map(rating => (
+                {[1, 2, 3, 4, 5].map((rating) => (
                   <button
                     key={rating}
                     type="button"
@@ -449,14 +410,10 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
 
             {/* Private Notes */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Private Notes
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Private Notes</label>
               <textarea
                 value={formData.privateNotes || ''}
-                onChange={e =>
-                  handleInputChange('privateNotes', e.target.value)
-                }
+                onChange={(e) => handleInputChange('privateNotes', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 rows={2}
                 placeholder="Any private notes about this session..."
@@ -465,9 +422,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
             </div>
 
             {/* Error Messages */}
-            {errors.submit && (
-              <div className="text-red-500 text-sm">{errors.submit}</div>
-            )}
+            {errors.submit && <div className="text-red-500 text-sm">{errors.submit}</div>}
 
             {/* Action Buttons */}
             <div className="flex justify-end space-x-3 pt-4 border-t">
@@ -491,5 +446,5 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

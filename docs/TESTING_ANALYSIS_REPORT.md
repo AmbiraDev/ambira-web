@@ -411,23 +411,21 @@ Edge Cases Not Tested:
 ```typescript
 describe('SessionService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    sessionService = new SessionService();
-  });
+    jest.clearAllMocks()
+    sessionService = new SessionService()
+  })
 
   it('should get session by ID', async () => {
     // ARRANGE
-    (firebaseApi.session.getSession as jest.Mock).mockResolvedValue(
-      mockSession
-    );
+    ;(firebaseApi.session.getSession as jest.Mock).mockResolvedValue(mockSession)
 
     // ACT
-    const result = await sessionService.getSession('session-1');
+    const result = await sessionService.getSession('session-1')
 
     // ASSERT
-    expect(result).toEqual(mockSession);
-  });
-});
+    expect(result).toEqual(mockSession)
+  })
+})
 ```
 
 ### Mock Patterns: EXCELLENT
@@ -1071,7 +1069,7 @@ Timeline: Phase 3
 
 ```typescript
 // For stable UI components
-expect(render(Component)).toMatchSnapshot();
+expect(render(Component)).toMatchSnapshot()
 ```
 
 **When:** Phase 3, after component test foundation
@@ -1081,15 +1079,15 @@ expect(render(Component)).toMatchSnapshot();
 **Action:** Use fast-check for edge case discovery
 
 ```typescript
-import fc from 'fast-check';
+import fc from 'fast-check'
 
 it('should handle any valid user ID', () => {
   fc.assert(
-    fc.property(fc.uuid(), userId => {
-      expect(isValidUserId(userId)).toBe(true);
+    fc.property(fc.uuid(), (userId) => {
+      expect(isValidUserId(userId)).toBe(true)
     })
-  );
-});
+  )
+})
 ```
 
 **When:** Phase 3, for critical algorithms

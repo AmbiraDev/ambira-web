@@ -177,7 +177,7 @@ sequenceDiagram
 **React Query Process**:
 
 ```typescript
-const { data, isLoading, error } = useFeed(userId, 'following');
+const { data, isLoading, error } = useFeed(userId, 'following')
 // Query key: ['feed', userId, 'following']
 ```
 
@@ -271,8 +271,10 @@ async getFeedSessions(userId, feedType, limit = 20, cursor = null) {
 **React Query Infinite Query**:
 
 ```typescript
-const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-  useInfiniteFeed(userId, 'following');
+const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteFeed(
+  userId,
+  'following'
+)
 ```
 
 **Implementation**:
@@ -282,9 +284,9 @@ useInfiniteQuery({
   queryKey: ['feed', userId, 'following'],
   queryFn: ({ pageParam = null }) =>
     feedService.getFeedSessions(userId, 'following', 20, pageParam),
-  getNextPageParam: lastPage => lastPage.lastVisible ?? undefined,
+  getNextPageParam: (lastPage) => lastPage.lastVisible ?? undefined,
   staleTime: 1 * 60 * 1000,
-});
+})
 ```
 
 **Firestore Pagination**:
@@ -296,7 +298,7 @@ query(
   orderBy('createdAt', 'desc'),
   startAfter(cursor), // Last document from previous page
   limit(20)
-);
+)
 ```
 
 **Cache Structure**:
@@ -338,7 +340,7 @@ query(
   orderBy('supportCount', 'desc'),
   orderBy('createdAt', 'desc'),
   limit(20)
-);
+)
 ```
 
 **Cache Behavior**:
@@ -356,7 +358,7 @@ query(
 
 ```typescript
 // After session creation
-queryClient.invalidateQueries({ queryKey: ['feed'] });
+queryClient.invalidateQueries({ queryKey: ['feed'] })
 ```
 
 **What Happens**:
@@ -372,17 +374,17 @@ queryClient.invalidateQueries({ queryKey: ['feed'] });
 // Invalidate only following feed
 queryClient.invalidateQueries({
   queryKey: ['feed', userId, 'following'],
-});
+})
 
 // Invalidate all user's feeds
 queryClient.invalidateQueries({
   queryKey: ['feed', userId],
-});
+})
 
 // Invalidate everything feed-related
 queryClient.invalidateQueries({
   queryKey: ['feed'],
-});
+})
 ```
 
 ## React Query Configuration
@@ -393,9 +395,8 @@ queryClient.invalidateQueries({
 export const FEED_KEYS = {
   all: () => ['feed'] as const,
   user: (userId: string) => [...FEED_KEYS.all(), userId] as const,
-  type: (userId: string, type: FeedType) =>
-    [...FEED_KEYS.user(userId), type] as const,
-};
+  type: (userId: string, type: FeedType) => [...FEED_KEYS.user(userId), type] as const,
+}
 
 // Examples:
 // ['feed']
@@ -413,7 +414,7 @@ const FEED_CACHE_CONFIG = {
   refetchOnWindowFocus: true, // Refetch when user returns to tab
   refetchOnMount: true, // Refetch on component mount if stale
   refetchOnReconnect: true, // Refetch on network reconnect
-};
+}
 ```
 
 ### Optimistic Updates (Future)
@@ -424,27 +425,27 @@ useMutation({
   mutationFn: ({ sessionId }) => supportSession(sessionId),
   onMutate: async ({ sessionId }) => {
     // Cancel ongoing queries
-    await queryClient.cancelQueries({ queryKey: ['feed'] });
+    await queryClient.cancelQueries({ queryKey: ['feed'] })
 
     // Snapshot previous value
-    const previous = queryClient.getQueryData(['feed', userId, 'following']);
+    const previous = queryClient.getQueryData(['feed', userId, 'following'])
 
     // Optimistically update
-    queryClient.setQueryData(['feed', userId, 'following'], old =>
+    queryClient.setQueryData(['feed', userId, 'following'], (old) =>
       updateSupportCount(old, sessionId, +1)
-    );
+    )
 
-    return { previous };
+    return { previous }
   },
   onError: (err, vars, context) => {
     // Rollback on error
-    queryClient.setQueryData(['feed', userId, 'following'], context.previous);
+    queryClient.setQueryData(['feed', userId, 'following'], context.previous)
   },
   onSettled: () => {
     // Refetch after mutation
-    queryClient.invalidateQueries({ queryKey: ['feed'] });
+    queryClient.invalidateQueries({ queryKey: ['feed'] })
   },
-});
+})
 ```
 
 ## Performance Optimizations
@@ -478,7 +479,7 @@ Collection: sessions
 // Memoize feed items to prevent re-renders
 const FeedItem = React.memo(({ session }) => {
   // ...
-});
+})
 ```
 
 ### 5. Virtual Scrolling (Future)
@@ -526,16 +527,16 @@ const FeedItem = React.memo(({ session }) => {
 useInfiniteQuery({
   queryKey: ['feed', userId, 'following'],
   queryFn: getFeedSessions,
-  onSuccess: data => {
+  onSuccess: (data) => {
     // Subscribe to Firestore listener for new sessions
-    const unsubscribe = listenToNewSessions(newSession => {
-      queryClient.setQueryData(['feed', userId, 'following'], old =>
+    const unsubscribe = listenToNewSessions((newSession) => {
+      queryClient.setQueryData(['feed', userId, 'following'], (old) =>
         prependSession(old, newSession)
-      );
-    });
-    return () => unsubscribe();
+      )
+    })
+    return () => unsubscribe()
   },
-});
+})
 ```
 
 ### Feed Filters

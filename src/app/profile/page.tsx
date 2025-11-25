@@ -5,15 +5,15 @@
  * All business logic is delegated to the OwnProfilePageContent component.
  */
 
-'use client';
+'use client'
 
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import { OwnProfilePageContent } from '@/features/profile/components/OwnProfilePageContent';
+import { ProtectedRoute } from '@/components/ProtectedRoute'
+import { OwnProfilePageContent } from '@/features/profile/components/OwnProfilePageContent'
 
 export default function ProfilePage() {
   return (
     <ProtectedRoute>
       <OwnProfilePageContent />
     </ProtectedRoute>
-  );
+  )
 }

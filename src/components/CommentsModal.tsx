@@ -1,31 +1,31 @@
-'use client';
+'use client'
 
-import React, { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { SessionWithDetails } from '@/types';
-import { useAuth } from '@/hooks/useAuth';
+import React, { useEffect, useState } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { SessionWithDetails } from '@/types'
+import { useAuth } from '@/hooks/useAuth'
 import {
   useSessionComments,
   useCreateComment,
   useDeleteComment,
   useCommentLike,
-} from '@/features/comments/hooks';
-import CommentItem from './CommentItem';
-import CommentInput from './CommentInput';
-import Link from 'next/link';
-import Image from 'next/image';
-import { debug } from '@/lib/debug';
+} from '@/features/comments/hooks'
+import CommentItem from './CommentItem'
+import CommentInput from './CommentInput'
+import Link from 'next/link'
+import Image from 'next/image'
+import { debug } from '@/lib/debug'
 
 interface CommentsModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  sessionId: string;
-  session?: SessionWithDetails;
-  totalCommentCount: number;
-  onCommentCountChange?: (count: number) => void;
+  isOpen: boolean
+  onClose: () => void
+  sessionId: string
+  session?: SessionWithDetails
+  totalCommentCount: number
+  onCommentCountChange?: (count: number) => void
 }
 
-const COMMENTS_PER_PAGE = 5;
+const COMMENTS_PER_PAGE = 5
 
 export const CommentsModal: React.FC<CommentsModalProps> = ({
   isOpen,
@@ -35,8 +35,8 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
   totalCommentCount,
   onCommentCountChange,
 }) => {
-  const { user } = useAuth();
-  const [currentPage, setCurrentPage] = useState(1);
+  const { user } = useAuth()
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Fetch comments when modal is open
   const {
@@ -45,128 +45,128 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
     refetch,
   } = useSessionComments(sessionId, 100, {
     enabled: isOpen, // Only fetch when modal is open
-  });
+  })
 
   const createCommentMutation = useCreateComment({
     onSuccess: () => {
       if (onCommentCountChange) {
-        onCommentCountChange(totalCommentCount + 1);
+        onCommentCountChange(totalCommentCount + 1)
       }
-      // Refetch comments to show the new comment immediately
-      refetch();
+      // Comment is already shown via optimistic update in useCreateComment hook
+      // No need to refetch - the cache is updated in onSuccess handler
     },
-  });
+  })
 
   const deleteCommentMutation = useDeleteComment({
     onSuccess: () => {
       if (onCommentCountChange) {
-        onCommentCountChange(Math.max(0, totalCommentCount - 1));
+        onCommentCountChange(Math.max(0, totalCommentCount - 1))
       }
       // Refetch comments to update the list immediately
-      refetch();
+      refetch()
     },
-  });
+  })
 
-  const likeMutation = useCommentLike(sessionId);
+  const likeMutation = useCommentLike(sessionId)
 
-  const allComments = commentsResponse?.comments || [];
-  const totalPages = Math.ceil(allComments.length / COMMENTS_PER_PAGE);
+  const allComments = commentsResponse?.comments || []
+  const totalPages = Math.ceil(allComments.length / COMMENTS_PER_PAGE)
 
   // Calculate paginated comments
   const comments = allComments.slice(
     (currentPage - 1) * COMMENTS_PER_PAGE,
     currentPage * COMMENTS_PER_PAGE
-  );
+  )
 
   // Refetch when modal opens
   useEffect(() => {
     if (isOpen) {
-      refetch();
-      setCurrentPage(1); // Reset to first page
+      refetch()
+      setCurrentPage(1) // Reset to first page
     }
-  }, [isOpen, sessionId, refetch]);
+  }, [isOpen, sessionId, refetch])
 
   // Handle ESC key to close modal
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose();
+        onClose()
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleEscape)
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, onClose]);
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, onClose])
 
   const handleCreateComment = async (content: string) => {
     try {
       await createCommentMutation.mutateAsync({
         sessionId,
         content,
-      });
+      })
     } catch (err: unknown) {
-      debug.error('CommentsModal - Failed to create comment:', err);
-      throw err;
+      debug.error('CommentsModal - Failed to create comment:', err)
+      throw err
     }
-  };
+  }
 
   const handleDelete = async (commentId: string) => {
     try {
-      await deleteCommentMutation.mutateAsync({ commentId, sessionId });
+      await deleteCommentMutation.mutateAsync({ commentId, sessionId })
     } catch (err: unknown) {
-      debug.error('CommentsModal - Failed to delete comment:', err);
-      throw err;
+      debug.error('CommentsModal - Failed to delete comment:', err)
+      throw err
     }
-  };
+  }
 
   const handleLike = (commentId: string, action: 'like' | 'unlike') => {
-    likeMutation.mutate({ commentId, action });
-  };
+    likeMutation.mutate({ commentId, action })
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const formatDate = (date: Date): string => {
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
-    });
-  };
+    })
+  }
 
   const formatDistance = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+    const hours = Math.floor(seconds / 3600)
+    const minutes = Math.floor((seconds % 3600) / 60)
     if (hours > 0) {
-      return `${hours}h ${minutes}m`;
+      return `${hours}h ${minutes}m`
     }
-    return `${minutes}m`;
-  };
+    return `${minutes}m`
+  }
 
   const getUserInitials = (name: string): string => {
     return name
       .split(' ')
-      .map(word => word.charAt(0))
+      .map((word) => word.charAt(0))
       .join('')
       .toUpperCase()
-      .slice(0, 2);
-  };
+      .slice(0, 2)
+  }
 
   return (
     <div
       className="fixed inset-0 z-50 bg-white sm:bg-black/60 sm:flex sm:items-center sm:justify-center sm:p-4"
-      onClick={e => {
+      onClick={(e) => {
         // Only close on backdrop click for desktop
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) onClose()
       }}
     >
       <div
         className="bg-white w-full h-full sm:rounded-2xl sm:max-w-2xl sm:h-auto sm:max-h-[85vh] flex flex-col"
-        onClick={e => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Navigation Header */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 flex-shrink-0">
@@ -239,7 +239,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
               </div>
             ) : (
               <div className="space-y-2 sm:space-y-4">
-                {comments.map(comment => (
+                {comments.map((comment) => (
                   <CommentItem
                     key={comment.id}
                     comment={comment}
@@ -258,7 +258,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 flex-shrink-0">
             <button
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
               className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               aria-label="Previous page"
@@ -272,9 +272,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
             </span>
 
             <button
-              onClick={() =>
-                setCurrentPage(prev => Math.min(totalPages, prev + 1))
-              }
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
               className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               aria-label="Next page"
@@ -297,7 +295,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
         <div className="h-20 sm:h-0 flex-shrink-0 bg-white"></div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default CommentsModal;
+export default CommentsModal

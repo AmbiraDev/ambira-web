@@ -149,33 +149,33 @@ src/lib/react-query/auth.queries.ts             61.11%
 ### Unit Test Structure (Template)
 
 ```typescript
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 
 describe('ModuleName', () => {
-  let module: typeof import('./module');
+  let module: typeof import('./module')
 
   beforeEach(async () => {
-    jest.clearAllMocks();
-    module = await import('./module');
-  });
+    jest.clearAllMocks()
+    module = await import('./module')
+  })
 
   describe('functionName', () => {
     it('should return expected result when inputs are valid', () => {
       const result = module.functionName({
         /* valid input */
-      });
-      expect(result).toEqual(/* expected */);
-    });
+      })
+      expect(result).toEqual(/* expected */)
+    })
 
     it('should handle error when inputs are invalid', async () => {
       await expect(
         module.functionName({
           /* invalid input */
         })
-      ).rejects.toThrow();
-    });
-  });
-});
+      ).rejects.toThrow()
+    })
+  })
+})
 ```
 
 ### Mock Patterns (in `tests/__mocks__/`)

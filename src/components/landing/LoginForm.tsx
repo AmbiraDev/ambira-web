@@ -1,21 +1,21 @@
-import React from 'react';
-import { GoogleAuthButton } from './GoogleAuthButton';
+import React from 'react'
+import { GoogleAuthButton } from './GoogleAuthButton'
 
 interface LoginFormProps {
-  onSubmit: (e: React.FormEvent) => void;
-  onGoogleSignIn: (e: React.MouseEvent<HTMLButtonElement>) => void;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSubmit: (e: React.FormEvent) => void
+  onGoogleSignIn: (e: React.MouseEvent<HTMLButtonElement>) => void
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   loginData: {
-    email: string;
-    password: string;
-  };
+    email: string
+    password: string
+  }
   loginErrors: {
-    email?: string;
-    password?: string;
-  };
-  error: string | null;
-  isLoading: boolean;
-  isMobile?: boolean;
+    email?: string
+    password?: string
+  }
+  error: string | null
+  isLoading: boolean
+  isMobile?: boolean
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({
@@ -66,9 +66,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           placeholder={isMobile ? 'Email' : 'Enter your email'}
         />
         {loginErrors.email && (
-          <p className={`mt-${isMobile ? '1' : '2'} text-sm text-red-600`}>
-            {loginErrors.email}
-          </p>
+          <p className={`mt-${isMobile ? '1' : '2'} text-sm text-red-600`}>{loginErrors.email}</p>
         )}
       </div>
 
@@ -123,5 +121,5 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             : 'Sign In'}
       </button>
     </form>
-  );
-};
+  )
+}

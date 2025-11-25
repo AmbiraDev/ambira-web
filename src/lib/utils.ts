@@ -1,8 +1,8 @@
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { type ClassValue, clsx } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }
 
 /**
@@ -14,21 +14,18 @@ export function cn(...inputs: ClassValue[]) {
  * NOTE: DO NOT use `new Date("YYYY-MM-DDTHH:MM")` as it interprets the time as UTC!
  * This function correctly parses the date components to create a Date in local time.
  */
-export function parseLocalDateTime(
-  dateString: string,
-  timeString: string
-): Date {
-  const dateParts = dateString.split('-').map(Number);
-  const timeParts = timeString.split(':').map(Number);
+export function parseLocalDateTime(dateString: string, timeString: string): Date {
+  const dateParts = dateString.split('-').map(Number)
+  const timeParts = timeString.split(':').map(Number)
 
-  const year = (dateParts[0] as number | undefined) ?? 1970;
-  const month = (dateParts[1] as number | undefined) ?? 1;
-  const day = (dateParts[2] as number | undefined) ?? 1;
-  const hours = (timeParts[0] as number | undefined) ?? 0;
-  const minutes = (timeParts[1] as number | undefined) ?? 0;
+  const year = (dateParts[0] as number | undefined) ?? 1970
+  const month = (dateParts[1] as number | undefined) ?? 1
+  const day = (dateParts[2] as number | undefined) ?? 1
+  const hours = (timeParts[0] as number | undefined) ?? 0
+  const minutes = (timeParts[1] as number | undefined) ?? 0
 
   // month is 0-indexed in JavaScript Date constructor
-  return new Date(year, month - 1, day, hours, minutes, 0, 0);
+  return new Date(year, month - 1, day, hours, minutes, 0, 0)
 }
 
 /**
@@ -48,11 +45,11 @@ export function parseLocalDateTime(
 export const safeNumber = (value: unknown, fallback: number = 0): number => {
   // Handle null and undefined explicitly to respect fallback
   if (value === null || value === undefined) {
-    return fallback;
+    return fallback
   }
-  const num = Number(value);
-  return isNaN(num) || !isFinite(num) ? fallback : num;
-};
+  const num = Number(value)
+  return isNaN(num) || !isFinite(num) ? fallback : num
+}
 
 /**
  * Safely parse integer with fallback
@@ -68,9 +65,9 @@ export const safeNumber = (value: unknown, fallback: number = 0): number => {
  * safeParseInt('abc') // 0
  */
 export const safeParseInt = (value: unknown, fallback: number = 0): number => {
-  const num = parseInt(String(value), 10);
-  return isNaN(num) ? fallback : num;
-};
+  const num = parseInt(String(value), 10)
+  return isNaN(num) ? fallback : num
+}
 
 /**
  * Safely parse float with fallback
@@ -85,13 +82,10 @@ export const safeParseInt = (value: unknown, fallback: number = 0): number => {
  * safeParseFloat('abc') // 0
  * safeParseFloat(null, 1.5) // 1.5
  */
-export const safeParseFloat = (
-  value: unknown,
-  fallback: number = 0
-): number => {
-  const num = parseFloat(String(value));
-  return isNaN(num) ? fallback : num;
-};
+export const safeParseFloat = (value: unknown, fallback: number = 0): number => {
+  const num = parseFloat(String(value))
+  return isNaN(num) ? fallback : num
+}
 
 /**
  * Check if an array is null, undefined, or empty
@@ -107,7 +101,7 @@ export const safeParseFloat = (
  * isEmpty([1, 2, 3]) // false
  */
 export function isEmpty<T>(arr: T[] | null | undefined): boolean {
-  return !arr || arr.length === 0;
+  return !arr || arr.length === 0
 }
 
 /**
@@ -118,16 +112,16 @@ export function isEmpty<T>(arr: T[] | null | undefined): boolean {
  * @returns Formatted time string in HH:MM:SS format
  */
 export function formatDuration(seconds: number): string {
-  const absSeconds = Math.abs(seconds);
-  const hours = Math.floor(absSeconds / 3600);
-  const minutes = Math.floor((absSeconds % 3600) / 60);
-  const secs = Math.floor(absSeconds % 60);
+  const absSeconds = Math.abs(seconds)
+  const hours = Math.floor(absSeconds / 3600)
+  const minutes = Math.floor((absSeconds % 3600) / 60)
+  const secs = Math.floor(absSeconds % 60)
 
-  const hoursStr = hours.toString().padStart(2, '0');
-  const minutesStr = minutes.toString().padStart(2, '0');
-  const secsStr = secs.toString().padStart(2, '0');
+  const hoursStr = hours.toString().padStart(2, '0')
+  const minutesStr = minutes.toString().padStart(2, '0')
+  const secsStr = secs.toString().padStart(2, '0')
 
-  return `${hoursStr}:${minutesStr}:${secsStr}`;
+  return `${hoursStr}:${minutesStr}:${secsStr}`
 }
 
 /**
@@ -146,8 +140,8 @@ export function formatDate(
     year: 'numeric',
   }
 ): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleDateString('en-US', options);
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+  return dateObj.toLocaleDateString('en-US', options)
 }
 
 /**
@@ -157,5 +151,5 @@ export function formatDate(
  * @returns Date object
  */
 export function parseISO(dateString: string): Date {
-  return new Date(dateString);
+  return new Date(dateString)
 }

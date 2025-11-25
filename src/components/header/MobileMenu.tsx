@@ -1,10 +1,10 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { Menu } from 'lucide-react';
-import type { MobileMenuProps } from './header.types';
-import { NAV_LINKS } from './header.constants';
-import { isActivePath } from './header.utils';
+import Link from 'next/link'
+import { Menu } from 'lucide-react'
+import type { MobileMenuProps } from './header.types'
+import { NAV_LINKS } from './header.constants'
+import { isActivePath } from './header.utils'
 
 /**
  * MobileMenu Component
@@ -26,11 +26,7 @@ import { isActivePath } from './header.utils';
  * />
  * ```
  */
-export default function MobileMenu({
-  isOpen,
-  onToggle,
-  pathname,
-}: MobileMenuProps) {
+export default function MobileMenu({ isOpen, onToggle, pathname }: MobileMenuProps) {
   return (
     <>
       {/* Mobile Menu Toggle Button */}
@@ -48,27 +44,25 @@ export default function MobileMenu({
         <div className="md:hidden border-t border-gray-200 bg-white shadow-sm">
           <nav className="py-4 space-y-2" role="navigation">
             {NAV_LINKS.map(({ href, label }) => {
-              const isActive = isActivePath(pathname, href);
+              const isActive = isActivePath(pathname, href)
 
               return (
                 <Link
                   key={href}
                   href={href}
                   className={`block px-4 py-2 transition-colors ${
-                    isActive
-                      ? 'text-[#0066CC] bg-blue-50'
-                      : 'text-gray-600 hover:text-[#0066CC]'
+                    isActive ? 'text-[#0066CC] bg-blue-50' : 'text-gray-600 hover:text-[#0066CC]'
                   }`}
                   aria-current={isActive ? 'page' : undefined}
                   onClick={onToggle}
                 >
                   {label}
                 </Link>
-              );
+              )
             })}
           </nav>
         </div>
       )}
     </>
-  );
+  )
 }

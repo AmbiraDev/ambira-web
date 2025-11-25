@@ -3,19 +3,15 @@
  * Creates mock challenges and participants for testing
  */
 
-import type { Challenge, ChallengeParticipant } from '@/types';
+import type { Challenge, ChallengeParticipant } from '@/types'
 
-let challengeIdCounter = 0;
-let participantIdCounter = 0;
+let challengeIdCounter = 0
+let participantIdCounter = 0
 
-export function createMockChallenge(
-  overrides: Partial<Challenge> = {}
-): Challenge {
-  const id = overrides.id || `challenge-${Date.now()}-${++challengeIdCounter}`;
-  const startDate = overrides.startDate || new Date();
-  const endDate =
-    overrides.endDate ||
-    new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days later
+export function createMockChallenge(overrides: Partial<Challenge> = {}): Challenge {
+  const id = overrides.id || `challenge-${Date.now()}-${++challengeIdCounter}`
+  const startDate = overrides.startDate || new Date()
+  const endDate = overrides.endDate || new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 days later
 
   return {
     id,
@@ -37,7 +33,7 @@ export function createMockChallenge(
     category: overrides.category,
     isParticipating: overrides.isParticipating,
     userProgress: overrides.userProgress,
-  };
+  }
 }
 
 export function createMockChallengeParticipant(
@@ -52,7 +48,7 @@ export function createMockChallengeParticipant(
     rank: overrides.rank,
     isCompleted: overrides.isCompleted || false,
     completedAt: overrides.completedAt,
-  };
+  }
 }
 
 export function createMockChallengeBatch(
@@ -61,10 +57,10 @@ export function createMockChallengeBatch(
 ): Challenge[] {
   return Array.from({ length: count }, (_, i) =>
     createMockChallenge({ ...baseOverrides, name: `Challenge ${i + 1}` })
-  );
+  )
 }
 
 export function resetChallengeFactory() {
-  challengeIdCounter = 0;
-  participantIdCounter = 0;
+  challengeIdCounter = 0
+  participantIdCounter = 0
 }

@@ -6,24 +6,20 @@
  * When they are implemented, these hooks will handle the React Query integration.
  */
 
-import {
-  useMutation,
-  useQueryClient,
-  UseMutationOptions,
-} from '@tanstack/react-query';
-import { ProfileService } from '../services/ProfileService';
-import { PROFILE_KEYS } from './useProfile';
+import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query'
+import { ProfileService } from '../services/ProfileService'
+import { PROFILE_KEYS } from './useProfile'
 
-const profileService = new ProfileService();
+const profileService = new ProfileService()
 
 // Context types for optimistic updates
 interface FollowUserContext {
-  previousProfile: unknown;
-  previousFollowing: unknown;
+  previousProfile: unknown
+  previousFollowing: unknown
 }
 
 interface UnfollowUserContext {
-  previousProfile: unknown;
+  previousProfile: unknown
 }
 
 /**
@@ -46,7 +42,7 @@ export function useFollowUser(
     >
   >
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation<
     void,
@@ -61,42 +57,32 @@ export function useFollowUser(
       // Cancel outgoing queries
       await queryClient.cancelQueries({
         queryKey: PROFILE_KEYS.detail(targetUserId),
-      });
+      })
       await queryClient.cancelQueries({
         queryKey: PROFILE_KEYS.following(currentUserId),
-      });
+      })
       await queryClient.cancelQueries({
         queryKey: PROFILE_KEYS.followers(targetUserId),
-      });
+      })
 
       // Snapshot previous values
-      const previousProfile = queryClient.getQueryData(
-        PROFILE_KEYS.detail(targetUserId)
-      );
-      const previousFollowing = queryClient.getQueryData(
-        PROFILE_KEYS.following(currentUserId)
-      );
+      const previousProfile = queryClient.getQueryData(PROFILE_KEYS.detail(targetUserId))
+      const previousFollowing = queryClient.getQueryData(PROFILE_KEYS.following(currentUserId))
 
       // Optimistically update isFollowing
-      queryClient.setQueryData(
-        PROFILE_KEYS.isFollowing(currentUserId, targetUserId),
-        true
-      );
+      queryClient.setQueryData(PROFILE_KEYS.isFollowing(currentUserId, targetUserId), true)
 
       // Optimistically update follower count on profile
-      queryClient.setQueryData(
-        PROFILE_KEYS.detail(targetUserId),
-        (old: unknown) => {
-          if (!old || typeof old !== 'object') return old;
-          const profile = old as { followerCount?: number };
-          return {
-            ...profile,
-            followerCount: (profile.followerCount || 0) + 1,
-          };
+      queryClient.setQueryData(PROFILE_KEYS.detail(targetUserId), (old: unknown) => {
+        if (!old || typeof old !== 'object') return old
+        const profile = old as { followerCount?: number }
+        return {
+          ...profile,
+          followerCount: (profile.followerCount || 0) + 1,
         }
-      );
+      })
 
-      return { previousProfile, previousFollowing };
+      return { previousProfile, previousFollowing }
     },
 
     onError: (error, variables, context: FollowUserContext | undefined) => {
@@ -105,41 +91,38 @@ export function useFollowUser(
         queryClient.setQueryData(
           PROFILE_KEYS.detail(variables.targetUserId),
           context.previousProfile
-        );
+        )
       }
       if (context?.previousFollowing) {
         queryClient.setQueryData(
           PROFILE_KEYS.following(variables.currentUserId),
           context.previousFollowing
-        );
+        )
       }
       queryClient.setQueryData(
-        PROFILE_KEYS.isFollowing(
-          variables.currentUserId,
-          variables.targetUserId
-        ),
+        PROFILE_KEYS.isFollowing(variables.currentUserId, variables.targetUserId),
         false
-      );
+      )
     },
 
     onSuccess: (_, { currentUserId, targetUserId }) => {
       // Invalidate relevant caches
       queryClient.invalidateQueries({
         queryKey: PROFILE_KEYS.detail(targetUserId),
-      });
+      })
       queryClient.invalidateQueries({
         queryKey: PROFILE_KEYS.following(currentUserId),
-      });
+      })
       queryClient.invalidateQueries({
         queryKey: PROFILE_KEYS.followers(targetUserId),
-      });
+      })
       queryClient.invalidateQueries({
         queryKey: PROFILE_KEYS.isFollowing(currentUserId, targetUserId),
-      });
+      })
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -162,7 +145,7 @@ export function useUnfollowUser(
     >
   >
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation<
     void,
@@ -177,39 +160,31 @@ export function useUnfollowUser(
       // Cancel outgoing queries
       await queryClient.cancelQueries({
         queryKey: PROFILE_KEYS.detail(targetUserId),
-      });
+      })
       await queryClient.cancelQueries({
         queryKey: PROFILE_KEYS.following(currentUserId),
-      });
+      })
       await queryClient.cancelQueries({
         queryKey: PROFILE_KEYS.followers(targetUserId),
-      });
+      })
 
       // Snapshot previous values
-      const previousProfile = queryClient.getQueryData(
-        PROFILE_KEYS.detail(targetUserId)
-      );
+      const previousProfile = queryClient.getQueryData(PROFILE_KEYS.detail(targetUserId))
 
       // Optimistically update isFollowing
-      queryClient.setQueryData(
-        PROFILE_KEYS.isFollowing(currentUserId, targetUserId),
-        false
-      );
+      queryClient.setQueryData(PROFILE_KEYS.isFollowing(currentUserId, targetUserId), false)
 
       // Optimistically update follower count on profile
-      queryClient.setQueryData(
-        PROFILE_KEYS.detail(targetUserId),
-        (old: unknown) => {
-          if (!old || typeof old !== 'object') return old;
-          const profile = old as { followerCount?: number };
-          return {
-            ...profile,
-            followerCount: Math.max(0, (profile.followerCount || 0) - 1),
-          };
+      queryClient.setQueryData(PROFILE_KEYS.detail(targetUserId), (old: unknown) => {
+        if (!old || typeof old !== 'object') return old
+        const profile = old as { followerCount?: number }
+        return {
+          ...profile,
+          followerCount: Math.max(0, (profile.followerCount || 0) - 1),
         }
-      );
+      })
 
-      return { previousProfile };
+      return { previousProfile }
     },
 
     onError: (error, variables, context: UnfollowUserContext | undefined) => {
@@ -218,35 +193,32 @@ export function useUnfollowUser(
         queryClient.setQueryData(
           PROFILE_KEYS.detail(variables.targetUserId),
           context.previousProfile
-        );
+        )
       }
       queryClient.setQueryData(
-        PROFILE_KEYS.isFollowing(
-          variables.currentUserId,
-          variables.targetUserId
-        ),
+        PROFILE_KEYS.isFollowing(variables.currentUserId, variables.targetUserId),
         true
-      );
+      )
     },
 
     onSuccess: (_, { currentUserId, targetUserId }) => {
       // Invalidate relevant caches
       queryClient.invalidateQueries({
         queryKey: PROFILE_KEYS.detail(targetUserId),
-      });
+      })
       queryClient.invalidateQueries({
         queryKey: PROFILE_KEYS.following(currentUserId),
-      });
+      })
       queryClient.invalidateQueries({
         queryKey: PROFILE_KEYS.followers(targetUserId),
-      });
+      })
       queryClient.invalidateQueries({
         queryKey: PROFILE_KEYS.isFollowing(currentUserId, targetUserId),
-      });
+      })
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -257,11 +229,11 @@ export function useUnfollowUser(
  * invalidateProfile(userId);
  */
 export function useInvalidateProfile() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return (userId: string) => {
-    queryClient.invalidateQueries({ queryKey: PROFILE_KEYS.detail(userId) });
-  };
+    queryClient.invalidateQueries({ queryKey: PROFILE_KEYS.detail(userId) })
+  }
 }
 
 /**
@@ -274,9 +246,9 @@ export function useInvalidateProfile() {
  * invalidateAllProfiles();
  */
 export function useInvalidateAllProfiles() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return () => {
-    queryClient.invalidateQueries({ queryKey: PROFILE_KEYS.all() });
-  };
+    queryClient.invalidateQueries({ queryKey: PROFILE_KEYS.all() })
+  }
 }

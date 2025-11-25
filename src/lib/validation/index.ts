@@ -12,10 +12,10 @@
  */
 
 // Export all utilities
-export * from './utils';
+export * from './utils'
 
 // Export all schemas
-export * from './schemas';
+export * from './schemas'
 
 // Re-export valibot for convenience
-export * as v from 'valibot';
+export * as v from 'valibot'

@@ -4,49 +4,44 @@
  * All write operations for sessions (delete, support, update).
  */
 
-import {
-  useMutation,
-  useQueryClient,
-  UseMutationOptions,
-  QueryKey,
-} from '@tanstack/react-query';
-import { SessionService, SupportSessionData } from '../services/SessionService';
-import { SESSION_KEYS } from './useSessions';
-import { Session, SessionWithDetails } from '@/types';
+import { useMutation, useQueryClient, UseMutationOptions, QueryKey } from '@tanstack/react-query'
+import { SessionService, SupportSessionData } from '../services/SessionService'
+import { SESSION_KEYS } from './useSessions'
+import { Session, SessionWithDetails } from '@/types'
 
-const sessionService = new SessionService();
+const sessionService = new SessionService()
 
 // Feed data structures from React Query cache
 interface FeedArrayData {
-  sessions?: SessionWithDetails[];
-  hasMore?: boolean;
-  nextCursor?: string;
+  sessions?: SessionWithDetails[]
+  hasMore?: boolean
+  nextCursor?: string
 }
 
 interface FeedInfiniteData {
   pages: Array<{
-    sessions: SessionWithDetails[];
-    hasMore: boolean;
-    nextCursor?: string;
-  }>;
-  pageParams: unknown[];
+    sessions: SessionWithDetails[]
+    hasMore: boolean
+    nextCursor?: string
+  }>
+  pageParams: unknown[]
 }
 
-type FeedData = SessionWithDetails[] | FeedArrayData | FeedInfiniteData;
+type FeedData = SessionWithDetails[] | FeedArrayData | FeedInfiniteData
 
 // Context types for optimistic updates
 interface DeleteSessionContext {
-  previousFeedData: [QueryKey, unknown][];
-  previousSession: Session | undefined;
+  previousFeedData: [QueryKey, unknown][]
+  previousSession: Session | undefined
 }
 
 interface SupportSessionContext {
-  previousFeedData: [QueryKey, unknown][];
-  previousSession: Session | undefined;
+  previousFeedData: [QueryKey, unknown][]
+  previousSession: Session | undefined
 }
 
 interface UpdateSessionContext {
-  previousSession: Session | undefined;
+  previousSession: Session | undefined
 }
 
 /**
@@ -57,85 +52,78 @@ interface UpdateSessionContext {
  * deleteMutation.mutate(sessionId);
  */
 export function useDeleteSession(
-  options?: Partial<
-    UseMutationOptions<void, Error, string, DeleteSessionContext>
-  >
+  options?: Partial<UseMutationOptions<void, Error, string, DeleteSessionContext>>
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation<void, Error, string, DeleteSessionContext>({
-    mutationFn: sessionId => sessionService.deleteSession(sessionId),
+    mutationFn: (sessionId) => sessionService.deleteSession(sessionId),
 
     onMutate: async (sessionId: string): Promise<DeleteSessionContext> => {
       // Cancel outgoing queries
-      await queryClient.cancelQueries({ queryKey: ['feed'] });
+      await queryClient.cancelQueries({ queryKey: ['feed'] })
       await queryClient.cancelQueries({
         queryKey: SESSION_KEYS.detail(sessionId),
-      });
+      })
 
       // Snapshot
       const previousFeedData = queryClient.getQueriesData({
         queryKey: ['feed'],
-      });
-      const previousSession = queryClient.getQueryData<Session>(
-        SESSION_KEYS.detail(sessionId)
-      );
+      })
+      const previousSession = queryClient.getQueryData<Session>(SESSION_KEYS.detail(sessionId))
 
       // Optimistically remove from feed
-      queryClient.setQueriesData<FeedData>({ queryKey: ['feed'] }, old => {
-        if (!old) return old;
+      queryClient.setQueriesData<FeedData>({ queryKey: ['feed'] }, (old) => {
+        if (!old) return old
 
         if (Array.isArray(old)) {
-          return old.filter(s => s.id !== sessionId);
+          return old.filter((s) => s.id !== sessionId)
         } else if ('sessions' in old && old.sessions) {
           return {
             ...old,
-            sessions: old.sessions.filter(s => s.id !== sessionId),
-          };
+            sessions: old.sessions.filter((s) => s.id !== sessionId),
+          }
         } else if ('pages' in old && old.pages) {
           // Handle infinite query
           return {
             ...old,
-            pages: old.pages.map(page => ({
+            pages: old.pages.map((page) => ({
               ...page,
-              sessions: page.sessions.filter(s => s.id !== sessionId),
+              sessions: page.sessions.filter((s) => s.id !== sessionId),
             })),
-          };
+          }
         }
 
-        return old;
-      });
+        return old
+      })
 
-      return { previousFeedData, previousSession };
+      return { previousFeedData, previousSession }
     },
 
     onError: (error, sessionId, context: DeleteSessionContext | undefined) => {
       // Rollback
       if (context?.previousFeedData) {
         context.previousFeedData.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
+          queryClient.setQueryData(queryKey, data)
+        })
       }
       if (context?.previousSession) {
-        queryClient.setQueryData(
-          SESSION_KEYS.detail(sessionId),
-          context.previousSession
-        );
+        queryClient.setQueryData(SESSION_KEYS.detail(sessionId), context.previousSession)
       }
     },
 
     onSettled: (_, __, sessionId) => {
       // Invalidate all related queries
-      queryClient.invalidateQueries({ queryKey: ['feed'] });
+      queryClient.invalidateQueries({ queryKey: ['feed'] })
       queryClient.invalidateQueries({
         queryKey: SESSION_KEYS.detail(sessionId),
-      });
-      queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() });
-      queryClient.invalidateQueries({ queryKey: ['profile'] }); // Invalidate profile stats
+      })
+      queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() })
+      queryClient.invalidateQueries({ queryKey: ['profile'] }) // Invalidate profile stats
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -148,139 +136,119 @@ export function useDeleteSession(
  */
 export function useSupportSession(
   currentUserId?: string,
-  options?: Partial<
-    UseMutationOptions<void, Error, SupportSessionData, SupportSessionContext>
-  >
+  options?: Partial<UseMutationOptions<void, Error, SupportSessionData, SupportSessionContext>>
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation<void, Error, SupportSessionData, SupportSessionContext>({
     mutationFn: async ({ sessionId, action }) => {
       if (action === 'support') {
-        await sessionService.supportSession(sessionId);
+        await sessionService.supportSession(sessionId)
       } else {
-        await sessionService.unsupportSession(sessionId);
+        await sessionService.unsupportSession(sessionId)
       }
     },
 
     onMutate: async ({ sessionId, action }): Promise<SupportSessionContext> => {
       // Cancel outgoing queries
-      await queryClient.cancelQueries({ queryKey: ['feed'] });
+      await queryClient.cancelQueries({ queryKey: ['feed'] })
       await queryClient.cancelQueries({
         queryKey: SESSION_KEYS.detail(sessionId),
-      });
+      })
 
       // Snapshot
       const previousFeedData = queryClient.getQueriesData({
         queryKey: ['feed'],
-      });
-      const previousSession = queryClient.getQueryData<Session>(
-        SESSION_KEYS.detail(sessionId)
-      );
+      })
+      const previousSession = queryClient.getQueryData<Session>(SESSION_KEYS.detail(sessionId))
 
-      const increment = action === 'support' ? 1 : -1;
+      const increment = action === 'support' ? 1 : -1
 
       // Optimistically update feed sessions
-      queryClient.setQueriesData<FeedData>({ queryKey: ['feed'] }, old => {
-        if (!old) return old;
+      queryClient.setQueriesData<FeedData>({ queryKey: ['feed'] }, (old) => {
+        if (!old) return old
 
-        const updateSession = (
-          session: SessionWithDetails
-        ): SessionWithDetails => {
-          if (session.id !== sessionId) return session;
+        const updateSession = (session: SessionWithDetails): SessionWithDetails => {
+          if (session.id !== sessionId) return session
 
-          const supportedBy = session.supportedBy || [];
+          const supportedBy = session.supportedBy || []
           const newSupportedBy =
             action === 'support'
-              ? [...supportedBy, currentUserId].filter((id): id is string =>
-                  Boolean(id)
-                )
-              : supportedBy.filter(id => id !== currentUserId);
+              ? [...supportedBy, currentUserId].filter((id): id is string => Boolean(id))
+              : supportedBy.filter((id) => id !== currentUserId)
 
           return {
             ...session,
             supportCount: Math.max(0, (session.supportCount || 0) + increment),
             supportedBy: newSupportedBy,
             isSupported: action === 'support',
-          };
-        };
+          }
+        }
 
         if (Array.isArray(old)) {
-          return old.map(updateSession);
+          return old.map(updateSession)
         } else if ('sessions' in old && old.sessions) {
           return {
             ...old,
             sessions: old.sessions.map(updateSession),
-          };
+          }
         } else if ('pages' in old && old.pages) {
           // Handle infinite query
           return {
             ...old,
-            pages: old.pages.map(page => ({
+            pages: old.pages.map((page) => ({
               ...page,
               sessions: page.sessions.map(updateSession),
             })),
-          };
+          }
         }
 
-        return old;
-      });
+        return old
+      })
 
       // Optimistically update single session
-      queryClient.setQueryData<Session | null>(
-        SESSION_KEYS.detail(sessionId),
-        old => {
-          if (!old) return old;
+      queryClient.setQueryData<Session | null>(SESSION_KEYS.detail(sessionId), (old) => {
+        if (!old) return old
 
-          const supportedBy = old.supportedBy || [];
-          const newSupportedBy =
-            action === 'support'
-              ? [...supportedBy, currentUserId].filter((id): id is string =>
-                  Boolean(id)
-                )
-              : supportedBy.filter(id => id !== currentUserId);
+        const supportedBy = old.supportedBy || []
+        const newSupportedBy =
+          action === 'support'
+            ? [...supportedBy, currentUserId].filter((id): id is string => Boolean(id))
+            : supportedBy.filter((id) => id !== currentUserId)
 
-          return {
-            ...old,
-            supportCount: Math.max(0, (old.supportCount || 0) + increment),
-            supportedBy: newSupportedBy,
-            isSupported: action === 'support',
-          };
+        return {
+          ...old,
+          supportCount: Math.max(0, (old.supportCount || 0) + increment),
+          supportedBy: newSupportedBy,
+          isSupported: action === 'support',
         }
-      );
+      })
 
-      return { previousFeedData, previousSession };
+      return { previousFeedData, previousSession }
     },
 
-    onError: (
-      error,
-      { sessionId },
-      context: SupportSessionContext | undefined
-    ) => {
+    onError: (error, { sessionId }, context: SupportSessionContext | undefined) => {
       // Rollback
       if (context?.previousFeedData) {
         context.previousFeedData.forEach(([queryKey, data]) => {
-          queryClient.setQueryData(queryKey, data);
-        });
+          queryClient.setQueryData(queryKey, data)
+        })
       }
       if (context?.previousSession) {
-        queryClient.setQueryData(
-          SESSION_KEYS.detail(sessionId),
-          context.previousSession
-        );
+        queryClient.setQueryData(SESSION_KEYS.detail(sessionId), context.previousSession)
       }
     },
 
     onSettled: (_, __, { sessionId }) => {
       // Refetch to ensure consistency
-      queryClient.invalidateQueries({ queryKey: ['feed'] });
+      queryClient.invalidateQueries({ queryKey: ['feed'] })
       queryClient.invalidateQueries({
         queryKey: SESSION_KEYS.detail(sessionId),
-      });
+      })
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -303,7 +271,7 @@ export function useUpdateSession(
     >
   >
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return useMutation<
     void,
@@ -311,54 +279,41 @@ export function useUpdateSession(
     { sessionId: string; data: Partial<Session> },
     UpdateSessionContext
   >({
-    mutationFn: ({ sessionId, data }) =>
-      sessionService.updateSession(sessionId, data),
+    mutationFn: ({ sessionId, data }) => sessionService.updateSession(sessionId, data),
 
     onMutate: async ({ sessionId, data }): Promise<UpdateSessionContext> => {
       await queryClient.cancelQueries({
         queryKey: SESSION_KEYS.detail(sessionId),
-      });
+      })
 
-      const previousSession = queryClient.getQueryData<Session>(
-        SESSION_KEYS.detail(sessionId)
-      );
+      const previousSession = queryClient.getQueryData<Session>(SESSION_KEYS.detail(sessionId))
 
       // Optimistically update
-      queryClient.setQueryData<Session | null>(
-        SESSION_KEYS.detail(sessionId),
-        old => {
-          if (!old) return old;
-          return { ...old, ...data };
-        }
-      );
+      queryClient.setQueryData<Session | null>(SESSION_KEYS.detail(sessionId), (old) => {
+        if (!old) return old
+        return { ...old, ...data }
+      })
 
-      return { previousSession };
+      return { previousSession }
     },
 
-    onError: (
-      error,
-      { sessionId },
-      context: UpdateSessionContext | undefined
-    ) => {
+    onError: (error, { sessionId }, context: UpdateSessionContext | undefined) => {
       if (context?.previousSession) {
-        queryClient.setQueryData(
-          SESSION_KEYS.detail(sessionId),
-          context.previousSession
-        );
+        queryClient.setQueryData(SESSION_KEYS.detail(sessionId), context.previousSession)
       }
     },
 
     onSuccess: (_, { sessionId }) => {
       queryClient.invalidateQueries({
         queryKey: SESSION_KEYS.detail(sessionId),
-      });
-      queryClient.invalidateQueries({ queryKey: ['feed'] });
-      queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() });
-      queryClient.invalidateQueries({ queryKey: ['profile'] }); // Invalidate profile stats
+      })
+      queryClient.invalidateQueries({ queryKey: ['feed'] })
+      queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() })
+      queryClient.invalidateQueries({ queryKey: ['profile'] }) // Invalidate profile stats
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -369,14 +324,14 @@ export function useUpdateSession(
  * invalidateSession(sessionId);
  */
 export function useInvalidateSession() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return (sessionId: string) => {
-    queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(sessionId) });
+    queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(sessionId) })
     queryClient.invalidateQueries({
       queryKey: SESSION_KEYS.detailWithData(sessionId),
-    });
-  };
+    })
+  }
 }
 
 /**
@@ -387,10 +342,10 @@ export function useInvalidateSession() {
  * invalidateAllSessions();
  */
 export function useInvalidateAllSessions() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return () => {
-    queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() });
-    queryClient.invalidateQueries({ queryKey: ['feed'] });
-  };
+    queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() })
+    queryClient.invalidateQueries({ queryKey: ['feed'] })
+  }
 }

@@ -1,18 +1,18 @@
-'use client';
+'use client'
 
-import React from 'react';
-import { TrendingUp, TrendingDown, Minus, LucideIcon } from 'lucide-react';
+import React from 'react'
+import { TrendingUp, TrendingDown, Minus, LucideIcon } from 'lucide-react'
 
 interface StatsCardProps {
-  title: string;
-  value: string | number;
-  icon: LucideIcon;
+  title: string
+  value: string | number
+  icon: LucideIcon
   trend?: {
-    value: number;
-    isPositive: boolean;
-  };
-  subtitle?: string;
-  color?: 'blue' | 'green' | 'orange' | 'purple' | 'gray';
+    value: number
+    isPositive: boolean
+  }
+  subtitle?: string
+  color?: 'blue' | 'green' | 'orange' | 'purple' | 'gray'
 }
 
 export const StatsCard: React.FC<StatsCardProps> = ({
@@ -29,22 +29,22 @@ export const StatsCard: React.FC<StatsCardProps> = ({
     orange: 'bg-orange-50 text-orange-600',
     purple: 'bg-purple-50 text-purple-600',
     gray: 'bg-gray-50 text-gray-600',
-  };
+  }
 
   const getTrendIcon = () => {
-    if (!trend) return null;
-    if (trend.value === 0) return <Minus className="w-4 h-4" />;
+    if (!trend) return null
+    if (trend.value === 0) return <Minus className="w-4 h-4" />
     return trend.isPositive ? (
       <TrendingUp className="w-4 h-4" />
     ) : (
       <TrendingDown className="w-4 h-4" />
-    );
-  };
+    )
+  }
 
   const getTrendColor = () => {
-    if (!trend || trend.value === 0) return 'text-gray-500';
-    return trend.isPositive ? 'text-green-600' : 'text-red-600';
-  };
+    if (!trend || trend.value === 0) return 'text-gray-500'
+    return trend.isPositive ? 'text-green-600' : 'text-red-600'
+  }
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow">
@@ -56,9 +56,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
           {subtitle && <p className="text-xs text-gray-500 mb-2">{subtitle}</p>}
 
           {trend && (
-            <div
-              className={`flex items-center gap-1 text-sm font-medium ${getTrendColor()}`}
-            >
+            <div className={`flex items-center gap-1 text-sm font-medium ${getTrendColor()}`}>
               {getTrendIcon()}
               <span>
                 {trend.value > 0 ? '+' : ''}
@@ -74,5 +72,5 @@ export const StatsCard: React.FC<StatsCardProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

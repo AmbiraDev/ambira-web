@@ -1,53 +1,49 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { ChallengeLeaderboard as ChallengeLeaderboardType } from '@/types';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Trophy, Medal, Award, Crown, MapPin, CheckCircle } from 'lucide-react';
+import React, { useState } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { ChallengeLeaderboard as ChallengeLeaderboardType } from '@/types'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Trophy, Medal, Award, Crown, MapPin, CheckCircle } from 'lucide-react'
 
 interface ChallengeLeaderboardProps {
-  leaderboard: ChallengeLeaderboardType;
-  challengeType:
-    | 'most-activity'
-    | 'fastest-effort'
-    | 'longest-session'
-    | 'group-goal';
-  currentUserId?: string;
-  showFilters?: boolean;
+  leaderboard: ChallengeLeaderboardType
+  challengeType: 'most-activity' | 'fastest-effort' | 'longest-session' | 'group-goal'
+  currentUserId?: string
+  showFilters?: boolean
 }
 
 const getRankIcon = (rank: number) => {
   switch (rank) {
     case 1:
-      return <Crown className="w-5 h-5 text-yellow-500" />;
+      return <Crown className="w-5 h-5 text-yellow-500" />
     case 2:
-      return <Medal className="w-5 h-5 text-gray-400" />;
+      return <Medal className="w-5 h-5 text-gray-400" />
     case 3:
-      return <Award className="w-5 h-5 text-amber-600" />;
+      return <Award className="w-5 h-5 text-amber-600" />
     default:
       return (
         <span className="w-5 h-5 flex items-center justify-center text-sm font-medium text-gray-500">
           #{rank}
         </span>
-      );
+      )
   }
-};
+}
 
 const getRankBadgeColor = (rank: number) => {
   switch (rank) {
     case 1:
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200'
     case 2:
-      return 'bg-gray-100 text-gray-800 border-gray-200';
+      return 'bg-gray-100 text-gray-800 border-gray-200'
     case 3:
-      return 'bg-amber-100 text-amber-800 border-amber-200';
+      return 'bg-amber-100 text-amber-800 border-amber-200'
     default:
-      return 'bg-blue-50 text-blue-700 border-blue-200';
+      return 'bg-blue-50 text-blue-700 border-blue-200'
   }
-};
+}
 
 export default function ChallengeLeaderboard({
   leaderboard,
@@ -55,9 +51,7 @@ export default function ChallengeLeaderboard({
   currentUserId,
   showFilters = true,
 }: ChallengeLeaderboardProps) {
-  const [filter, setFilter] = useState<'all' | 'following' | 'completed'>(
-    'all'
-  );
+  const [filter, setFilter] = useState<'all' | 'following' | 'completed'>('all')
 
   const formatProgress = (progress: number) => {
     if (
@@ -65,41 +59,39 @@ export default function ChallengeLeaderboard({
       challengeType === 'group-goal' ||
       challengeType === 'longest-session'
     ) {
-      return `${progress.toFixed(1)} hours`;
+      return `${progress.toFixed(1)} hours`
     }
     if (challengeType === 'fastest-effort') {
-      return `${progress.toFixed(1)} tasks/hour`;
+      return `${progress.toFixed(1)} tasks/hour`
     }
-    return progress.toString();
-  };
+    return progress.toString()
+  }
 
   const getProgressLabel = () => {
     switch (challengeType) {
       case 'most-activity':
-        return 'Total Hours';
+        return 'Total Hours'
       case 'fastest-effort':
-        return 'Best Ratio';
+        return 'Best Ratio'
       case 'longest-session':
-        return 'Longest Session';
+        return 'Longest Session'
       case 'group-goal':
-        return 'Contributed Hours';
+        return 'Contributed Hours'
       default:
-        return 'Progress';
+        return 'Progress'
     }
-  };
+  }
 
   // Filter entries based on selected filter
-  const filteredEntries = leaderboard.entries.filter(entry => {
+  const filteredEntries = leaderboard.entries.filter((entry) => {
     if (filter === 'completed') {
-      return entry.isCompleted;
+      return entry.isCompleted
     }
     // TODO: Implement following filter when we have following data
-    return true;
-  });
+    return true
+  })
 
-  const currentUserEntry = leaderboard.entries.find(
-    entry => entry.userId === currentUserId
-  );
+  const currentUserEntry = leaderboard.entries.find((entry) => entry.userId === currentUserId)
 
   return (
     <div className="space-y-6">
@@ -136,20 +128,15 @@ export default function ChallengeLeaderboard({
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full">
-              <span className="text-sm font-bold text-blue-700">
-                #{currentUserEntry.rank}
-              </span>
+              <span className="text-sm font-bold text-blue-700">#{currentUserEntry.rank}</span>
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-medium text-blue-900">Your Position</span>
-                {currentUserEntry.isCompleted && (
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                )}
+                {currentUserEntry.isCompleted && <CheckCircle className="w-4 h-4 text-green-500" />}
               </div>
               <div className="text-sm text-blue-700">
-                {formatProgress(currentUserEntry.progress)} •{' '}
-                {getProgressLabel()}
+                {formatProgress(currentUserEntry.progress)} • {getProgressLabel()}
               </div>
             </div>
           </div>
@@ -159,20 +146,16 @@ export default function ChallengeLeaderboard({
       {/* Top 3 Podium */}
       {filteredEntries.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {filteredEntries.slice(0, 3).map(entry => (
+          {filteredEntries.slice(0, 3).map((entry) => (
             <div
               key={entry.userId}
               className={`relative bg-white border-2 rounded-lg p-6 text-center ${
-                entry.userId === currentUserId
-                  ? 'border-blue-300 bg-blue-50'
-                  : 'border-gray-200'
+                entry.userId === currentUserId ? 'border-blue-300 bg-blue-50' : 'border-gray-200'
               }`}
             >
               {/* Rank Badge */}
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <Badge className={`${getRankBadgeColor(entry.rank)} border-2`}>
-                  #{entry.rank}
-                </Badge>
+                <Badge className={`${getRankBadgeColor(entry.rank)} border-2`}>#{entry.rank}</Badge>
               </div>
 
               {/* Profile Picture */}
@@ -192,9 +175,7 @@ export default function ChallengeLeaderboard({
                   </div>
                 )}
                 {/* Rank Icon Overlay */}
-                <div className="absolute -top-1 -right-1">
-                  {getRankIcon(entry.rank)}
-                </div>
+                <div className="absolute -top-1 -right-1">{getRankIcon(entry.rank)}</div>
               </div>
 
               {/* User Info */}
@@ -202,12 +183,8 @@ export default function ChallengeLeaderboard({
                 href={`/users/${entry.user.username}`}
                 className="block hover:text-blue-600 transition-colors"
               >
-                <h3 className="font-semibold text-gray-900 mb-1">
-                  {entry.user.name}
-                </h3>
-                <p className="text-sm text-gray-500 mb-2">
-                  @{entry.user.username}
-                </p>
+                <h3 className="font-semibold text-gray-900 mb-1">{entry.user.name}</h3>
+                <p className="text-sm text-gray-500 mb-2">@{entry.user.username}</p>
               </Link>
 
               {/* Location */}
@@ -242,9 +219,7 @@ export default function ChallengeLeaderboard({
       {filteredEntries.length > 3 && (
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Full Leaderboard
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900">Full Leaderboard</h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -265,7 +240,7 @@ export default function ChallengeLeaderboard({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredEntries.slice(3).map(entry => (
+                {filteredEntries.slice(3).map((entry) => (
                   <tr
                     key={entry.userId}
                     className={`hover:bg-gray-50 ${
@@ -305,9 +280,7 @@ export default function ChallengeLeaderboard({
                           >
                             {entry.user.name}
                           </Link>
-                          <div className="text-sm text-gray-500">
-                            @{entry.user.username}
-                          </div>
+                          <div className="text-sm text-gray-500">@{entry.user.username}</div>
                         </div>
                       </div>
                     </td>
@@ -338,9 +311,7 @@ export default function ChallengeLeaderboard({
       {filteredEntries.length === 0 && (
         <div className="text-center py-12">
           <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No participants yet
-          </h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No participants yet</h3>
           <p className="text-gray-500">
             {filter === 'completed'
               ? 'No one has completed this challenge yet.'
@@ -354,5 +325,5 @@ export default function ChallengeLeaderboard({
         Last updated: {leaderboard.lastUpdated.toLocaleString()}
       </div>
     </div>
-  );
+  )
 }

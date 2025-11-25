@@ -308,13 +308,10 @@ If API Route → Invoke Serverless Function
 
 ```typescript
 // Example: /api/session/[id]
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   // Serverless function execution
-  const session = await getSession(params.id);
-  return Response.json(session);
+  const session = await getSession(params.id)
+  return Response.json(session)
 }
 ```
 
@@ -446,7 +443,7 @@ Sentry.init({
   tracesSampleRate: 0.1,
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
-});
+})
 ```
 
 **Features**:
@@ -578,10 +575,10 @@ npm run test:security-rules
 
 ```typescript
 // Automatic route-based splitting
-const DashboardPage = lazy(() => import('./pages/dashboard'));
+const DashboardPage = lazy(() => import('./pages/dashboard'))
 
 // Manual chunk splitting
-const HeavyComponent = lazy(() => import('./components/Heavy'));
+const HeavyComponent = lazy(() => import('./components/Heavy'))
 ```
 
 ### 3. Image Optimization

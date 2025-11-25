@@ -1,22 +1,12 @@
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  UseQueryOptions,
-} from '@tanstack/react-query';
-import { useAuth } from '@/hooks/useAuth';
-import {
-  Activity,
-  ActivityStats,
-  CreateActivityData,
-  UpdateActivityData,
-} from '@/types';
-import { firebaseActivityApi } from '@/lib/api';
-import { getAllActivityTypes } from '@/lib/api/activityTypes';
-import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
-import { db } from '@/lib/firebase';
-import { collection, getDocs, query, where, or, and } from 'firebase/firestore';
-import { safeNumber } from '@/lib/utils';
+import { useQuery, useMutation, useQueryClient, UseQueryOptions } from '@tanstack/react-query'
+import { useAuth } from '@/hooks/useAuth'
+import { Activity, ActivityStats, CreateActivityData, UpdateActivityData } from '@/types'
+import { firebaseActivityApi } from '@/lib/api'
+import { getAllActivityTypes } from '@/lib/api/activityTypes'
+import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient'
+import { db } from '@/lib/firebase'
+import { collection, getDocs, query, where, or, and } from 'firebase/firestore'
+import { safeNumber } from '@/lib/utils'
 
 /**
  * Hook to fetch user activities with caching
@@ -25,25 +15,22 @@ import { safeNumber } from '@/lib/utils';
  * @param userId - User ID to fetch activities for (defaults to current user)
  * @param options - Additional React Query options
  */
-export function useActivities(
-  userId?: string,
-  options?: Partial<UseQueryOptions<Activity[]>>
-) {
-  const { user } = useAuth();
-  const effectiveUserId = userId || user?.id;
+export function useActivities(userId?: string, options?: Partial<UseQueryOptions<Activity[]>>) {
+  const { user } = useAuth()
+  const effectiveUserId = userId || user?.id
 
   return useQuery({
     queryKey: CACHE_KEYS.PROJECTS(effectiveUserId || 'none'),
     queryFn: async () => {
-      const activities = await firebaseActivityApi.getProjects();
+      const activities = await firebaseActivityApi.getProjects()
       // Icon migration happens automatically in the API
-      return activities;
+      return activities
     },
     enabled: !!effectiveUserId,
     staleTime: CACHE_TIMES.LONG, // 15 minutes cache
     gcTime: CACHE_TIMES.LONG,
     ...options,
-  });
+  })
 }
 
 /**
@@ -54,19 +41,19 @@ export function useActivity(
   activityId: string,
   options?: Partial<UseQueryOptions<Activity | null>>
 ) {
-  const { user } = useAuth();
-  const { data: activities } = useActivities(user?.id);
+  const { user } = useAuth()
+  const { data: activities } = useActivities(user?.id)
 
   return useQuery({
     queryKey: ['activity', activityId],
     queryFn: () => {
-      const activity = activities?.find(a => a.id === activityId);
-      return activity || null;
+      const activity = activities?.find((a) => a.id === activityId)
+      return activity || null
     },
     enabled: !!activities && !!activityId,
     staleTime: CACHE_TIMES.LONG,
     ...options,
-  });
+  })
 }
 
 /**
@@ -77,7 +64,7 @@ export function useActivityStats(
   activityId: string,
   options?: Partial<UseQueryOptions<ActivityStats>>
 ) {
-  const { user } = useAuth();
+  const { user } = useAuth()
 
   return useQuery({
     queryKey: ['activity', 'stats', activityId, user?.id],
@@ -91,7 +78,7 @@ export function useActivityStats(
           weeklyProgressPercentage: 0,
           totalProgressPercentage: 0,
           averageSessionDuration: 0,
-        };
+        }
       }
 
       // Query for both activityId and projectId (backwards compatibility)
@@ -99,45 +86,42 @@ export function useActivityStats(
         collection(db, 'sessions'),
         and(
           where('userId', '==', user.id),
-          or(
-            where('activityId', '==', activityId),
-            where('projectId', '==', activityId)
-          )
+          or(where('activityId', '==', activityId), where('projectId', '==', activityId))
         )
-      );
-      const snapshot = await getDocs(q);
+      )
+      const snapshot = await getDocs(q)
 
-      let totalSeconds = 0;
-      let weeklySeconds = 0;
-      let sessionCount = 0;
-      const now = new Date();
-      const weekStart = new Date(now);
-      weekStart.setDate(now.getDate() - now.getDay());
-      weekStart.setHours(0, 0, 0, 0);
+      let totalSeconds = 0
+      let weeklySeconds = 0
+      let sessionCount = 0
+      const now = new Date()
+      const weekStart = new Date(now)
+      weekStart.setDate(now.getDate() - now.getDay())
+      weekStart.setHours(0, 0, 0, 0)
 
-      snapshot.forEach(doc => {
+      snapshot.forEach((doc) => {
         const data = doc.data() as {
-          duration?: number;
-          startTime?: { toDate?: () => Date } | Date | string;
-        };
-        const duration = safeNumber(data.duration, 0);
+          duration?: number
+          startTime?: { toDate?: () => Date } | Date | string
+        }
+        const duration = safeNumber(data.duration, 0)
         const start =
           data.startTime &&
           typeof data.startTime === 'object' &&
           'toDate' in data.startTime &&
           data.startTime.toDate
             ? data.startTime.toDate()
-            : new Date(data.startTime as string | Date);
-        totalSeconds += duration;
-        sessionCount += 1;
-        if (start >= weekStart) weeklySeconds += duration;
-      });
+            : new Date(data.startTime as string | Date)
+        totalSeconds += duration
+        sessionCount += 1
+        if (start >= weekStart) weeklySeconds += duration
+      })
 
-      const totalHours = totalSeconds / 3600;
-      const weeklyHours = weeklySeconds / 3600;
+      const totalHours = totalSeconds / 3600
+      const weeklyHours = weeklySeconds / 3600
 
       // Streak placeholder for now
-      const currentStreak = sessionCount > 0 ? 1 : 0;
+      const currentStreak = sessionCount > 0 ? 1 : 0
 
       return {
         totalHours,
@@ -146,35 +130,33 @@ export function useActivityStats(
         currentStreak,
         weeklyProgressPercentage: 0,
         totalProgressPercentage: 0,
-        averageSessionDuration:
-          sessionCount > 0 ? totalSeconds / sessionCount : 0,
-      };
+        averageSessionDuration: sessionCount > 0 ? totalSeconds / sessionCount : 0,
+      }
     },
     enabled: !!activityId && !!user,
     staleTime: CACHE_TIMES.VERY_LONG, // 1 hour cache for stats
     ...options,
-  });
+  })
 }
 
 /**
  * Hook to create a new activity with optimistic updates
  */
 export function useCreateActivity() {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const queryKey = CACHE_KEYS.PROJECTS(user?.id || 'none');
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const queryKey = CACHE_KEYS.PROJECTS(user?.id || 'none')
 
   return useMutation({
-    mutationFn: (data: CreateActivityData) =>
-      firebaseActivityApi.createProject(data),
+    mutationFn: (data: CreateActivityData) => firebaseActivityApi.createProject(data),
 
     // Optimistic update
-    onMutate: async newActivity => {
+    onMutate: async (newActivity) => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey });
+      await queryClient.cancelQueries({ queryKey })
 
       // Snapshot the previous value
-      const previousActivities = queryClient.getQueryData<Activity[]>(queryKey);
+      const previousActivities = queryClient.getQueryData<Activity[]>(queryKey)
 
       // Optimistically create a temporary activity
       const tempActivity: Activity = {
@@ -189,54 +171,49 @@ export function useCreateActivity() {
         totalTarget: newActivity.totalTarget,
         createdAt: new Date(),
         updatedAt: new Date(),
-      };
+      }
 
       // Add to cache optimistically
       if (previousActivities) {
-        queryClient.setQueryData<Activity[]>(queryKey, [
-          ...previousActivities,
-          tempActivity,
-        ]);
+        queryClient.setQueryData<Activity[]>(queryKey, [...previousActivities, tempActivity])
       }
 
-      return { previousActivities, tempActivity };
+      return { previousActivities, tempActivity }
     },
 
     // On success, replace temp with real activity
     onSuccess: (newActivity, variables, context) => {
-      const previousActivities = context?.previousActivities || [];
-      const tempActivity = context?.tempActivity;
+      const previousActivities = context?.previousActivities || []
+      const tempActivity = context?.tempActivity
 
       // Replace temp activity with real one
       queryClient.setQueryData<Activity[]>(
         queryKey,
-        previousActivities
-          .filter(a => a.id !== tempActivity?.id)
-          .concat(newActivity)
-      );
+        previousActivities.filter((a) => a.id !== tempActivity?.id).concat(newActivity)
+      )
     },
 
     // On error, roll back
     onError: (err, variables, context) => {
       if (context?.previousActivities) {
-        queryClient.setQueryData(queryKey, context.previousActivities);
+        queryClient.setQueryData(queryKey, context.previousActivities)
       }
     },
 
     // Always refetch after error or success
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey })
     },
-  });
+  })
 }
 
 /**
  * Hook to update an existing activity with optimistic updates
  */
 export function useUpdateActivity() {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const queryKey = CACHE_KEYS.PROJECTS(user?.id || 'none');
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const queryKey = CACHE_KEYS.PROJECTS(user?.id || 'none')
 
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: UpdateActivityData }) =>
@@ -244,87 +221,84 @@ export function useUpdateActivity() {
 
     // Optimistic update
     onMutate: async ({ id, data }) => {
-      await queryClient.cancelQueries({ queryKey });
+      await queryClient.cancelQueries({ queryKey })
 
-      const previousActivities = queryClient.getQueryData<Activity[]>(queryKey);
+      const previousActivities = queryClient.getQueryData<Activity[]>(queryKey)
 
       // Optimistically update the activity
       if (previousActivities) {
         queryClient.setQueryData<Activity[]>(
           queryKey,
-          previousActivities.map(a =>
+          previousActivities.map((a) =>
             a.id === id ? { ...a, ...data, updatedAt: new Date() } : a
           )
-        );
+        )
       }
 
-      return { previousActivities };
+      return { previousActivities }
     },
 
     // On success, use the real updated activity
     onSuccess: (updatedActivity, variables, context) => {
-      const previousActivities = context?.previousActivities || [];
+      const previousActivities = context?.previousActivities || []
       queryClient.setQueryData<Activity[]>(
         queryKey,
-        previousActivities.map(a =>
-          a.id === updatedActivity.id ? updatedActivity : a
-        )
-      );
+        previousActivities.map((a) => (a.id === updatedActivity.id ? updatedActivity : a))
+      )
     },
 
     // On error, roll back
     onError: (err, variables, context) => {
       if (context?.previousActivities) {
-        queryClient.setQueryData(queryKey, context.previousActivities);
+        queryClient.setQueryData(queryKey, context.previousActivities)
       }
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey })
     },
-  });
+  })
 }
 
 /**
  * Hook to delete an activity with optimistic updates
  */
 export function useDeleteActivity() {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const queryKey = CACHE_KEYS.PROJECTS(user?.id || 'none');
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const queryKey = CACHE_KEYS.PROJECTS(user?.id || 'none')
 
   return useMutation({
-    mutationFn: (activityId: string) =>
-      firebaseActivityApi.deleteProject(activityId),
+    mutationFn: (activityId: string) => firebaseActivityApi.deleteProject(activityId),
 
     // Optimistic update
-    onMutate: async activityId => {
-      await queryClient.cancelQueries({ queryKey });
+    onMutate: async (activityId) => {
+      await queryClient.cancelQueries({ queryKey })
 
-      const previousActivities = queryClient.getQueryData<Activity[]>(queryKey);
+      const previousActivities = queryClient.getQueryData<Activity[]>(queryKey)
 
       // Optimistically remove the activity
       if (previousActivities) {
         queryClient.setQueryData<Activity[]>(
           queryKey,
-          previousActivities.filter(a => a.id !== activityId)
-        );
+          previousActivities.filter((a) => a.id !== activityId)
+        )
       }
 
-      return { previousActivities };
+      return { previousActivities }
     },
 
     // On error, roll back
     onError: (err, activityId, context) => {
       if (context?.previousActivities) {
-        queryClient.setQueryData(queryKey, context.previousActivities);
+        queryClient.setQueryData(queryKey, context.previousActivities)
       }
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey })
     },
-  });
+  })
 }
 
 /**
@@ -332,7 +306,7 @@ export function useDeleteActivity() {
  * Convenience wrapper around useUpdateActivity
  */
 export function useArchiveActivity() {
-  const updateActivity = useUpdateActivity();
+  const updateActivity = useUpdateActivity()
 
   return useMutation({
     mutationFn: (activityId: string) =>
@@ -340,7 +314,7 @@ export function useArchiveActivity() {
         id: activityId,
         data: { status: 'archived' },
       }),
-  });
+  })
 }
 
 /**
@@ -348,7 +322,7 @@ export function useArchiveActivity() {
  * Convenience wrapper around useUpdateActivity
  */
 export function useRestoreActivity() {
-  const updateActivity = useUpdateActivity();
+  const updateActivity = useUpdateActivity()
 
   return useMutation({
     mutationFn: (activityId: string) =>
@@ -356,7 +330,7 @@ export function useRestoreActivity() {
         id: activityId,
         data: { status: 'active' },
       }),
-  });
+  })
 }
 
 /**
@@ -373,27 +347,27 @@ export function useActivitiesWithSessions(
     UseQueryOptions<
       Array<
         Activity & {
-          sessionCount: number;
-          isCustom: boolean;
-          totalHours: number;
+          sessionCount: number
+          isCustom: boolean
+          totalHours: number
         }
       >
     >
   >
 ) {
-  const { user } = useAuth();
-  const effectiveUserId = userId || user?.id;
+  const { user } = useAuth()
+  const effectiveUserId = userId || user?.id
 
   return useQuery({
     queryKey: ['activities-with-sessions', effectiveUserId],
     queryFn: async () => {
-      if (!effectiveUserId) return [];
+      if (!effectiveUserId) return []
 
       // Get all activities (new system: defaults + user customs)
-      const activityTypes = await getAllActivityTypes(effectiveUserId);
+      const activityTypes = await getAllActivityTypes(effectiveUserId)
 
       // Convert ActivityType[] to Activity[] for compatibility
-      const activities: Activity[] = activityTypes.map(at => ({
+      const activities: Activity[] = activityTypes.map((at) => ({
         id: at.id,
         userId: at.userId || effectiveUserId,
         name: at.name,
@@ -404,62 +378,59 @@ export function useActivitiesWithSessions(
         status: 'active' as const,
         createdAt: at.createdAt,
         updatedAt: at.updatedAt,
-      }));
+      }))
 
       // Get session counts and total hours for each activity
       const activitiesWithStats = await Promise.all(
-        activities.map(async activity => {
+        activities.map(async (activity) => {
           // Query for both activityId and projectId (backwards compatibility)
           const q = query(
             collection(db, 'sessions'),
             and(
               where('userId', '==', effectiveUserId),
-              or(
-                where('activityId', '==', activity.id),
-                where('projectId', '==', activity.id)
-              )
+              or(where('activityId', '==', activity.id), where('projectId', '==', activity.id))
             )
-          );
-          const snapshot = await getDocs(q);
-          const sessionCount = snapshot.size;
+          )
+          const snapshot = await getDocs(q)
+          const sessionCount = snapshot.size
 
           // Calculate total hours from session durations
-          let totalHours = 0;
-          snapshot.forEach(doc => {
-            const data = doc.data();
+          let totalHours = 0
+          snapshot.forEach((doc) => {
+            const data = doc.data()
             // duration is stored in seconds
-            totalHours += (data.duration || 0) / 3600;
-          });
+            totalHours += (data.duration || 0) / 3600
+          })
 
           return {
             ...activity,
             sessionCount,
             totalHours,
             isCustom: !activity.isDefault,
-          };
+          }
         })
-      );
+      )
 
       // Only include activities that have sessions (sessionCount > 0)
       return activitiesWithStats
-        .filter(activity => activity.sessionCount > 0)
-        .sort((a, b) => b.totalHours - a.totalHours);
+        .filter((activity) => activity.sessionCount > 0)
+        .sort((a, b) => b.totalHours - a.totalHours)
     },
     enabled: !!effectiveUserId,
     staleTime: CACHE_TIMES.MEDIUM, // 5 minutes cache
     gcTime: CACHE_TIMES.MEDIUM,
     ...options,
-  });
+  })
 }
 
 /**
  * Backward compatibility: Alias activities as projects
  */
-export const useProjects = useActivities;
-export const useProject = useActivity;
-export const useProjectStats = useActivityStats;
-export const useCreateProject = useCreateActivity;
-export const useUpdateProject = useUpdateActivity;
-export const useDeleteProject = useDeleteActivity;
-export const useArchiveProject = useArchiveActivity;
-export const useRestoreProject = useRestoreActivity;
+export const useProjects = useActivities
+export const useProject = useActivity
+export const useProjectStats = useActivityStats
+export const useCreateProject = useCreateActivity
+export const useUpdateProject = useUpdateActivity
+export const useDeleteProject = useDeleteActivity
+export const useArchiveProject = useArchiveActivity
+export const useRestoreProject = useRestoreActivity

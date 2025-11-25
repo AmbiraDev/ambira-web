@@ -51,13 +51,13 @@ it('tests component with providers', () => {
 In-memory Firebase store that maintains state across operations:
 
 ```typescript
-import { testFirebaseStore, createMockFirebaseApi } from '../__helpers__';
+import { testFirebaseStore, createMockFirebaseApi } from '../__helpers__'
 
-const mockApi = createMockFirebaseApi(testFirebaseStore);
+const mockApi = createMockFirebaseApi(testFirebaseStore)
 
 // Store maintains state for verification
-await mockApi.sessions.create(sessionData);
-const session = testFirebaseStore.getSession(sessionId);
+await mockApi.sessions.create(sessionData)
+const session = testFirebaseStore.getSession(sessionId)
 ```
 
 ### Test Factories (`testFactories.ts`)
@@ -70,14 +70,14 @@ import {
   createTestProject,
   createTestSession,
   resetFactoryCounters,
-} from '../__helpers__';
+} from '../__helpers__'
 
 beforeEach(() => {
-  resetFactoryCounters(); // Reset IDs for each test
-});
+  resetFactoryCounters() // Reset IDs for each test
+})
 
-const user = createTestUser({ email: 'test@example.com' });
-const project = createTestProject(user.id, { name: 'My Project' });
+const user = createTestUser({ email: 'test@example.com' })
+const project = createTestProject(user.id, { name: 'My Project' })
 ```
 
 ### Wait Utilities (`waitUtils.ts`)
@@ -85,13 +85,13 @@ const project = createTestProject(user.id, { name: 'My Project' });
 Async waiting helpers for React Query operations:
 
 ```typescript
-import { waitForCacheUpdate, waitForQueryData } from '../__helpers__';
+import { waitForCacheUpdate, waitForQueryData } from '../__helpers__'
 
 await waitForCacheUpdate(() => {
-  expect(screen.getByText('Updated')).toBeInTheDocument();
-});
+  expect(screen.getByText('Updated')).toBeInTheDocument()
+})
 
-await waitForQueryData(queryClient, CACHE_KEYS.USER(userId));
+await waitForQueryData(queryClient, CACHE_KEYS.USER(userId))
 ```
 
 ## Test Coverage by Priority
@@ -188,31 +188,31 @@ import {
   resetFirebaseStore,
   createTestUser,
   resetFactoryCounters,
-} from '../__helpers__';
+} from '../__helpers__'
 
-const mockFirebaseApi = createMockFirebaseApi(testFirebaseStore);
+const mockFirebaseApi = createMockFirebaseApi(testFirebaseStore)
 
 jest.mock('@/lib/api', () => ({
   firebaseAuthApi: mockFirebaseApi.auth,
-}));
+}))
 
 describe('Integration: Feature Flow', () => {
-  let queryClient: any;
-  let user: any;
+  let queryClient: any
+  let user: any
 
   beforeEach(() => {
-    queryClient = createTestQueryClient();
-    resetFirebaseStore();
-    resetFactoryCounters();
-    jest.clearAllMocks();
+    queryClient = createTestQueryClient()
+    resetFirebaseStore()
+    resetFactoryCounters()
+    jest.clearAllMocks()
 
-    user = createTestUser();
-    testFirebaseStore.createUser(user);
-  });
+    user = createTestUser()
+    testFirebaseStore.createUser(user)
+  })
 
   afterEach(() => {
-    queryClient.clear();
-  });
+    queryClient.clear()
+  })
 
   it('completes workflow: action → API → cache → UI', async () => {
     // Arrange: Setup initial state
@@ -220,8 +220,8 @@ describe('Integration: Feature Flow', () => {
     // Assert: Verify API call
     // Assert: Verify Firebase state
     // Assert: Verify cache update
-  });
-});
+  })
+})
 ```
 
 ### Best Practices
@@ -240,51 +240,51 @@ describe('Integration: Feature Flow', () => {
 
 ```typescript
 // Optimistic update
-queryClient.setQueryData(key, optimisticValue);
+queryClient.setQueryData(key, optimisticValue)
 
 // API call
-await mockApi.action();
+await mockApi.action()
 
 // Verify optimistic UI
-expect(screen.getByText('Updated')).toBeInTheDocument();
+expect(screen.getByText('Updated')).toBeInTheDocument()
 
 // Verify API called
-expect(mockApi.action).toHaveBeenCalled();
+expect(mockApi.action).toHaveBeenCalled()
 ```
 
 **Error Rollback Pattern**:
 
 ```typescript
-const previousValue = queryClient.getQueryData(key);
+const previousValue = queryClient.getQueryData(key)
 
 // Optimistic update
-queryClient.setQueryData(key, newValue);
+queryClient.setQueryData(key, newValue)
 
 // Mock error
-mockApi.action.mockRejectedValueOnce(new Error('Failed'));
+mockApi.action.mockRejectedValueOnce(new Error('Failed'))
 
 try {
-  await mockApi.action();
+  await mockApi.action()
 } catch {
   // Rollback
-  queryClient.setQueryData(key, previousValue);
+  queryClient.setQueryData(key, previousValue)
 }
 
-expect(queryClient.getQueryData(key)).toEqual(previousValue);
+expect(queryClient.getQueryData(key)).toEqual(previousValue)
 ```
 
 **Multi-User Pattern**:
 
 ```typescript
-const user1 = createTestUser({ email: 'user1@test.com' });
-const user2 = createTestUser({ email: 'user2@test.com' });
+const user1 = createTestUser({ email: 'user1@test.com' })
+const user2 = createTestUser({ email: 'user2@test.com' })
 
-testFirebaseStore.createUser(user1);
-testFirebaseStore.createUser(user2);
+testFirebaseStore.createUser(user1)
+testFirebaseStore.createUser(user2)
 
 // Both users interact with same data
-await mockApi.action(user1.id);
-await mockApi.action(user2.id);
+await mockApi.action(user1.id)
+await mockApi.action(user2.id)
 
 // Verify concurrent state
 ```
@@ -295,16 +295,16 @@ await mockApi.action(user2.id);
 
 ```typescript
 // In test
-console.log('Users:', Array.from(testFirebaseStore['users'].values()));
-console.log('Sessions:', Array.from(testFirebaseStore['sessions'].values()));
+console.log('Users:', Array.from(testFirebaseStore['users'].values()))
+console.log('Sessions:', Array.from(testFirebaseStore['sessions'].values()))
 ```
 
 ### View Query Cache State
 
 ```typescript
 // In test
-console.log('Cache:', queryClient.getQueryCache().getAll());
-console.log('User cache:', queryClient.getQueryData(CACHE_KEYS.USER(userId)));
+console.log('Cache:', queryClient.getQueryCache().getAll())
+console.log('User cache:', queryClient.getQueryData(CACHE_KEYS.USER(userId)))
 ```
 
 ### Common Issues

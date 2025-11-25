@@ -1,38 +1,29 @@
-'use client';
+'use client'
 
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   Challenge,
   ChallengeStats,
   ChallengeLeaderboard as ChallengeLeaderboardType,
   ChallengeProgress,
-} from '@/types';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Calendar,
-  Target,
-  Zap,
-  Timer,
-  TrendingUp,
-  Award,
-  Settings,
-  Share2,
-} from 'lucide-react';
-import ChallengeLeaderboard from './ChallengeLeaderboard';
+} from '@/types'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Calendar, Target, Zap, Timer, TrendingUp, Award, Settings, Share2 } from 'lucide-react'
+import ChallengeLeaderboard from './ChallengeLeaderboard'
 
 interface ChallengeDetailProps {
-  challenge: Challenge;
-  stats: ChallengeStats;
-  leaderboard: ChallengeLeaderboardType;
-  userProgress?: ChallengeProgress | null;
-  isParticipating: boolean;
-  isAdmin: boolean;
-  onJoin: () => Promise<void>;
-  onLeave: () => Promise<void>;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  isLoading: boolean;
+  challenge: Challenge
+  stats: ChallengeStats
+  leaderboard: ChallengeLeaderboardType
+  userProgress?: ChallengeProgress | null
+  isParticipating: boolean
+  isAdmin: boolean
+  onJoin: () => Promise<void>
+  onLeave: () => Promise<void>
+  onEdit?: () => void
+  onDelete?: () => void
+  isLoading: boolean
 }
 
 const challengeTypeConfig = {
@@ -40,8 +31,7 @@ const challengeTypeConfig = {
     label: 'Most Activity',
     icon: TrendingUp,
     color: 'bg-blue-100 text-blue-800',
-    description:
-      'Compete to log the most productive hours during the challenge period',
+    description: 'Compete to log the most productive hours during the challenge period',
   },
   'fastest-effort': {
     label: 'Fastest Effort',
@@ -61,7 +51,7 @@ const challengeTypeConfig = {
     color: 'bg-green-100 text-green-800',
     description: 'Work together to reach a collective productivity target',
   },
-};
+}
 
 export default function ChallengeDetail({
   challenge,
@@ -76,33 +66,31 @@ export default function ChallengeDetail({
   onDelete: _onDelete,
   isLoading,
 }: ChallengeDetailProps) {
-  const [activeSection, setActiveSection] = useState<
-    'overview' | 'leaderboard'
-  >('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'leaderboard'>('overview')
 
-  const typeConfig = challengeTypeConfig[challenge.type];
-  const TypeIcon = typeConfig.icon;
+  const typeConfig = challengeTypeConfig[challenge.type]
+  const TypeIcon = typeConfig.icon
 
-  const now = new Date();
-  const startDate = new Date(challenge.startDate);
-  const endDate = new Date(challenge.endDate);
-  const isActive = now >= startDate && now <= endDate && challenge.isActive;
-  const isUpcoming = now < startDate && challenge.isActive;
-  const isCompleted = now > endDate || !challenge.isActive;
+  const now = new Date()
+  const startDate = new Date(challenge.startDate)
+  const endDate = new Date(challenge.endDate)
+  const isActive = now >= startDate && now <= endDate && challenge.isActive
+  const isUpcoming = now < startDate && challenge.isActive
+  const isCompleted = now > endDate || !challenge.isActive
 
-  const timeRemaining = isActive ? endDate.getTime() - now.getTime() : 0;
-  const daysRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24));
-  const hoursRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60));
+  const timeRemaining = isActive ? endDate.getTime() - now.getTime() : 0
+  const daysRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60 * 24))
+  const hoursRemaining = Math.ceil(timeRemaining / (1000 * 60 * 60))
 
   const getStatusBadge = () => {
     if (isUpcoming) {
-      return <Badge className="bg-blue-100 text-blue-800">Upcoming</Badge>;
+      return <Badge className="bg-blue-100 text-blue-800">Upcoming</Badge>
     }
     if (isActive) {
-      return <Badge className="bg-green-100 text-green-800">Active</Badge>;
+      return <Badge className="bg-green-100 text-green-800">Active</Badge>
     }
-    return <Badge className="bg-gray-100 text-gray-800">Completed</Badge>;
-  };
+    return <Badge className="bg-gray-100 text-gray-800">Completed</Badge>
+  }
 
   const formatProgress = (progress: number) => {
     if (
@@ -110,32 +98,29 @@ export default function ChallengeDetail({
       challenge.type === 'group-goal' ||
       challenge.type === 'longest-session'
     ) {
-      return `${progress.toFixed(1)} hours`;
+      return `${progress.toFixed(1)} hours`
     }
     if (challenge.type === 'fastest-effort') {
-      return `${progress.toFixed(1)} tasks/hour`;
+      return `${progress.toFixed(1)} tasks/hour`
     }
-    return progress.toString();
-  };
+    return progress.toString()
+  }
 
   const getProgressPercentage = () => {
-    if (!challenge.goalValue || !userProgress?.currentValue) return 0;
-    return Math.min(
-      (userProgress.currentValue / challenge.goalValue) * 100,
-      100
-    );
-  };
+    if (!challenge.goalValue || !userProgress?.currentValue) return 0
+    return Math.min((userProgress.currentValue / challenge.goalValue) * 100, 100)
+  }
 
   const formatTimeRemaining = () => {
     if (daysRemaining > 1) {
-      return `${daysRemaining} days remaining`;
+      return `${daysRemaining} days remaining`
     } else if (hoursRemaining > 1) {
-      return `${hoursRemaining} hours remaining`;
+      return `${hoursRemaining} hours remaining`
     } else if (timeRemaining > 0) {
-      return 'Less than 1 hour remaining';
+      return 'Less than 1 hour remaining'
     }
-    return 'Challenge ended';
-  };
+    return 'Challenge ended'
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -165,9 +150,7 @@ export default function ChallengeDetail({
         {/* Challenge Meta */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="text-center p-4 bg-white/10 rounded-lg">
-            <div className="text-3xl font-bold">
-              {challenge.participantCount}
-            </div>
+            <div className="text-3xl font-bold">{challenge.participantCount}</div>
             <div className="text-white/80 text-sm mt-1">Participants</div>
           </div>
           <div className="text-center p-4 bg-white/10 rounded-lg">
@@ -179,18 +162,12 @@ export default function ChallengeDetail({
                   : `Ended ${endDate.toLocaleDateString()}`}
             </div>
             <div className="text-white/80 text-sm mt-1">
-              {isActive
-                ? 'Time Remaining'
-                : isUpcoming
-                  ? 'Start Date'
-                  : 'End Date'}
+              {isActive ? 'Time Remaining' : isUpcoming ? 'Start Date' : 'End Date'}
             </div>
           </div>
           <div className="text-center p-4 bg-white/10 rounded-lg">
             <div className="text-3xl font-bold">
-              {challenge.goalValue
-                ? formatProgress(challenge.goalValue)
-                : 'No limit'}
+              {challenge.goalValue ? formatProgress(challenge.goalValue) : 'No limit'}
             </div>
             <div className="text-white/80 text-sm mt-1">Target Goal</div>
           </div>
@@ -203,8 +180,7 @@ export default function ChallengeDetail({
               <span className="font-medium">Your Progress</span>
               <span className="text-lg font-bold">
                 {formatProgress(userProgress.currentValue)}
-                {challenge.goalValue &&
-                  ` / ${formatProgress(challenge.goalValue)}`}
+                {challenge.goalValue && ` / ${formatProgress(challenge.goalValue)}`}
               </span>
             </div>
             {challenge.goalValue && (
@@ -286,56 +262,39 @@ export default function ChallengeDetail({
             <div className="space-y-6">
               {/* Description */}
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-3">
-                  About This Challenge
-                </h2>
-                <p className="text-gray-600 leading-relaxed">
-                  {challenge.description}
-                </p>
+                <h2 className="text-xl font-bold text-gray-900 mb-3">About This Challenge</h2>
+                <p className="text-gray-600 leading-relaxed">{challenge.description}</p>
               </div>
 
               {/* Rules */}
               {challenge.rules && (
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-3">
-                    Rules & Requirements
-                  </h2>
+                  <h2 className="text-xl font-bold text-gray-900 mb-3">Rules & Requirements</h2>
                   <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-gray-600 whitespace-pre-wrap">
-                      {challenge.rules}
-                    </p>
+                    <p className="text-gray-600 whitespace-pre-wrap">{challenge.rules}</p>
                   </div>
                 </div>
               )}
 
               {/* Challenge Details */}
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-3">
-                  Challenge Details
-                </h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-3">Challenge Details</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Calendar className="w-5 h-5 text-gray-500" />
-                      <span className="font-medium text-gray-900">
-                        Duration
-                      </span>
+                      <span className="font-medium text-gray-900">Duration</span>
                     </div>
                     <p className="text-gray-600">
-                      {startDate.toLocaleDateString()} -{' '}
-                      {endDate.toLocaleDateString()}
+                      {startDate.toLocaleDateString()} - {endDate.toLocaleDateString()}
                     </p>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Target className="w-5 h-5 text-gray-500" />
-                      <span className="font-medium text-gray-900">
-                        Challenge Type
-                      </span>
+                      <span className="font-medium text-gray-900">Challenge Type</span>
                     </div>
-                    <Badge className={typeConfig.color}>
-                      {typeConfig.label}
-                    </Badge>
+                    <Badge className={typeConfig.color}>{typeConfig.label}</Badge>
                   </div>
                 </div>
               </div>
@@ -343,15 +302,11 @@ export default function ChallengeDetail({
               {/* Rewards */}
               {challenge.rewards && challenge.rewards.length > 0 && (
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-3">
-                    Rewards
-                  </h2>
+                  <h2 className="text-xl font-bold text-gray-900 mb-3">Rewards</h2>
                   <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
                     <div className="flex items-center gap-2 mb-2">
                       <Award className="w-5 h-5 text-yellow-600" />
-                      <span className="font-semibold text-yellow-900">
-                        What You'll Earn
-                      </span>
+                      <span className="font-semibold text-yellow-900">What You'll Earn</span>
                     </div>
                     <ul className="space-y-1">
                       {challenge.rewards.map((reward, index) => (
@@ -366,17 +321,13 @@ export default function ChallengeDetail({
 
               {/* Statistics */}
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-3">
-                  Challenge Statistics
-                </h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-3">Challenge Statistics</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-blue-50 rounded-lg p-4 text-center">
                     <div className="text-2xl font-bold text-blue-600">
                       {stats.totalParticipants}
                     </div>
-                    <div className="text-sm text-blue-600">
-                      Total Participants
-                    </div>
+                    <div className="text-sm text-blue-600">Total Participants</div>
                   </div>
                   <div className="bg-green-50 rounded-lg p-4 text-center">
                     <div className="text-2xl font-bold text-green-600">
@@ -388,22 +339,15 @@ export default function ChallengeDetail({
                     <div className="text-2xl font-bold text-purple-600">
                       {formatProgress(stats.averageProgress)}
                     </div>
-                    <div className="text-sm text-purple-600">
-                      Average Progress
-                    </div>
+                    <div className="text-sm text-purple-600">Average Progress</div>
                   </div>
                   <div className="bg-orange-50 rounded-lg p-4 text-center">
                     <div className="text-2xl font-bold text-orange-600">
-                      {Math.round(
-                        (stats.completedParticipants /
-                          stats.totalParticipants) *
-                          100
-                      ) || 0}
+                      {Math.round((stats.completedParticipants / stats.totalParticipants) * 100) ||
+                        0}
                       %
                     </div>
-                    <div className="text-sm text-orange-600">
-                      Completion Rate
-                    </div>
+                    <div className="text-sm text-orange-600">Completion Rate</div>
                   </div>
                 </div>
               </div>
@@ -420,5 +364,5 @@ export default function ChallengeDetail({
         </div>
       </div>
     </div>
-  );
+  )
 }

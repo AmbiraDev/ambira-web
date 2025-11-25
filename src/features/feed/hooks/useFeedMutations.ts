@@ -5,25 +5,21 @@
  * Session creation/deletion is handled in the Sessions feature.
  */
 
-import {
-  useMutation,
-  useQueryClient,
-  UseMutationOptions,
-} from '@tanstack/react-query';
-import { FeedService, FeedFilters } from '../services/FeedService';
-import { FEED_KEYS, FeedResult } from './useFeed';
-import { SessionWithDetails } from '@/types';
+import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query'
+import { FeedService, FeedFilters } from '../services/FeedService'
+import { FEED_KEYS, FeedResult } from './useFeed'
+import { SessionWithDetails } from '@/types'
 
-const feedService = new FeedService();
+const feedService = new FeedService()
 
 // Infinite query data structure
 interface FeedInfiniteData {
   pages: Array<{
-    sessions: SessionWithDetails[];
-    hasMore: boolean;
-    nextCursor?: string;
-  }>;
-  pageParams: unknown[];
+    sessions: SessionWithDetails[]
+    hasMore: boolean
+    nextCursor?: string
+  }>
+  pageParams: unknown[]
 }
 
 /**
@@ -37,32 +33,23 @@ interface FeedInfiniteData {
  */
 export function useRefreshFeed(
   options?: Partial<
-    UseMutationOptions<
-      FeedResult,
-      Error,
-      { userId: string; filters?: FeedFilters }
-    >
+    UseMutationOptions<FeedResult, Error, { userId: string; filters?: FeedFilters }>
   >
 ) {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
-  return useMutation<
-    FeedResult,
-    Error,
-    { userId: string; filters?: FeedFilters }
-  >({
-    mutationFn: ({ userId, filters }) =>
-      feedService.refreshFeed(userId, filters),
+  return useMutation<FeedResult, Error, { userId: string; filters?: FeedFilters }>({
+    mutationFn: ({ userId, filters }) => feedService.refreshFeed(userId, filters),
 
     onSuccess: (_, { userId, filters = {} }) => {
       // Invalidate the specific feed query
       queryClient.invalidateQueries({
         queryKey: FEED_KEYS.list(userId, filters),
-      });
+      })
     },
 
     ...options,
-  });
+  })
 }
 
 /**
@@ -78,11 +65,11 @@ export function useRefreshFeed(
  * invalidateFeeds();
  */
 export function useInvalidateFeeds() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return () => {
-    queryClient.invalidateQueries({ queryKey: FEED_KEYS.all() });
-  };
+    queryClient.invalidateQueries({ queryKey: FEED_KEYS.all() })
+  }
 }
 
 /**
@@ -93,11 +80,11 @@ export function useInvalidateFeeds() {
  * invalidateUserFeed(userId);
  */
 export function useInvalidateUserFeed() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return (userId: string) => {
-    queryClient.invalidateQueries({ queryKey: FEED_KEYS.user(userId) });
-  };
+    queryClient.invalidateQueries({ queryKey: FEED_KEYS.user(userId) })
+  }
 }
 
 /**
@@ -108,11 +95,11 @@ export function useInvalidateUserFeed() {
  * invalidateGroupFeed(groupId);
  */
 export function useInvalidateGroupFeed() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return (groupId: string) => {
-    queryClient.invalidateQueries({ queryKey: FEED_KEYS.group(groupId) });
-  };
+    queryClient.invalidateQueries({ queryKey: FEED_KEYS.group(groupId) })
+  }
 }
 
 /**
@@ -127,18 +114,14 @@ export function useInvalidateGroupFeed() {
  * addToFeed(userId, { type: 'following' }, newSession);
  */
 export function useAddToFeedCache() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
-  return (
-    userId: string,
-    filters: FeedFilters,
-    newSession: SessionWithDetails
-  ) => {
-    const queryKey = FEED_KEYS.list(userId, filters);
+  return (userId: string, filters: FeedFilters, newSession: SessionWithDetails) => {
+    const queryKey = FEED_KEYS.list(userId, filters)
 
     // Update infinite query cache
-    queryClient.setQueryData<FeedInfiniteData>(queryKey, old => {
-      if (!old?.pages) return old;
+    queryClient.setQueryData<FeedInfiniteData>(queryKey, (old) => {
+      if (!old?.pages) return old
 
       // Add to the first page
       return {
@@ -148,13 +131,13 @@ export function useAddToFeedCache() {
             return {
               ...page,
               sessions: [newSession, ...page.sessions],
-            };
+            }
           }
-          return page;
+          return page
         }),
-      };
-    });
-  };
+      }
+    })
+  }
 }
 
 /**
@@ -169,22 +152,22 @@ export function useAddToFeedCache() {
  * removeFromFeed(userId, { type: 'following' }, sessionId);
  */
 export function useRemoveFromFeedCache() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
 
   return (userId: string, filters: FeedFilters, sessionId: string) => {
-    const queryKey = FEED_KEYS.list(userId, filters);
+    const queryKey = FEED_KEYS.list(userId, filters)
 
     // Update infinite query cache
-    queryClient.setQueryData<FeedInfiniteData>(queryKey, old => {
-      if (!old?.pages) return old;
+    queryClient.setQueryData<FeedInfiniteData>(queryKey, (old) => {
+      if (!old?.pages) return old
 
       return {
         ...old,
-        pages: old.pages.map(page => ({
+        pages: old.pages.map((page) => ({
           ...page,
-          sessions: page.sessions.filter(s => s.id !== sessionId),
+          sessions: page.sessions.filter((s) => s.id !== sessionId),
         })),
-      };
-    });
-  };
+      }
+    })
+  }
 }

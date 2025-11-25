@@ -1,7 +1,7 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import type { LogoProps } from './header.types';
-import { DIMENSIONS, ROUTES } from './header.constants';
+import Link from 'next/link'
+import Image from 'next/image'
+import type { LogoProps } from './header.types'
+import { DIMENSIONS, ROUTES } from './header.constants'
 
 /**
  * Logo Component
@@ -30,5 +30,5 @@ export default function Logo({ className }: LogoProps) {
         priority
       />
     </Link>
-  );
+  )
 }

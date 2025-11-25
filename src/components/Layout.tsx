@@ -1,13 +1,13 @@
-'use client';
+'use client'
 
-import Header from './HeaderComponent';
-import BottomNavigation from './BottomNavigation';
-import Footer from './Footer';
-import { LeftSidebar, RightSidebar } from './Sidebar';
+import Header from './HeaderComponent'
+import BottomNavigation from './BottomNavigation'
+import Footer from './Footer'
+import { LeftSidebar, RightSidebar } from './Sidebar'
 
 interface LayoutProps {
-  children: React.ReactNode;
-  showSidebars?: boolean;
+  children: React.ReactNode
+  showSidebars?: boolean
 }
 
 function Layout({ children, showSidebars = true }: LayoutProps) {
@@ -26,18 +26,14 @@ function Layout({ children, showSidebars = true }: LayoutProps) {
               <div className="hidden md:block">
                 <LeftSidebar />
               </div>
-              <div className="flex-1 max-w-2xl md:mx-auto px-4 py-4 md:px-0">
-                {children}
-              </div>
+              <div className="flex-1 max-w-2xl md:mx-auto px-4 py-4 md:px-0">{children}</div>
               {/* Right sidebar - hidden on mobile */}
               <div className="hidden md:block">
                 <RightSidebar />
               </div>
             </div>
           ) : (
-            <div className="max-w-4xl mx-auto px-4 py-4 md:px-0">
-              {children}
-            </div>
+            <div className="max-w-4xl mx-auto px-4 py-4 md:px-0">{children}</div>
           )}
         </div>
       </main>
@@ -50,7 +46,7 @@ function Layout({ children, showSidebars = true }: LayoutProps) {
 
       <BottomNavigation />
     </div>
-  );
+  )
 }
 
-export default Layout;
+export default Layout

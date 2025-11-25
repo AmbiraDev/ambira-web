@@ -1,14 +1,12 @@
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import React from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
 
 interface LandingFooterProps {
-  className?: string;
+  className?: string
 }
 
-export const LandingFooter: React.FC<LandingFooterProps> = ({
-  className = '',
-}) => {
+export const LandingFooter: React.FC<LandingFooterProps> = ({ className = '' }) => {
   return (
     <footer className={`bg-white border-t border-gray-200 py-12 ${className}`}>
       <div className="max-w-6xl mx-auto px-8">
@@ -17,12 +15,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
           <div className="md:col-span-1">
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 flex items-center justify-center">
-                <Image
-                  src="/logo.svg"
-                  alt="Ambira Logo"
-                  width={32}
-                  height={32}
-                />
+                <Image src="/logo.svg" alt="Ambira Logo" width={32} height={32} />
               </div>
               <span className="text-xl font-bold text-[#0066CC]">Ambira</span>
             </div>
@@ -65,34 +58,22 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
               <h3 className="font-semibold text-gray-900 mb-3">Product</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link
-                    href="/features"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
+                  <Link href="/features" className="text-gray-600 hover:text-[#0066CC]">
                     Features
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/activities"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
+                  <Link href="/activities" className="text-gray-600 hover:text-[#0066CC]">
                     Activities
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/groups"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
+                  <Link href="/groups" className="text-gray-600 hover:text-[#0066CC]">
                     Groups
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/challenges"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
+                  <Link href="/challenges" className="text-gray-600 hover:text-[#0066CC]">
                     Challenges
                   </Link>
                 </li>
@@ -103,34 +84,22 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
               <h3 className="font-semibold text-gray-900 mb-3">Resources</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link
-                    href="/about"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
+                  <Link href="/about" className="text-gray-600 hover:text-[#0066CC]">
                     About
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/feed"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
+                  <Link href="/feed" className="text-gray-600 hover:text-[#0066CC]">
                     Community
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/sessions"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
+                  <Link href="/sessions" className="text-gray-600 hover:text-[#0066CC]">
                     Sessions
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/tasks"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
+                  <Link href="/tasks" className="text-gray-600 hover:text-[#0066CC]">
                     Tasks
                   </Link>
                 </li>
@@ -141,26 +110,17 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
               <h3 className="font-semibold text-gray-900 mb-3">Support</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link
-                    href="/help"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
+                  <Link href="/help" className="text-gray-600 hover:text-[#0066CC]">
                     Help Center
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/contact"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
+                  <Link href="/contact" className="text-gray-600 hover:text-[#0066CC]">
                     Contact
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/status"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
+                  <Link href="/status" className="text-gray-600 hover:text-[#0066CC]">
                     Status
                   </Link>
                 </li>
@@ -171,26 +131,17 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
               <h3 className="font-semibold text-gray-900 mb-3">Legal</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link
-                    href="/privacy"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
+                  <Link href="/privacy" className="text-gray-600 hover:text-[#0066CC]">
                     Privacy
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/terms"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
+                  <Link href="/terms" className="text-gray-600 hover:text-[#0066CC]">
                     Terms
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="/cookies"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
+                  <Link href="/cookies" className="text-gray-600 hover:text-[#0066CC]">
                     Cookie Policy
                   </Link>
                 </li>
@@ -216,5 +167,5 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
         </div>
       </div>
     </footer>
-  );
-};
+  )
+}

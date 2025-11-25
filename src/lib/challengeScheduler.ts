@@ -3,7 +3,7 @@
  * Functions to check for challenges that need notifications
  */
 
-import { firebaseChallengeApi, challengeNotifications } from './api';
+import { firebaseChallengeApi, challengeNotifications } from './api'
 
 /**
  * Check for challenges ending soon and send notifications
@@ -14,26 +14,20 @@ export async function checkChallengesEndingSoon(): Promise<void> {
     // Get all active challenges
     const challenges = await firebaseChallengeApi.getChallenges({
       status: 'active',
-    });
+    })
 
-    const now = new Date();
-    const oneDayFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    const twoDaysFromNow = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+    const now = new Date()
+    const oneDayFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+    const twoDaysFromNow = new Date(now.getTime() + 48 * 60 * 60 * 1000)
 
     for (const challenge of challenges) {
-      const endDate = new Date(challenge.endDate);
+      const endDate = new Date(challenge.endDate)
 
       // Check if challenge ends within 1-2 days
       if (endDate > oneDayFromNow && endDate <= twoDaysFromNow) {
-        const daysRemaining = Math.ceil(
-          (endDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000)
-        );
+        const daysRemaining = Math.ceil((endDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
 
-        await challengeNotifications.notifyEndingSoon(
-          challenge.id,
-          challenge.name,
-          daysRemaining
-        );
+        await challengeNotifications.notifyEndingSoon(challenge.id, challenge.name, daysRemaining)
       }
     }
   } catch (_error) {}
@@ -46,8 +40,7 @@ export async function checkChallengesEndingSoon(): Promise<void> {
 export async function checkRankChanges(challengeId: string): Promise<void> {
   try {
     // Get current leaderboard
-    const _leaderboard =
-      await firebaseChallengeApi.getChallengeLeaderboard(challengeId);
+    const _leaderboard = await firebaseChallengeApi.getChallengeLeaderboard(challengeId)
 
     // For now, we'll skip rank change notifications as they require storing previous ranks
     // This could be implemented with a separate collection to track rank history
@@ -64,19 +57,9 @@ export async function testChallengeNotifications(
 ): Promise<void> {
   try {
     // Test completion notification
-    await challengeNotifications.notifyCompletion(
-      challengeId,
-      userId,
-      'Test Challenge'
-    );
+    await challengeNotifications.notifyCompletion(challengeId, userId, 'Test Challenge')
 
     // Test milestone notification
-    await challengeNotifications.notifyMilestone(
-      challengeId,
-      userId,
-      'Test Challenge',
-      25,
-      100
-    );
+    await challengeNotifications.notifyMilestone(challengeId, userId, 'Test Challenge', 25, 100)
   } catch (_error) {}
 }

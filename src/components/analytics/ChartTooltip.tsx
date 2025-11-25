@@ -1,13 +1,13 @@
 export interface TooltipPayload {
-  color: string;
-  name: string;
-  value: number;
+  color: string
+  name: string
+  value: number
 }
 
 export interface ChartTooltipProps {
-  active?: boolean;
-  payload?: TooltipPayload[];
-  label?: string;
+  active?: boolean
+  payload?: TooltipPayload[]
+  label?: string
 }
 
 export function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
@@ -21,7 +21,7 @@ export function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
           </p>
         ))}
       </div>
-    );
+    )
   }
-  return null;
+  return null
 }

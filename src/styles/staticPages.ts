@@ -116,9 +116,8 @@ export const staticPageStyles = {
   lastUpdated: 'text-sm text-gray-500',
 
   // Gradient CTA sections
-  gradientCta:
-    'bg-gradient-to-r from-[#0066CC] to-[#0051D5] text-white rounded-lg p-6 md:p-8',
-} as const;
+  gradientCta: 'bg-gradient-to-r from-[#0066CC] to-[#0051D5] text-white rounded-lg p-6 md:p-8',
+} as const
 
 /**
  * Helper function to get combined classes
@@ -128,15 +127,15 @@ export const getPageHeaderClasses = () => ({
   backButton: staticPageStyles.backButton,
   title: staticPageStyles.typography.pageTitle,
   description: staticPageStyles.typography.pageDescription,
-});
+})
 
 export const getSectionClasses = () => ({
   card: `${staticPageStyles.containers.card} ${staticPageStyles.spacing.sectionMargin}`,
   heading: `${staticPageStyles.typography.sectionHeading} mb-4`,
   body: staticPageStyles.typography.bodyText,
-});
+})
 
 export const getLinkClasses = () => ({
   inline: staticPageStyles.links.inline,
   email: staticPageStyles.links.email,
-});
+})

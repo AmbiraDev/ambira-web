@@ -131,13 +131,13 @@ Testing API response structure
 ```typescript
 // Verify API shape
 it('should return user with required fields', async () => {
-  const user = await getUser('user-1');
+  const user = await getUser('user-1')
 
-  expect(user).toHaveProperty('id');
-  expect(user).toHaveProperty('name');
-  expect(user).toHaveProperty('email');
-  expect(typeof user.id).toBe('string');
-});
+  expect(user).toHaveProperty('id')
+  expect(user).toHaveProperty('name')
+  expect(user).toHaveProperty('email')
+  expect(typeof user.id).toBe('string')
+})
 ```
 
 **Location**: `src/__tests__/contract/`
@@ -164,18 +164,18 @@ npm run test:e2e:ui
 ### Mock a Service
 
 ```typescript
-import * as userService from '@/services/userService';
+import * as userService from '@/services/userService'
 
-jest.mock('@/services/userService');
+jest.mock('@/services/userService')
 
 it('should call user service', () => {
-  (userService.getUser as jest.Mock).mockResolvedValue({
+  ;(userService.getUser as jest.Mock).mockResolvedValue({
     id: '1',
     name: 'John',
-  });
+  })
 
   // Test code
-});
+})
 ```
 
 ### Use Test Data Factory
@@ -275,33 +275,31 @@ it('should load data', async () => {
 ### Test Hooks
 
 ```typescript
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react'
 
 it('should increment', () => {
-  const { result } = renderHook(() => useCounter());
+  const { result } = renderHook(() => useCounter())
 
   act(() => {
-    result.current.increment();
-  });
+    result.current.increment()
+  })
 
-  expect(result.current.count).toBe(1);
-});
+  expect(result.current.count).toBe(1)
+})
 ```
 
 ### Test Firebase
 
 ```typescript
-import { firebaseMock } from '@/__tests__/__mocks__/firebaseMock';
+import { firebaseMock } from '@/__tests__/__mocks__/firebaseMock'
 
-jest.mock('firebase/firestore');
+jest.mock('firebase/firestore')
 
 it('should save to Firestore', async () => {
-  firebaseMock.db
-    .collection('sessions')
-    .add.mockResolvedValue({ id: 'session-1' });
+  firebaseMock.db.collection('sessions').add.mockResolvedValue({ id: 'session-1' })
 
   // Test code
-});
+})
 ```
 
 ---
@@ -316,11 +314,11 @@ it('should save to Firestore', async () => {
 
    ```typescript
    // Good - semantic
-   screen.getByRole('button', { name: /submit/i });
-   screen.getByLabelText(/email/i);
+   screen.getByRole('button', { name: /submit/i })
+   screen.getByLabelText(/email/i)
 
    // Avoid - brittle
-   screen.getByClassName('btn');
+   screen.getByClassName('btn')
    ```
 
 ### Test passes locally but fails in CI
@@ -329,13 +327,13 @@ it('should save to Firestore', async () => {
 
    ```typescript
    await waitFor(() => {
-     expect(screen.getByText('Done')).toBeInTheDocument();
-   });
+     expect(screen.getByText('Done')).toBeInTheDocument()
+   })
    ```
 
 2. Increase timeout:
    ```typescript
-   jest.setTimeout(10000);
+   jest.setTimeout(10000)
    ```
 
 ### Mock not working
@@ -345,8 +343,8 @@ it('should save to Firestore', async () => {
 3. Clear mocks between tests:
    ```typescript
    beforeEach(() => {
-     jest.clearAllMocks();
-   });
+     jest.clearAllMocks()
+   })
    ```
 
 ---

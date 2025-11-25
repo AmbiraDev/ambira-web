@@ -5,34 +5,34 @@
  * Coordinates between repositories to manage active sessions.
  */
 
-import { ActiveSession } from '@/domain/entities/ActiveSession';
-import { Session } from '@/domain/entities/Session';
-import { ActiveSessionRepository } from '@/infrastructure/firebase/repositories/ActiveSessionRepository';
-import { SessionRepository } from '@/infrastructure/firebase/repositories/SessionRepository';
+import { ActiveSession } from '@/domain/entities/ActiveSession'
+import { Session } from '@/domain/entities/Session'
+import { ActiveSessionRepository } from '@/infrastructure/firebase/repositories/ActiveSessionRepository'
+import { SessionRepository } from '@/infrastructure/firebase/repositories/SessionRepository'
 
 export interface StartTimerData {
-  userId: string;
-  projectId: string;
-  activityId?: string | null;
-  title?: string;
-  description?: string;
-  customStartTime?: Date;
+  userId: string
+  projectId: string
+  activityId?: string | null
+  title?: string
+  description?: string
+  customStartTime?: Date
 }
 
 export interface CompleteTimerData {
-  title?: string;
-  description?: string;
-  visibility?: 'everyone' | 'followers' | 'private';
-  groupIds?: string[];
+  title?: string
+  description?: string
+  visibility?: 'everyone' | 'followers' | 'private'
+  groupIds?: string[]
 }
 
 export class TimerService {
-  private readonly activeSessionRepo: ActiveSessionRepository;
-  private readonly sessionRepo: SessionRepository;
+  private readonly activeSessionRepo: ActiveSessionRepository
+  private readonly sessionRepo: SessionRepository
 
   constructor() {
-    this.activeSessionRepo = new ActiveSessionRepository();
-    this.sessionRepo = new SessionRepository();
+    this.activeSessionRepo = new ActiveSessionRepository()
+    this.sessionRepo = new SessionRepository()
   }
 
   /**
@@ -40,18 +40,16 @@ export class TimerService {
    */
   async startTimer(data: StartTimerData): Promise<ActiveSession> {
     // Business rule: Can't start a timer if one is already active
-    const existingSession = await this.activeSessionRepo.getActiveSession(
-      data.userId
-    );
+    const existingSession = await this.activeSessionRepo.getActiveSession(data.userId)
     if (existingSession) {
       throw new Error(
         'An active timer already exists. Please stop or complete the current session first.'
-      );
+      )
     }
 
     // Create new active session
-    const sessionId = this.generateSessionId();
-    const startTime = data.customStartTime || new Date();
+    const sessionId = this.generateSessionId()
+    const startTime = data.customStartTime || new Date()
     const activeSession = new ActiveSession(
       sessionId,
       data.userId,
@@ -63,90 +61,87 @@ export class TimerService {
       data.activityId,
       data.title,
       data.description
-    );
+    )
 
     // Save to repository
-    await this.activeSessionRepo.saveActiveSession(activeSession);
+    await this.activeSessionRepo.saveActiveSession(activeSession)
 
-    return activeSession;
+    return activeSession
   }
 
   /**
    * Get current active session
    */
   async getActiveSession(userId: string): Promise<ActiveSession | null> {
-    const session = await this.activeSessionRepo.getActiveSession(userId);
+    const session = await this.activeSessionRepo.getActiveSession(userId)
 
     // Business rule: If session is too old (>24 hours), auto-complete it
     if (session && session.isTooOld()) {
-      await this.autoCompleteSession(session);
-      return null;
+      await this.autoCompleteSession(session)
+      return null
     }
 
-    return session;
+    return session
   }
 
   /**
    * Pause active timer
    */
   async pauseTimer(userId: string): Promise<ActiveSession> {
-    const activeSession = await this.activeSessionRepo.getActiveSession(userId);
+    const activeSession = await this.activeSessionRepo.getActiveSession(userId)
 
     if (!activeSession) {
-      throw new Error('No active timer to pause');
+      throw new Error('No active timer to pause')
     }
 
     if (activeSession.status === 'paused') {
-      throw new Error('Timer is already paused');
+      throw new Error('Timer is already paused')
     }
 
     // Create paused session
-    const pausedSession = activeSession.withPause();
+    const pausedSession = activeSession.withPause()
 
     // Save updated session
-    await this.activeSessionRepo.saveActiveSession(pausedSession);
+    await this.activeSessionRepo.saveActiveSession(pausedSession)
 
-    return pausedSession;
+    return pausedSession
   }
 
   /**
    * Resume paused timer
    */
   async resumeTimer(userId: string): Promise<ActiveSession> {
-    const activeSession = await this.activeSessionRepo.getActiveSession(userId);
+    const activeSession = await this.activeSessionRepo.getActiveSession(userId)
 
     if (!activeSession) {
-      throw new Error('No active timer to resume');
+      throw new Error('No active timer to resume')
     }
 
     if (activeSession.status === 'running') {
-      throw new Error('Timer is already running');
+      throw new Error('Timer is already running')
     }
 
     // Create resumed session
-    const resumedSession = activeSession.withResume();
+    const resumedSession = activeSession.withResume()
 
     // Save updated session
-    await this.activeSessionRepo.saveActiveSession(resumedSession);
+    await this.activeSessionRepo.saveActiveSession(resumedSession)
 
-    return resumedSession;
+    return resumedSession
   }
 
   /**
    * Complete and save timer as session
    */
-  async completeTimer(
-    userId: string,
-    data: CompleteTimerData = {}
-  ): Promise<Session> {
-    const activeSession = await this.activeSessionRepo.getActiveSession(userId);
+  async completeTimer(userId: string, data: CompleteTimerData = {}): Promise<Session> {
+    const activeSession = await this.activeSessionRepo.getActiveSession(userId)
 
     if (!activeSession) {
-      throw new Error('No active timer to complete');
+      throw new Error('No active timer to complete')
     }
 
     // Convert to completed session data
-    const completedData = activeSession.toCompletedSessionData();
+    const completedData = activeSession.toCompletedSessionData()
 
     // Create Session entity
     const session = new Session(
@@ -162,36 +157,36 @@ export class TimerService {
       0, // supportCount
       0, // commentCount
       data.groupIds || []
-    );
+    )
 
     // Save as completed session
-    await this.sessionRepo.save(session);
+    await this.sessionRepo.save(session)
 
     // Delete active session
-    await this.activeSessionRepo.deleteActiveSession(userId, activeSession.id);
+    await this.activeSessionRepo.deleteActiveSession(userId, activeSession.id)
 
-    return session;
+    return session
   }
 
   /**
    * Stop timer without saving (discard)
    */
   async stopTimer(userId: string): Promise<void> {
-    const activeSession = await this.activeSessionRepo.getActiveSession(userId);
+    const activeSession = await this.activeSessionRepo.getActiveSession(userId)
 
     if (!activeSession) {
-      throw new Error('No active timer to stop');
+      throw new Error('No active timer to stop')
     }
 
     // Delete active session
-    await this.activeSessionRepo.deleteActiveSession(userId, activeSession.id);
+    await this.activeSessionRepo.deleteActiveSession(userId, activeSession.id)
   }
 
   /**
    * Cancel timer without saving (alias for stopTimer)
    */
   async cancelTimer(userId: string): Promise<void> {
-    return this.stopTimer(userId);
+    return this.stopTimer(userId)
   }
 
   /**
@@ -202,60 +197,57 @@ export class TimerService {
     title?: string,
     description?: string
   ): Promise<ActiveSession> {
-    const activeSession = await this.activeSessionRepo.getActiveSession(userId);
+    const activeSession = await this.activeSessionRepo.getActiveSession(userId)
 
     if (!activeSession) {
-      throw new Error('No active timer to update');
+      throw new Error('No active timer to update')
     }
 
     // Create updated session
-    const updatedSession = activeSession.withMetadata(title, description);
+    const updatedSession = activeSession.withMetadata(title, description)
 
     // Save updated session
-    await this.activeSessionRepo.saveActiveSession(updatedSession);
+    await this.activeSessionRepo.saveActiveSession(updatedSession)
 
-    return updatedSession;
+    return updatedSession
   }
 
   /**
    * Adjust timer start time
    */
-  async adjustStartTime(
-    userId: string,
-    newStartTime: Date
-  ): Promise<ActiveSession> {
-    const activeSession = await this.activeSessionRepo.getActiveSession(userId);
+  async adjustStartTime(userId: string, newStartTime: Date): Promise<ActiveSession> {
+    const activeSession = await this.activeSessionRepo.getActiveSession(userId)
 
     if (!activeSession) {
-      throw new Error('No active timer to adjust');
+      throw new Error('No active timer to adjust')
     }
 
     // Validate the new start time isn't in the future
     if (newStartTime > new Date()) {
-      throw new Error('Start time cannot be in the future');
+      throw new Error('Start time cannot be in the future')
     }
 
     // Create session with adjusted start time
-    const adjustedSession = activeSession.withAdjustedStartTime(newStartTime);
+    const adjustedSession = activeSession.withAdjustedStartTime(newStartTime)
 
     // Save updated session
-    await this.activeSessionRepo.saveActiveSession(adjustedSession);
+    await this.activeSessionRepo.saveActiveSession(adjustedSession)
 
-    return adjustedSession;
+    return adjustedSession
   }
 
   /**
    * Auto-save active session (periodic persistence)
    */
   async autoSaveSession(userId: string): Promise<void> {
-    const activeSession = await this.activeSessionRepo.getActiveSession(userId);
+    const activeSession = await this.activeSessionRepo.getActiveSession(userId)
 
     if (!activeSession) {
-      return; // Nothing to save
+      return // Nothing to save
     }
 
     // Simply re-save the session (updates timestamp)
-    await this.activeSessionRepo.saveActiveSession(activeSession);
+    await this.activeSessionRepo.saveActiveSession(activeSession)
   }
 
   /**
@@ -264,7 +256,7 @@ export class TimerService {
   private async autoCompleteSession(session: ActiveSession): Promise<void> {
     try {
       // Complete session with default visibility
-      const completedData = session.toCompletedSessionData();
+      const completedData = session.toCompletedSessionData()
 
       const completedSession = new Session(
         session.id,
@@ -279,13 +271,10 @@ export class TimerService {
         0,
         0,
         []
-      );
+      )
 
-      await this.sessionRepo.save(completedSession);
-      await this.activeSessionRepo.deleteActiveSession(
-        session.userId,
-        session.id
-      );
+      await this.sessionRepo.save(completedSession)
+      await this.activeSessionRepo.deleteActiveSession(session.userId, session.id)
     } catch (_err) {
       // Don't throw - this is a background cleanup operation
     }
@@ -295,6 +284,6 @@ export class TimerService {
    * Generate unique session ID
    */
   private generateSessionId(): string {
-    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 }
