@@ -1,0 +1,104 @@
+# Ambira Weekly Status Report: 12/01/2025
+
+## Team Report
+
+### Last Week’s Goals
+- Complete 1 web stretch goal
+- Finalize mobile UI
+
+### Progress and Issues
+- Mobile UI is complete and Firebase integration is underway
+- Still working through the GitHub issues on our web repo
+- Google auth through Firebase has been difficult to set up
+
+### Plans and Goals for Next Week
+- Finish Firebase integration for mobile
+- Implement and test challenges
+- Reevaluate both the mobile and web testing suites
+
+## Individual Contributions
+
+### Hugh Gramelspacher
+
+#### Last Week’s Goals
+- Prepare Ambira for beta presentation and demo
+- Continue squashing bugs
+
+#### Progress and Issues
+- Cleaned up UI inconsistencies on web and improved styling across multiple pages
+- Tightened test coverage and resolved several failing tests in pipeline
+
+#### Plans and Goals for Next Week
+- Finalize demo flow and polish UI for presentation
+- Continue stabilizing the web app and handle last minute issues
+
+### Nobel Tsegai
+
+#### Last Week’s Goals
+- Push forward on mono repo migration tasks
+- Support mobile feature integration with backend logic
+
+#### Progress and Issues
+- firebase integration and calls for authorization and mobile home page posts
+- debugging issues and failures with firebase on mobile
+- improving testing suite for component testing
+
+#### Plans and Goals for Next Week
+- work on challenges for mobile
+- work on wrapping up and finalizing parts of web for some some remaining stretch goal
+
+### Donovan Hsiao
+
+#### Last Week’s Goals
+- Continue improving mobile UI screens and polishing interaction flow
+
+#### Progress and Issues
+- Finalizing UI for edit profile, home screen, passive loading on mobile
+
+#### Plans and Goals for Next Week
+- Deploy mobile
+- Debug all issues on Github
+- Prepare presentation and demo
+
+### Timothy Hoang
+
+#### Last Week’s Goals
+- Begin hooking up mobile screens to Firebase data
+- Help refine UI animations and styles
+
+#### Progress and Issues
+- Still working on hooking up Firebase Auth with expo. Stuck on this part, facing a Google OAuth 2.0 policy error
+
+#### Plans and Goals for Next Week
+- Complete the mobile app by the end of this week. If this is not possible complete all the stretch goals for the web app
+-Work with the team to practice or presentation demo
+
+### Ryan O’Connor
+
+#### Last Week’s Goals
+- Continue developing mobile MVP components
+- Begin implementing challenge logic and moderation tools
+
+#### Progress and Issues
+- Completed mobile UI
+- Began Firebase integration
+- Stuck of debugging Google auth through Firebase
+
+#### Plans and Goals for Next Week
+- Sort out OAuth 2.0 issues
+- Reevaluate mobile testing suite
+- Work on mobile implementation of challenges
+
+### Steven Luong
+
+#### Last Week’s Goals
+- Implement core mobile functionality including task creation and feed elements
+- Start connecting UI to backend endpoints and prepare demo flow
+
+#### Progress and Issues
+- Core mobile functionality is developed
+- Still working on connecting the UI to backend
+
+#### Plans and Goals for Next Week
+- Get ready and finalize the project we want to present
+
