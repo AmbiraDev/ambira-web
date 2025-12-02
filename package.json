@@ -47,7 +47,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "firebase": "^12.3.0",
+    "firebase": "^12.6.0",
     "firebase-admin": "^13.5.0",
     "firebase-tools": "^14.21.0",
     "heic2any": "^0.0.4",
