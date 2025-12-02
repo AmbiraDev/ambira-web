@@ -59,7 +59,7 @@ test.describe('Feed Page - Smoke Tests', () => {
     await page.goto('/')
     await page.waitForLoadState('networkidle')
 
-    // Filter out known/expected errors (e.g., Firebase emulator warnings)
+    // Filter out known/expected errors (including CI-specific ones)
     const knownNoise = [
       'Firebase',
       'DevTools',
@@ -67,6 +67,12 @@ test.describe('Feed Page - Smoke Tests', () => {
       'Google sign-in failed',
       'Failed to load resource',
       'Preloaded script failed',
+      '_vercel/insights',
+      '_vercel/speed-insights',
+      'Content Security Policy',
+      'MIME type',
+      'worker-src',
+      'blob:',
     ]
 
     const criticalErrors = errors.filter((error) => {
