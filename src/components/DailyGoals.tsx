@@ -31,17 +31,18 @@ function DailyGoals() {
     [activities]
   )
 
+  // Memoize activities with goals to prevent unnecessary re-renders
+  const activitiesWithGoals = useMemo(
+    () => activities.filter((activity) => activity.weeklyTarget && activity.weeklyTarget > 0),
+    [activitiesKey] // eslint-disable-line react-hooks/exhaustive-deps
+  )
+
   useEffect(() => {
     const loadDailyGoals = async () => {
       if (!user) {
         setIsLoading(false)
         return
       }
-
-      // Filter activities with weekly targets
-      const activitiesWithGoals = activities.filter(
-        (activity) => activity.weeklyTarget && activity.weeklyTarget > 0
-      )
 
       if (activitiesWithGoals.length === 0) {
         setGoals([])
@@ -108,7 +109,7 @@ function DailyGoals() {
     }
 
     loadDailyGoals()
-  }, [user, activitiesKey, activities])
+  }, [user, activitiesWithGoals]) // Include user object to satisfy exhaustive-deps
 
   // Format time display
   const formatProgress = (current: number, goal: number) => {

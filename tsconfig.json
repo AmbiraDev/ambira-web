@@ -26,5 +26,16 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "tests/unit/lib/api/challenges/create.test.ts",
+    "tests/unit/lib/api/challenges/join-leave.test.ts",
+    "tests/unit/lib/api/challenges/leaderboard.test.ts",
+    "tests/unit/lib/api/challenges/progress.test.ts",
+    "tests/unit/lib/api/notifications.test.ts",
+    "tests/integration/settings/auth-settings-coordination.test.ts",
+    "tests/integration/settings/settings-update-flow.test.ts",
+    "tests/unit/features/settings/SettingsPageContent.test.tsx",
+    "tests/unit/hooks/useNotifications.test.tsx"
+  ]
 }

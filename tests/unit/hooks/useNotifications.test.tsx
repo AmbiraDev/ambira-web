@@ -1,3 +1,4 @@
+
 /**
  * Unit Tests: useNotifications hooks
  * Tests all notification-related hooks including mark all as read and clear all
@@ -73,7 +74,7 @@ describe('hooks/useNotifications', () => {
     jest.clearAllMocks()
 
     // Reset useAuth mock to default state
-    const { useAuth } = await import('@/hooks/useAuth')
+    const { useAuth } = jest.requireMock('@/hooks/useAuth')
     useAuth.mockReturnValue({
       user: mockAuthUser,
       isAuthenticated: true,
@@ -138,7 +139,7 @@ describe('hooks/useNotifications', () => {
     it('should return empty array for unauthenticated user', async () => {
       // Note: When changing auth state mid-test, React Query's disabled query
       // returns undefined (not an empty array) because the query never ran
-      const { useAuth } = await import('@/hooks/useAuth')
+      const { useAuth } = jest.requireMock('@/hooks/useAuth')
       useAuth.mockReturnValue({
         user: null,
         isAuthenticated: false,
@@ -361,7 +362,7 @@ describe('hooks/useNotifications', () => {
     })
 
     it('should handle unauthenticated user', async () => {
-      const { useAuth } = await import('@/hooks/useAuth')
+      const { useAuth } = jest.requireMock('@/hooks/useAuth')
       useAuth.mockReturnValue({
         user: null,
         isAuthenticated: false,
@@ -513,7 +514,7 @@ describe('hooks/useNotifications', () => {
     })
 
     it('should handle unauthenticated user', async () => {
-      const { useAuth } = await import('@/hooks/useAuth')
+      const { useAuth } = jest.requireMock('@/hooks/useAuth')
       useAuth.mockReturnValue({
         user: null,
         isAuthenticated: false,
