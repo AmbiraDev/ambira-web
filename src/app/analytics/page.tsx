@@ -20,7 +20,7 @@ import {
   ComposedChart,
   Area,
 } from 'recharts'
-import { ChevronDown, BarChart3, TrendingUp, Activity } from 'lucide-react'
+import { ChevronDown, Activity } from 'lucide-react'
 import { IconRenderer } from '@/components/IconRenderer'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { safeNumber } from '@/lib/utils'
@@ -392,39 +392,11 @@ export default function AnalyticsPage() {
     return null
   }
 
-  // Empty state component for charts
-  const ChartEmptyState = ({
-    icon: Icon,
-    title,
-    description,
-  }: {
-    icon: React.ElementType
-    title: string
-    description: string
-  }) => (
-    <div
-      className="h-full flex items-center justify-center"
-      role="status"
-      aria-label={`No data: ${title}`}
-    >
-      <div className="text-center max-w-md px-4">
-        <Icon className="w-16 h-16 md:w-20 md:h-20 text-gray-300 mx-auto mb-4" aria-hidden="true" />
-        <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">{title}</h3>
-        <p className="text-sm md:text-base text-gray-600 mb-4">{description}</p>
-        <button
-          onClick={() => router.push('/timer')}
-          className="inline-flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-3 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors duration-200 font-semibold text-sm md:text-base shadow-md hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
-          aria-label="Start tracking your first session"
-        >
-          <Activity className="w-4 h-4 md:w-5 md:h-5" aria-hidden="true" />
-          Start Timer
-        </button>
-      </div>
-    </div>
-  )
-
   // Check if user has no sessions at all for full-page empty state
   const hasNoSessions = sessions.length === 0
+
+  // Wider ranges (3M/1Y) need extra left padding to keep Y-axis labels visible
+  const isLongRangePeriod = timePeriod === '3M' || timePeriod === '1Y'
 
   // Helper to render percentage change
   const renderPercentageChange = (change: number | null) => {
@@ -708,12 +680,6 @@ export default function AnalyticsPage() {
                   <div className="h-72">
                     {isLoading ? (
                       <div className="h-full bg-gray-50 rounded animate-pulse" />
-                    ) : chartData.length === 0 || chartData.every((d) => d.hours === 0) ? (
-                      <ChartEmptyState
-                        icon={BarChart3}
-                        title="No session data yet"
-                        description="Start tracking your productive sessions to see your hours visualized over time. Your progress will appear here!"
-                      />
                     ) : (
                       <ResponsiveContainer width="100%" height="100%">
                         {chartType === 'bar' ? (
@@ -722,7 +688,7 @@ export default function AnalyticsPage() {
                             margin={{
                               top: 10,
                               right: 10,
-                              left: -20,
+                              left: isLongRangePeriod ? 4 : -20,
                               bottom: 0,
                             }}
                           >
@@ -752,7 +718,7 @@ export default function AnalyticsPage() {
                             margin={{
                               top: 10,
                               right: 10,
-                              left: -20,
+                              left: isLongRangePeriod ? 4 : -20,
                               bottom: 0,
                             }}
                           >
@@ -798,84 +764,75 @@ export default function AnalyticsPage() {
                       <h3 className="font-semibold text-gray-900">Average session duration</h3>
                     </div>
                     <div className="h-48">
-                      {avgDurationData.length === 0 ||
-                      avgDurationData.every((d) => d.value === 0) ? (
-                        <ChartEmptyState
-                          icon={TrendingUp}
-                          title="No duration data"
-                          description="Track sessions to see your average session duration trends and improve your productivity!"
-                        />
-                      ) : (
-                        <ResponsiveContainer width="100%" height="100%">
-                          {chartType === 'bar' ? (
-                            <BarChart
-                              data={avgDurationData}
-                              margin={{
-                                top: 5,
-                                right: 5,
-                                left: -30,
-                                bottom: 0,
-                              }}
-                            >
-                              <XAxis
-                                dataKey="name"
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <YAxis
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <Tooltip content={<CustomTooltip />} />
-                              <Bar
-                                dataKey="value"
-                                fill="#34C759"
-                                radius={[4, 4, 0, 0]}
-                                name="Minutes"
-                              />
-                            </BarChart>
-                          ) : (
-                            <ComposedChart
-                              data={avgDurationData}
-                              margin={{
-                                top: 5,
-                                right: 5,
-                                left: -30,
-                                bottom: 0,
-                              }}
-                            >
-                              <defs>
-                                <linearGradient id="colorAvgDuration" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#34C759" stopOpacity={0.3} />
-                                  <stop offset="95%" stopColor="#34C759" stopOpacity={0} />
-                                </linearGradient>
-                              </defs>
-                              <XAxis
-                                dataKey="name"
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <YAxis
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <Tooltip content={<CustomTooltip />} />
-                              <Area
-                                type="monotone"
-                                dataKey="value"
-                                stroke="#34C759"
-                                strokeWidth={2}
-                                fill="url(#colorAvgDuration)"
-                                name="Minutes"
-                              />
-                            </ComposedChart>
-                          )}
-                        </ResponsiveContainer>
-                      )}
+                      <ResponsiveContainer width="100%" height="100%">
+                        {chartType === 'bar' ? (
+                          <BarChart
+                            data={avgDurationData}
+                            margin={{
+                              top: 5,
+                              right: 5,
+                              left: -30,
+                              bottom: 0,
+                            }}
+                          >
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Bar
+                              dataKey="value"
+                              fill="#34C759"
+                              radius={[4, 4, 0, 0]}
+                              name="Minutes"
+                            />
+                          </BarChart>
+                        ) : (
+                          <ComposedChart
+                            data={avgDurationData}
+                            margin={{
+                              top: 5,
+                              right: 5,
+                              left: -30,
+                              bottom: 0,
+                            }}
+                          >
+                            <defs>
+                              <linearGradient id="colorAvgDuration" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#34C759" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#34C759" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Area
+                              type="monotone"
+                              dataKey="value"
+                              stroke="#34C759"
+                              strokeWidth={2}
+                              fill="url(#colorAvgDuration)"
+                              name="Minutes"
+                            />
+                          </ComposedChart>
+                        )}
+                      </ResponsiveContainer>
                     </div>
                   </div>
 
@@ -885,83 +842,75 @@ export default function AnalyticsPage() {
                       <h3 className="font-semibold text-gray-900">Sessions completed</h3>
                     </div>
                     <div className="h-48">
-                      {chartData.length === 0 || chartData.every((d) => d.sessions === 0) ? (
-                        <ChartEmptyState
-                          icon={Activity}
-                          title="No sessions tracked"
-                          description="Complete your first session to start building your productivity streak and track your progress!"
-                        />
-                      ) : (
-                        <ResponsiveContainer width="100%" height="100%">
-                          {chartType === 'bar' ? (
-                            <BarChart
-                              data={chartData}
-                              margin={{
-                                top: 5,
-                                right: 5,
-                                left: -30,
-                                bottom: 0,
-                              }}
-                            >
-                              <XAxis
-                                dataKey="name"
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <YAxis
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <Tooltip content={<CustomTooltip />} />
-                              <Bar
-                                dataKey="sessions"
-                                fill="#34C759"
-                                radius={[4, 4, 0, 0]}
-                                name="Sessions"
-                              />
-                            </BarChart>
-                          ) : (
-                            <ComposedChart
-                              data={chartData}
-                              margin={{
-                                top: 5,
-                                right: 5,
-                                left: -30,
-                                bottom: 0,
-                              }}
-                            >
-                              <defs>
-                                <linearGradient id="colorSessionsSmall" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#34C759" stopOpacity={0.3} />
-                                  <stop offset="95%" stopColor="#34C759" stopOpacity={0} />
-                                </linearGradient>
-                              </defs>
-                              <XAxis
-                                dataKey="name"
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <YAxis
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <Tooltip content={<CustomTooltip />} />
-                              <Area
-                                type="monotone"
-                                dataKey="sessions"
-                                stroke="#34C759"
-                                strokeWidth={2}
-                                fill="url(#colorSessionsSmall)"
-                                name="Sessions"
-                              />
-                            </ComposedChart>
-                          )}
-                        </ResponsiveContainer>
-                      )}
+                      <ResponsiveContainer width="100%" height="100%">
+                        {chartType === 'bar' ? (
+                          <BarChart
+                            data={chartData}
+                            margin={{
+                              top: 5,
+                              right: 5,
+                              left: -30,
+                              bottom: 0,
+                            }}
+                          >
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Bar
+                              dataKey="sessions"
+                              fill="#34C759"
+                              radius={[4, 4, 0, 0]}
+                              name="Sessions"
+                            />
+                          </BarChart>
+                        ) : (
+                          <ComposedChart
+                            data={chartData}
+                            margin={{
+                              top: 5,
+                              right: 5,
+                              left: -30,
+                              bottom: 0,
+                            }}
+                          >
+                            <defs>
+                              <linearGradient id="colorSessionsSmall" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#34C759" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#34C759" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Area
+                              type="monotone"
+                              dataKey="sessions"
+                              stroke="#34C759"
+                              strokeWidth={2}
+                              fill="url(#colorSessionsSmall)"
+                              name="Sessions"
+                            />
+                          </ComposedChart>
+                        )}
+                      </ResponsiveContainer>
                     </div>
                   </div>
                 </div>
