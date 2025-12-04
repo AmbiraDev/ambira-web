@@ -782,8 +782,8 @@ When reporting bugs, include:
 
 ## Need More Help?
 
-- **Documentation Hub**: [docs/index.md](/docs/index.md)
 - **Features Overview**: [docs/FEATURES.md](/docs/FEATURES.md)
+- **Developer Guide**: [docs/DEVELOPER_GUIDE.md](/docs/DEVELOPER_GUIDE.md)
 - **Setup Guides**: [docs/setup/](/docs/setup/)
 - **Contact Support**: Use "Contact Us" in app footer
 - **Report Bugs**: support@ambira.app
