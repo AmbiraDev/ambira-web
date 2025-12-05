@@ -465,7 +465,6 @@ export function SettingsPageContent() {
                       <PrivacyFormSection
                         idPrefix="-desktop"
                         profileVisibility={formData.profileVisibility}
-                        originalProfileVisibility={originalFormData.profileVisibility}
                         isSaving={isSaving}
                         hasChanges={hasChanges}
                         saved={saved}
@@ -591,7 +590,6 @@ export function SettingsPageContent() {
                       <PrivacyFormSection
                         idPrefix="-mobile"
                         profileVisibility={formData.profileVisibility}
-                        originalProfileVisibility={originalFormData.profileVisibility}
                         isSaving={isSaving}
                         hasChanges={hasChanges}
                         saved={saved}
@@ -989,7 +987,6 @@ function ProfileFormSection({
 interface PrivacyFormSectionProps {
   idPrefix: string
   profileVisibility: 'everyone' | 'followers' | 'private'
-  originalProfileVisibility: 'everyone' | 'followers' | 'private'
   isSaving: boolean
   hasChanges: boolean
   saved: boolean
@@ -1001,7 +998,6 @@ interface PrivacyFormSectionProps {
 function PrivacyFormSection({
   idPrefix,
   profileVisibility,
-  originalProfileVisibility,
   isSaving,
   hasChanges,
   saved,
