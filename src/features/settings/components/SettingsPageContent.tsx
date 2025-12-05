@@ -38,8 +38,22 @@ import { firebaseUserApi } from '@/lib/api'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { useQueryClient } from '@tanstack/react-query'
 import { AUTH_KEYS } from '@/lib/react-query/auth.queries'
+import type { AuthUser } from '@/types'
 
 type SettingsSection = 'profile' | 'privacy' | null
+
+type ProfileFormState = {
+  name: string
+  tagline: string
+  pronouns: string
+  bio: string
+  location: string
+  website: string
+  twitter: string
+  github: string
+  linkedin: string
+  profileVisibility: 'everyone' | 'followers' | 'private'
+}
 
 export function SettingsPageContent() {
   const { user, logout } = useAuth()
@@ -48,7 +62,7 @@ export function SettingsPageContent() {
   const [expandedSection, setExpandedSection] = useState<SettingsSection>(null)
   // Desktop: active section state for sidebar navigation
   const [activeSection, setActiveSection] = useState<SettingsSection>('profile')
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProfileFormState>({
     name: user?.name || '',
     tagline: user?.tagline || '',
     pronouns: user?.pronouns || '',
@@ -66,7 +80,7 @@ export function SettingsPageContent() {
   const [profilePictureUrl, setProfilePictureUrl] = useState(user?.profilePicture || '')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [originalFormData, setOriginalFormData] = useState({
+  const [originalFormData, setOriginalFormData] = useState<ProfileFormState>({
     name: user?.name || '',
     tagline: user?.tagline || '',
     pronouns: user?.pronouns || '',
@@ -81,15 +95,15 @@ export function SettingsPageContent() {
   const [urlError, setUrlError] = useState('')
 
   // URL validation helper
-  const validateURL = (url: string): boolean => {
-    if (!url) return true // Optional field
+  const validateURL = useCallback((url: string): boolean => {
+    if (!url) return true
     try {
       new URL(url)
       return url.startsWith('http://') || url.startsWith('https://')
     } catch {
       return false
     }
-  }
+  }, [])
 
   // Settings menu structure for vertical layout (mobile)
   const settingsItems = [
@@ -290,6 +304,14 @@ export function SettingsPageContent() {
     setFormData((prev) => ({ ...prev, website: e.target.value }))
   }, [])
 
+  const handleWebsiteBlur = useCallback(
+    (value: string) => {
+      const isValid = validateURL(value)
+      setUrlError(isValid ? '' : 'Please enter a valid URL starting with http:// or https://')
+    },
+    [validateURL]
+  )
+
   const handleTwitterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, twitter: e.target.value }))
   }, [])
@@ -309,374 +331,14 @@ export function SettingsPageContent() {
     }))
   }, [])
 
+  const handlePrivacyReset = useCallback(() => {
+    setFormData((prev) => ({
+      ...prev,
+      profileVisibility: originalFormData.profileVisibility,
+    }))
+  }, [originalFormData.profileVisibility])
+
   // Profile Form Component (reusable for both desktop and mobile)
-  const ProfileForm = ({ idPrefix = '' }: { idPrefix?: string }) => (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Profile Picture */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">Profile Picture</label>
-        <div className="flex items-center gap-6">
-          {profilePictureUrl || user?.profilePicture ? (
-            <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-white flex-shrink-0">
-              <Image
-                src={profilePictureUrl || user?.profilePicture || ''}
-                alt="Profile"
-                width={96}
-                height={96}
-                quality={95}
-                priority
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="w-24 h-24 bg-gradient-to-br from-[#FC4C02] to-[#FF8800] rounded-full flex items-center justify-center text-white text-4xl font-bold flex-shrink-0">
-              {user?.name.charAt(0).toUpperCase() || 'N'}
-            </div>
-          )}
-          <div className="flex-1">
-            <input
-              type="file"
-              id={`profile-photo-upload${idPrefix}`}
-              accept="image/jpeg,image/png,image/gif,image/webp"
-              onChange={handlePhotoUpload}
-              className="hidden"
-            />
-            <label
-              htmlFor={`profile-photo-upload${idPrefix}`}
-              className={`inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer ${isUploadingPhoto ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              {isUploadingPhoto ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-gray-300 border-t-[#0066CC] rounded-full animate-spin"></div>
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4" />
-                  Upload Photo
-                </>
-              )}
-            </label>
-            <p className="text-sm text-gray-500 mt-2">JPG, PNG, GIF or WebP. Max 5MB.</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Name */}
-      <div>
-        <label
-          htmlFor={`name${idPrefix}`}
-          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-        >
-          <User className="w-4 h-4" />
-          Name
-        </label>
-        <input
-          type="text"
-          id={`name${idPrefix}`}
-          value={formData.name}
-          onChange={handleNameChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-        />
-      </div>
-
-      {/* Username */}
-      <div>
-        <label
-          htmlFor={`username${idPrefix}`}
-          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-        >
-          <User className="w-4 h-4" />
-          Username
-        </label>
-        <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">@</span>
-          <input
-            type="text"
-            id={`username${idPrefix}`}
-            value={user?.username || ''}
-            disabled
-            className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-          />
-        </div>
-        <p className="text-xs text-gray-500 mt-1">
-          Username cannot be changed - it&apos;s your unique identifier
-        </p>
-      </div>
-
-      {/* Tagline */}
-      <div>
-        <label
-          htmlFor={`tagline${idPrefix}`}
-          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-        >
-          Tagline
-        </label>
-        <input
-          type="text"
-          id={`tagline${idPrefix}`}
-          value={formData.tagline}
-          onChange={handleTaglineChange}
-          maxLength={60}
-          placeholder="Your headline or current status..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-        />
-        <p className="text-sm text-gray-500 mt-1">
-          {formData.tagline.length}/60 • Appears below your name on your profile
-        </p>
-      </div>
-
-      {/* Pronouns */}
-      <div>
-        <label
-          htmlFor={`pronouns${idPrefix}`}
-          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-        >
-          Pronouns
-        </label>
-        <input
-          type="text"
-          id={`pronouns${idPrefix}`}
-          value={formData.pronouns}
-          onChange={handlePronounsChange}
-          maxLength={20}
-          placeholder="e.g., she/her, he/him, they/them"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-        />
-      </div>
-
-      {/* Bio */}
-      <div>
-        <label
-          htmlFor={`bio${idPrefix}`}
-          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-        >
-          Bio
-        </label>
-        <textarea
-          id={`bio${idPrefix}`}
-          value={formData.bio}
-          onChange={handleBioChange}
-          rows={4}
-          maxLength={160}
-          placeholder="Tell us about yourself..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none resize-none"
-        />
-        <p className="text-sm text-gray-500 mt-1">{formData.bio.length}/160</p>
-      </div>
-
-      {/* Location */}
-      <div>
-        <label
-          htmlFor={`location${idPrefix}`}
-          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-        >
-          <Globe className="w-4 h-4" />
-          Location
-        </label>
-        <input
-          type="text"
-          id={`location${idPrefix}`}
-          value={formData.location}
-          onChange={handleLocationChange}
-          placeholder="City, Country"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-        />
-      </div>
-
-      {/* Links Section */}
-      <div className="pt-4 border-t border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Links</h3>
-
-        {/* Website */}
-        <div className="mb-4">
-          <label
-            htmlFor={`website${idPrefix}`}
-            className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-          >
-            <LinkIcon className="w-4 h-4" />
-            Website
-          </label>
-          <input
-            type="url"
-            id={`website${idPrefix}`}
-            value={formData.website}
-            onChange={handleWebsiteChange}
-            onBlur={(e) => {
-              const isValid = validateURL(e.target.value)
-              setUrlError(
-                isValid ? '' : 'Please enter a valid URL starting with http:// or https://'
-              )
-            }}
-            placeholder="https://yourwebsite.com"
-            pattern="https?://.*"
-            aria-invalid={urlError ? 'true' : 'false'}
-            aria-describedby={urlError ? `website-error${idPrefix}` : undefined}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none ${
-              urlError ? 'border-red-500' : 'border-gray-300'
-            }`}
-          />
-          {urlError && (
-            <p id={`website-error${idPrefix}`} className="text-sm text-red-600 mt-1" role="alert">
-              {urlError}
-            </p>
-          )}
-        </div>
-
-        {/* Social Links */}
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor={`twitter${idPrefix}`}
-              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-            >
-              <Twitter className="w-4 h-4" />
-              Twitter/X
-            </label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">@</span>
-              <input
-                type="text"
-                id={`twitter${idPrefix}`}
-                value={formData.twitter}
-                onChange={handleTwitterChange}
-                placeholder="username"
-                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor={`github${idPrefix}`}
-              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-            >
-              <Github className="w-4 h-4" />
-              GitHub
-            </label>
-            <input
-              type="text"
-              id={`github${idPrefix}`}
-              value={formData.github}
-              onChange={handleGithubChange}
-              placeholder="username"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor={`linkedin${idPrefix}`}
-              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-            >
-              <Linkedin className="w-4 h-4" />
-              LinkedIn
-            </label>
-            <input
-              type="text"
-              id={`linkedin${idPrefix}`}
-              value={formData.linkedin}
-              onChange={handleLinkedinChange}
-              placeholder="username"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Submit Buttons */}
-      <div className="flex gap-3 pt-4">
-        <a
-          href={user ? `/profile/${user.username}` : '/'}
-          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center"
-        >
-          Cancel
-        </a>
-        <button
-          type="submit"
-          disabled={isSaving || !hasChanges}
-          className={`px-6 py-2 rounded-lg transition-colors text-white ${
-            isSaving || !hasChanges
-              ? 'bg-gray-400 cursor-not-allowed'
-              : saved
-                ? 'bg-[#34C759] hover:bg-[#34C759]'
-                : 'bg-[#0066CC] hover:bg-[#0051D5]'
-          }`}
-        >
-          {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
-        </button>
-      </div>
-    </form>
-  )
-
-  // Privacy Form Component (reusable for both desktop and mobile)
-  const PrivacyForm = ({ idPrefix = '' }: { idPrefix?: string }) => (
-    <div className="space-y-6">
-      <div>
-        <label
-          htmlFor={`profileVisibility${idPrefix}`}
-          className="text-sm font-medium text-gray-700 mb-2 block"
-        >
-          Profile Visibility
-        </label>
-        <select
-          id={`profileVisibility${idPrefix}`}
-          value={formData.profileVisibility}
-          onChange={handleProfileVisibilityChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-        >
-          <option value="everyone">
-            Everyone - Your profile and sessions are visible to all users
-          </option>
-          <option value="followers">
-            Followers Only - Only your followers can see your profile and sessions
-          </option>
-          <option value="private">
-            Only You - Your profile and sessions are completely private
-          </option>
-        </select>
-        <p className="text-sm text-gray-500 mt-2">
-          {formData.profileVisibility === 'everyone' &&
-            'Your profile, sessions, and stats are visible to everyone.'}
-          {formData.profileVisibility === 'followers' &&
-            "Only your followers can see your profile and sessions. You won't appear in suggestions."}
-          {formData.profileVisibility === 'private' &&
-            'Your profile is completely private. Only you can see your sessions and stats.'}
-        </p>
-      </div>
-
-      {/* Submit Buttons */}
-      <div className="flex gap-3 pt-4">
-        <button
-          type="button"
-          onClick={() =>
-            setFormData({
-              ...formData,
-              profileVisibility: originalFormData.profileVisibility,
-            })
-          }
-          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          onClick={handlePrivacySubmit}
-          disabled={isSaving || !hasChanges}
-          className={`px-6 py-2 rounded-lg transition-colors text-white ${
-            isSaving || !hasChanges
-              ? 'bg-gray-400 cursor-not-allowed'
-              : saved
-                ? 'bg-[#34C759] hover:bg-[#34C759]'
-                : 'bg-[#0066CC] hover:bg-[#0051D5]'
-          }`}
-        >
-          {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
-        </button>
-      </div>
-    </div>
-  )
-
   return (
     <>
       <div className="min-h-screen bg-gray-50 pb-[6.5rem] md:pb-0">
@@ -770,7 +432,29 @@ export function SettingsPageContent() {
                   {activeSection === 'profile' && (
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 mb-6">My Profile</h2>
-                      <ProfileForm idPrefix="-desktop" />
+                      <ProfileFormSection
+                        idPrefix="-desktop"
+                        user={user}
+                        formData={formData}
+                        profilePictureUrl={profilePictureUrl}
+                        isUploadingPhoto={isUploadingPhoto}
+                        isSaving={isSaving}
+                        saved={saved}
+                        hasChanges={hasChanges}
+                        urlError={urlError}
+                        onSubmit={handleSubmit}
+                        onPhotoUpload={handlePhotoUpload}
+                        onNameChange={handleNameChange}
+                        onTaglineChange={handleTaglineChange}
+                        onPronounsChange={handlePronounsChange}
+                        onBioChange={handleBioChange}
+                        onLocationChange={handleLocationChange}
+                        onWebsiteChange={handleWebsiteChange}
+                        onWebsiteBlur={handleWebsiteBlur}
+                        onTwitterChange={handleTwitterChange}
+                        onGithubChange={handleGithubChange}
+                        onLinkedinChange={handleLinkedinChange}
+                      />
                     </div>
                   )}
 
@@ -778,7 +462,17 @@ export function SettingsPageContent() {
                   {activeSection === 'privacy' && (
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 mb-6">Privacy Controls</h2>
-                      <PrivacyForm idPrefix="-desktop" />
+                      <PrivacyFormSection
+                        idPrefix="-desktop"
+                        profileVisibility={formData.profileVisibility}
+                        originalProfileVisibility={originalFormData.profileVisibility}
+                        isSaving={isSaving}
+                        hasChanges={hasChanges}
+                        saved={saved}
+                        onVisibilityChange={handleProfileVisibilityChange}
+                        onReset={handlePrivacyReset}
+                        onSubmit={handlePrivacySubmit}
+                      />
                     </div>
                   )}
                 </div>
@@ -860,7 +554,29 @@ export function SettingsPageContent() {
                       aria-labelledby={`${item.id}-button`}
                       className="px-4 pt-4 pb-6 bg-gray-50 border-t border-gray-200"
                     >
-                      <ProfileForm idPrefix="-mobile" />
+                      <ProfileFormSection
+                        idPrefix="-mobile"
+                        user={user}
+                        formData={formData}
+                        profilePictureUrl={profilePictureUrl}
+                        isUploadingPhoto={isUploadingPhoto}
+                        isSaving={isSaving}
+                        saved={saved}
+                        hasChanges={hasChanges}
+                        urlError={urlError}
+                        onSubmit={handleSubmit}
+                        onPhotoUpload={handlePhotoUpload}
+                        onNameChange={handleNameChange}
+                        onTaglineChange={handleTaglineChange}
+                        onPronounsChange={handlePronounsChange}
+                        onBioChange={handleBioChange}
+                        onLocationChange={handleLocationChange}
+                        onWebsiteChange={handleWebsiteChange}
+                        onWebsiteBlur={handleWebsiteBlur}
+                        onTwitterChange={handleTwitterChange}
+                        onGithubChange={handleGithubChange}
+                        onLinkedinChange={handleLinkedinChange}
+                      />
                     </div>
                   )}
 
@@ -872,7 +588,17 @@ export function SettingsPageContent() {
                       aria-labelledby={`${item.id}-button`}
                       className="px-4 pt-4 pb-6 bg-gray-50 border-t border-gray-200"
                     >
-                      <PrivacyForm idPrefix="-mobile" />
+                      <PrivacyFormSection
+                        idPrefix="-mobile"
+                        profileVisibility={formData.profileVisibility}
+                        originalProfileVisibility={originalFormData.profileVisibility}
+                        isSaving={isSaving}
+                        hasChanges={hasChanges}
+                        saved={saved}
+                        onVisibilityChange={handleProfileVisibilityChange}
+                        onReset={handlePrivacyReset}
+                        onSubmit={handlePrivacySubmit}
+                      />
                     </div>
                   )}
                 </div>
@@ -926,5 +652,421 @@ export function SettingsPageContent() {
         />
       </div>
     </>
+  )
+}
+
+interface ProfileFormSectionProps {
+  idPrefix: string
+  user: AuthUser | null
+  formData: ProfileFormState
+  profilePictureUrl: string
+  isUploadingPhoto: boolean
+  isSaving: boolean
+  saved: boolean
+  hasChanges: boolean
+  urlError: string
+  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void
+  onPhotoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onTaglineChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onPronounsChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onBioChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
+  onLocationChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onWebsiteChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onWebsiteBlur: (value: string) => void
+  onTwitterChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onGithubChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onLinkedinChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+}
+
+function ProfileFormSection({
+  idPrefix,
+  user,
+  formData,
+  profilePictureUrl,
+  isUploadingPhoto,
+  isSaving,
+  saved,
+  hasChanges,
+  urlError,
+  onSubmit,
+  onPhotoUpload,
+  onNameChange,
+  onTaglineChange,
+  onPronounsChange,
+  onBioChange,
+  onLocationChange,
+  onWebsiteChange,
+  onWebsiteBlur,
+  onTwitterChange,
+  onGithubChange,
+  onLinkedinChange,
+}: ProfileFormSectionProps) {
+  return (
+    <form onSubmit={onSubmit} className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-3">Profile Picture</label>
+        <div className="flex items-center gap-6">
+          {profilePictureUrl || user?.profilePicture ? (
+            <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-white flex-shrink-0">
+              <Image
+                src={profilePictureUrl || user?.profilePicture || ''}
+                alt="Profile"
+                width={96}
+                height={96}
+                quality={95}
+                priority
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="w-24 h-24 bg-gradient-to-br from-[#FC4C02] to-[#FF8800] rounded-full flex items-center justify-center text-white text-4xl font-bold flex-shrink-0">
+              {user?.name.charAt(0).toUpperCase() || 'N'}
+            </div>
+          )}
+          <div className="flex-1">
+            <input
+              type="file"
+              id={`profile-photo-upload${idPrefix}`}
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              onChange={onPhotoUpload}
+              className="hidden"
+            />
+            <label
+              htmlFor={`profile-photo-upload${idPrefix}`}
+              className={`inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer ${isUploadingPhoto ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {isUploadingPhoto ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-[#0066CC] rounded-full animate-spin"></div>
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" />
+                  Upload Photo
+                </>
+              )}
+            </label>
+            <p className="text-sm text-gray-500 mt-2">JPG, PNG, GIF or WebP. Max 5MB.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label
+          htmlFor={`name${idPrefix}`}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+        >
+          <User className="w-4 h-4" />
+          Name
+        </label>
+        <input
+          type="text"
+          id={`name${idPrefix}`}
+          value={formData.name}
+          onChange={onNameChange}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+        />
+      </div>
+
+      <div>
+        <label
+          htmlFor={`username${idPrefix}`}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+        >
+          <User className="w-4 h-4" />
+          Username
+        </label>
+        <div className="relative">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+          <input
+            type="text"
+            id={`username${idPrefix}`}
+            value={user?.username || ''}
+            disabled
+            className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+          />
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          Username cannot be changed - it&apos;s your unique identifier
+        </p>
+      </div>
+
+      <div>
+        <label
+          htmlFor={`tagline${idPrefix}`}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+        >
+          Tagline
+        </label>
+        <input
+          type="text"
+          id={`tagline${idPrefix}`}
+          value={formData.tagline}
+          onChange={onTaglineChange}
+          maxLength={60}
+          placeholder="Your headline or current status..."
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+        />
+        <p className="text-sm text-gray-500 mt-1">
+          {formData.tagline.length}/60 • Appears below your name on your profile
+        </p>
+      </div>
+
+      <div>
+        <label
+          htmlFor={`pronouns${idPrefix}`}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+        >
+          Pronouns
+        </label>
+        <input
+          type="text"
+          id={`pronouns${idPrefix}`}
+          value={formData.pronouns}
+          onChange={onPronounsChange}
+          maxLength={20}
+          placeholder="e.g., she/her, he/him, they/them"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+        />
+      </div>
+
+      <div>
+        <label
+          htmlFor={`bio${idPrefix}`}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+        >
+          Bio
+        </label>
+        <textarea
+          id={`bio${idPrefix}`}
+          value={formData.bio}
+          onChange={onBioChange}
+          rows={4}
+          maxLength={160}
+          placeholder="Tell us about yourself..."
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none resize-none"
+        />
+        <p className="text-sm text-gray-500 mt-1">{formData.bio.length}/160</p>
+      </div>
+
+      <div>
+        <label
+          htmlFor={`location${idPrefix}`}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+        >
+          <Globe className="w-4 h-4" />
+          Location
+        </label>
+        <input
+          type="text"
+          id={`location${idPrefix}`}
+          value={formData.location}
+          onChange={onLocationChange}
+          placeholder="City, Country"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+        />
+      </div>
+
+      <div className="pt-4 border-t border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Links</h3>
+
+        <div className="mb-4">
+          <label
+            htmlFor={`website${idPrefix}`}
+            className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+          >
+            <LinkIcon className="w-4 h-4" />
+            Website
+          </label>
+          <input
+            type="url"
+            id={`website${idPrefix}`}
+            value={formData.website}
+            onChange={onWebsiteChange}
+            onBlur={(e) => onWebsiteBlur(e.target.value)}
+            placeholder="https://yourwebsite.com"
+            pattern="https?://.*"
+            aria-invalid={urlError ? 'true' : 'false'}
+            aria-describedby={urlError ? `website-error${idPrefix}` : undefined}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none ${
+              urlError ? 'border-red-500' : 'border-gray-300'
+            }`}
+          />
+          {urlError && (
+            <p id={`website-error${idPrefix}`} className="text-sm text-red-600 mt-1" role="alert">
+              {urlError}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label
+              htmlFor={`twitter${idPrefix}`}
+              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+            >
+              <Twitter className="w-4 h-4" />
+              Twitter/X
+            </label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+              <input
+                type="text"
+                id={`twitter${idPrefix}`}
+                value={formData.twitter}
+                onChange={onTwitterChange}
+                placeholder="username"
+                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor={`github${idPrefix}`}
+              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+            >
+              <Github className="w-4 h-4" />
+              GitHub
+            </label>
+            <input
+              type="text"
+              id={`github${idPrefix}`}
+              value={formData.github}
+              onChange={onGithubChange}
+              placeholder="username"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor={`linkedin${idPrefix}`}
+              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+            >
+              <Linkedin className="w-4 h-4" />
+              LinkedIn
+            </label>
+            <input
+              type="text"
+              id={`linkedin${idPrefix}`}
+              value={formData.linkedin}
+              onChange={onLinkedinChange}
+              placeholder="username"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-3 pt-4">
+        <a
+          href={user ? `/profile/${user.username}` : '/'}
+          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center"
+        >
+          Cancel
+        </a>
+        <button
+          type="submit"
+          disabled={isSaving || !hasChanges}
+          className={`px-6 py-2 rounded-lg transition-colors text-white ${
+            isSaving || !hasChanges
+              ? 'bg-gray-400 cursor-not-allowed'
+              : saved
+                ? 'bg-[#34C759] hover:bg-[#34C759]'
+                : 'bg-[#0066CC] hover:bg-[#0051D5]'
+          }`}
+        >
+          {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
+interface PrivacyFormSectionProps {
+  idPrefix: string
+  profileVisibility: 'everyone' | 'followers' | 'private'
+  originalProfileVisibility: 'everyone' | 'followers' | 'private'
+  isSaving: boolean
+  hasChanges: boolean
+  saved: boolean
+  onVisibilityChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  onReset: () => void
+  onSubmit: () => void
+}
+
+function PrivacyFormSection({
+  idPrefix,
+  profileVisibility,
+  originalProfileVisibility,
+  isSaving,
+  hasChanges,
+  saved,
+  onVisibilityChange,
+  onReset,
+  onSubmit,
+}: PrivacyFormSectionProps) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <label
+          htmlFor={`profileVisibility${idPrefix}`}
+          className="text-sm font-medium text-gray-700 mb-2 block"
+        >
+          Profile Visibility
+        </label>
+        <select
+          id={`profileVisibility${idPrefix}`}
+          value={profileVisibility}
+          onChange={onVisibilityChange}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+        >
+          <option value="everyone">
+            Everyone - Your profile and sessions are visible to all users
+          </option>
+          <option value="followers">
+            Followers Only - Only your followers can see your profile and sessions
+          </option>
+          <option value="private">
+            Only You - Your profile and sessions are completely private
+          </option>
+        </select>
+        <p className="text-sm text-gray-500 mt-2">
+          {profileVisibility === 'everyone' &&
+            'Your profile, sessions, and stats are visible to everyone.'}
+          {profileVisibility === 'followers' &&
+            "Only your followers can see your profile and sessions. You won't appear in suggestions."}
+          {profileVisibility === 'private' &&
+            'Your profile is completely private. Only you can see your sessions and stats.'}
+        </p>
+      </div>
+
+      <div className="flex gap-3 pt-4">
+        <button
+          type="button"
+          onClick={onReset}
+          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={isSaving || !hasChanges}
+          className={`px-6 py-2 rounded-lg transition-colors text-white ${
+            isSaving || !hasChanges
+              ? 'bg-gray-400 cursor-not-allowed'
+              : saved
+                ? 'bg-[#34C759] hover:bg-[#34C759]'
+                : 'bg-[#0066CC] hover:bg-[#0051D5]'
+          }`}
+        >
+          {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
+        </button>
+      </div>
+    </div>
   )
 }
