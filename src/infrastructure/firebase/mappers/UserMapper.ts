@@ -28,7 +28,13 @@ export class UserMapper {
       data.profilePicture,
       data.followerCount || 0,
       data.followingCount || 0,
-      (data.profileVisibility as ProfileVisibility) || 'everyone'
+      (data.profileVisibility as ProfileVisibility) || 'everyone',
+      {
+        tagline: data.tagline,
+        pronouns: data.pronouns,
+        website: data.website,
+        socialLinks: data.socialLinks,
+      }
     )
   }
 
@@ -53,6 +59,22 @@ export class UserMapper {
 
     if (user.location !== undefined) {
       data.location = user.location
+    }
+
+    if (user.tagline !== undefined) {
+      data.tagline = user.tagline
+    }
+
+    if (user.pronouns !== undefined) {
+      data.pronouns = user.pronouns
+    }
+
+    if (user.website !== undefined) {
+      data.website = user.website
+    }
+
+    if (user.socialLinks !== undefined) {
+      data.socialLinks = user.socialLinks
     }
 
     if (user.profilePicture !== undefined) {

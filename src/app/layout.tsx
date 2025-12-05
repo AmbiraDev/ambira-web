@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { DM_Sans } from 'next/font/google'
+import localFont from 'next/font/local'
 import './globals.css'
 import { AuthInitializer } from '@/components/AuthInitializer'
 import { DataPrefetcher } from '@/components/DataPrefetcher'
@@ -11,13 +11,101 @@ import { ToastProvider } from '@/components/ui/toast'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 
-const dmSans = DM_Sans({
+const dmSans = localFont({
   variable: '--font-dm-sans',
-  subsets: ['latin'],
-  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
-  style: ['normal', 'italic'],
-  display: 'swap', // Add font-display: swap for better FCP
-  preload: true, // Preload the font for better performance
+  display: 'swap',
+  src: [
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-100-normal.woff2',
+      weight: '100',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-100-italic.woff2',
+      weight: '100',
+      style: 'italic',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-200-normal.woff2',
+      weight: '200',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-200-italic.woff2',
+      weight: '200',
+      style: 'italic',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-300-normal.woff2',
+      weight: '300',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-300-italic.woff2',
+      weight: '300',
+      style: 'italic',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-400-normal.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-400-italic.woff2',
+      weight: '400',
+      style: 'italic',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-500-normal.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-500-italic.woff2',
+      weight: '500',
+      style: 'italic',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-600-normal.woff2',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-600-italic.woff2',
+      weight: '600',
+      style: 'italic',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-700-normal.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-700-italic.woff2',
+      weight: '700',
+      style: 'italic',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-800-normal.woff2',
+      weight: '800',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-800-italic.woff2',
+      weight: '800',
+      style: 'italic',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-900-normal.woff2',
+      weight: '900',
+      style: 'normal',
+    },
+    {
+      path: '../assets/fonts/dm-sans/dm-sans-latin-900-italic.woff2',
+      weight: '900',
+      style: 'italic',
+    },
+  ],
 })
 
 export const metadata: Metadata = {
@@ -58,9 +146,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-
         {/* PWA Meta Tags */}
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
