@@ -40,7 +40,7 @@ export const EditCustomActivityModal: React.FC<EditCustomActivityModalProps> = (
 
   const [formData, setFormData] = useState({
     name: '',
-    icon: 'flat-color-icons:folder',
+    icon: '📁', // default emoji; will be overridden by activity.icon on open
     description: '',
   })
 
@@ -52,7 +52,7 @@ export const EditCustomActivityModal: React.FC<EditCustomActivityModalProps> = (
     if (isOpen && activity) {
       setFormData({
         name: activity.name,
-        icon: activity.icon,
+        icon: activity.icon || '📁',
         description: activity.description || '',
       })
       setErrors({})
@@ -77,48 +77,42 @@ export const EditCustomActivityModal: React.FC<EditCustomActivityModalProps> = (
     }
   }, [isOpen, onClose, isSubmitting])
 
-  // Preset flat-color-icons
-  const availableIcons = [
-    'flat-color-icons:folder',
-    'flat-color-icons:music',
-    'flat-color-icons:video-file',
-    'flat-color-icons:gallery',
-    'flat-color-icons:camera',
-    'flat-color-icons:portrait-mode',
-    'flat-color-icons:sports-mode',
-    'flat-color-icons:video-call',
-    'flat-color-icons:voice-presentation',
-    'flat-color-icons:headset',
-    'flat-color-icons:reading',
-    'flat-color-icons:document',
-    'flat-color-icons:editing',
-    'flat-color-icons:ruler',
-    'flat-color-icons:home',
-    'flat-color-icons:services',
-    'flat-color-icons:settings',
-    'flat-color-icons:automotive',
-    'flat-color-icons:engineering',
-    'flat-color-icons:electronics',
-    'flat-color-icons:business',
-    'flat-color-icons:bullish',
-    'flat-color-icons:bearish',
-    'flat-color-icons:search',
-    'flat-color-icons:template',
-    'flat-color-icons:planner',
-    'flat-color-icons:calendar',
-    'flat-color-icons:clock',
-    'flat-color-icons:briefcase',
-    'flat-color-icons:manager',
-    'flat-color-icons:businessman',
-    'flat-color-icons:businesswoman',
-    'flat-color-icons:data-configuration',
-    'flat-color-icons:database',
-    'flat-color-icons:workflow',
-    'flat-color-icons:diploma-1',
-    'flat-color-icons:graduation-cap',
-    'flat-color-icons:geography',
-    'flat-color-icons:globe',
-    'flat-color-icons:calculator',
+  // Native emoji palette for editing
+  const availableIcons: string[] = [
+    // Work / productivity
+    '📁',
+    '💼',
+    '💻',
+    '🧾',
+    '📊',
+    '📈',
+    '🗂️',
+    '📅',
+    // Learning / study
+    '📚',
+    '🧠',
+    '📝',
+    '📖',
+    '🎓',
+    '🧪',
+    // Creative
+    '🎨',
+    '🎬',
+    '🎧',
+    '🎮',
+    '✍️',
+    '🎵',
+    '📷',
+    '📹',
+    // Lifestyle / misc
+    '🏃‍♂️',
+    '🏋️‍♀️',
+    '🧘‍♀️',
+    '🚶‍♂️',
+    '🍽️',
+    '☕',
+    '🏠',
+    '🛒',
   ]
 
   const validateForm = (): boolean => {
@@ -163,7 +157,7 @@ export const EditCustomActivityModal: React.FC<EditCustomActivityModalProps> = (
         typeId: activity.id,
         data: {
           name: formData.name.trim(),
-          icon: formData.icon,
+          icon: formData.icon, // emoji string
           description: formData.description.trim() || undefined,
         },
       })
@@ -172,7 +166,6 @@ export const EditCustomActivityModal: React.FC<EditCustomActivityModalProps> = (
       onSuccess?.()
       onClose()
     } catch (error) {
-      // Error handling
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to update custom activity'
       setErrors({ submit: errorMessage })
@@ -262,7 +255,7 @@ export const EditCustomActivityModal: React.FC<EditCustomActivityModalProps> = (
                       ? 'border-[#0066CC] ring-2 ring-blue-100'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
-                  aria-label={`Select ${icon.split(':')[1] || icon} icon`}
+                  aria-label={`Select ${icon} icon`}
                 >
                   <IconRenderer
                     iconName={icon}
