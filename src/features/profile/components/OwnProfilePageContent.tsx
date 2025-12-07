@@ -410,6 +410,8 @@ export function OwnProfilePageContent() {
 
   if (!user) return null
 
+  console.log('RENDER: OwnProfilePageContent')
+
   return (
     <>
       <div className="min-h-screen bg-white md:bg-gray-50">
