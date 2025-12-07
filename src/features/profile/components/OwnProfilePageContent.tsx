@@ -86,8 +86,6 @@ export function OwnProfilePageContent() {
   })
 
   const isLoading = sessionsLoading || statsLoading
-  const displayTagline = userProfile?.tagline || user?.tagline
-  const displayPronouns = userProfile?.pronouns || user?.pronouns
 
   // Filter sessions based on selected activity
   const filteredSessions = useMemo(() => {
@@ -501,17 +499,9 @@ export function OwnProfilePageContent() {
 
                     {/* Name and Username */}
                     <h1 className="text-lg md:text-2xl font-bold text-gray-900">{user.name}</h1>
-                    {displayPronouns && (
-                      <p className="text-gray-500 text-xs md:text-sm mb-1">{displayPronouns}</p>
-                    )}
-                    <p className="text-gray-600 text-sm md:text-base mb-1 md:mb-2">
+                    <p className="text-gray-600 text-sm md:text-base mb-2 md:mb-3">
                       @{user.username}
                     </p>
-                    {displayTagline && (
-                      <p className="text-gray-700 text-sm md:text-base mb-2 md:mb-3 font-medium leading-snug">
-                        {displayTagline}
-                      </p>
-                    )}
 
                     {/* Bio */}
                     {(userProfile?.bio || user.bio) && (
