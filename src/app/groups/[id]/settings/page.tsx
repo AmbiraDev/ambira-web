@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import Header from '@/components/HeaderComponent'
@@ -8,11 +9,13 @@ import { ImageUpload } from '@/components/ImageUpload'
 import { Group, UpdateGroupData } from '@/types'
 import { firebaseApi } from '@/lib/api'
 import { uploadImage } from '@/lib/imageUpload'
+import { GROUPS_KEYS } from '@/features/groups/hooks'
 
 export default function GroupSettingsPage() {
   const params = useParams()
   const router = useRouter()
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const [group, setGroup] = useState<Group | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -117,6 +120,24 @@ export default function GroupSettingsPage() {
       }
 
       await firebaseApi.group.updateGroup(groupId, updateData)
+
+      const updatedGroup: Group = {
+        ...group,
+        ...updateData,
+        imageUrl: imageUrl || undefined,
+        updatedAt: new Date(),
+      }
+
+      setGroup(updatedGroup)
+
+      queryClient.setQueryData<Group>(GROUPS_KEYS.detail(groupId), updatedGroup)
+      queryClient.setQueryData<Group[]>(GROUPS_KEYS.userGroups(user.id), (old) =>
+        old ? old.map((g) => (g.id === groupId ? { ...g, ...updatedGroup } : g)) : old
+      )
+
+      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) })
+      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.userGroups(user.id) })
+
       router.push(`/groups/${groupId}`)
     } catch (_error) {
       setError('Failed to update group. Please try again.')
