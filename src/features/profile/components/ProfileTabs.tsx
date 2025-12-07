@@ -75,6 +75,8 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({ activeTab, onTabChange
     },
   ]
 
+  console.log('ProfileTabs.tsx rendered')
+
   return (
     <div className="border-b border-border">
       <div className="flex space-x-0 overflow-x-auto scrollbar-hide">
