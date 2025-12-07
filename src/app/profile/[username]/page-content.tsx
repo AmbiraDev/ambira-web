@@ -607,9 +607,17 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
 
                 {/* Name and Username */}
                 <h1 className="text-lg md:text-2xl font-bold text-gray-900">{profile.name}</h1>
-                <p className="text-gray-600 text-sm md:text-base mb-2 md:mb-3">
+                {profile.pronouns && (
+                  <p className="text-gray-500 text-xs md:text-sm mb-1">{profile.pronouns}</p>
+                )}
+                <p className="text-gray-600 text-sm md:text-base mb-1 md:mb-2">
                   @{profile.username}
                 </p>
+                {profile.tagline && (
+                  <p className="text-gray-700 mb-2 md:mb-3 text-sm md:text-base leading-snug font-medium">
+                    {profile.tagline}
+                  </p>
+                )}
 
                 {/* Bio */}
                 {profile.bio && (
