@@ -1,6 +1,4 @@
 import React from 'react'
-import * as Icons from 'lucide-react'
-import { Icon } from '@iconify/react'
 
 interface IconRendererProps {
   iconName: string
@@ -10,9 +8,14 @@ interface IconRendererProps {
 }
 
 /**
- * Dynamically renders an icon based on the icon name string
- * Supports both Iconify icons (e.g., "flat-color-icons:briefcase") and legacy Lucide icons (e.g., "Briefcase")
- * Falls back to Briefcase icon if the icon name is not found
+ * Emoji-first IconRenderer
+ *
+ * - If iconName looks like an old Iconify string (contains ':'), render nothing.
+ * - Otherwise, just render the raw string in a <span>.
+ *
+ * This assumes:
+ * - New activities store plain emojis (e.g., "📚", "🎧").
+ * - Old iconify-based activities should be visually hidden instead of showing raw text.
  */
 export const IconRenderer: React.FC<IconRendererProps> = ({
   iconName,
@@ -20,23 +23,28 @@ export const IconRenderer: React.FC<IconRendererProps> = ({
   size = 24,
   style,
 }) => {
-  // Check if it's an Iconify icon (contains a colon, e.g., "flat-color-icons:briefcase")
-  if (iconName && iconName.includes(':')) {
-    return <Icon icon={iconName} width={size} height={size} className={className} style={style} />
+  if (!iconName) return null
+
+  // Hide any legacy iconify identifiers like "flat-color-icons:briefcase"
+  if (iconName.includes(':')) {
+    return null
   }
 
-  // Legacy Lucide icon support (e.g., "Briefcase")
-  // If iconName is empty or invalid, fall back to Briefcase
-  const iconsRecord = Icons as unknown as Record<
-    string,
-    React.ComponentType<{
-      className?: string
-      size?: number
-      style?: React.CSSProperties
-    }>
-  >
-  const IconComponent = (iconName && iconsRecord[iconName]) || Icons.Briefcase
-  return <IconComponent className={className} size={size} style={style} />
+  // Just render whatever string we have (emoji, short text, etc.)
+  const mergedStyle: React.CSSProperties = {
+    fontSize: size,
+    lineHeight: 1,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...style,
+  }
+
+  return (
+    <span className={className} style={mergedStyle} aria-hidden="true">
+      {iconName}
+    </span>
+  )
 }
 
 export default IconRenderer
