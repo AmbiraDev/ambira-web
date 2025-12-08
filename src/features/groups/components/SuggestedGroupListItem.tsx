@@ -12,10 +12,11 @@ interface SuggestedGroupListItemProps {
   group: Group
   onJoin: (groupId: string, e: React.MouseEvent) => Promise<void>
   isJoining: boolean
+  isJoined: boolean
 }
 
 export const SuggestedGroupListItem = React.memo<SuggestedGroupListItemProps>(
-  function SuggestedGroupListItem({ group, onJoin, isJoining }) {
+  function SuggestedGroupListItem({ group, onJoin, isJoining, isJoined }) {
     // Mobile: Truncate group name if longer than configured length
     const displayNameMobile = truncateText(
       group.name,
@@ -114,15 +115,17 @@ export const SuggestedGroupListItem = React.memo<SuggestedGroupListItemProps>(
           <div className="flex-shrink-0">
             <button
               onClick={(e) => onJoin(group.id, e)}
-              disabled={isJoining}
+              disabled={isJoining || isJoined}
               className={`min-h-[44px] px-6 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
-                isJoining
+                isJoined
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-[#0066CC] text-white hover:bg-[#0051D5] cursor-pointer'
+                  : isJoining
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-[#0066CC] text-white hover:bg-[#0051D5] cursor-pointer'
               }`}
-              aria-label={`Join ${group.name}`}
+              aria-label={isJoined ? `Already joined ${group.name}` : `Join ${group.name}`}
             >
-              {isJoining ? 'Joining...' : 'Join'}
+              {isJoined ? 'Joined' : isJoining ? 'Joining...' : 'Join'}
             </button>
           </div>
         </div>

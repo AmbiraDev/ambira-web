@@ -59,3 +59,6 @@ serviceAccountKey.json
 *.backup
 *.bak
 *~
+
+#.vscode settings
+.vscode/

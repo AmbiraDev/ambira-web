@@ -182,7 +182,25 @@ cd ambira-web
 npm install
 ```
 
-3. Configure Firebase (see Firebase Setup section above)
+3. Configure Firebase environment variables:
+
+```bash
+cp .env.example .env.local
+# Open .env.local and paste your Firebase (and optional Sentry) credentials
+
+# Firebase configuration template
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=...
+NEXT_PUBLIC_SENTRY_DSN=...
+SENTRY_AUTH_TOKEN=...
+```
+
+Refer back to the Firebase Setup section above if you need help finding the values.
 
 4. Start the development server:
 
@@ -299,28 +317,52 @@ See the [complete index guide](./docs/setup/FIREBASE_INDEXES.md) for all require
 
 ## Documentation
 
-### User Documentation
+### 👥 User Documentation
 
 For end users learning how to use Ambira:
 
 - **[User Guide](./docs/USER_GUIDE.md)** - Complete guide to using Ambira, from getting started to advanced features
 - **[Features Overview](./docs/FEATURES.md)** - Comprehensive list of all available features with descriptions
 
-### Developer Documentation
+### 👨‍💻 Developer Documentation
 
 For developers working on the Ambira codebase:
 
-- **[Documentation Hub](./docs/index.md)** - Central navigation for all documentation
-- **[CLAUDE.md](./CLAUDE.md)** - AI assistant guidelines and project instructions
+#### 🚀 Getting Started (New Developers Start Here!)
+
+**[📘 Developer Guide](./docs/DEVELOPER_GUIDE.md)** - Complete step-by-step guide for new developers (30 min setup)
+
+This guide covers:
+
+- Quick start with all setup steps in order
+- Development workflow and daily commands
+- Key concepts and architecture patterns
+- Testing strategy and best practices
+- Common issues and troubleshooting
+- Contributing guidelines and PR checklist
+
+**Step-by-Step Setup Guides:**
+
+1. **[Setup Guide](./docs/setup/README.md)** - Complete development environment setup
+   - Firebase configuration (required)
+   - Environment variables
+   - Common troubleshooting
+2. **[Testing Quickstart](./docs/testing/QUICKSTART.md)** - Get started with testing in 5 minutes
+3. **[Architecture Overview](./docs/architecture/README.md)** - Understand the codebase structure
+
+#### Core Developer Resources
+
+- **[CLAUDE.md](./CLAUDE.md)** - AI assistant guidelines and project instructions (comprehensive developer guide)
+- **[Testing Documentation](./docs/testing/README.md)** - Complete testing guide and best practices
 - **[Architecture Documentation](./docs/architecture/README.md)** - System architecture and design patterns
-- **[Testing Documentation](./docs/testing/README.md)** - Testing guides and best practices
-- **[Testing Quickstart](./docs/testing/QUICKSTART.md)** - Get started with testing quickly
-
-### Key Documentation Highlights
-
 - **[Caching Strategy](./docs/architecture/CACHING_STRATEGY.md)** - React Query implementation patterns
 - **[Architecture Examples](./docs/architecture/EXAMPLES.md)** - Complete feature implementations
 - **[Migration Guide](./docs/architecture/MIGRATION_GUIDE.md)** - Guide for migrating to new patterns
+
+#### Testing Resources
+
+- **[Testing Handbook](./docs/testing/TESTING_HANDBOOK.md)** - Complete testing reference
+- **[Testing Strategy](./docs/testing/TESTING_STRATEGY.md)** - High-level philosophy and quality standards
 - **[Playwright CI Setup](./docs/testing/playwright-ci-setup.md)** - E2E testing in CI/CD
 
 ## Contributing

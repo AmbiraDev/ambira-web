@@ -6,7 +6,25 @@
 
 export type ProfileVisibility = 'everyone' | 'followers' | 'private'
 
+type UserSocialLinks = {
+  twitter?: string
+  github?: string
+  linkedin?: string
+}
+
+interface UserExtras {
+  tagline?: string
+  pronouns?: string
+  website?: string
+  socialLinks?: UserSocialLinks
+}
+
 export class User {
+  public readonly tagline?: string
+  public readonly pronouns?: string
+  public readonly website?: string
+  public readonly socialLinks?: UserSocialLinks
+
   constructor(
     public readonly id: string,
     public readonly username: string,
@@ -18,8 +36,13 @@ export class User {
     public readonly profilePicture?: string,
     public readonly followerCount: number = 0,
     public readonly followingCount: number = 0,
-    public readonly profileVisibility: ProfileVisibility = 'everyone'
+    public readonly profileVisibility: ProfileVisibility = 'everyone',
+    extras?: UserExtras
   ) {
+    this.tagline = extras?.tagline
+    this.pronouns = extras?.pronouns
+    this.website = extras?.website
+    this.socialLinks = extras?.socialLinks
     this.validateInvariants()
   }
 
@@ -114,7 +137,13 @@ export class User {
       this.profilePicture,
       count,
       this.followingCount,
-      this.profileVisibility
+      this.profileVisibility,
+      {
+        tagline: this.tagline,
+        pronouns: this.pronouns,
+        website: this.website,
+        socialLinks: this.socialLinks,
+      }
     )
   }
 
@@ -137,7 +166,13 @@ export class User {
       this.profilePicture,
       this.followerCount,
       count,
-      this.profileVisibility
+      this.profileVisibility,
+      {
+        tagline: this.tagline,
+        pronouns: this.pronouns,
+        website: this.website,
+        socialLinks: this.socialLinks,
+      }
     )
   }
 
@@ -153,6 +188,10 @@ export class User {
       createdAt: this.createdAt.toISOString(),
       bio: this.bio,
       location: this.location,
+      tagline: this.tagline,
+      pronouns: this.pronouns,
+      website: this.website,
+      socialLinks: this.socialLinks,
       profilePicture: this.profilePicture,
       followerCount: this.followerCount,
       followingCount: this.followingCount,

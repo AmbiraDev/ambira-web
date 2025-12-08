@@ -85,17 +85,12 @@ export interface UpdateCustomActivityTypeData {
 // SYSTEM DEFAULT ACTIVITIES
 // ============================================================================
 
-/**
- * 10 default activity types available to all users
- * These are hardcoded and DO NOT exist in Firestore
- * IDs are kebab-case for consistency
- */
 const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
   {
     id: 'work',
     name: 'Work',
     category: 'productivity',
-    icon: 'flat-color-icons:briefcase',
+    icon: '💼',
     defaultColor: '#0066CC',
     isSystem: true,
     order: 1,
@@ -107,7 +102,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'coding',
     name: 'Coding',
     category: 'productivity',
-    icon: 'flat-color-icons:electronics',
+    icon: '💻',
     defaultColor: '#5856D6',
     isSystem: true,
     order: 2,
@@ -119,7 +114,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'side-project',
     name: 'Side Project',
     category: 'productivity',
-    icon: 'flat-color-icons:template',
+    icon: '🚀',
     defaultColor: '#FF9500',
     isSystem: true,
     order: 3,
@@ -131,7 +126,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'planning',
     name: 'Planning',
     category: 'productivity',
-    icon: 'flat-color-icons:todo-list',
+    icon: '📝',
     defaultColor: '#32ADE6',
     isSystem: true,
     order: 4,
@@ -143,7 +138,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'study',
     name: 'Study',
     category: 'learning',
-    icon: 'flat-color-icons:diploma-1',
+    icon: '📚',
     defaultColor: '#34C759',
     isSystem: true,
     order: 5,
@@ -155,7 +150,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'learning',
     name: 'Learning',
     category: 'learning',
-    icon: 'flat-color-icons:graduation-cap',
+    icon: '🎓',
     defaultColor: '#FFD60A',
     isSystem: true,
     order: 6,
@@ -167,7 +162,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'reading',
     name: 'Reading',
     category: 'learning',
-    icon: 'flat-color-icons:reading',
+    icon: '📖',
     defaultColor: '#FF2D55',
     isSystem: true,
     order: 7,
@@ -179,7 +174,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'research',
     name: 'Research',
     category: 'learning',
-    icon: 'flat-color-icons:search',
+    icon: '🔍',
     defaultColor: '#AF52DE',
     isSystem: true,
     order: 8,
@@ -191,7 +186,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'creative',
     name: 'Creative',
     category: 'creative',
-    icon: 'flat-color-icons:gallery',
+    icon: '🎨',
     defaultColor: '#FF6482',
     isSystem: true,
     order: 9,
@@ -203,7 +198,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'writing',
     name: 'Writing',
     category: 'creative',
-    icon: 'flat-color-icons:document',
+    icon: '✍️',
     defaultColor: '#AC8E68',
     isSystem: true,
     order: 10,

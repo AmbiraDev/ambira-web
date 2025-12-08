@@ -177,6 +177,9 @@ export function useLeaveGroup(
         queryKey: GROUPS_KEYS.userGroups(userId),
       })
       queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.stats(groupId) })
+      queryClient.invalidateQueries({
+        queryKey: ['suggested', 'groups'],
+      })
     },
 
     ...options,

@@ -1,18 +1,21 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
-import { Project, CreateSessionData } from '@/types'
+import { CreateSessionData, Activity } from '@/types'
 import { firebaseApi } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/components/ui/toast'
-import { Image as ImageIcon, X } from 'lucide-react'
+import { Image as ImageIcon, X, ChevronDown, Check } from 'lucide-react'
 import Image from 'next/image'
 import { uploadImages } from '@/lib/imageUpload'
 import { parseLocalDateTime } from '@/lib/utils'
 import Header from '@/components/HeaderComponent'
 import { debug } from '@/lib/debug'
+import { useAllActivityTypes } from '@/hooks/useActivityTypes'
+import Link from 'next/link'
+import { IconRenderer } from '@/components/IconRenderer'
 
 interface DeleteConfirmProps {
   isOpen: boolean
@@ -69,12 +72,38 @@ export default function ManualSessionRecorder() {
   const { showToast } = useToast()
   const queryClient = useQueryClient()
 
-  const [projects, setProjects] = useState<Project[]>([])
+  // Activity data
+  const { data: activityTypes = [] } = useAllActivityTypes(user?.id || '', {
+    enabled: !!user?.id,
+  })
+
+  const allActivities: Activity[] = useMemo(
+    () =>
+      activityTypes.map((type) => ({
+        id: type.id,
+        name: type.name,
+        description: type.description || '',
+        icon: type.icon,
+        color: type.defaultColor,
+        userId: type.userId || '',
+        status: 'active' as const,
+        createdAt: type.createdAt,
+        updatedAt: type.updatedAt,
+      })),
+    [activityTypes]
+  )
+
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  // Activity selection state
+  const [selectedActivityId, setSelectedActivityId] = useState('')
+  const [showActivityPicker, setShowActivityPicker] = useState(false)
+  const [showActivityError, setShowActivityError] = useState(false)
+
+  const selectedActivity = allActivities.find((a) => a.id === selectedActivityId) || null
+
   // Form state
-  const [projectId, setProjectId] = useState('')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [visibility, setVisibility] = useState<'everyone' | 'followers' | 'private'>('everyone')
@@ -97,26 +126,10 @@ export default function ManualSessionRecorder() {
   const [isUploadingImages, setIsUploadingImages] = useState(false)
   const [actionSheetIndex, setActionSheetIndex] = useState<number | null>(null)
 
-  // Load projects on mount
+  // Auto-generate title based on time of day and activity
   useEffect(() => {
-    const loadProjects = async () => {
-      if (!user) return
-
-      try {
-        const projectList = await firebaseApi.project.getProjects()
-        setProjects(projectList)
-      } catch (_error) {
-        debug.error('ManualSessionRecorder - Failed to load projects')
-      }
-    }
-
-    loadProjects()
-  }, [user])
-
-  // Auto-generate title based on time of day and project
-  useEffect(() => {
-    if (!title && projectId) {
-      const project = projects.find((p) => p.id === projectId)
+    if (!title && selectedActivityId && allActivities.length > 0) {
+      const activity = allActivities.find((a) => a.id === selectedActivityId)
       const hour = new Date().getHours()
 
       let timeOfDay = ''
@@ -124,12 +137,12 @@ export default function ManualSessionRecorder() {
       else if (hour < 17) timeOfDay = 'Afternoon'
       else timeOfDay = 'Evening'
 
-      const smartTitle = project
-        ? `${timeOfDay} ${project.name} Session`
+      const smartTitle = activity
+        ? `${timeOfDay} ${activity.name} Session`
         : `${timeOfDay} Work Session`
       setTitle(smartTitle)
     }
-  }, [projectId, projects, title]) // Add title to dependencies
+  }, [selectedActivityId, allActivities, title])
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -144,10 +157,9 @@ export default function ManualSessionRecorder() {
 
     for (const file of files) {
       try {
-        // Convert HEIC to JPEG first
+        // Convert HEIC to JPEG first if needed
         let processedFile = file
 
-        // Check if it's HEIC and convert
         const isHeic =
           file.name.toLowerCase().endsWith('.heic') ||
           file.name.toLowerCase().endsWith('.heif') ||
@@ -156,9 +168,8 @@ export default function ManualSessionRecorder() {
 
         if (isHeic) {
           try {
-            // Dynamically import heic2any - handle both default and named exports
             const heic2anyModule = await import('heic2any')
-            const heic2any = heic2anyModule.default || heic2anyModule
+            const heic2any = (heic2anyModule as any).default || heic2anyModule
 
             const convertedBlob = await heic2any({
               blob: file,
@@ -178,7 +189,6 @@ export default function ManualSessionRecorder() {
             )
           } catch (_error) {
             debug.error('ManualSessionRecorder - Error converting HEIC')
-            // More helpful error message
             showToast(
               `HEIC conversion is currently unavailable. Please convert ${file.name} to JPG or PNG before uploading, or try refreshing the page.`,
               'error'
@@ -222,7 +232,6 @@ export default function ManualSessionRecorder() {
   }
 
   const calculateDuration = (): number => {
-    // Use manual duration input
     const hours = parseInt(manualDurationHours) || 0
     const minutes = parseInt(manualDurationMinutes) || 0
     return hours * 3600 + minutes * 60
@@ -231,8 +240,9 @@ export default function ManualSessionRecorder() {
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
 
-    if (!projectId) {
-      newErrors.projectId = 'Please select a project'
+    if (!selectedActivityId) {
+      newErrors.activityId = 'Please select an activity'
+      setShowActivityError(true)
     }
 
     if (!title.trim()) {
@@ -259,13 +269,17 @@ export default function ManualSessionRecorder() {
       return
     }
 
+    if (!selectedActivityId) {
+      setErrors((prev) => ({ ...prev, activityId: 'Please select an activity' }))
+      setShowActivityError(true)
+      return
+    }
+
     setIsLoading(true)
 
     try {
       const duration = calculateDuration()
 
-      // Parse the session date and start time in local timezone
-      // NOTE: Using parseLocalDateTime to avoid UTC interpretation issues
       if (!sessionDate || !startTime) {
         setErrors({ sessionDate: 'Date and time are required' })
         setIsLoading(false)
@@ -291,8 +305,9 @@ export default function ManualSessionRecorder() {
       }
 
       const formData: CreateSessionData = {
-        activityId: '',
-        projectId,
+        activityId: selectedActivityId,
+        // If your backend still needs projectId, you can map from activity->project here if needed.
+        projectId: '',
         title,
         description,
         duration,
@@ -303,13 +318,10 @@ export default function ManualSessionRecorder() {
         images: imageUrls,
       }
 
-      // Create session with post
       await firebaseApi.session.createSessionWithPost(formData, description, visibility)
 
-      // Show success notification
       showToast('Session created successfully!', 'success')
 
-      // Invalidate caches to refresh UI immediately
       if (user) {
         queryClient.invalidateQueries({
           queryKey: ['user', 'sessions', user.id],
@@ -320,7 +332,6 @@ export default function ManualSessionRecorder() {
         queryClient.invalidateQueries({ queryKey: ['sessions', 'feed'] })
       }
 
-      // Redirect to home feed
       router.push('/')
     } catch (_error) {
       debug.error('ManualSessionRecorder - Failed to create manual session')
@@ -379,23 +390,133 @@ export default function ManualSessionRecorder() {
             disabled={isLoading}
           />
 
-          {/* Project Selection */}
-          <select
-            value={projectId}
-            onChange={(e) => setProjectId(e.target.value)}
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white text-base ${
-              errors.projectId ? 'border-red-500' : 'border-gray-300'
-            }`}
-            disabled={isLoading}
-          >
-            <option value="">Select an activity</option>
-            {projects.map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
-          {errors.projectId && <p className="text-red-500 text-sm -mt-2">{errors.projectId}</p>}
+          {/* Activity Selection (matches timer dropdown UI) */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Activity{' '}
+              {showActivityError && (
+                <span className="text-red-600 ml-1">- Please select an activity</span>
+              )}
+            </label>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowActivityPicker(!showActivityPicker)}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 bg-white cursor-pointer text-base flex items-center gap-3 transition-colors ${
+                  showActivityError || errors.activityId
+                    ? 'border-red-500 ring-2 ring-red-200 focus:ring-red-500 focus:border-red-500'
+                    : 'border-gray-300 focus:ring-[#0066CC] focus:border-[#0066CC] hover:border-gray-400'
+                }`}
+                disabled={isLoading}
+              >
+                {selectedActivity ? (
+                  <>
+                    <IconRenderer
+                      iconName={selectedActivity.icon}
+                      className="w-6 h-6 text-gray-700 flex-shrink-0"
+                    />
+                    <span className="flex-1 text-left font-medium">{selectedActivity.name}</span>
+                  </>
+                ) : (
+                  <span className="flex-1 text-left text-gray-500">Select an activity</span>
+                )}
+                <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+              </button>
+
+              {/* Dropdown Menu */}
+              {showActivityPicker && (
+                <>
+                  {/* Backdrop for closing */}
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowActivityPicker(false)}
+                  />
+
+                  {/* Dropdown content */}
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-80 overflow-y-auto">
+                    {allActivities.length === 0 ? (
+                      <div className="p-4 text-center">
+                        <p className="text-sm text-gray-600 mb-3">No activities yet</p>
+                        <Link
+                          href="/settings/activities"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                            />
+                          </svg>
+                          Create Activity
+                        </Link>
+                      </div>
+                    ) : (
+                      <>
+                        {allActivities.map((activity) => (
+                          <button
+                            key={activity.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedActivityId(activity.id)
+                              setShowActivityPicker(false)
+                              setShowActivityError(false)
+                              setErrors((prev) => {
+                                const { activityId, ...rest } = prev
+                                return rest
+                              })
+                            }}
+                            className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
+                              selectedActivityId === activity.id ? 'bg-blue-50' : ''
+                            }`}
+                          >
+                            <IconRenderer
+                              iconName={activity.icon}
+                              className="w-5 h-5 text-gray-700 flex-shrink-0"
+                            />
+                            <div className="flex-1 text-left min-w-0">
+                              <div className="text-sm font-medium text-gray-900">
+                                {activity.name}
+                              </div>
+                            </div>
+                            {selectedActivityId === activity.id && (
+                              <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                            )}
+                          </button>
+                        ))}
+                        <Link
+                          href="/settings/activities"
+                          className="w-full flex items-center gap-3 p-3 border-t border-gray-200 hover:bg-gray-50 transition-colors text-gray-700"
+                        >
+                          <svg
+                            className="w-5 h-5 text-gray-600 flex-shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                            />
+                          </svg>
+                          <span className="text-sm">Add custom activity</span>
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+            {errors.activityId && <p className="text-red-500 text-sm mt-1">{errors.activityId}</p>}
+          </div>
 
           {/* Image Upload */}
           <div className="max-w-md">

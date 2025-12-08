@@ -81,6 +81,24 @@ export default function CreateGroupPage() {
     return null
   }
 
+  const formatCreateGroupError = (error: unknown): string => {
+    const rawMessage = error instanceof Error ? error.message : String(error ?? '')
+
+    if (!rawMessage) {
+      return 'Failed to create group. Please try again.'
+    }
+
+    if (rawMessage.includes('Missing or insufficient permissions')) {
+      return 'Missing required information.'
+    }
+
+    if (rawMessage.toLowerCase().includes('network')) {
+      return 'Network error. Check your connection and try again.'
+    }
+
+    return 'Failed to create group. Please try again.'
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -109,9 +127,7 @@ export default function CreateGroupPage() {
             imageUrl = result.url
           }
         } catch (uploadError) {
-          setError(
-            uploadError instanceof Error ? uploadError.message : 'Failed to upload group image'
-          )
+          setError('Could not upload image. Please try again.')
           setIsSubmitting(false)
           return
         }
@@ -128,9 +144,7 @@ export default function CreateGroupPage() {
       // Navigate to the new group page
       router.push(`/groups/${newGroup.id}`)
     } catch (_error) {
-      setError(
-        _error instanceof Error ? _error.message : 'Failed to create group. Please try again.'
-      )
+      setError(formatCreateGroupError(_error))
       setIsSubmitting(false)
     }
   }

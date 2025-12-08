@@ -544,41 +544,6 @@ describe('CreateCustomActivityModal', () => {
   })
 
   // ========================================================================
-  // ICON PICKER
-  // ========================================================================
-
-  describe('Icon Picker', () => {
-    it('should start with default icon selected', () => {
-      // Act
-      render(<CreateCustomActivityModal isOpen={true} onClose={jest.fn()} onSuccess={jest.fn()} />)
-
-      // Assert - Default icon is mdi:folder (component state), but available icons are flat-color-icons
-      // The preview should show the default icon even though it's not in the available icons list
-      const preview = screen.getByText('Preview:').closest('div')
-      expect(preview).toBeInTheDocument()
-      // Check that some icon is rendered (the default mdi:folder)
-      expect(screen.getByTestId('icon-mdi:folder')).toBeInTheDocument()
-    })
-
-    it('should update preview when icon is selected', async () => {
-      // Arrange
-      const user = userEvent.setup()
-      render(<CreateCustomActivityModal isOpen={true} onClose={jest.fn()} onSuccess={jest.fn()} />)
-
-      // Act - Select a flat-color-icon (the actual available icons)
-      // Icon picker buttons use role="radio" within a radiogroup
-      const musicIcon = screen.getByRole('radio', {
-        name: /Select music icon/,
-      })
-      await user.click(musicIcon)
-
-      // Assert - Icon should be displayed in preview (there will be two: one in picker, one in preview)
-      const musicIcons = screen.getAllByTestId('icon-flat-color-icons:music')
-      expect(musicIcons.length).toBeGreaterThanOrEqual(2) // One in picker, one in preview
-    })
-  })
-
-  // ========================================================================
   // PREVIEW
   // ========================================================================
 

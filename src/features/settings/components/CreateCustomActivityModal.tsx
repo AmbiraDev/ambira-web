@@ -4,7 +4,6 @@
  * Allows users to create a new custom activity type with:
  * - Name (required, max 50 chars)
  * - Icon (emoji picker, required)
- * - Color (color picker, required)
  * - Description (optional, max 200 chars)
  *
  * Validates:
@@ -38,7 +37,8 @@ export const CreateCustomActivityModal: React.FC<CreateCustomActivityModalProps>
 
   const [formData, setFormData] = useState({
     name: '',
-    icon: 'mdi:folder',
+    // ✅ default to an emoji instead of iconify string
+    icon: '📁',
     description: '',
   })
 
@@ -50,7 +50,7 @@ export const CreateCustomActivityModal: React.FC<CreateCustomActivityModalProps>
     if (isOpen) {
       setFormData({
         name: '',
-        icon: 'mdi:folder',
+        icon: '📁',
         description: '',
       })
       setErrors({})
@@ -75,48 +75,42 @@ export const CreateCustomActivityModal: React.FC<CreateCustomActivityModalProps>
     }
   }, [isOpen, onClose, isSubmitting])
 
-  // Preset flat-color-icons
-  const availableIcons = [
-    'flat-color-icons:folder',
-    'flat-color-icons:music',
-    'flat-color-icons:video-file',
-    'flat-color-icons:gallery',
-    'flat-color-icons:camera',
-    'flat-color-icons:portrait-mode',
-    'flat-color-icons:sports-mode',
-    'flat-color-icons:home',
-    'flat-color-icons:shop',
-    'flat-color-icons:business-contact',
-    'flat-color-icons:template',
-    'flat-color-icons:todo-list',
-    'flat-color-icons:ideas',
-    'flat-color-icons:electronics',
-    'flat-color-icons:settings',
-    'flat-color-icons:search',
-    'flat-color-icons:services',
-    'flat-color-icons:data-configuration',
-    'flat-color-icons:organization',
-    'flat-color-icons:briefcase',
-    'flat-color-icons:reading',
-    'flat-color-icons:book',
-    'flat-color-icons:document',
-    'flat-color-icons:graduation-cap',
-    'flat-color-icons:education',
-    'flat-color-icons:voice-presentation',
-    'flat-color-icons:conference-call',
-    'flat-color-icons:collaboration',
-    'flat-color-icons:advertising',
-    'flat-color-icons:news',
-    'flat-color-icons:radio',
-    'flat-color-icons:video-call',
-    'flat-color-icons:phone',
-    'flat-color-icons:smartphone',
-    'flat-color-icons:calculator',
-    'flat-color-icons:biotech',
-    'flat-color-icons:gift',
-    'flat-color-icons:cafe',
-    'flat-color-icons:travel',
-    'flat-color-icons:automotive',
+  // ✅ Emoji palette instead of iconify names
+  const availableIcons: string[] = [
+    // Work / productivity
+    '📁',
+    '💼',
+    '💻',
+    '🧾',
+    '📊',
+    '📈',
+    '🗂️',
+    '📅',
+    // Learning / study
+    '📚',
+    '🧠',
+    '📝',
+    '📖',
+    '🎓',
+    '🧪',
+    // Creative
+    '🎨',
+    '🎬',
+    '🎧',
+    '🎮',
+    '✍️',
+    '🎵',
+    '📷',
+    '📹',
+    // Lifestyle / misc
+    '🏃‍♂️',
+    '🏋️‍♀️',
+    '🧘‍♀️',
+    '🚶‍♂️',
+    '🍽️',
+    '☕',
+    '🏠',
+    '🛒',
   ]
 
   const validateForm = (): boolean => {
@@ -157,7 +151,7 @@ export const CreateCustomActivityModal: React.FC<CreateCustomActivityModalProps>
     try {
       await createMutation.mutateAsync({
         name: formData.name.trim(),
-        icon: formData.icon,
+        icon: formData.icon, // ✅ emoji stored directly
         defaultColor: '#0066CC', // Default blue color for custom activities
         description: formData.description.trim() || undefined,
       })
@@ -166,7 +160,6 @@ export const CreateCustomActivityModal: React.FC<CreateCustomActivityModalProps>
       onSuccess?.()
       onClose()
     } catch (error) {
-      // Error handling
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to create custom activity'
       setErrors({ submit: errorMessage })
@@ -183,6 +176,9 @@ export const CreateCustomActivityModal: React.FC<CreateCustomActivityModalProps>
       role="dialog"
       aria-modal="true"
       aria-labelledby="create-activity-title"
+      onClick={() => {
+        if (!isSubmitting) onClose()
+      }}
     >
       <div
         className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
@@ -238,7 +234,7 @@ export const CreateCustomActivityModal: React.FC<CreateCustomActivityModalProps>
               Icon <span className="text-red-500">*</span>
             </label>
             <div
-              className="grid grid-cols-10 gap-2"
+              className="grid grid-cols-8 sm:grid-cols-10 gap-2"
               role="radiogroup"
               aria-labelledby="icon-picker-label"
               aria-required="true"
@@ -256,13 +252,10 @@ export const CreateCustomActivityModal: React.FC<CreateCustomActivityModalProps>
                       ? 'border-[#0066CC] ring-2 ring-blue-100'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
-                  aria-label={`Select ${icon.split(':')[1] || icon} icon`}
+                  aria-label={`Select ${icon} icon`}
                 >
-                  <IconRenderer
-                    iconName={icon}
-                    className="w-5 h-5 text-gray-700"
-                    aria-hidden="true"
-                  />
+                  {/* IconRenderer now just renders emojis (or nothing) */}
+                  <IconRenderer iconName={icon} className="w-5 h-5 text-gray-700" />
                 </button>
               ))}
             </div>
