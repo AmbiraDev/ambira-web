@@ -367,7 +367,7 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
         onClose={() => setShowLeaveConfirm(false)}
         onConfirm={confirmLeaveGroup}
         title="Leave group"
-        message="Are you sure you want to leave this group? You'll need another invite to rejoin."
+        message="Are you sure you want to leave this group?"
         confirmText="Leave group"
         cancelText="Stay"
         isLoading={isProcessing}
