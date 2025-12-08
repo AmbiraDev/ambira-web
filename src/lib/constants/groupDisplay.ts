@@ -25,8 +25,8 @@ export const GROUP_DISPLAY_CONFIG = {
     /** Group description truncation on desktop screens (max 150 characters) */
     DESCRIPTION_DESKTOP: 150,
   },
-  /** Maximum number of suggested groups to display (5 per design) */
-  SUGGESTED_GROUPS_LIMIT: 5,
+  /** Maximum number of suggested groups to display */
+  SUGGESTED_GROUPS_LIMIT: 30,
 } as const
 
 /**
