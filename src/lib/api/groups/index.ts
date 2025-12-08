@@ -8,7 +8,15 @@
 // ============================================================================
 
 import { db } from '@/lib/firebase'
-import { doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
+import {
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  serverTimestamp,
+} from 'firebase/firestore'
 import { removeUndefinedFields, convertTimestamp } from '../shared/utils'
 
 // Types
@@ -59,7 +67,8 @@ export const firebaseGroupApi = {
    */
   createGroup: async (groupData: CreateGroupData, userId: string): Promise<Group> => {
     try {
-      const groupId = doc(db, 'groups').id
+      const docRef = doc(collection(db, 'groups'))
+      const groupId = docRef.id
       const now = serverTimestamp()
 
       const newGroup = {
@@ -72,7 +81,6 @@ export const firebaseGroupApi = {
         updatedAt: now,
       }
 
-      const docRef = doc(db, 'groups', groupId)
       await setDoc(docRef, newGroup)
 
       return {
@@ -85,8 +93,10 @@ export const firebaseGroupApi = {
         createdAt: new Date(),
         updatedAt: new Date(),
       } as Group
-    } catch (_error) {
-      throw new Error('Failed to create group')
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : typeof error === 'string' ? error : undefined
+      throw new Error(message || 'Failed to create group')
     }
   },
 

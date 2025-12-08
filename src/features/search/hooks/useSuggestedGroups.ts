@@ -17,7 +17,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient'
-import { useUserGroups } from './useUserGroups'
+import { useUserGroups } from '@/features/groups/hooks'
 
 interface SuggestedGroup {
   id: string
@@ -50,8 +50,7 @@ export function useSuggestedGroups({
   limit = 20,
 }: UseSuggestedGroupsOptions): UseSuggestedGroupsReturn {
   // Fetch user's joined groups first
-  const { groups: userGroups, isLoading: isLoadingUserGroups } = useUserGroups({
-    userId,
+  const { data: userGroups = [], isLoading: isLoadingUserGroups } = useUserGroups(userId || '', {
     enabled: enabled && !!userId,
   })
 

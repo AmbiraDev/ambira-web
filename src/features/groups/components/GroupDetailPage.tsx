@@ -17,6 +17,7 @@ import { useJoinGroup, useLeaveGroup } from '../hooks/useGroupMutations'
 import { GroupLeaderboard } from './GroupLeaderboard'
 import { GroupMembersList } from './GroupMembersList'
 import { Users, Settings, ArrowLeft, Check } from 'lucide-react'
+import ConfirmDialog from '@/components/ConfirmDialog'
 
 interface GroupDetailPageProps {
   groupId: string
@@ -29,6 +30,7 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
   const joinGroupMutation = useJoinGroup()
   const leaveGroupMutation = useLeaveGroup()
   const [isProcessing, setIsProcessing] = useState(false)
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
 
   const [activeTab, setActiveTab] = useState<'leaderboard' | 'members'>('leaderboard')
 
@@ -153,32 +155,37 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
   const handleJoinLeave = async () => {
     if (!user || isProcessing) return
 
-    // Only show processing state for leaving (not joining)
-    const shouldShowProcessing = isMember
-
-    if (shouldShowProcessing) {
-      setIsProcessing(true)
+    if (isMember) {
+      setShowLeaveConfirm(true)
+      return
     }
 
     try {
-      if (isMember) {
-        await leaveGroupMutation.mutateAsync({
-          groupId: group.id,
-          userId: user.id,
-        })
-      } else {
-        // Join without showing processing state - optimistic update will handle it
-        await joinGroupMutation.mutateAsync({
-          groupId: group.id,
-          userId: user.id,
-        })
-      }
+      await joinGroupMutation.mutateAsync({
+        groupId: group.id,
+        userId: user.id,
+      })
     } catch (error) {
-      debug.error('Failed to join/leave group:', error)
+      debug.error('Failed to join group:', error)
+    }
+  }
+
+  const confirmLeaveGroup = async () => {
+    if (!user || !isMember) return
+
+    setIsProcessing(true)
+    setShowLeaveConfirm(false)
+
+    try {
+      await leaveGroupMutation.mutateAsync({
+        groupId: group.id,
+        userId: user.id,
+      })
+      router.push('/groups')
+    } catch (error) {
+      debug.error('Failed to leave group:', error)
     } finally {
-      if (shouldShowProcessing) {
-        setIsProcessing(false)
-      }
+      setIsProcessing(false)
     }
   }
 
@@ -355,6 +362,17 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
           </div>
         </div>
       </div>
+      <ConfirmDialog
+        isOpen={showLeaveConfirm}
+        onClose={() => setShowLeaveConfirm(false)}
+        onConfirm={confirmLeaveGroup}
+        title="Leave group"
+        message="Are you sure you want to leave this group?"
+        confirmText="Leave group"
+        cancelText="Stay"
+        isLoading={isProcessing}
+        variant="warning"
+      />
     </div>
   )
 }

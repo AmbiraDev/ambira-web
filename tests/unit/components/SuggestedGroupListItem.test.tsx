@@ -35,20 +35,31 @@ describe('SuggestedGroupListItem', () => {
 
   const mockOnJoin = jest.fn()
 
+  type SuggestedGroupListItemProps = React.ComponentProps<typeof SuggestedGroupListItem>
+
+  const defaultProps: SuggestedGroupListItemProps = {
+    group: mockGroup,
+    onJoin: mockOnJoin,
+    isJoining: false,
+    isJoined: false,
+  }
+
+  const renderComponent = (props: Partial<SuggestedGroupListItemProps> = {}) =>
+    render(<SuggestedGroupListItem {...defaultProps} {...props} />)
+
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
   it('should render group name', () => {
-    render(<SuggestedGroupListItem group={mockGroup} onJoin={mockOnJoin} isJoining={false} />)
+    renderComponent()
 
-    // Name appears twice (mobile and desktop)
     const names = screen.getAllByText('Test Fitness Group')
     expect(names.length).toBeGreaterThan(0)
   })
 
   it('should render member count with correct pluralization', () => {
-    render(<SuggestedGroupListItem group={mockGroup} onJoin={mockOnJoin} isJoining={false} />)
+    renderComponent()
 
     expect(screen.getByText('15 Members')).toBeInTheDocument()
   })
@@ -56,17 +67,14 @@ describe('SuggestedGroupListItem', () => {
   it('should render singular "Member" for count of 1', () => {
     const singleMemberGroup = { ...mockGroup, memberCount: 1 }
 
-    render(
-      <SuggestedGroupListItem group={singleMemberGroup} onJoin={mockOnJoin} isJoining={false} />
-    )
+    renderComponent({ group: singleMemberGroup })
 
     expect(screen.getByText('1 Member')).toBeInTheDocument()
   })
 
   it('should render location when provided', () => {
-    render(<SuggestedGroupListItem group={mockGroup} onJoin={mockOnJoin} isJoining={false} />)
+    renderComponent()
 
-    // Location appears twice (mobile and desktop)
     const locations = screen.getAllByText('Seattle, WA')
     expect(locations.length).toBeGreaterThan(0)
   })
@@ -74,15 +82,13 @@ describe('SuggestedGroupListItem', () => {
   it('should not render location when not provided', () => {
     const groupWithoutLocation = { ...mockGroup, location: undefined }
 
-    render(
-      <SuggestedGroupListItem group={groupWithoutLocation} onJoin={mockOnJoin} isJoining={false} />
-    )
+    renderComponent({ group: groupWithoutLocation })
 
     expect(screen.queryByText('Seattle, WA')).not.toBeInTheDocument()
   })
 
   it('should render description on desktop', () => {
-    render(<SuggestedGroupListItem group={mockGroup} onJoin={mockOnJoin} isJoining={false} />)
+    renderComponent()
 
     expect(
       screen.getByText('A group for fitness enthusiasts who love to work out')
@@ -90,7 +96,7 @@ describe('SuggestedGroupListItem', () => {
   })
 
   it('should render Join button', () => {
-    render(<SuggestedGroupListItem group={mockGroup} onJoin={mockOnJoin} isJoining={false} />)
+    renderComponent()
 
     const joinButton = screen.getByRole('button', {
       name: 'Join Test Fitness Group',
@@ -100,7 +106,7 @@ describe('SuggestedGroupListItem', () => {
   })
 
   it('should call onJoin when Join button is clicked', () => {
-    render(<SuggestedGroupListItem group={mockGroup} onJoin={mockOnJoin} isJoining={false} />)
+    renderComponent()
 
     const joinButton = screen.getByRole('button', {
       name: 'Join Test Fitness Group',
@@ -112,7 +118,7 @@ describe('SuggestedGroupListItem', () => {
   })
 
   it('should show "Joining..." when isJoining is true', () => {
-    render(<SuggestedGroupListItem group={mockGroup} onJoin={mockOnJoin} isJoining={true} />)
+    renderComponent({ isJoining: true })
 
     const joinButton = screen.getByRole('button', {
       name: 'Join Test Fitness Group',
@@ -121,7 +127,7 @@ describe('SuggestedGroupListItem', () => {
   })
 
   it('should disable Join button when isJoining is true', () => {
-    render(<SuggestedGroupListItem group={mockGroup} onJoin={mockOnJoin} isJoining={true} />)
+    renderComponent({ isJoining: true })
 
     const joinButton = screen.getByRole('button', {
       name: 'Join Test Fitness Group',
@@ -129,8 +135,8 @@ describe('SuggestedGroupListItem', () => {
     expect(joinButton).toBeDisabled()
   })
 
-  it('should not call onJoin when button is disabled', () => {
-    render(<SuggestedGroupListItem group={mockGroup} onJoin={mockOnJoin} isJoining={true} />)
+  it('should not call onJoin when button is disabled due to joining state', () => {
+    renderComponent({ isJoining: true })
 
     const joinButton = screen.getByRole('button', {
       name: 'Join Test Fitness Group',
@@ -141,9 +147,7 @@ describe('SuggestedGroupListItem', () => {
   })
 
   it('should render link to group page', () => {
-    const { container } = render(
-      <SuggestedGroupListItem group={mockGroup} onJoin={mockOnJoin} isJoining={false} />
-    )
+    const { container } = renderComponent()
 
     const groupLink = container.querySelector('a[href="/groups/group-123"]')
     expect(groupLink).toBeInTheDocument()
@@ -155,9 +159,8 @@ describe('SuggestedGroupListItem', () => {
       name: 'This is a very long group name that should be truncated on mobile devices',
     }
 
-    render(<SuggestedGroupListItem group={longNameGroup} onJoin={mockOnJoin} isJoining={false} />)
+    renderComponent({ group: longNameGroup })
 
-    // Mobile truncation (30 chars + ...)
     expect(screen.getByText('This is a very long group name...')).toBeInTheDocument()
   })
 
@@ -167,35 +170,29 @@ describe('SuggestedGroupListItem', () => {
       location: 'A very long location name that needs truncation',
     }
 
-    render(
-      <SuggestedGroupListItem group={longLocationGroup} onJoin={mockOnJoin} isJoining={false} />
-    )
+    renderComponent({ group: longLocationGroup })
 
-    // Mobile truncation (20 chars + ...)
     expect(screen.getByText('A very long location...')).toBeInTheDocument()
   })
 
   it('should handle groups with 0 members', () => {
     const emptyGroup = { ...mockGroup, memberCount: 0 }
 
-    render(<SuggestedGroupListItem group={emptyGroup} onJoin={mockOnJoin} isJoining={false} />)
+    renderComponent({ group: emptyGroup })
 
     expect(screen.getByText('0 Members')).toBeInTheDocument()
   })
 
   it('should render group avatar', () => {
-    const { container } = render(
-      <SuggestedGroupListItem group={mockGroup} onJoin={mockOnJoin} isJoining={false} />
-    )
+    const { container } = renderComponent()
 
-    // GroupAvatar component should be rendered (look for the image or icon container)
     const avatarLink = container.querySelector('a[href="/groups/group-123"]')
     expect(avatarLink).toBeInTheDocument()
     expect(avatarLink?.querySelector('div')).toBeInTheDocument()
   })
 
   it('should have proper accessibility attributes on Join button', () => {
-    render(<SuggestedGroupListItem group={mockGroup} onJoin={mockOnJoin} isJoining={false} />)
+    renderComponent()
 
     const joinButton = screen.getByRole('button', {
       name: 'Join Test Fitness Group',
@@ -204,9 +201,7 @@ describe('SuggestedGroupListItem', () => {
   })
 
   it('should apply hover styles to card', () => {
-    const { container } = render(
-      <SuggestedGroupListItem group={mockGroup} onJoin={mockOnJoin} isJoining={false} />
-    )
+    const { container } = renderComponent()
 
     const card = container.firstChild as HTMLElement
     expect(card).toHaveClass('hover:bg-gray-50')
@@ -215,12 +210,22 @@ describe('SuggestedGroupListItem', () => {
   it('should truncate very long descriptions', () => {
     const longDescGroup = {
       ...mockGroup,
-      description: 'A'.repeat(200), // 200 characters
+      description: 'A'.repeat(200),
     }
 
-    render(<SuggestedGroupListItem group={longDescGroup} onJoin={mockOnJoin} isJoining={false} />)
+    renderComponent({ group: longDescGroup })
 
     const description = screen.getByText(/^A+\.\.\.$/) as HTMLElement
-    expect(description.textContent?.length).toBeLessThanOrEqual(153) // 150 + "..."
+    expect(description.textContent?.length).toBeLessThanOrEqual(153)
+  })
+
+  it('should show Joined state when already a member', () => {
+    renderComponent({ isJoined: true })
+
+    const joinButton = screen.getByRole('button', {
+      name: 'Already joined Test Fitness Group',
+    })
+    expect(joinButton).toHaveTextContent('Joined')
+    expect(joinButton).toBeDisabled()
   })
 })

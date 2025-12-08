@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import { useUserGroups, useJoinGroup, useLeaveGroup } from '@/features/groups/hooks'
+import { useUserGroups, useJoinGroup } from '@/features/groups/hooks'
 import { useSuggestedGroups } from '@/features/search/hooks'
 import Header from '@/components/HeaderComponent'
 import MobileHeader from '@/components/MobileHeader'
@@ -33,34 +33,34 @@ export default function GroupsPage() {
       limit: GROUP_DISPLAY_CONFIG.SUGGESTED_GROUPS_LIMIT,
     })
 
+  const joinedGroupIds = useMemo(() => new Set(userGroups.map((g) => g.id)), [userGroups])
+
   // Memoize the groups type conversion
-  const suggestedGroups = useMemo(
-    () =>
-      fetchedSuggestedGroups.slice(0, GROUP_DISPLAY_CONFIG.SUGGESTED_GROUPS_LIMIT).map((g) => ({
-        id: g.id,
-        name: g.name,
-        description: g.description,
-        category: (g.category as Group['category']) || 'other',
-        type: 'professional' as const,
-        privacySetting: 'public' as const,
-        memberCount: g.memberCount || 0,
-        adminUserIds: [],
-        memberIds: [],
-        createdByUserId: '',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        imageUrl: g.imageUrl,
-        location: g.location,
-      })),
-    [fetchedSuggestedGroups]
-  )
+  const suggestedGroups = useMemo(() => {
+    const filtered = fetchedSuggestedGroups.filter((g) => !joinedGroupIds.has(g.id))
+
+    return filtered.slice(0, GROUP_DISPLAY_CONFIG.SUGGESTED_GROUPS_LIMIT).map((g) => ({
+      id: g.id,
+      name: g.name,
+      description: g.description,
+      category: (g.category as Group['category']) || 'other',
+      type: 'professional' as const,
+      privacySetting: 'public' as const,
+      memberCount: g.memberCount || 0,
+      adminUserIds: [],
+      memberIds: [],
+      createdByUserId: '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      imageUrl: g.imageUrl,
+      location: g.location,
+    }))
+  }, [fetchedSuggestedGroups, joinedGroupIds])
 
   // Mutations for joining/leaving groups
   const joinGroupMutation = useJoinGroup()
-  const leaveGroupMutation = useLeaveGroup()
 
   // Memoize the joined group IDs set
-  const joinedGroupIds = useMemo(() => new Set(userGroups.map((g) => g.id)), [userGroups])
 
   // Memoize the join handler
   const handleJoinGroup = useCallback(
@@ -71,27 +71,22 @@ export default function GroupsPage() {
       if (!user) return
 
       const isJoined = joinedGroupIds.has(groupId)
+      if (isJoined) {
+        return
+      }
+
       setError(null) // Clear any previous errors
 
       try {
         setJoiningGroupId(groupId)
-
-        if (isJoined) {
-          await leaveGroupMutation.mutateAsync({ groupId, userId: user.id })
-        } else {
-          await joinGroupMutation.mutateAsync({ groupId, userId: user.id })
-        }
+        await joinGroupMutation.mutateAsync({ groupId, userId: user.id })
       } catch (_err) {
-        setError(
-          isJoined
-            ? 'Failed to leave group. Please try again.'
-            : 'Failed to join group. Please try again.'
-        )
+        setError('Failed to join group. Please try again.')
       } finally {
         setJoiningGroupId(null)
       }
     },
-    [user, joinedGroupIds, joinGroupMutation, leaveGroupMutation]
+    [user, joinedGroupIds, joinGroupMutation]
   )
 
   // Handle Escape key to dismiss error messages
@@ -270,6 +265,7 @@ export default function GroupsPage() {
                   group={group}
                   onJoin={handleJoinGroup}
                   isJoining={joiningGroupId === group.id}
+                  isJoined={joinedGroupIds.has(group.id)}
                 />
               ))}
             </div>
