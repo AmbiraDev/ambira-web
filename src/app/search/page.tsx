@@ -12,7 +12,6 @@ import { UserCardCompact } from '@/features/social/components/UserCard'
 import { Users, Search } from 'lucide-react'
 import { firebaseApi } from '@/lib/api'
 import { useQueryClient } from '@tanstack/react-query'
-import { CACHE_KEYS } from '@/lib/queryClient'
 import { LoadingScreen } from '@/components/LoadingScreen'
 import type {
   Group,
@@ -29,8 +28,8 @@ import {
   useSuggestedUsers,
   useSuggestedGroups,
   useFollowingList,
-  useUserGroups,
 } from '@/features/search/hooks'
+import { useUserGroups, GROUPS_KEYS } from '@/features/groups/hooks'
 
 // Loading skeletons
 import {
@@ -57,8 +56,7 @@ function SearchContent() {
     enabled: !!user,
   })
 
-  const { groups: userGroups } = useUserGroups({
-    userId: user?.id,
+  const { data: userGroups = [] } = useUserGroups(user?.id || '', {
     enabled: !!user && type === 'groups',
   })
 
@@ -156,7 +154,7 @@ function SearchContent() {
 
         // Invalidate user groups cache to refetch
         queryClient.invalidateQueries({
-          queryKey: CACHE_KEYS.USER_GROUPS(user.id),
+          queryKey: GROUPS_KEYS.userGroups(user.id),
         })
       } catch {
       } finally {
@@ -207,7 +205,7 @@ function SearchContent() {
     const isLoading = joiningGroup === group.id
 
     return (
-      <div className="p-3 md:p-4 transition-colors">
+      <div key={group.id} className="p-3 md:p-4 transition-colors">
         <div className="flex items-start md:items-center gap-3 md:gap-4">
           {/* Group Icon */}
           <Link href={`/groups/${group.id}`} className="flex-shrink-0">
