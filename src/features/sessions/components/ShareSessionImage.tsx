@@ -103,8 +103,8 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
       if (navigator.share && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: session.title || 'My Ambira Session',
-          text: `Check out my session on Ambira: ${session.title}`,
+          title: session.title || 'My Focumo Session',
+          text: `Check out my session on Focumo: ${session.title}`,
         })
       } else {
         // Fallback to download
@@ -153,7 +153,7 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
           className="bg-white rounded-lg shadow-lg overflow-hidden mx-auto"
           style={{ maxWidth: '600px' }}
         >
-          {/* Ambira Header with Brand Color */}
+          {/* Focumo Header with Brand Color */}
           <div className="bg-gradient-to-r from-[#0066CC] to-[#00C6FF] px-8 py-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -161,14 +161,14 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
                 <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center p-2">
                   <Image
                     src="/logo.svg"
-                    alt="Ambira"
+                    alt="Focumo"
                     width={48}
                     height={48}
                     className="w-full h-full"
                   />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-white">Ambira</h1>
+                  <h1 className="text-2xl font-bold text-white">Focumo</h1>
                   <p className="text-sm text-white/90">Track your productivity</p>
                 </div>
               </div>
@@ -289,7 +289,7 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
           {/* Footer */}
           <div className="px-8 py-6 bg-gray-50 border-t border-gray-200">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600">Join me on Ambira</div>
+              <div className="text-sm text-gray-600">Join me on Focumo</div>
               <div className="text-sm font-semibold text-[#0066CC]">ambira.app</div>
             </div>
           </div>

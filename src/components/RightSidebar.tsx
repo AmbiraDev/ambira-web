@@ -13,6 +13,9 @@ import SuggestedGroupsModal from '@/features/groups/components/SuggestedGroupsMo
 import { useSuggestedGroups } from '@/features/search/hooks'
 import { useJoinGroup } from '@/features/groups/hooks/useGroupMutations'
 import { GROUP_DISPLAY_CONFIG } from '@/lib/constants/groupDisplay'
+import { StreakCard } from '@/features/streaks/components/StreakCard'
+import DailyGoals from './DailyGoals'
+import { Flame, Trophy, Zap } from 'lucide-react'
 
 interface SuggestedUser {
   id: string
@@ -58,15 +61,14 @@ function RightSidebar() {
         debug.error('Failed to load following users:', error)
       }
 
-      // Load suggested users (top 5) with 1 hour cache
+      // Load suggested users (top 3) with 1 hour cache
       try {
-        // Use the getSuggestedUsers API which filters by profileVisibility and already-followed users
         const suggestions = await cachedQuery(
           `suggested_users_${user.id}`,
-          () => firebaseUserApi.getSuggestedUsers(5),
+          () => firebaseUserApi.getSuggestedUsers(3),
           {
-            memoryTtl: 60 * 60 * 1000, // 1 hour in memory
-            localTtl: 60 * 60 * 1000, // 1 hour in localStorage
+            memoryTtl: 60 * 60 * 1000,
+            localTtl: 60 * 60 * 1000,
             sessionCache: true,
             dedupe: true,
           }
@@ -127,71 +129,124 @@ function RightSidebar() {
 
   return (
     <aside
-      className="hidden xl:block w-[320px] flex-shrink-0"
-      aria-label="Suggestions and groups sidebar"
+      className="hidden xl:block w-[368px] flex-shrink-0 pl-8 pr-4"
+      aria-label="Suggestions and goals sidebar"
     >
-      <div className="space-y-4 h-full overflow-y-auto scrollbar-hide pt-20 pb-6">
-        {/* Suggested Friends - Redesigned */}
-        <div className="px-2">
-          <div className="flex items-center justify-between mb-3 px-2">
-            <h3 className="text-lg font-semibold text-gray-900">Suggested for you</h3>
+      <div className="sticky top-0 pt-8 space-y-6 pb-6 max-h-screen overflow-y-auto no-scrollbar">
+        {/* Streak Card - Duolingo Style */}
+        {user && (
+          <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] overflow-hidden hover:border-[#DDF4FF] transition-colors">
+            <div className="flex items-center justify-between px-5 py-4">
+              <div className="flex items-center gap-3">
+                <Flame className="w-6 h-6 text-[#FF9600]" fill="#FF9600" />
+                <span className="font-extrabold text-[#4B4B4B] text-lg tracking-tight">Streak</span>
+              </div>
+              <Link
+                href="/analytics"
+                className="text-xs font-bold text-[#1CB0F6] hover:text-[#0088CC] uppercase tracking-widest hover:bg-[#DDF4FF] px-3 py-1.5 rounded-lg transition-colors"
+              >
+                View
+              </Link>
+            </div>
+            <div className="px-5 pb-5">
+              <StreakCard userId={user.id} variant="compact" showProgress={false} />
+            </div>
+          </div>
+        )}
+
+        {/* Daily Quests - Duolingo Style */}
+        <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] overflow-hidden hover:border-[#DDF4FF] transition-colors">
+          <div className="flex items-center justify-between px-5 py-4">
+            <div className="flex items-center gap-3">
+              <Zap className="w-6 h-6 text-[#1CB0F6]" fill="#1CB0F6" />
+              <span className="font-extrabold text-[#4B4B4B] text-lg tracking-tight">
+                Daily Quests
+              </span>
+            </div>
+            <Link
+              href="/settings/activities"
+              className="text-xs font-bold text-[#1CB0F6] hover:text-[#0088CC] uppercase tracking-widest hover:bg-[#DDF4FF] px-3 py-1.5 rounded-lg transition-colors"
+            >
+              View All
+            </Link>
+          </div>
+          <div className="px-2 pb-2">
+            <DailyGoals />
+          </div>
+        </div>
+
+        {/* Suggested Friends - Duolingo Style */}
+        <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] overflow-hidden hover:border-[#DDF4FF] transition-colors">
+          <div className="flex items-center justify-between px-5 py-4">
+            <span className="font-extrabold text-[#4B4B4B] text-lg tracking-tight">
+              Add Friends
+            </span>
+            <Link
+              href="/search"
+              className="text-xs font-bold text-[#1CB0F6] hover:text-[#0088CC] uppercase tracking-widest hover:bg-[#DDF4FF] px-3 py-1.5 rounded-lg transition-colors"
+            >
+              Find
+            </Link>
           </div>
 
-          {isLoadingUsers ? (
-            <div className="space-y-2">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 animate-pulse p-3 bg-white rounded-lg"
-                >
-                  <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
-                  <div className="flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-16"></div>
+          <div className="px-2 pb-2">
+            {isLoadingUsers ? (
+              <div className="space-y-2 p-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-3 animate-pulse p-2">
+                    <div className="w-12 h-12 bg-[#E5E5E5] rounded-full"></div>
+                    <div className="flex-1">
+                      <div className="h-4 bg-[#E5E5E5] rounded w-24 mb-2"></div>
+                      <div className="h-3 bg-[#E5E5E5] rounded w-16"></div>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : suggestedUsers.length === 0 ? (
-            <div className="p-6 text-center bg-white rounded-lg">
-              <p className="text-sm text-gray-500">No suggestions available</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {suggestedUsers.map((suggestedUser) => (
-                <Link
-                  key={suggestedUser.id}
-                  href={`/profile/${suggestedUser.username}`}
-                  className="block px-3 py-3 bg-white hover:bg-gray-50 rounded-lg transition-colors duration-200"
-                >
-                  <div className="flex items-center gap-3">
+                ))}
+              </div>
+            ) : suggestedUsers.length === 0 ? (
+              <div className="p-6 text-center">
+                <p className="text-sm text-[#AFAFAF] font-bold">No suggestions available</p>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {suggestedUsers.map((suggestedUser) => (
+                  <Link
+                    key={suggestedUser.id}
+                    href={`/profile/${suggestedUser.username}`}
+                    className="flex items-center gap-3 p-3 hover:bg-[#F7F7F7] rounded-xl transition-colors group"
+                  >
                     {suggestedUser.profilePicture ? (
-                      <Image
-                        src={suggestedUser.profilePicture}
-                        alt={`${suggestedUser.name}'s profile picture`}
-                        width={48}
-                        height={48}
-                        className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                        loading="lazy"
-                        sizes="48px"
-                      />
+                      <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 p-0.5 bg-gradient-to-br from-[#58CC02] to-[#45A000]">
+                        <Image
+                          src={suggestedUser.profilePicture}
+                          alt={`${suggestedUser.name}'s profile picture`}
+                          width={48}
+                          height={48}
+                          className="w-full h-full rounded-full object-cover border-2 border-white"
+                          loading="lazy"
+                          sizes="48px"
+                        />
+                      </div>
                     ) : (
-                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-gray-600 font-semibold text-sm">
-                          {suggestedUser.name
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')
-                            .slice(0, 2)
-                            .toUpperCase()}
-                        </span>
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 p-0.5 bg-gradient-to-br from-[#58CC02] to-[#45A000]">
+                        <div className="w-full h-full bg-white rounded-full flex items-center justify-center border-2 border-white">
+                          <span className="text-[#3C3C3C] font-bold text-sm">
+                            {suggestedUser.name
+                              .split(' ')
+                              .map((n) => n[0])
+                              .join('')
+                              .slice(0, 2)
+                              .toUpperCase()}
+                          </span>
+                        </div>
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-gray-900 hover:text-[#0066CC] truncate mb-0.5">
+                      <p className="font-bold text-sm text-[#4B4B4B] truncate group-hover:text-[#58CC02] transition-colors">
                         {suggestedUser.name}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">@{suggestedUser.username}</p>
+                      <p className="text-xs text-[#AFAFAF] font-bold truncate">
+                        @{suggestedUser.username}
+                      </p>
                     </div>
                     <button
                       onClick={(e) => {
@@ -199,69 +254,74 @@ function RightSidebar() {
                         e.stopPropagation()
                         handleFollowToggle(suggestedUser.id)
                       }}
-                      className={`text-sm font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0 ${
+                      className={`px-4 py-2 text-xs rounded-xl font-extrabold tracking-wide transition-all uppercase ${
                         followingUsers.has(suggestedUser.id)
-                          ? 'text-gray-600 hover:text-gray-900'
-                          : 'text-[#0066CC] hover:text-[#0051D5]'
+                          ? 'bg-transparent text-[#AFAFAF] hover:bg-[#E5E5E5] hover:text-[#777777]'
+                          : 'bg-[#1CB0F6] text-white border-b-4 border-[#1496D4] hover:bg-[#20BAF8] active:border-b-0 active:translate-y-1'
                       }`}
                       aria-label={
                         followingUsers.has(suggestedUser.id)
                           ? `Unfollow ${suggestedUser.name}`
                           : `Follow ${suggestedUser.name}`
                       }
-                      aria-pressed={followingUsers.has(suggestedUser.id)}
                     >
                       {followingUsers.has(suggestedUser.id) ? 'Following' : 'Follow'}
                     </button>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Clubs - Redesigned */}
-        <div className="px-2">
-          <div className="flex items-center justify-between mb-3 px-2">
-            <h3 className="text-lg font-semibold text-gray-900">Suggested Groups</h3>
+        {/* Suggested Groups - Duolingo Style */}
+        <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] overflow-hidden hover:border-[#DDF4FF] transition-colors">
+          <div className="flex items-center justify-between px-5 py-4">
+            <div className="flex items-center gap-3">
+              <Trophy className="w-6 h-6 text-[#CE82FF]" fill="#CE82FF" />
+              <span className="font-extrabold text-[#4B4B4B] text-lg tracking-tight">Groups</span>
+            </div>
+            <Link
+              href="/groups"
+              className="text-xs font-bold text-[#1CB0F6] hover:text-[#0088CC] uppercase tracking-widest hover:bg-[#DDF4FF] px-3 py-1.5 rounded-lg transition-colors"
+            >
+              View All
+            </Link>
           </div>
 
-          {isLoadingGroups ? (
-            <div className="space-y-2">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 animate-pulse p-3 bg-white rounded-lg"
-                >
-                  <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
-                  <div className="flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-                    <div className="h-3 bg-gray-200 rounded w-16"></div>
+          <div className="px-2 pb-2">
+            {isLoadingGroups ? (
+              <div className="space-y-2 p-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-3 animate-pulse p-2">
+                    <div className="w-12 h-12 bg-[#E5E5E5] rounded-xl"></div>
+                    <div className="flex-1">
+                      <div className="h-4 bg-[#E5E5E5] rounded w-24 mb-2"></div>
+                      <div className="h-3 bg-[#E5E5E5] rounded w-16"></div>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : fetchedSuggestedGroups.length === 0 ? (
-            <div className="p-6 text-center bg-white rounded-lg">
-              <p className="text-sm text-gray-500">No groups available</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {fetchedSuggestedGroups.map((group) => (
-                <Link
-                  key={group.id}
-                  href={`/groups/${group.id}`}
-                  className="block px-3 py-3 bg-white hover:bg-gray-50 rounded-lg transition-colors duration-200"
-                >
-                  <div className="flex items-center gap-3">
+                ))}
+              </div>
+            ) : fetchedSuggestedGroups.length === 0 ? (
+              <div className="p-6 text-center">
+                <p className="text-sm text-[#AFAFAF] font-bold">No groups available</p>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {fetchedSuggestedGroups.slice(0, 3).map((group) => (
+                  <Link
+                    key={group.id}
+                    href={`/groups/${group.id}`}
+                    className="flex items-center gap-3 p-3 hover:bg-[#F7F7F7] rounded-xl transition-colors group"
+                  >
                     <GroupAvatar imageUrl={group.imageUrl} name={group.name} size="md" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-gray-900 hover:text-[#0066CC] truncate mb-0.5">
+                      <p className="font-bold text-sm text-[#4B4B4B] truncate group-hover:text-[#CE82FF] transition-colors">
                         {group.name}
                       </p>
-                      <div className="text-xs text-gray-500">
+                      <p className="text-xs text-[#AFAFAF] font-bold">
                         {group.memberCount || 0} {group.memberCount === 1 ? 'member' : 'members'}
-                      </div>
+                      </p>
                     </div>
                     <button
                       onClick={(e) => {
@@ -269,10 +329,8 @@ function RightSidebar() {
                         e.stopPropagation()
                         if (!user || joinedGroupIds.has(group.id)) return
 
-                        // Immediately mark as joined for instant UI feedback
                         setJoinedGroupIds((prev) => new Set(prev).add(group.id))
 
-                        // Fire mutation with proper error handling
                         joinGroupMutation.mutate(
                           {
                             groupId: group.id,
@@ -281,32 +339,47 @@ function RightSidebar() {
                           {
                             onError: (error) => {
                               debug.error('Failed to join group:', error)
-                              // Rollback optimistic update on error
                               setJoinedGroupIds((prev) => {
                                 const next = new Set(prev)
                                 next.delete(group.id)
                                 return next
                               })
                             },
-                            // The mutation will automatically invalidate the cache
-                            // and the suggested groups hook will refetch and filter out this group
                           }
                         )
                       }}
-                      className={`text-sm font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0 ${
+                      className={`px-4 py-2 text-xs rounded-xl font-extrabold tracking-wide transition-all uppercase ${
                         joinedGroupIds.has(group.id)
-                          ? 'text-gray-600 cursor-not-allowed'
-                          : 'text-[#0066CC] hover:text-[#0051D5] cursor-pointer'
+                          ? 'bg-transparent text-[#AFAFAF] hover:bg-[#E5E5E5] hover:text-[#777777]'
+                          : 'bg-[#1CB0F6] text-white border-b-4 border-[#1496D4] hover:bg-[#20BAF8] active:border-b-0 active:translate-y-1'
                       }`}
                       disabled={joinedGroupIds.has(group.id)}
                     >
                       {joinedGroupIds.has(group.id) ? 'Joined' : 'Join'}
                     </button>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer Links */}
+        <div className="text-center pt-4 pb-8">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-[#AFAFAF] font-bold tracking-wide">
+            <Link href="/about" className="hover:text-[#777777] transition-colors">
+              ABOUT
+            </Link>
+            <Link href="/help" className="hover:text-[#777777] transition-colors">
+              HELP
+            </Link>
+            <Link href="/privacy" className="hover:text-[#777777] transition-colors">
+              PRIVACY
+            </Link>
+            <Link href="/terms" className="hover:text-[#777777] transition-colors">
+              TERMS
+            </Link>
+          </div>
         </div>
       </div>
 

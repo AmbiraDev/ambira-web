@@ -6,13 +6,13 @@ import { NAV_LINKS, CLASS_NAMES } from './header.constants'
 import { isActivePath, cn } from './header.utils'
 
 /**
- * Navigation Component
+ * Navigation Component - Duolingo Style
  *
  * Renders the main desktop navigation links with active state highlighting.
  * Follows Single Responsibility Principle by managing only navigation UI.
  *
  * Features:
- * - Active route highlighting
+ * - Active route highlighting with Duolingo green
  * - Bottom border indicator for active link
  * - Hover states for inactive links
  *
@@ -23,7 +23,7 @@ import { isActivePath, cn } from './header.utils'
  */
 export default function Navigation({ pathname }: NavigationProps) {
   return (
-    <nav className="hidden md:flex items-center space-x-6 h-14">
+    <nav className="hidden md:flex items-center space-x-6 h-16">
       {NAV_LINKS.map(({ href, label }) => {
         const isActive = isActivePath(pathname, href)
 
@@ -32,7 +32,7 @@ export default function Navigation({ pathname }: NavigationProps) {
             key={href}
             href={href}
             className={cn(
-              'text-base font-[450] transition-colors h-full relative flex items-center',
+              'text-base font-bold transition-colors h-full relative flex items-center',
               isActive ? CLASS_NAMES.NAV_LINK_ACTIVE : CLASS_NAMES.NAV_LINK_INACTIVE
             )}
             aria-current={isActive ? 'page' : undefined}

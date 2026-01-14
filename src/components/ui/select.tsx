@@ -6,7 +6,7 @@ const Select = React.forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HT
     return (
       <select
         className={cn(
-          'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+          'flex h-12 w-full rounded-xl border-2 border-b-4 border-[#E5E5E5] bg-[#F7F7F7] px-4 py-3 text-base text-[#3C3C3C] font-semibold transition-all focus-visible:outline-none focus-visible:border-[#1CB0F6] focus-visible:bg-white disabled:cursor-not-allowed disabled:opacity-50 appearance-none cursor-pointer',
           className
         )}
         ref={ref}
@@ -26,7 +26,7 @@ const SelectTrigger = React.forwardRef<
   return (
     <select
       className={cn(
-        'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+        'flex h-12 w-full items-center justify-between rounded-xl border-2 border-b-4 border-[#E5E5E5] bg-[#F7F7F7] px-4 py-3 text-base text-[#3C3C3C] font-semibold transition-all focus-visible:outline-none focus-visible:border-[#1CB0F6] focus-visible:bg-white disabled:cursor-not-allowed disabled:opacity-50 appearance-none cursor-pointer',
         className
       )}
       ref={ref}
@@ -43,7 +43,7 @@ const SelectContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
     <div
       ref={ref}
       className={cn(
-        'relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md',
+        'relative z-50 min-w-[8rem] overflow-hidden rounded-xl border-2 border-[#E5E5E5] bg-white text-[#3C3C3C] shadow-lg',
         className
       )}
       {...props}
@@ -61,7 +61,7 @@ const SelectItem = React.forwardRef<
   <option
     ref={ref}
     className={cn(
-      'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      'relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 pl-4 pr-2 text-base font-semibold outline-none hover:bg-[#F7F7F7] focus:bg-[#F7F7F7] data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
       className
     )}
     {...props}
@@ -73,7 +73,7 @@ SelectItem.displayName = 'SelectItem'
 
 const SelectValue = React.forwardRef<HTMLSpanElement, React.HTMLAttributes<HTMLSpanElement>>(
   ({ className, ...props }, ref) => (
-    <span ref={ref} className={cn('block truncate', className)} {...props} />
+    <span ref={ref} className={cn('block truncate font-semibold', className)} {...props} />
   )
 )
 SelectValue.displayName = 'SelectValue'

@@ -1,7 +1,7 @@
 /**
  * Session Domain Entity
  *
- * Represents a work/study session in the Ambira system.
+ * Represents a work/study session in the Focumo system.
  * Sessions ARE the primary content type (like Strava activities).
  */
 

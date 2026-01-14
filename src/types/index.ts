@@ -1,4 +1,4 @@
-// Core data types for Ambira
+// Core data types for Focumo
 
 import { Timestamp } from 'firebase/firestore'
 

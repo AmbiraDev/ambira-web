@@ -71,6 +71,18 @@ export interface LogoProps {
 export interface AuthButtonsProps {
   /** Whether to show in mobile view */
   isMobile?: boolean
+  /** Whether auth button should show as "Focus Now" (scrolled landing page) */
+  showFocusNow?: boolean
+}
+
+/**
+ * Props for Header component
+ */
+export interface HeaderProps {
+  /** Whether this header is on the landing page */
+  isLandingPage?: boolean
+  /** Whether to show auth buttons in header (for landing page scroll state) */
+  showHeaderAuth?: boolean
 }
 
 /**

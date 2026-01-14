@@ -3,23 +3,25 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 touch-manipulation',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-2xl text-sm font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1CB0F6] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 touch-manipulation border-2 border-b-4 active:border-b-2 active:translate-y-[2px]',
   {
     variants: {
       variant: {
-        default: 'bg-[#0066CC] text-white hover:bg-[#0051D5]',
-        destructive: 'bg-[#EF4444] text-white hover:bg-[#DC2626]',
-        outline:
-          'border border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50 text-gray-700',
-        secondary: 'bg-gray-100 text-gray-700 hover:bg-gray-200',
-        ghost: 'text-gray-500 hover:text-gray-700 hover:bg-gray-100',
-        link: 'text-[#0066CC] underline-offset-4 hover:underline',
+        default: 'bg-[#58CC02] border-[#45A000] text-white hover:brightness-105',
+        destructive: 'bg-[#FF4B4B] border-[#EA2B2B] text-white hover:brightness-105',
+        outline: 'border-[#E5E5E5] bg-white hover:bg-[#F7F7F7] text-[#3C3C3C]',
+        secondary: 'bg-[#1CB0F6] border-[#0088CC] text-white hover:brightness-105',
+        ghost: 'text-[#AFAFAF] hover:text-[#3C3C3C] hover:bg-[#F7F7F7] border-transparent',
+        link: 'text-[#1CB0F6] underline-offset-4 hover:underline border-transparent',
+        gold: 'bg-[#FFC800] border-[#E5B400] text-[#3C3C3C] hover:brightness-105',
+        purple: 'bg-[#CE82FF] border-[#A855F7] text-white hover:brightness-105',
+        orange: 'bg-[#FF9600] border-[#FF7700] text-white hover:brightness-105',
       },
       size: {
-        default: 'h-10 min-h-[44px] px-4 py-2',
-        sm: 'h-9 min-h-[36px] px-3',
-        lg: 'h-11 min-h-[44px] px-8',
-        icon: 'h-10 w-10 min-h-[44px] min-w-[44px] p-2',
+        default: 'h-12 min-h-[48px] px-6 py-3',
+        sm: 'h-10 min-h-[40px] px-4 py-2 text-xs',
+        lg: 'h-14 min-h-[56px] px-10 py-4 text-base',
+        icon: 'h-12 w-12 min-h-[48px] min-w-[48px] p-3',
       },
     },
     defaultVariants: {

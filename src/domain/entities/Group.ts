@@ -1,7 +1,7 @@
 /**
  * Group Domain Entity
  *
- * Represents a group in the Ambira system with its core business logic.
+ * Represents a group in the Focumo system with its core business logic.
  * This entity is independent of infrastructure concerns (database, API, etc.)
  */
 

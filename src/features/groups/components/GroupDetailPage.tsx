@@ -37,7 +37,7 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
   // Dynamic metadata using useEffect for client component
   React.useEffect(() => {
     if (group) {
-      document.title = `${group.name} - Ambira`
+      document.title = `${group.name} - Focumo`
 
       const description = group.description || `Join ${group.name} group and connect with others`
 
@@ -89,7 +89,7 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
         twitterTitle.setAttribute('name', 'twitter:title')
         document.head.appendChild(twitterTitle)
       }
-      twitterTitle.setAttribute('content', `${group.name} - Ambira`)
+      twitterTitle.setAttribute('content', `${group.name} - Focumo`)
 
       let twitterDescription = document.querySelector('meta[name="twitter:description"]')
       if (!twitterDescription) {

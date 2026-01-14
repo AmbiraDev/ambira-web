@@ -4,7 +4,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
       <div className="max-w-2xl w-full text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">About Ambira</h1>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">About Focumo</h1>
         <p className="text-lg text-gray-600 mb-8">
           This page is under construction. Please check back later.
         </p>

@@ -1,6 +1,6 @@
 {
-  "name": "Ambira",
-  "short_name": "Ambira",
+  "name": "Focumo",
+  "short_name": "Focumo",
   "description": "A Strava for Productivity - Track work sessions, build streaks, and compete with friends",
   "icons": [
     {
@@ -69,7 +69,7 @@
   "display": "standalone",
   "scope": "/",
   "start_url": "/",
-  "id": "ambira-app",
+  "id": "focumo-app",
   "orientation": "any",
   "dir": "auto",
   "lang": "en"

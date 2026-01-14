@@ -175,9 +175,9 @@ export default function GroupInviteLanding({ groupId }: GroupInviteLandingProps)
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 mx-auto mb-4">
-            <Image src="/logo.svg" alt="Ambira" width={64} height={64} className="w-16 h-16" />
+            <Image src="/logo.svg" alt="Focumo" width={64} height={64} className="w-16 h-16" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Join Ambira</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Join Focumo</h1>
         </div>
 
         {/* Group Card */}
@@ -200,7 +200,7 @@ export default function GroupInviteLanding({ groupId }: GroupInviteLandingProps)
             </div>
 
             <h2 className="text-3xl font-bold text-white mb-2">Join {group.name}</h2>
-            <p className="text-blue-100 text-lg">on Ambira</p>
+            <p className="text-blue-100 text-lg">on Focumo</p>
           </div>
 
           {/* Group Details */}
@@ -261,11 +261,11 @@ export default function GroupInviteLanding({ groupId }: GroupInviteLandingProps)
           </div>
         </div>
 
-        {/* What is Ambira section */}
+        {/* What is Focumo section */}
         <div className="bg-white/80 backdrop-blur rounded-xl p-6 text-center">
-          <h3 className="font-semibold text-gray-900 mb-2">What is Ambira?</h3>
+          <h3 className="font-semibold text-gray-900 mb-2">What is Focumo?</h3>
           <p className="text-gray-600 text-sm">
-            Ambira is a social productivity tracking app that helps you track work sessions, build
+            Focumo is a social productivity tracking app that helps you track work sessions, build
             streaks, and compete with friends. Think Strava, but for productivity.
           </p>
         </div>

@@ -71,25 +71,27 @@ export default function ProfileMenu({ user }: ProfileMenuProps) {
         {/* Profile Picture - Click to go to profile */}
         <Link
           href={ROUTES.PROFILE}
-          className="text-gray-600 hover:text-[#0066CC] transition-colors"
+          className="text-[#AFAFAF] hover:text-[#58CC02] transition-colors"
           aria-label="Go to profile"
         >
           {user.profilePicture ? (
-            <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-gray-200 transition-all">
+            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 p-0.5 bg-gradient-to-br from-[#58CC02] to-[#45A000] transition-all">
               <Image
                 src={user.profilePicture}
                 alt={user.name}
                 width={DIMENSIONS.PROFILE_PICTURE_SIZE}
                 height={DIMENSIONS.PROFILE_PICTURE_SIZE}
                 quality={90}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-full"
               />
             </div>
           ) : (
-            <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-gray-200 transition-all">
-              <span className="text-sm font-medium text-gray-600">
-                {getUserInitials(user.name)}
-              </span>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 p-0.5 bg-gradient-to-br from-[#58CC02] to-[#45A000] transition-all">
+              <div className="w-full h-full bg-white rounded-full flex items-center justify-center">
+                <span className="text-sm font-bold text-[#3C3C3C]">
+                  {getUserInitials(user.name)}
+                </span>
+              </div>
             </div>
           )}
         </Link>
@@ -97,7 +99,7 @@ export default function ProfileMenu({ user }: ProfileMenuProps) {
         {/* Dropdown Icon */}
         <button
           onClick={handleToggle}
-          className="p-1 text-gray-600 hover:text-[#0066CC] transition-colors"
+          className="p-1 text-[#AFAFAF] hover:text-[#58CC02] transition-colors"
           aria-label="Toggle profile menu"
           aria-expanded={isMenuOpen}
         >
@@ -108,17 +110,17 @@ export default function ProfileMenu({ user }: ProfileMenuProps) {
       {/* Dropdown Menu */}
       {isMenuOpen && (
         <div
-          className="absolute right-0 top-full mt-2 z-20 w-48 bg-white border border-gray-300 shadow-lg overflow-hidden"
+          className="absolute right-0 top-full mt-2 z-20 w-48 bg-white border-2 border-[#E5E5E5] shadow-lg overflow-hidden rounded-2xl"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           role="menu"
         >
-          <div className="py-1">
+          <div className="py-2">
             {PROFILE_MENU_LINKS.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
-                className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
+                className="block px-4 py-3 text-sm font-semibold text-[#3C3C3C] hover:bg-[#F7F7F7] transition-colors"
                 role="menuitem"
               >
                 {label}

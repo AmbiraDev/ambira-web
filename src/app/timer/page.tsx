@@ -13,8 +13,8 @@ import BottomNavigation from '@/components/BottomNavigation'
 import TimerPageContent from './page-content'
 
 export const metadata: Metadata = {
-  title: 'Timer - Ambira',
-  description: 'Track your productivity sessions with the Ambira timer',
+  title: 'Timer - Focumo',
+  description: 'Track your productivity sessions with the Focumo timer',
 }
 
 export default function TimerPage() {

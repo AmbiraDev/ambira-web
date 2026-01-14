@@ -128,7 +128,7 @@ export default function ChallengeDetailPage() {
   // MUST be called before any conditional returns
   useEffect(() => {
     if (challenge) {
-      document.title = `${challenge.name} - Ambira`
+      document.title = `${challenge.name} - Focumo`
 
       // Update meta tags
       const description =
@@ -149,7 +149,7 @@ export default function ChallengeDetailPage() {
         ogTitle.setAttribute('property', 'og:title')
         document.head.appendChild(ogTitle)
       }
-      ogTitle.setAttribute('content', `${challenge.name} - Ambira`)
+      ogTitle.setAttribute('content', `${challenge.name} - Focumo`)
 
       let ogDescription = document.querySelector('meta[property="og:description"]')
       if (!ogDescription) {
@@ -182,7 +182,7 @@ export default function ChallengeDetailPage() {
         twitterTitle.setAttribute('name', 'twitter:title')
         document.head.appendChild(twitterTitle)
       }
-      twitterTitle.setAttribute('content', `${challenge.name} - Ambira`)
+      twitterTitle.setAttribute('content', `${challenge.name} - Focumo`)
 
       let twitterDescription = document.querySelector('meta[name="twitter:description"]')
       if (!twitterDescription) {

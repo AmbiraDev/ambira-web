@@ -1,7 +1,7 @@
 /**
  * User Domain Entity
  *
- * Represents a user in the Ambira system with core business logic.
+ * Represents a user in the Focumo system with core business logic.
  */
 
 export type ProfileVisibility = 'everyone' | 'followers' | 'private'

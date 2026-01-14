@@ -30,10 +30,10 @@ export function FeedPageContent() {
   // Show loading spinner while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0066CC]"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#58CC02]"></div>
+          <p className="text-[#AFAFAF] font-bold">Loading...</p>
         </div>
       </div>
     )
@@ -47,23 +47,27 @@ export function FeedPageContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Mobile header */}
+    <div className="min-h-screen flex flex-col bg-white">
+      {/* Mobile header - only visible on mobile */}
       <MobileHeader title="Home" showNotifications={true} />
 
-      {/* Main Content Area - Scrollable */}
+      {/* Main Content Area - No top header on desktop (Duolingo style) */}
       <div className="flex-1">
-        <div className="max-w-[1400px] mx-auto md:px-4 md:py-6">
-          <div className="flex md:gap-4 md:justify-center">
-            {/* Left Sidebar - Fixed, hidden on mobile */}
-            <div className="hidden md:block flex-shrink-0">
+        <div className="max-w-[1400px] mx-auto lg:px-6 lg:py-0">
+          <div className="flex lg:gap-8 justify-center">
+            {/* Left Sidebar - Fixed, hidden on mobile (includes logo like Duolingo) */}
+            <div className="hidden lg:block flex-shrink-0">
               <LeftSidebar />
             </div>
 
             {/* Main Feed - Scrollable Container */}
-            <main id="main-feed" role="main" className="flex-1 min-w-0 max-w-[600px] mx-auto">
+            <main
+              id="main-feed"
+              role="main"
+              className="flex-1 min-w-0 max-w-[600px] mx-auto lg:pt-6"
+            >
               {/* Filter Dropdown - Desktop only */}
-              <div className="hidden md:block px-4 md:px-0 pt-3 pb-2 sticky top-0 z-10 bg-gray-50">
+              <div className="hidden md:block px-4 md:px-0 pt-3 pb-2 sticky top-0 z-10 bg-white">
                 <FeedFilterDropdown
                   selectedFilter={selectedFilter}
                   onFilterChange={(filter) => setSelectedFilter(filter)}
@@ -84,18 +88,18 @@ export function FeedPageContent() {
                     {[...Array(3)].map((_, i) => (
                       <div
                         key={i}
-                        className="bg-white border border-gray-200 rounded-lg p-4 animate-pulse"
+                        className="bg-white border-2 border-[#E5E5E5] rounded-2xl p-4 animate-pulse"
                       >
                         <div className="flex items-center space-x-3 mb-4">
-                          <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+                          <div className="w-10 h-10 bg-[#E5E5E5] rounded-full"></div>
                           <div className="space-y-2">
-                            <div className="h-4 bg-gray-300 rounded w-32"></div>
-                            <div className="h-3 bg-gray-300 rounded w-24"></div>
+                            <div className="h-4 bg-[#E5E5E5] rounded w-32"></div>
+                            <div className="h-3 bg-[#E5E5E5] rounded w-24"></div>
                           </div>
                         </div>
                         <div className="space-y-3">
-                          <div className="h-4 bg-gray-300 rounded w-full"></div>
-                          <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                          <div className="h-4 bg-[#E5E5E5] rounded w-full"></div>
+                          <div className="h-4 bg-[#E5E5E5] rounded w-3/4"></div>
                         </div>
                       </div>
                     ))}
@@ -114,26 +118,28 @@ export function FeedPageContent() {
 
                     {/* Group Members Section */}
                     <div className="mt-0">
-                      <div className="bg-white border-b-[6px] border-gray-200 p-4 mb-0">
+                      <div className="bg-white border-b-2 border-[#E5E5E5] p-4 mb-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <svg
-                            className="w-5 h-5 text-[#0066CC]"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                            />
-                          </svg>
-                          <h2 className="text-base font-semibold text-gray-900">
+                          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#CE82FF] to-[#A855F7] flex items-center justify-center">
+                            <svg
+                              className="w-4 h-4 text-white"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2.5}
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                              />
+                            </svg>
+                          </div>
+                          <h2 className="text-base font-extrabold text-[#3C3C3C]">
                             From Your Groups
                           </h2>
                         </div>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-[#AFAFAF] font-semibold">
                           Sessions from members in your groups
                         </p>
                       </div>
@@ -164,26 +170,28 @@ export function FeedPageContent() {
 
                       {/* Suggested Posts Section */}
                       <div className="mt-0">
-                        <div className="bg-white md:rounded-lg border md:border-gray-200 p-4 mb-4">
+                        <div className="bg-white md:rounded-2xl border-2 md:border-[#E5E5E5] p-4 mb-4">
                           <div className="flex items-center gap-2 mb-1">
-                            <svg
-                              className="w-5 h-5 text-[#0066CC]"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M13 10V3L4 14h7v7l9-11h-7z"
-                              />
-                            </svg>
-                            <h2 className="text-base font-semibold text-gray-900">
+                            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#1CB0F6] to-[#0088CC] flex items-center justify-center">
+                              <svg
+                                className="w-4 h-4 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2.5}
+                                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                                />
+                              </svg>
+                            </div>
+                            <h2 className="text-base font-extrabold text-[#3C3C3C]">
                               Suggested Posts
                             </h2>
                           </div>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-[#AFAFAF] font-semibold">
                             Discover productive sessions from the community
                           </p>
                         </div>
@@ -220,7 +228,7 @@ export function FeedPageContent() {
             </main>
 
             {/* Right Sidebar - Fixed, hidden on mobile */}
-            <div className="hidden md:block flex-shrink-0">
+            <div className="hidden xl:block flex-shrink-0">
               <RightSidebar />
             </div>
           </div>

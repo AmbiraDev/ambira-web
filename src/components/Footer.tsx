@@ -1,29 +1,25 @@
 import React from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 
 export default function Footer() {
   return (
-    <footer className="hidden md:block bg-white border-t border-gray-200 mt-8">
+    <footer className="hidden md:block bg-white border-t-2 border-[#E5E5E5] mt-8">
       <div className="max-w-6xl mx-auto px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* Brand Section */}
           <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 flex items-center justify-center">
-                <Image src="/logo.svg" alt="Ambira Logo" width={32} height={32} />
-              </div>
-              <span className="text-xl font-bold text-[#0066CC]">Ambira</span>
+            <div className="mb-4">
+              <span className="text-2xl font-extrabold text-[#58CC02]">Focumo</span>
             </div>
-            <p className="text-sm text-gray-600 mb-6 max-w-sm">
+            <p className="text-sm text-[#777777] mb-6 max-w-sm font-semibold">
               Track focus sessions, hit goals, and share progress with friends.
             </p>
-            {/* Discord Button */}
+            {/* Discord Button - Duolingo style */}
             <a
               href="https://discord.gg/wFMeNmCpdQ"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold rounded-lg transition-colors min-h-[44px]"
+              className="inline-flex items-center gap-2 px-5 py-3 bg-[#5865F2] hover:brightness-105 text-white font-bold rounded-2xl transition-all min-h-[48px] border-2 border-b-4 border-[#4752C4] active:border-b-2 active:translate-y-[2px]"
             >
               <svg
                 width="24"
@@ -51,12 +47,12 @@ export default function Footer() {
           {/* Resources Section */}
           <div className="flex flex-col justify-between">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">Resources</h3>
-              <ul className="space-y-3">
+              <h3 className="text-lg font-extrabold text-[#3C3C3C] mb-4">Resources</h3>
+              <ul className="space-y-4">
                 <li>
                   <Link
                     href="/landing"
-                    className="text-sm text-gray-600 hover:text-[#0066CC] transition-colors"
+                    className="text-lg text-[#777777] hover:text-[#58CC02] transition-colors font-bold"
                   >
                     About
                   </Link>
@@ -64,104 +60,22 @@ export default function Footer() {
                 <li>
                   <a
                     href="mailto:hughgramelspacher@gmail.com"
-                    className="text-sm text-gray-600 hover:text-[#0066CC] transition-colors inline-flex items-center gap-2"
+                    className="text-lg text-[#777777] hover:text-[#58CC02] transition-colors font-bold"
                     aria-label="Contact us via email"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                      />
-                    </svg>
                     Contact
                   </a>
                 </li>
               </ul>
             </div>
           </div>
-
-          {/* Commented out sections for future expansion
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Product</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link
-                    href="/features"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/activities"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
-                    Activities
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/groups"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
-                    Groups
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/challenges"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
-                    Challenges
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Legal</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link
-                    href="/privacy"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
-                    Privacy
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/terms"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
-                    Terms
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/cookies"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
-                    Cookie Policy
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            */}
         </div>
 
         {/* Copyright - Centered at bottom */}
-        <div className="mt-12 pt-8 border-t border-gray-200">
-          <p className="text-center text-sm text-gray-500">© {new Date().getFullYear()} Ambira</p>
+        <div className="mt-12 pt-8 border-t-2 border-[#E5E5E5]">
+          <p className="text-center text-sm text-[#AFAFAF] font-semibold">
+            © {new Date().getFullYear()} Focumo
+          </p>
         </div>
       </div>
     </footer>

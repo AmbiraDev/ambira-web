@@ -41,8 +41,8 @@ export default function GroupInviteModal({ group, isOpen, onClose }: GroupInvite
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Join ${group.name} on Ambira`,
-          text: `I'd like to invite you to join ${group.name} on Ambira!`,
+          title: `Join ${group.name} on Focumo`,
+          text: `I'd like to invite you to join ${group.name} on Focumo!`,
           url: inviteLink,
         })
       } catch {
@@ -228,7 +228,7 @@ export default function GroupInviteModal({ group, isOpen, onClose }: GroupInvite
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-900">
                   Anyone with this link can join <strong>{group.name}</strong>. They'll need to sign
-                  up or log in to Ambira first.
+                  up or log in to Focumo first.
                 </p>
               </div>
             </div>
@@ -286,7 +286,7 @@ export default function GroupInviteModal({ group, isOpen, onClose }: GroupInvite
                 >
                   {/* Logo/Branding */}
                   <div className="text-center mb-6">
-                    <h3 className="text-2xl font-bold mb-2">Join us on Ambira</h3>
+                    <h3 className="text-2xl font-bold mb-2">Join us on Focumo</h3>
                     <div className="h-1 w-16 bg-white/50 mx-auto rounded-full"></div>
                   </div>
 

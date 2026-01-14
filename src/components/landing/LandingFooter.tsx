@@ -15,9 +15,9 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({ className = '' }) 
           <div className="md:col-span-1">
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 flex items-center justify-center">
-                <Image src="/logo.svg" alt="Ambira Logo" width={32} height={32} />
+                <Image src="/logo.svg" alt="Focumo Logo" width={32} height={32} />
               </div>
-              <span className="text-xl font-bold text-[#0066CC]">Ambira</span>
+              <span className="text-xl font-bold text-[#0066CC]">Focumo</span>
             </div>
             <p className="text-sm text-gray-600 max-w-xs mb-4">
               Track focus sessions, hit goals, and share progress with friends.
@@ -74,7 +74,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({ className = '' }) 
                 </li>
                 <li>
                   <a
-                    href="https://github.com/Ambira-Inc/ambira"
+                    href="https://github.com/Focumo-Inc/ambira"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-600 hover:text-[#0066CC]"
@@ -98,7 +98,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({ className = '' }) 
                 </li>
                 <li>
                   <a
-                    href="https://github.com/Ambira-Inc/ambira/issues"
+                    href="https://github.com/Focumo-Inc/ambira/issues"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-600 hover:text-[#0066CC]"
@@ -113,7 +113,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({ className = '' }) 
 
         {/* Bottom row */}
         <div className="mt-10 pt-6 border-t border-gray-200 flex flex-col md:flex-row items-center justify-center text-sm text-gray-500">
-          <span>&copy; {new Date().getFullYear()} Ambira</span>
+          <span>&copy; {new Date().getFullYear()} Focumo</span>
         </div>
       </div>
     </footer>

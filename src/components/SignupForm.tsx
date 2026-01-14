@@ -180,14 +180,14 @@ export const SignupForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {submitError && (
-        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-md">
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl">
           {submitError}
         </div>
       )}
 
       <div className="space-y-5">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
+          <label htmlFor="name" className="block text-sm font-semibold text-[#3C3C3C] mb-2">
             Full Name
           </label>
           <input
@@ -197,16 +197,16 @@ export const SignupForm: React.FC = () => {
             autoComplete="name"
             value={formData.name}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-              errors.name ? 'border-destructive' : 'border-border'
+            className={`w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 rounded-xl text-[#3C3C3C] font-semibold focus:border-[#58CC02] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] ${
+              errors.name ? 'border-red-300' : 'border-[#E5E5E5]'
             }`}
             placeholder="Enter your full name"
           />
-          {errors.name && <p className="mt-2 text-sm text-destructive">{errors.name}</p>}
+          {errors.name && <p className="mt-2 text-sm text-red-600">{errors.name}</p>}
         </div>
 
         <div>
-          <label htmlFor="username" className="block text-sm font-medium text-foreground mb-2">
+          <label htmlFor="username" className="block text-sm font-semibold text-[#3C3C3C] mb-2">
             Username
           </label>
           <div className="relative">
@@ -217,24 +217,24 @@ export const SignupForm: React.FC = () => {
               autoComplete="username"
               value={formData.username}
               onChange={handleChange}
-              className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+              className={`w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 rounded-xl text-[#3C3C3C] font-semibold focus:border-[#58CC02] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] ${
                 errors.username
-                  ? 'border-destructive'
+                  ? 'border-red-300'
                   : usernameAvailable === true
-                    ? 'border-green-500'
+                    ? 'border-[#58CC02]'
                     : usernameAvailable === false
-                      ? 'border-destructive'
-                      : 'border-border'
+                      ? 'border-red-300'
+                      : 'border-[#E5E5E5]'
               }`}
               placeholder="Choose a username"
             />
             {isCheckingUsername && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#58CC02]"></div>
               </div>
             )}
             {!isCheckingUsername && usernameAvailable === true && formData.username.length >= 3 && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[#58CC02]">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"
@@ -247,7 +247,7 @@ export const SignupForm: React.FC = () => {
             {!isCheckingUsername &&
               usernameAvailable === false &&
               formData.username.length >= 3 && (
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-destructive">
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-red-500">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
@@ -258,17 +258,17 @@ export const SignupForm: React.FC = () => {
                 </div>
               )}
           </div>
-          {errors.username && <p className="mt-2 text-sm text-destructive">{errors.username}</p>}
+          {errors.username && <p className="mt-2 text-sm text-red-600">{errors.username}</p>}
           {!errors.username && usernameAvailable === true && formData.username.length >= 3 && (
-            <p className="mt-2 text-sm text-green-600">Username is available!</p>
+            <p className="mt-2 text-sm text-[#58CC02]">Username is available!</p>
           )}
           {!errors.username && usernameAvailable === false && formData.username.length >= 3 && (
-            <p className="mt-2 text-sm text-destructive">This username is already taken</p>
+            <p className="mt-2 text-sm text-red-600">This username is already taken</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+          <label htmlFor="email" className="block text-sm font-semibold text-[#3C3C3C] mb-2">
             Email address
           </label>
           <input
@@ -278,16 +278,16 @@ export const SignupForm: React.FC = () => {
             autoComplete="email"
             value={formData.email}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-              errors.email ? 'border-destructive' : 'border-border'
+            className={`w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 rounded-xl text-[#3C3C3C] font-semibold focus:border-[#58CC02] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] ${
+              errors.email ? 'border-red-300' : 'border-[#E5E5E5]'
             }`}
             placeholder="Enter your email"
           />
-          {errors.email && <p className="mt-2 text-sm text-destructive">{errors.email}</p>}
+          {errors.email && <p className="mt-2 text-sm text-red-600">{errors.email}</p>}
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+          <label htmlFor="password" className="block text-sm font-semibold text-[#3C3C3C] mb-2">
             Password
           </label>
           <input
@@ -297,18 +297,18 @@ export const SignupForm: React.FC = () => {
             autoComplete="new-password"
             value={formData.password}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-              errors.password ? 'border-destructive' : 'border-border'
+            className={`w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 rounded-xl text-[#3C3C3C] font-semibold focus:border-[#58CC02] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] ${
+              errors.password ? 'border-red-300' : 'border-[#E5E5E5]'
             }`}
             placeholder="Create a password"
           />
-          {errors.password && <p className="mt-2 text-sm text-destructive">{errors.password}</p>}
+          {errors.password && <p className="mt-2 text-sm text-red-600">{errors.password}</p>}
         </div>
 
         <div>
           <label
             htmlFor="confirmPassword"
-            className="block text-sm font-medium text-foreground mb-2"
+            className="block text-sm font-semibold text-[#3C3C3C] mb-2"
           >
             Confirm Password
           </label>
@@ -319,13 +319,13 @@ export const SignupForm: React.FC = () => {
             autoComplete="new-password"
             value={confirmPassword}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-              errors.confirmPassword ? 'border-destructive' : 'border-border'
+            className={`w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 rounded-xl text-[#3C3C3C] font-semibold focus:border-[#58CC02] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] ${
+              errors.confirmPassword ? 'border-red-300' : 'border-[#E5E5E5]'
             }`}
             placeholder="Confirm your password"
           />
           {errors.confirmPassword && (
-            <p className="mt-2 text-sm text-destructive">{errors.confirmPassword}</p>
+            <p className="mt-2 text-sm text-red-600">{errors.confirmPassword}</p>
           )}
         </div>
       </div>
@@ -334,7 +334,7 @@ export const SignupForm: React.FC = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full flex items-center justify-center px-5 py-3 bg-[#58CC02] text-white font-bold rounded-2xl border-2 border-b-4 border-[#45A000] hover:brightness-105 active:border-b-2 active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
         >
           {isSubmitting ? (
             <div className="flex items-center">
@@ -347,11 +347,11 @@ export const SignupForm: React.FC = () => {
         </button>
 
         <div className="text-center pt-2">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-[#777777]">
             Already have an account?{' '}
             <a
               href="/login"
-              className="font-medium text-primary hover:text-primary/80 transition-colors"
+              className="font-bold text-[#58CC02] hover:text-[#45A000] transition-colors"
             >
               Sign in
             </a>

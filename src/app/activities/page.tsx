@@ -11,7 +11,7 @@ import MobileHeader from '@/components/MobileHeader'
 import BottomNavigation from '@/components/BottomNavigation'
 
 export const metadata: Metadata = {
-  title: 'Activities - Ambira',
+  title: 'Activities - Focumo',
   description: 'View all your activities and usage statistics',
 }
 

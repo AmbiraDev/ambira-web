@@ -10,12 +10,132 @@ import { useSupportSession, useDeleteSession } from '@/features/sessions/hooks'
 import { useAuth } from '@/hooks/useAuth'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, Users, Search, ChevronUp } from 'lucide-react'
+import {
+  AlertTriangle,
+  Users,
+  Search,
+  ChevronUp,
+  Clock,
+  Target,
+  Heart,
+  MessageCircle,
+} from 'lucide-react'
 import {
   getLastViewedFeedTime,
   updateLastViewedFeedTime,
   countNewSessions,
 } from '@/lib/hooks/useFeedViewedState'
+
+// Sample Session Card Component for Empty State
+interface SampleSession {
+  id: string
+  userName: string
+  initials: string
+  timeAgo: string
+  title: string
+  description?: string
+  duration: string
+  activity: string
+  supportCount: number
+  commentCount: number
+}
+
+const sampleSessions: SampleSession[] = [
+  {
+    id: '1',
+    userName: 'Alex Chen',
+    initials: 'AC',
+    timeAgo: '2 hours ago',
+    title: 'Deep Work on Project Features',
+    description:
+      'Finally cracked that tricky algorithm! Feeling accomplished after a solid focused session.',
+    duration: '2h 45m',
+    activity: 'Coding',
+    supportCount: 24,
+    commentCount: 5,
+  },
+  {
+    id: '2',
+    userName: 'Sarah Johnson',
+    initials: 'SJ',
+    timeAgo: '4 hours ago',
+    title: 'Morning Study Session',
+    description: 'Preparing for finals. Made great progress on the organic chemistry chapter!',
+    duration: '1h 30m',
+    activity: 'Study',
+    supportCount: 18,
+    commentCount: 3,
+  },
+  {
+    id: '3',
+    userName: 'Mike Rivera',
+    initials: 'MR',
+    timeAgo: '6 hours ago',
+    title: 'Writing Sprint',
+    description: 'Got 2,000 words down on my novel draft. The story is really coming together now.',
+    duration: '3h 15m',
+    activity: 'Writing',
+    supportCount: 31,
+    commentCount: 8,
+  },
+]
+
+const SampleSessionCard: React.FC<{ session: SampleSession }> = ({ session }) => (
+  <article className="bg-white p-6 mb-4">
+    {/* Session Header */}
+    <div className="flex items-center gap-3 mb-4">
+      {/* User Avatar - Matching landing page style */}
+      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#58CC02] to-[#45A000] p-0.5">
+        <div className="w-full h-full bg-white rounded-full flex items-center justify-center">
+          <span className="text-[#3C3C3C] font-bold text-sm">{session.initials}</span>
+        </div>
+      </div>
+      {/* User Info */}
+      <div>
+        <p className="text-[#3C3C3C] font-bold">{session.userName}</p>
+        <p className="text-[#AFAFAF] text-sm">{session.timeAgo}</p>
+      </div>
+    </div>
+
+    {/* Title */}
+    <h3 className="text-[#3C3C3C] text-xl font-extrabold mb-2">{session.title}</h3>
+
+    {/* Description */}
+    {session.description && <p className="text-[#777777] text-base mb-4">{session.description}</p>}
+
+    {/* Stats - Matching landing page card style */}
+    <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="bg-[#F7F7F7] rounded-xl p-3 border border-[#E5E5E5]">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 bg-gradient-to-br from-[#1CB0F6] to-[#0088CC] rounded-lg flex items-center justify-center">
+            <Clock className="w-5 h-5 text-white" strokeWidth={2.5} />
+          </div>
+          <span className="text-[#3C3C3C] font-extrabold">{session.duration}</span>
+        </div>
+      </div>
+      <div className="bg-[#F7F7F7] rounded-xl p-3 border border-[#E5E5E5]">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 bg-gradient-to-br from-[#58CC02] to-[#45A000] rounded-lg flex items-center justify-center">
+            <Target className="w-5 h-5 text-white" strokeWidth={2.5} />
+          </div>
+          <span className="text-[#3C3C3C] font-extrabold">{session.activity}</span>
+        </div>
+      </div>
+    </div>
+
+    {/* Interactions */}
+    <div className="flex items-center gap-4 text-[#AFAFAF]">
+      <div className="flex items-center gap-1.5">
+        <Heart className="w-5 h-5" />
+        <span className="font-bold text-sm">{session.supportCount}</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <MessageCircle className="w-5 h-5" />
+        <span className="font-bold text-sm">{session.commentCount}</span>
+      </div>
+    </div>
+  </article>
+)
 
 // Session Card Skeleton Component
 const SessionCardSkeleton: React.FC = () => (
@@ -216,7 +336,7 @@ export const Feed: React.FC<FeedProps> = ({
       if (navigator.share) {
         // Use native share API on mobile
         await navigator.share({
-          title: 'Check out this session on Ambira',
+          title: 'Check out this session on Focumo',
           text: 'Look at this productive session!',
           url: sessionUrl,
         })
@@ -399,23 +519,46 @@ export const Feed: React.FC<FeedProps> = ({
     }
 
     return (
-      <div className={`text-center py-12 px-4 ${className}`}>
-        <div className="max-w-md mx-auto">
-          <div className="text-gray-500 mb-8">
-            <Users className="w-20 h-20 mx-auto mb-4 text-gray-400" />
-            <h3 className="font-bold text-xl text-gray-900 mb-2">{emptyStateContent.title}</h3>
-            <p className="text-base text-gray-600 leading-relaxed">{emptyStateContent.message}</p>
-          </div>
+      <div className={className}>
+        {/* Header with CTA */}
+        <div className="text-center py-8 px-4">
+          <div className="max-w-md mx-auto">
+            <div className="mb-6">
+              <Users className="w-16 h-16 mx-auto mb-3 text-[#AFAFAF]" />
+              <h3 className="font-extrabold text-xl text-[#3C3C3C] mb-2">
+                {emptyStateContent.title}
+              </h3>
+              <p className="text-base text-[#777777] leading-relaxed">
+                {emptyStateContent.message}
+              </p>
+            </div>
 
-          {/* Action Button */}
-          <button
-            onClick={emptyStateContent.buttonAction}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors duration-200 font-semibold text-base shadow-md hover:shadow-lg"
-          >
-            <Search className="w-5 h-5" />
-            {emptyStateContent.buttonText}
-          </button>
+            {/* Action Button */}
+            <button
+              onClick={emptyStateContent.buttonAction}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#1CB0F6] text-white rounded-2xl hover:brightness-105 transition-all font-bold text-base border-2 border-b-4 border-[#0088CC] active:border-b-2 active:translate-y-[2px]"
+            >
+              <Search className="w-5 h-5" />
+              {emptyStateContent.buttonText}
+            </button>
+          </div>
         </div>
+
+        {/* Sample Posts Section - Only show when this is the last feed (showEndMessage=true) */}
+        {showEndMessage && (
+          <div className="pt-6">
+            <div className="text-center mb-4">
+              <p className="text-sm font-bold text-[#AFAFAF] uppercase tracking-wide">
+                See what others are sharing
+              </p>
+            </div>
+            <div>
+              {sampleSessions.map((session) => (
+                <SampleSessionCard key={session.id} session={session} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     )
   }

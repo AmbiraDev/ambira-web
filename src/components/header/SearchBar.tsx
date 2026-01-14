@@ -77,7 +77,7 @@ export default function SearchBar({ isOpen, onToggle }: SearchBarProps) {
     return (
       <button
         onClick={() => router.push('/search')}
-        className="p-2 text-gray-600 hover:text-[#0066CC] transition-colors"
+        className="p-2 text-[#AFAFAF] hover:text-[#58CC02] transition-colors"
         style={{ cursor: 'pointer' }}
         aria-label="Go to search"
       >
@@ -98,32 +98,28 @@ export default function SearchBar({ isOpen, onToggle }: SearchBarProps) {
           <button
             type="button"
             onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-            className="flex items-center space-x-1 md:space-x-1.5 px-2 md:px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap text-xs md:text-sm"
+            className="flex items-center space-x-1 md:space-x-1.5 px-3 md:px-4 py-2 border-2 border-[#E5E5E5] rounded-xl text-[#3C3C3C] hover:bg-[#F7F7F7] transition-colors whitespace-nowrap text-xs md:text-sm font-bold"
             aria-label="Select search filter"
             aria-expanded={isFilterDropdownOpen}
           >
             {/* Show full label on desktop, first letter on mobile */}
-            <span className="font-medium hidden md:inline">
-              {getSearchFilterLabel(searchFilter)}
-            </span>
-            <span className="font-medium md:hidden">
-              {getSearchFilterLabel(searchFilter).charAt(0)}
-            </span>
+            <span className="hidden md:inline">{getSearchFilterLabel(searchFilter)}</span>
+            <span className="md:hidden">{getSearchFilterLabel(searchFilter).charAt(0)}</span>
             <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />
           </button>
 
           {/* Filter Dropdown Menu */}
           {isFilterDropdownOpen && (
-            <div className="absolute top-full left-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+            <div className="absolute top-full left-0 mt-1 w-40 bg-white rounded-2xl shadow-lg border-2 border-[#E5E5E5] py-2 z-50">
               {SEARCH_FILTERS.map(({ value, label }) => (
                 <button
                   key={value}
                   type="button"
                   onClick={() => handleFilterSelect(value)}
-                  className={`w-full text-left px-4 py-2 transition-colors ${
+                  className={`w-full text-left px-4 py-2 transition-colors font-semibold ${
                     searchFilter === value
-                      ? 'bg-blue-50 text-[#0066CC]'
-                      : 'text-gray-700 hover:bg-gray-50'
+                      ? 'bg-[#F7F7F7] text-[#58CC02]'
+                      : 'text-[#3C3C3C] hover:bg-[#F7F7F7]'
                   }`}
                 >
                   {label}
@@ -141,10 +137,10 @@ export default function SearchBar({ isOpen, onToggle }: SearchBarProps) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={`Search ${getSearchFilterLabel(searchFilter).toLowerCase()}...`}
-            className="w-full px-3 md:px-4 py-2 pr-8 md:pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent text-xs md:text-sm"
+            className="w-full px-3 md:px-4 py-2 pr-8 md:pr-10 border-2 border-[#E5E5E5] rounded-xl bg-[#F7F7F7] focus:outline-none focus:ring-2 focus:ring-[#1CB0F6] focus:border-[#1CB0F6] focus:bg-white text-xs md:text-sm font-semibold text-[#3C3C3C] placeholder:text-[#AFAFAF]"
             aria-label="Search query"
           />
-          <Search className="w-3 h-3 md:w-4 md:h-4 absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          <Search className="w-3 h-3 md:w-4 md:h-4 absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-[#AFAFAF] pointer-events-none" />
         </div>
       </form>
 
@@ -152,7 +148,7 @@ export default function SearchBar({ isOpen, onToggle }: SearchBarProps) {
       <button
         type="button"
         onClick={handleClose}
-        className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+        className="p-2 text-[#AFAFAF] hover:text-[#3C3C3C] transition-colors"
         aria-label="Close search"
       >
         <X className="w-5 h-5" />

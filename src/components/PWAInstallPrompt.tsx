@@ -90,14 +90,14 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
             <div className="w-12 h-12 rounded-xl overflow-hidden shadow-lg">
               <Image
                 src="/icon-512x512.png"
-                alt="Ambira Logo"
+                alt="Focumo Logo"
                 width={48}
                 height={48}
                 className="w-full h-full object-cover"
               />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900">Install Ambira</h3>
+              <h3 className="text-xl font-bold text-gray-900">Install Focumo</h3>
               <p className="text-sm text-gray-600">Add to your home screen</p>
             </div>
           </div>

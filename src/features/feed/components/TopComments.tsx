@@ -105,13 +105,13 @@ export const TopComments: React.FC<TopCommentsProps> = ({
 
   if (isLoading && !isExpanded) {
     return (
-      <div className="border-t border-gray-100 px-4 py-3 space-y-3">
+      <div className="border-t-2 border-[#E5E5E5] px-4 py-3 space-y-3">
         {[1, 2].map((i) => (
           <div key={i} className="flex gap-3 animate-pulse">
-            <div className="w-8 h-8 rounded-full bg-gray-200" />
+            <div className="w-8 h-8 rounded-full bg-[#E5E5E5]" />
             <div className="flex-1 space-y-2">
-              <div className="h-3 bg-gray-200 rounded w-1/4" />
-              <div className="h-3 bg-gray-200 rounded w-full" />
+              <div className="h-3 bg-[#E5E5E5] rounded w-1/4" />
+              <div className="h-3 bg-[#E5E5E5] rounded w-full" />
             </div>
           </div>
         ))}
@@ -127,7 +127,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
     <div
       className={
         isExpanded || (comments.length > 0 && !isExpanded)
-          ? `hidden md:block ${comments.length > 0 || !isExpanded ? 'md:border-t md:border-gray-100' : ''}`
+          ? `hidden md:block ${comments.length > 0 || !isExpanded ? 'md:border-t-2 md:border-[#E5E5E5]' : ''}`
           : ''
       }
     >
@@ -150,7 +150,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
             {totalCommentCount > 2 && (
               <button
                 onClick={() => setIsExpanded(true)}
-                className="text-sm text-gray-500 hover:text-gray-900 font-medium py-2 transition-colors"
+                className="text-sm text-[#1CB0F6] hover:text-[#0088CC] font-bold py-2 transition-colors"
               >
                 See all {totalCommentCount} {totalCommentCount === 1 ? 'comment' : 'comments'}
               </button>
@@ -177,7 +177,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
         {/* Comment Input - Only show when expanded or autoFocus */}
         {(isExpanded || autoFocus) && (
           <div
-            className={`${isExpanded && comments.length > 0 ? 'pt-3 border-t border-gray-100' : 'pt-2'}`}
+            className={`${isExpanded && comments.length > 0 ? 'pt-3 border-t-2 border-[#E5E5E5]' : 'pt-2'}`}
           >
             <CommentInput
               sessionId={sessionId}
@@ -190,27 +190,27 @@ export const TopComments: React.FC<TopCommentsProps> = ({
 
         {/* Pagination Controls - Only in expanded view */}
         {isExpanded && totalPages > 1 && (
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+          <div className="flex items-center justify-between pt-3 border-t-2 border-[#E5E5E5]">
             <button
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-xl hover:bg-[#F7F7F7] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               aria-label="Previous page"
             >
-              <ChevronLeft className="w-5 h-5 text-gray-700" />
+              <ChevronLeft className="w-5 h-5 text-[#3C3C3C]" />
             </button>
 
-            <span className="text-sm text-gray-600 font-medium">
+            <span className="text-sm text-[#777777] font-bold">
               Page {currentPage} of {totalPages}
             </span>
 
             <button
               onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="p-2 rounded-xl hover:bg-[#F7F7F7] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               aria-label="Next page"
             >
-              <ChevronRight className="w-5 h-5 text-gray-700" />
+              <ChevronRight className="w-5 h-5 text-[#3C3C3C]" />
             </button>
           </div>
         )}
@@ -222,7 +222,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
               setIsExpanded(false)
               setCurrentPage(1)
             }}
-            className="text-sm text-gray-600 hover:text-gray-900 font-medium py-1"
+            className="text-sm text-[#1CB0F6] hover:text-[#0088CC] font-bold py-1"
           >
             Show less
           </button>

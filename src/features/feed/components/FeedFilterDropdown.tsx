@@ -75,8 +75,8 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
   }
 
   return (
-    <div ref={dropdownRef} className="relative inline-block w-[220px]">
-      {/* Dropdown Button */}
+    <div ref={dropdownRef} className="relative inline-block w-[280px]">
+      {/* Dropdown Button - Duolingo Style */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={(e) => {
@@ -85,26 +85,27 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
             setIsOpen(!isOpen)
           }
         }}
-        className="w-full flex items-center justify-between px-4 py-2.5 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors duration-200 shadow-sm min-h-[44px]"
+        className="w-full flex items-center justify-between px-5 py-3 bg-[#1CB0F6] text-white rounded-2xl hover:brightness-105 transition-all duration-200 min-h-[52px] border-2 border-b-4 border-[#0088CC] active:border-b-2 active:translate-y-[2px] font-extrabold text-base"
         aria-label={`Filter feed by ${selectedFilter.label}`}
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
-        <span className="font-semibold">{selectedFilter.label}</span>
+        <span>{selectedFilter.label}</span>
         <ChevronDown
-          className={`w-4 h-4 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
+          className={`w-5 h-5 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
+          strokeWidth={3}
           aria-hidden="true"
         />
       </button>
 
-      {/* Dropdown Menu */}
+      {/* Dropdown Menu - Duolingo Style */}
       {isOpen && (
         <div
-          className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden"
+          className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-[#E5E5E5] rounded-2xl shadow-lg z-50 overflow-hidden"
           role="listbox"
           aria-label="Feed filter options"
         >
-          <div className="py-1">
+          <div className="py-2">
             {/* All */}
             <button
               onClick={() => handleFilterSelect({ type: 'all', label: 'All' })}
@@ -114,23 +115,21 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                   handleFilterSelect({ type: 'all', label: 'All' })
                 }
               }}
-              className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
-                isSelected({ type: 'all', label: 'All' }) ? 'bg-gray-50' : 'hover:bg-gray-50'
+              className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[48px] ${
+                isSelected({ type: 'all', label: 'All' }) ? 'bg-[#DDF4FF]' : 'hover:bg-[#F7F7F7]'
               }`}
               role="option"
               aria-selected={isSelected({ type: 'all', label: 'All' })}
             >
               <span
-                className={`${
-                  isSelected({ type: 'all', label: 'All' })
-                    ? 'font-medium text-gray-900'
-                    : 'text-gray-700'
+                className={`font-bold ${
+                  isSelected({ type: 'all', label: 'All' }) ? 'text-[#1CB0F6]' : 'text-[#4B4B4B]'
                 }`}
               >
                 All
               </span>
               {isSelected({ type: 'all', label: 'All' }) && (
-                <Check className="w-5 h-5 text-gray-900" />
+                <Check className="w-5 h-5 text-[#1CB0F6]" strokeWidth={3} />
               )}
             </button>
 
@@ -143,10 +142,10 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                   handleFilterSelect({ type: 'following', label: 'Following' })
                 }
               }}
-              className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
+              className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[48px] ${
                 isSelected({ type: 'following', label: 'Following' })
-                  ? 'bg-gray-50'
-                  : 'hover:bg-gray-50'
+                  ? 'bg-[#DDF4FF]'
+                  : 'hover:bg-[#F7F7F7]'
               }`}
               role="option"
               aria-selected={isSelected({
@@ -155,16 +154,16 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
               })}
             >
               <span
-                className={`${
+                className={`font-bold ${
                   isSelected({ type: 'following', label: 'Following' })
-                    ? 'font-medium text-gray-900'
-                    : 'text-gray-700'
+                    ? 'text-[#1CB0F6]'
+                    : 'text-[#4B4B4B]'
                 }`}
               >
                 Following
               </span>
               {isSelected({ type: 'following', label: 'Following' }) && (
-                <Check className="w-5 h-5 text-gray-900" />
+                <Check className="w-5 h-5 text-[#1CB0F6]" strokeWidth={3} />
               )}
             </button>
 
@@ -177,10 +176,10 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                   handleFilterSelect({ type: 'user', label: 'My Activities' })
                 }
               }}
-              className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
+              className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[48px] ${
                 isSelected({ type: 'user', label: 'My Activities' })
-                  ? 'bg-gray-50'
-                  : 'hover:bg-gray-50'
+                  ? 'bg-[#DDF4FF]'
+                  : 'hover:bg-[#F7F7F7]'
               }`}
               role="option"
               aria-selected={isSelected({
@@ -189,27 +188,29 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
               })}
             >
               <span
-                className={`${
+                className={`font-bold ${
                   isSelected({ type: 'user', label: 'My Activities' })
-                    ? 'font-medium text-gray-900'
-                    : 'text-gray-700'
+                    ? 'text-[#1CB0F6]'
+                    : 'text-[#4B4B4B]'
                 }`}
               >
                 My Activities
               </span>
               {isSelected({ type: 'user', label: 'My Activities' }) && (
-                <Check className="w-5 h-5 text-gray-900" />
+                <Check className="w-5 h-5 text-[#1CB0F6]" strokeWidth={3} />
               )}
             </button>
 
             {/* Divider if there are groups */}
-            {groups.length > 0 && <div className="border-t border-gray-200 my-1"></div>}
+            {groups.length > 0 && <div className="border-t-2 border-[#E5E5E5] my-2"></div>}
 
             {/* User's Groups */}
             {isLoadingGroups ? (
-              <div className="px-4 py-3 text-sm text-gray-500">Loading groups...</div>
+              <div className="px-4 py-3 text-sm text-[#AFAFAF] font-semibold">
+                Loading groups...
+              </div>
             ) : groups.length === 0 ? (
-              <div className="px-4 py-3 text-sm text-gray-500">No groups yet</div>
+              <div className="px-4 py-3 text-sm text-[#AFAFAF] font-semibold">No groups yet</div>
             ) : (
               groups.map((group) => (
                 <button
@@ -231,14 +232,14 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                       })
                     }
                   }}
-                  className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
+                  className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[48px] ${
                     isSelected({
                       type: 'group',
                       label: group.name,
                       groupId: group.id,
                     })
-                      ? 'bg-gray-50'
-                      : 'hover:bg-gray-50'
+                      ? 'bg-[#DDF4FF]'
+                      : 'hover:bg-[#F7F7F7]'
                   }`}
                   role="option"
                   aria-selected={isSelected({
@@ -248,14 +249,14 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                   })}
                 >
                   <span
-                    className={`truncate ${
+                    className={`truncate font-bold ${
                       isSelected({
                         type: 'group',
                         label: group.name,
                         groupId: group.id,
                       })
-                        ? 'font-medium text-gray-900'
-                        : 'text-gray-700'
+                        ? 'text-[#1CB0F6]'
+                        : 'text-[#4B4B4B]'
                     }`}
                   >
                     {group.name}
@@ -264,7 +265,9 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                     type: 'group',
                     label: group.name,
                     groupId: group.id,
-                  }) && <Check className="w-5 h-5 flex-shrink-0 ml-2 text-gray-900" />}
+                  }) && (
+                    <Check className="w-5 h-5 flex-shrink-0 ml-2 text-[#1CB0F6]" strokeWidth={3} />
+                  )}
                 </button>
               ))
             )}

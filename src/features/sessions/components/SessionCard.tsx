@@ -5,16 +5,15 @@ import Image from 'next/image'
 import { SessionWithDetails } from '@/types'
 import SessionInteractions from './SessionInteractions'
 import TopComments from '@/features/feed/components/TopComments'
-import { ImageGallery } from '@/components/ImageGallery'
 import LikesModal from '@/features/social/components/LikesModal'
 import CommentsModal from '@/features/comments/components/CommentsModal'
 import { PrefetchLink } from '@/components/PrefetchLink'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { firebaseApi } from '@/lib/api'
-import { MoreVertical } from 'lucide-react'
+import { MoreVertical, Clock, Target } from 'lucide-react'
 import Link from 'next/link'
-import { cn, isEmpty } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { formatSessionDate, formatDuration } from '@/lib/formatters'
 import { getUserInitials } from '@/lib/userUtils'
 
@@ -166,46 +165,43 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   const activityDisplayName = getActivityDisplayName()
 
   return (
-    <article
-      className={cn(
-        'bg-white md:rounded-lg md:border md:border-gray-200 md:shadow-sm mb-0 md:mb-4 border-b-[6px] border-gray-200 md:border-b-0 hover:shadow-md transition-shadow',
-        className
-      )}
-    >
+    <article className={cn('bg-white mb-4', className)}>
       {/* Session Header */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-3">
+      <div className="flex items-center justify-between px-5 pt-4 pb-3">
         <PrefetchLink
           href={`/profile/${session.user.username}`}
           prefetchProfile={session.user.username}
           prefetchUserId={session.user.id}
-          className="flex items-center gap-2 md:gap-3 min-w-0 flex-1"
+          className="flex items-center gap-3 md:gap-4 min-w-0 flex-1 group"
         >
-          {/* User Avatar */}
+          {/* User Avatar - Duolingo style with gradient ring */}
           {session.user.profilePicture ? (
-            <div className="w-10 h-10 min-w-[2.5rem] aspect-square rounded-full overflow-hidden flex-shrink-0 ring-2 ring-white">
+            <div className="w-12 h-12 min-w-[3rem] aspect-square rounded-full overflow-hidden flex-shrink-0 p-0.5 bg-gradient-to-br from-[#58CC02] to-[#45A000] group-hover:scale-105 transition-transform">
               <Image
                 src={session.user.profilePicture}
                 alt={session.user.name}
-                width={40}
-                height={40}
+                width={48}
+                height={48}
                 quality={90}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-full border-2 border-white"
                 priority={isAboveFold || priority}
                 loading={isAboveFold || priority ? 'eager' : 'lazy'}
               />
             </div>
           ) : (
-            <div className="w-10 h-10 min-w-[2.5rem] aspect-square bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
-              <span className="text-gray-600 font-semibold text-sm">
-                {getUserInitials(session.user.name)}
-              </span>
+            <div className="w-12 h-12 min-w-[3rem] aspect-square rounded-full flex items-center justify-center flex-shrink-0 p-0.5 bg-gradient-to-br from-[#58CC02] to-[#45A000] group-hover:scale-105 transition-transform">
+              <div className="w-full h-full bg-white rounded-full flex items-center justify-center border-2 border-white">
+                <span className="text-[#3C3C3C] font-bold text-sm">
+                  {getUserInitials(session.user.name)}
+                </span>
+              </div>
             </div>
           )}
 
           {/* User Info */}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-gray-900 text-sm md:text-base hover:underline truncate">
+              <span className="font-extrabold text-[#4B4B4B] text-base md:text-lg hover:text-[#58CC02] transition-colors truncate tracking-tight">
                 {session.user.name}
               </span>
               {/* Follow button - Mobile only when showGroupInfo is true */}
@@ -214,17 +210,17 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   onClick={handleFollowToggle}
                   disabled={isFollowLoading}
                   className={cn(
-                    'md:hidden text-xs font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0',
-                    isFollowing
-                      ? 'text-gray-600 hover:text-gray-900'
-                      : 'text-[#0066CC] hover:text-[#0051D5]'
+                    'md:hidden text-xs font-extrabold transition-colors duration-200 whitespace-nowrap flex-shrink-0 uppercase tracking-wide px-2 py-1 rounded-lg',
+                    isFollowing ? 'text-[#AFAFAF] bg-[#F7F7F7]' : 'text-[#1CB0F6] bg-[#DDF4FF]'
                   )}
                 >
                   {isFollowing ? 'Following' : 'Follow'}
                 </button>
               )}
             </div>
-            <div className="text-xs text-gray-500">{formatSessionDate(session.createdAt)}</div>
+            <div className="text-xs text-[#AFAFAF] font-bold uppercase tracking-wide">
+              {formatSessionDate(session.createdAt)}
+            </div>
           </div>
         </PrefetchLink>
 
@@ -232,17 +228,17 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg p-2 transition-colors duration-200 min-h-[44px] min-w-[44px]"
+            className="text-[#AFAFAF] hover:text-[#3C3C3C] hover:bg-[#F7F7F7] rounded-xl p-2 transition-colors duration-200 min-h-[44px] min-w-[44px]"
             aria-label="Session options"
             aria-expanded={showMenu}
             aria-haspopup="true"
           >
-            <MoreVertical className="w-5 h-5" aria-hidden="true" />
+            <MoreVertical className="w-6 h-6" aria-hidden="true" />
           </button>
 
           {showMenu && (
             <div
-              className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10"
+              className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border-2 border-[#E5E5E5] py-2 z-10 overflow-hidden"
               role="menu"
               aria-label="Session options menu"
             >
@@ -252,10 +248,10 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                     onEdit(session.id)
                     setShowMenu(false)
                   }}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                  className="w-full px-5 py-3 text-left text-sm font-bold text-[#4B4B4B] hover:bg-[#F7F7F7] transition-colors duration-200"
                   role="menuitem"
                 >
-                  Edit session
+                  EDIT SESSION
                 </button>
               )}
               {onDelete && (
@@ -264,10 +260,10 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                     onDelete(session.id)
                     setShowMenu(false)
                   }}
-                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50 transition-colors duration-200"
+                  className="w-full px-5 py-3 text-left text-sm font-bold text-[#FF4B4B] hover:bg-[#FFF5F5] transition-colors duration-200"
                   role="menuitem"
                 >
-                  Delete session
+                  DELETE SESSION
                 </button>
               )}
             </div>
@@ -276,15 +272,15 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       </div>
 
       {/* Title and Description */}
-      <Link href={`/sessions/${session.id}`} className="px-4 pb-3 block cursor-pointer">
-        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1 leading-tight hover:text-[#0066CC] transition-colors duration-200">
+      <Link href={`/sessions/${session.id}`} className="px-5 pb-4 block cursor-pointer group">
+        <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-[#4B4B4B] mb-2 leading-tight group-hover:text-[#1CB0F6] transition-colors duration-200">
           {session.title || 'Focus Session'}
         </h3>
         {session.description && (
           <div>
             <p
               className={cn(
-                'text-gray-600 text-sm md:text-base whitespace-pre-wrap break-words',
+                'text-[#777777] text-base md:text-lg whitespace-pre-wrap break-words font-medium leading-relaxed',
                 !isExpanded && session.description.length > 280 && 'line-clamp-3 sm:line-clamp-4'
               )}
             >
@@ -298,7 +294,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   e.preventDefault()
                   setIsExpanded(!isExpanded)
                 }}
-                className="text-[#0066CC] text-sm font-semibold mt-1 hover:underline transition-colors duration-200 min-h-[44px] flex items-center"
+                className="text-[#AFAFAF] text-sm font-bold mt-2 hover:text-[#777777] transition-colors duration-200 flex items-center uppercase tracking-wide"
                 aria-expanded={isExpanded}
                 aria-label={isExpanded ? 'Show less description' : 'Show more description'}
               >
@@ -309,55 +305,52 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         )}
       </Link>
 
-      {/* Image Gallery */}
-      {!isEmpty(session.images) && (
-        <div className="px-4 pb-4">
-          <ImageGallery images={session.images || []} priority={isAboveFold || priority} />
-        </div>
-      )}
-
-      {/* Stats - Strava style */}
-      <Link
-        href={`/sessions/${session.id}`}
-        className="px-4 pb-2 block cursor-pointer hover:bg-gray-50/50 transition-colors duration-200"
-      >
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <div className="text-xs text-gray-500 mb-1">Time</div>
-            <div className="text-base font-semibold text-gray-900">
-              {formatDuration(session.duration)}
+      {/* Stats - Landing page style with colored icons */}
+      <Link href={`/sessions/${session.id}`} className="px-5 pb-4 block cursor-pointer">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-[#F7F7F7] rounded-xl p-3 border border-[#E5E5E5]">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#1CB0F6] to-[#0088CC] rounded-lg flex items-center justify-center">
+                <Clock className="w-5 h-5 text-white" strokeWidth={2.5} />
+              </div>
+              <span className="text-[#3C3C3C] font-extrabold">
+                {formatDuration(session.duration)}
+              </span>
             </div>
           </div>
-          <div className="min-w-0">
-            <div className="text-xs text-gray-500 mb-1">Activity</div>
-            <div
-              className="text-base font-semibold text-gray-900 truncate"
-              title={activityDisplayName}
-            >
-              {activityDisplayName}
+          <div className="bg-[#F7F7F7] rounded-xl p-3 border border-[#E5E5E5]">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-[#58CC02] to-[#45A000] rounded-lg flex items-center justify-center">
+                <Target className="w-5 h-5 text-white" strokeWidth={2.5} />
+              </div>
+              <span className="text-[#3C3C3C] font-extrabold truncate" title={activityDisplayName}>
+                {activityDisplayName}
+              </span>
             </div>
           </div>
         </div>
       </Link>
 
       {/* Interactions */}
-      <SessionInteractions
-        sessionId={session.id}
-        supportCount={session.supportCount}
-        commentCount={localCommentCount}
-        isSupported={session.isSupported || false}
-        supportedBy={session.supportedBy}
-        onSupport={onSupport}
-        onRemoveSupport={onRemoveSupport}
-        onShare={onShare}
-        onShareImage={() => router.push(`/sessions/${session.id}/share`)}
-        isOwnPost={session.userId === user?.id}
-        onCommentClick={handleCommentClick}
-        onLikesClick={() => setShowLikesModal(true)}
-      />
+      <div className="px-5 py-2">
+        <SessionInteractions
+          sessionId={session.id}
+          supportCount={session.supportCount}
+          commentCount={localCommentCount}
+          isSupported={session.isSupported || false}
+          supportedBy={session.supportedBy}
+          onSupport={onSupport}
+          onRemoveSupport={onRemoveSupport}
+          onShare={onShare}
+          onShareImage={() => router.push(`/sessions/${session.id}/share`)}
+          isOwnPost={session.userId === user?.id}
+          onCommentClick={handleCommentClick}
+          onLikesClick={() => setShowLikesModal(true)}
+        />
+      </div>
 
       {/* Top Comments Section */}
-      <div ref={commentSectionRef}>
+      <div ref={commentSectionRef} className="px-5">
         <TopComments
           sessionId={session.id}
           totalCommentCount={localCommentCount}

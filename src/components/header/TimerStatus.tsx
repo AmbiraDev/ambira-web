@@ -65,10 +65,13 @@ export default function TimerStatus({ pathname }: TimerStatusProps) {
     return (
       <Link
         href={ROUTES.TIMER}
-        className="hidden md:flex items-center space-x-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+        className="hidden md:flex items-center space-x-2 px-4 py-3 bg-[#58CC02] text-white text-sm font-bold rounded-2xl hover:brightness-105 transition-all border-2 border-b-4 border-[#45A000] active:border-b-2 active:translate-y-[2px]"
         aria-label="View active session"
       >
-        <div className="w-2 h-2 rounded-full bg-green-300 flex-shrink-0" aria-hidden="true" />
+        <div
+          className="w-2 h-2 rounded-full bg-white/60 flex-shrink-0 animate-pulse"
+          aria-hidden="true"
+        />
         <span className="w-[60px] text-center">{displayText}</span>
       </Link>
     )

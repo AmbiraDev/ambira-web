@@ -97,14 +97,14 @@ export const LoginForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {submitError && (
-        <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-md">
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl">
           {submitError}
         </div>
       )}
 
       <div className="space-y-6">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+          <label htmlFor="email" className="block text-sm font-semibold text-[#3C3C3C] mb-2">
             Email address
           </label>
           <input
@@ -114,16 +114,16 @@ export const LoginForm: React.FC = () => {
             autoComplete="email"
             value={formData.email}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-              errors.email ? 'border-destructive' : 'border-border'
+            className={`w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 rounded-xl text-[#3C3C3C] font-semibold focus:border-[#58CC02] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] ${
+              errors.email ? 'border-red-300' : 'border-[#E5E5E5]'
             }`}
             placeholder="Enter your email"
           />
-          {errors.email && <p className="mt-2 text-sm text-destructive">{errors.email}</p>}
+          {errors.email && <p className="mt-2 text-sm text-red-600">{errors.email}</p>}
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+          <label htmlFor="password" className="block text-sm font-semibold text-[#3C3C3C] mb-2">
             Password
           </label>
           <input
@@ -133,12 +133,12 @@ export const LoginForm: React.FC = () => {
             autoComplete="current-password"
             value={formData.password}
             onChange={handleChange}
-            className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-              errors.password ? 'border-destructive' : 'border-border'
+            className={`w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 rounded-xl text-[#3C3C3C] font-semibold focus:border-[#58CC02] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] ${
+              errors.password ? 'border-red-300' : 'border-[#E5E5E5]'
             }`}
             placeholder="Enter your password"
           />
-          {errors.password && <p className="mt-2 text-sm text-destructive">{errors.password}</p>}
+          {errors.password && <p className="mt-2 text-sm text-red-600">{errors.password}</p>}
         </div>
       </div>
 
@@ -146,7 +146,7 @@ export const LoginForm: React.FC = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-full flex items-center justify-center px-5 py-3 bg-[#58CC02] text-white font-bold rounded-2xl border-2 border-b-4 border-[#45A000] hover:brightness-105 active:border-b-2 active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
         >
           {isSubmitting ? (
             <div className="flex items-center">
@@ -159,11 +159,11 @@ export const LoginForm: React.FC = () => {
         </button>
 
         <div className="text-center pt-2">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-[#777777]">
             Don't have an account?{' '}
             <a
               href="/signup"
-              className="font-medium text-primary hover:text-primary/80 transition-colors"
+              className="font-bold text-[#58CC02] hover:text-[#45A000] transition-colors"
             >
               Sign up
             </a>

@@ -1,5 +1,5 @@
 /**
- * Core validation utilities for the Ambira application
+ * Core validation utilities for the Focumo application
  *
  * Provides type-safe validation using Valibot schemas with consistent error handling
  * and Firestore compatibility.

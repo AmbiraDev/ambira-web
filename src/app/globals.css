@@ -1,53 +1,94 @@
 @import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
 
 :root {
-  /* Electric Blue Theme */
-  --electric-blue: #0066cc;
-  --electric-blue-dark: #0051d5;
-  --electric-blue-light: #66b3ff;
-  --success-green: #34c759;
+  /* Duolingo-inspired Color Palette - LIGHT MODE */
+  --duo-green: #58CC02;
+  --duo-green-dark: #45A000;
+  --duo-green-light: #7ED321;
+  --duo-blue: #1CB0F6;
+  --duo-blue-dark: #0088CC;
+  --duo-gold: #FFC800;
+  --duo-gold-dark: #E5B400;
+  --duo-orange: #FF9600;
+  --duo-orange-dark: #FF7700;
+  --duo-purple: #CE82FF;
+  --duo-purple-dark: #A855F7;
+  --duo-red: #FF4B4B;
+  --duo-red-dark: #EA2B2B;
+
+  /* Background colors - Light theme */
   --background: #ffffff;
-  --foreground: #000000;
+  --background-secondary: #F7F7F7;
   --card-background: #ffffff;
-  --border: #e5e7eb;
-  --muted: #6b7280;
-  --muted-foreground: #6b7280;
+  --foreground: #3C3C3C;
+
+  /* Border and accent colors */
+  --border: #E5E5E5;
+  --border-dark: #DADADA;
+  --muted: #AFAFAF;
+  --muted-foreground: #777777;
+
+  /* Legacy color mapping for backwards compatibility */
+  --electric-blue: var(--duo-green);
+  --electric-blue-dark: var(--duo-green-dark);
+  --electric-blue-light: var(--duo-green-light);
+  --success-green: var(--duo-green);
 }
 
 @theme inline {
-  --color-electric-blue: var(--electric-blue);
-  --color-electric-blue-dark: var(--electric-blue-dark);
-  --color-electric-blue-light: var(--electric-blue-light);
-  --color-success-green: var(--success-green);
+  /* Duolingo colors */
+  --color-duo-green: var(--duo-green);
+  --color-duo-green-dark: var(--duo-green-dark);
+  --color-duo-green-light: var(--duo-green-light);
+  --color-duo-blue: var(--duo-blue);
+  --color-duo-blue-dark: var(--duo-blue-dark);
+  --color-duo-gold: var(--duo-gold);
+  --color-duo-gold-dark: var(--duo-gold-dark);
+  --color-duo-orange: var(--duo-orange);
+  --color-duo-orange-dark: var(--duo-orange-dark);
+  --color-duo-purple: var(--duo-purple);
+  --color-duo-purple-dark: var(--duo-purple-dark);
+  --color-duo-red: var(--duo-red);
+  --color-duo-red-dark: var(--duo-red-dark);
+
+  /* Legacy mappings */
+  --color-electric-blue: var(--duo-green);
+  --color-electric-blue-dark: var(--duo-green-dark);
+  --color-electric-blue-light: var(--duo-green-light);
+  --color-success-green: var(--duo-green);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card-background: var(--card-background);
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --font-sans: var(--font-dm-sans);
+
+  /* Font configuration - Nunito */
+  --font-sans: 'Nunito', var(--font-nunito);
   --font-family-sans:
-    var(--font-dm-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue',
+    'Nunito', var(--font-nunito), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue',
     Roboto, sans-serif;
   --font-family-serif:
-    var(--font-dm-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue',
+    'Nunito', var(--font-nunito), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue',
     Roboto, sans-serif;
   --font-family-mono:
-    var(--font-dm-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue',
+    'Nunito', var(--font-nunito), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue',
     Roboto, sans-serif;
 }
 
 body {
-  background: #ffffff;
+  background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-family-sans);
+  font-family: 'Nunito', var(--font-family-sans);
   line-height: 1.6;
 }
 
-/* Force DM Sans on all elements */
+/* Force Nunito on all elements - Duolingo style */
 * {
   font-family:
-    var(--font-dm-sans),
+    'Nunito',
+    var(--font-nunito),
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
@@ -62,7 +103,8 @@ body {
 .font-serif,
 .font-mono {
   font-family:
-    var(--font-dm-sans),
+    'Nunito',
+    var(--font-nunito),
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
@@ -94,7 +136,7 @@ textarea.scrollbar-hide::-webkit-scrollbar {
   height: 0;
 }
 
-/* Ensure all text elements use DM Sans */
+/* Ensure all text elements use Nunito */
 h1,
 h2,
 h3,
@@ -110,7 +152,8 @@ input,
 textarea,
 select {
   font-family:
-    var(--font-dm-sans),
+    'Nunito',
+    var(--font-nunito),
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
@@ -120,22 +163,165 @@ select {
     sans-serif !important;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Duolingo green */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--background-secondary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--electric-blue);
-  border-radius: 3px;
+  background: var(--border-dark);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--electric-blue-dark);
+  background: var(--duo-green);
+}
+
+/* Duolingo-style button with thick bottom border */
+.duo-button {
+  position: relative;
+  border: 2px solid transparent;
+  border-bottom-width: 4px;
+  border-radius: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  transition: all 0.1s ease;
+  transform: translateY(0);
+}
+
+.duo-button:hover {
+  filter: brightness(1.05);
+}
+
+.duo-button:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.duo-button-primary {
+  background: var(--duo-green);
+  border-color: var(--duo-green-dark);
+  color: white;
+}
+
+.duo-button-secondary {
+  background: var(--duo-blue);
+  border-color: var(--duo-blue-dark);
+  color: white;
+}
+
+.duo-button-outline {
+  background: white;
+  border-color: var(--border-dark);
+  color: var(--foreground);
+}
+
+.duo-button-outline:hover {
+  background: var(--background-secondary);
+}
+
+.duo-button-gold {
+  background: var(--duo-gold);
+  border-color: var(--duo-gold-dark);
+  color: #3C3C3C;
+}
+
+.duo-button-destructive {
+  background: var(--duo-red);
+  border-color: var(--duo-red-dark);
+  color: white;
+}
+
+/* Duolingo-style card - Light mode */
+.duo-card {
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.duo-card-highlighted {
+  border-color: var(--duo-blue);
+}
+
+/* Duolingo-style input */
+.duo-input {
+  background: var(--background-secondary);
+  border: 2px solid var(--border);
+  border-bottom-width: 4px;
+  border-radius: 12px;
+  color: var(--foreground);
+  transition: all 0.15s ease;
+}
+
+.duo-input:focus {
+  border-color: var(--duo-blue);
+  background: white;
+  outline: none;
+}
+
+.duo-input::placeholder {
+  color: var(--muted);
+}
+
+/* Duolingo-style badge */
+.duo-badge {
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 9999px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+/* Duolingo-style progress bar */
+.duo-progress {
+  height: 16px;
+  background: var(--background-secondary);
+  border: 2px solid var(--border);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.duo-progress-fill {
+  height: 100%;
+  background: var(--duo-gold);
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+/* Duolingo icon box */
+.duo-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+.duo-icon-box-green {
+  background: linear-gradient(to bottom right, var(--duo-green), var(--duo-green-dark));
+}
+
+.duo-icon-box-blue {
+  background: linear-gradient(to bottom right, var(--duo-blue), var(--duo-blue-dark));
+}
+
+.duo-icon-box-gold {
+  background: linear-gradient(to bottom right, var(--duo-gold), var(--duo-gold-dark));
+}
+
+.duo-icon-box-purple {
+  background: linear-gradient(to bottom right, var(--duo-purple), var(--duo-purple-dark));
+}
+
+.duo-icon-box-orange {
+  background: linear-gradient(to bottom right, var(--duo-orange), var(--duo-orange-dark));
 }
 
 /* Mobile-specific styles */
@@ -226,104 +412,105 @@ select {
   animation: slide-up 0.3s ease-out;
 }
 
-/* Custom Range Slider Styles */
+/* Custom Range Slider Styles - Duolingo themed */
 input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
-  height: 4px;
-  border-radius: 2px;
+  height: 8px;
+  border-radius: 4px;
   outline: none;
   margin: 0;
   padding: 0;
-  background-clip: content-box !important;
+  background: var(--background-secondary);
+  border: 2px solid var(--border);
 }
 
 /* Webkit (Chrome, Safari, Edge) */
 input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: white;
+  background: var(--duo-green);
   cursor: pointer;
-  border: 3px solid #0066cc;
-  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+  border: 3px solid var(--duo-green-dark);
+  box-shadow: 0 2px 8px rgba(88, 204, 2, 0.3);
   margin-top: -8px;
   transition: all 0.2s ease;
 }
 
 input[type='range']::-webkit-slider-thumb:hover {
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
+  box-shadow: 0 4px 12px rgba(88, 204, 2, 0.4);
   transform: scale(1.1);
 }
 
 input[type='range']::-webkit-slider-thumb:active {
   transform: scale(1.15);
-  box-shadow: 0 4px 16px rgba(0, 102, 204, 0.5);
+  box-shadow: 0 4px 16px rgba(88, 204, 2, 0.5);
 }
 
 /* Firefox */
 input[type='range']::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: white;
+  background: var(--duo-green);
   cursor: pointer;
-  border: 3px solid #0066cc;
-  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+  border: 3px solid var(--duo-green-dark);
+  box-shadow: 0 2px 8px rgba(88, 204, 2, 0.3);
   transition: all 0.2s ease;
 }
 
 input[type='range']::-moz-range-thumb:hover {
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
+  box-shadow: 0 4px 12px rgba(88, 204, 2, 0.4);
   transform: scale(1.1);
 }
 
 input[type='range']::-moz-range-thumb:active {
   transform: scale(1.15);
-  box-shadow: 0 4px 16px rgba(0, 102, 204, 0.5);
+  box-shadow: 0 4px 16px rgba(88, 204, 2, 0.5);
 }
 
 /* Remove default track styling */
 input[type='range']::-webkit-slider-runnable-track {
-  height: 4px;
-  border-radius: 2px;
+  height: 8px;
+  border-radius: 4px;
 }
 
 input[type='range']::-moz-range-track {
-  height: 4px;
-  border-radius: 2px;
+  height: 8px;
+  border-radius: 4px;
   background: transparent;
 }
 
 /* Mobile-specific range slider improvements */
 @media (max-width: 768px) {
   input[type='range'] {
-    height: 4px !important;
-    border-radius: 2px !important;
+    height: 8px !important;
+    border-radius: 4px !important;
   }
 
   input[type='range']::-webkit-slider-thumb {
-    width: 20px !important;
-    height: 20px !important;
-    margin-top: -8px !important;
+    width: 28px !important;
+    height: 28px !important;
+    margin-top: -10px !important;
     border-width: 3px !important;
   }
 
   input[type='range']::-moz-range-thumb {
-    width: 20px !important;
-    height: 20px !important;
+    width: 28px !important;
+    height: 28px !important;
     border-width: 3px !important;
   }
 
   input[type='range']::-webkit-slider-runnable-track {
-    height: 4px !important;
-    border-radius: 2px !important;
+    height: 8px !important;
+    border-radius: 4px !important;
   }
 
   input[type='range']::-moz-range-track {
-    height: 4px !important;
-    border-radius: 2px !important;
+    height: 8px !important;
+    border-radius: 4px !important;
   }
 }

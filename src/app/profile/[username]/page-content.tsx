@@ -63,9 +63,9 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
   // Dynamic metadata using useEffect for client component
   React.useEffect(() => {
     if (profile) {
-      document.title = `${profile.name} (@${profile.username}) - Ambira`
+      document.title = `${profile.name} (@${profile.username}) - Focumo`
 
-      const description = profile.bio || `View ${profile.name}'s productivity profile on Ambira`
+      const description = profile.bio || `View ${profile.name}'s productivity profile on Focumo`
 
       let metaDescription = document.querySelector('meta[name="description"]')
       if (!metaDescription) {
@@ -82,7 +82,7 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
         ogTitle.setAttribute('property', 'og:title')
         document.head.appendChild(ogTitle)
       }
-      ogTitle.setAttribute('content', `${profile.name} (@${profile.username}) - Ambira`)
+      ogTitle.setAttribute('content', `${profile.name} (@${profile.username}) - Focumo`)
 
       let ogDescription = document.querySelector('meta[property="og:description"]')
       if (!ogDescription) {
@@ -115,7 +115,7 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
         twitterTitle.setAttribute('name', 'twitter:title')
         document.head.appendChild(twitterTitle)
       }
-      twitterTitle.setAttribute('content', `${profile.name} (@${profile.username}) - Ambira`)
+      twitterTitle.setAttribute('content', `${profile.name} (@${profile.username}) - Focumo`)
 
       let twitterDescription = document.querySelector('meta[name="twitter:description"]')
       if (!twitterDescription) {

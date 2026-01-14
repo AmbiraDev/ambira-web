@@ -8,7 +8,6 @@
 'use client'
 
 import { useAuth } from '@/hooks/useAuth'
-import Header from '@/components/HeaderComponent'
 import { FeedPageContent } from '@/features/feed/components/FeedPageContent'
 import { LandingPageContent } from '@/features/feed/components/LandingPageContent'
 import { LoadingScreen } from '@/components/LoadingScreen'
@@ -29,16 +28,8 @@ export default function Home() {
       {/* Show loading screen while checking authentication */}
       {isLoading && <LoadingScreen />}
 
-      {/* Show feed for authenticated users */}
-      {!isLoading && isAuthenticated && (
-        <>
-          {/* Desktop Header */}
-          <header className="hidden md:block">
-            <Header />
-          </header>
-          <FeedPageContent />
-        </>
-      )}
+      {/* Show feed for authenticated users - No top header on desktop like Duolingo */}
+      {!isLoading && isAuthenticated && <FeedPageContent />}
 
       {/* Show landing page for unauthenticated users */}
       {!isLoading && !isAuthenticated && <LandingPageContent />}

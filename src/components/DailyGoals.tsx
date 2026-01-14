@@ -6,6 +6,7 @@ import { useActivities } from '@/hooks/useActivitiesQuery'
 import { useEffect, useState, useMemo } from 'react'
 import { IconRenderer } from './IconRenderer'
 import { Activity } from '@/types'
+import { Gift, Plus } from 'lucide-react'
 
 interface DailyGoalProgress {
   activity: Activity
@@ -111,115 +112,118 @@ function DailyGoals() {
     loadDailyGoals()
   }, [user, activitiesWithGoals]) // Include user object to satisfy exhaustive-deps
 
-  // Format time display
-  const formatProgress = (current: number, goal: number) => {
+  // Format goal text - Duolingo style (e.g., "Earn 10 XP")
+  const formatGoalText = (goal: number) => {
     // If daily goal is less than 1 hour, show in minutes
     if (goal < 1) {
-      const currentMin = Math.round(current * 60)
       const goalMin = Math.round(goal * 60)
-      return `${currentMin} / ${goalMin} min`
+      return `Spend ${goalMin} minutes`
     }
 
     // Otherwise show in hours
-    return `${current.toFixed(1)} / ${goal.toFixed(1)} hrs`
+    const goalHrs = goal.toFixed(1)
+    return `Complete ${goalHrs} hours`
+  }
+
+  // Format progress text - Duolingo style (e.g., "0 / 10")
+  const formatProgressText = (current: number, goal: number) => {
+    if (goal < 1) {
+      const currentMin = Math.round(current * 60)
+      const goalMin = Math.round(goal * 60)
+      return `${currentMin} / ${goalMin}`
+    }
+    return `${current.toFixed(1)} / ${goal.toFixed(1)}`
   }
 
   // Show empty state if no goals
   if (goals.length === 0 && !isLoading) {
     return (
-      <div className="flex justify-center mt-8 mr-4">
+      <div className="p-4">
         <Link
           href="/settings/activities"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0066CC] text-white rounded-lg font-semibold text-sm hover:bg-[#0051D5] transition-colors shadow-md hover:shadow-lg"
+          className="flex items-center gap-3 p-3 bg-[#F7F7F7] hover:bg-[#E5E5E5] rounded-xl transition-colors"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2.5}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
-          Create Your First Activity
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#58CC02] to-[#45A000] flex items-center justify-center">
+            <Plus className="w-5 h-5 text-white" />
+          </div>
+          <span className="font-bold text-sm text-[#3C3C3C]">Create Your First Quest</span>
         </Link>
       </div>
     )
   }
 
   return (
-    <div className="p-5">
-      <h3 className="text-base font-semibold text-gray-900 mb-4">Today's Goals</h3>
-
+    <div className="p-3">
       {isLoading ? (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {[1, 2].map((i) => (
-            <div key={i} className="animate-pulse flex items-center gap-4">
-              <div className="w-[60px] h-[60px] bg-gray-200 rounded-full"></div>
+            <div key={i} className="animate-pulse flex items-center gap-3 p-2">
+              <div className="w-10 h-10 bg-[#E5E5E5] rounded-xl"></div>
               <div className="flex-1">
-                <div className="h-4 bg-gray-200 rounded mb-2 w-28"></div>
-                <div className="h-3 bg-gray-200 rounded w-20"></div>
+                <div className="h-3 bg-[#E5E5E5] rounded w-28 mb-1"></div>
+                <div className="h-2 bg-[#E5E5E5] rounded w-12 mb-1"></div>
+                <div className="h-2 bg-[#E5E5E5] rounded-full w-full"></div>
               </div>
+              <div className="w-10 h-10 bg-[#E5E5E5] rounded-xl"></div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="space-y-4">
-          {goals.map((goal) => {
-            const radius = 26
-            const circumference = 2 * Math.PI * radius
-            const strokeDashoffset = circumference - (goal.percentage / 100) * circumference
+        <div className="space-y-2">
+          {goals.slice(0, 3).map((goal) => {
+            const isCompleted = goal.percentage >= 100
 
             return (
-              <div key={goal.activity.id} className="flex items-center gap-4">
-                {/* Circular Progress Indicator */}
-                <div className="relative flex-shrink-0" style={{ width: 60, height: 60 }}>
-                  {/* Background circle */}
-                  <svg className="absolute inset-0 -rotate-90" width="60" height="60">
-                    <circle
-                      cx="30"
-                      cy="30"
-                      r={radius}
-                      fill="none"
-                      stroke="#D1D5DB"
-                      strokeWidth="4.5"
-                    />
-                    {/* Progress circle */}
-                    <circle
-                      cx="30"
-                      cy="30"
-                      r={radius}
-                      fill="none"
-                      stroke="#0066CC"
-                      strokeWidth="4.5"
-                      strokeDasharray={circumference}
-                      strokeDashoffset={strokeDashoffset}
-                      strokeLinecap="round"
-                      className="transition-all duration-500 ease-out"
-                    />
-                  </svg>
-                  {/* Icon in center */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <IconRenderer
-                      iconName={goal.activity.icon}
-                      size={26}
-                      className="text-gray-700"
+              <div
+                key={goal.activity.id}
+                className={`flex items-center gap-3 p-2 rounded-xl ${
+                  isCompleted ? 'bg-[#E6F9E6]' : 'hover:bg-[#F7F7F7]'
+                } transition-colors`}
+              >
+                {/* Activity Icon - Colorful like Duolingo */}
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    isCompleted
+                      ? 'bg-gradient-to-br from-[#58CC02] to-[#45A000]'
+                      : 'bg-gradient-to-br from-[#1CB0F6] to-[#0088CC]'
+                  }`}
+                >
+                  <IconRenderer iconName={goal.activity.icon} size={20} className="text-white" />
+                </div>
+
+                {/* Progress Content */}
+                <div className="flex-1 min-w-0">
+                  <p
+                    className={`text-sm font-extrabold ${
+                      isCompleted ? 'text-[#58CC02]' : 'text-[#4B4B4B]'
+                    }`}
+                  >
+                    {formatGoalText(goal.dailyGoal)}
+                  </p>
+                  {/* Progress text like Duolingo's "0 / 10" */}
+                  <p className="text-xs font-bold text-[#AFAFAF] mb-1">
+                    {formatProgressText(goal.currentProgress, goal.dailyGoal)}
+                  </p>
+                  {/* Duolingo-style horizontal progress bar */}
+                  <div className="h-2 bg-[#E5E5E5] rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ease-out ${
+                        isCompleted
+                          ? 'bg-gradient-to-r from-[#58CC02] to-[#45A000]'
+                          : 'bg-gradient-to-r from-[#FFC800] to-[#FF9600]'
+                      }`}
+                      style={{ width: `${Math.max(goal.percentage, 3)}%` }}
                     />
                   </div>
                 </div>
 
-                {/* Activity name and percentage */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="text-sm font-semibold text-gray-900 truncate">
-                      {goal.activity.name}
-                    </span>
-                    <span className="text-sm font-semibold flex-shrink-0 text-gray-500">
-                      {Math.round(goal.percentage)}%
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-500">
-                    {formatProgress(goal.currentProgress, goal.dailyGoal)}
-                  </span>
+                {/* Reward Icon (like Duolingo's chest) */}
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    isCompleted ? 'bg-gradient-to-br from-[#FFC800] to-[#FF9600]' : 'bg-[#E5E5E5]'
+                  }`}
+                >
+                  <Gift className={`w-5 h-5 ${isCompleted ? 'text-white' : 'text-[#AFAFAF]'}`} />
                 </div>
               </div>
             )

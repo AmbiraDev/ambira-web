@@ -69,7 +69,7 @@ export default function BottomNavigation() {
       <nav
         role="navigation"
         aria-label="Main navigation"
-        className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden transition-transform duration-200 ${isKeyboardOpen ? 'translate-y-full' : 'translate-y-0'}`}
+        className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-[#E5E5E5] md:hidden transition-transform duration-200 ${isKeyboardOpen ? 'translate-y-full' : 'translate-y-0'}`}
       >
         <div
           className="flex items-center justify-around h-[6.5rem] px-2 pb-8 pt-1.5"
@@ -79,26 +79,26 @@ export default function BottomNavigation() {
           <Link
             href="/"
             className={`flex flex-col items-center justify-center space-y-1 px-4 py-1 transition-colors ${
-              isActive('/') ? 'text-[#0066CC]' : 'text-gray-500'
+              isActive('/') ? 'text-[#58CC02]' : 'text-[#AFAFAF]'
             }`}
             aria-label="View feed"
             aria-current={isActive('/') ? 'page' : undefined}
           >
             <Home className="w-8 h-8" strokeWidth={isActive('/') ? 2.5 : 2} aria-hidden="true" />
-            <span className="text-sm font-medium">Home</span>
+            <span className="text-sm font-bold">Home</span>
           </Link>
 
           {/* Record Button */}
           <Link
             href="/timer"
             className={`flex flex-col items-center justify-center px-4 py-1 transition-colors ${
-              hasActiveSession ? '' : isActive('/timer') ? 'text-[#0066CC]' : 'text-gray-500'
+              hasActiveSession ? '' : isActive('/timer') ? 'text-[#58CC02]' : 'text-[#AFAFAF]'
             }`}
             aria-label={hasActiveSession ? 'View active session' : 'Start session timer'}
             aria-current={isActive('/timer') ? 'page' : undefined}
           >
             <div
-              className={`flex flex-col items-center justify-center space-y-1 ${hasActiveSession ? 'bg-[#0066CC] rounded-lg px-3 py-2 text-white' : ''}`}
+              className={`flex flex-col items-center justify-center space-y-1 ${hasActiveSession ? 'bg-[#58CC02] rounded-2xl px-4 py-2 text-white border-2 border-b-4 border-[#45A000]' : ''}`}
             >
               <Play
                 className="w-8 h-8"
@@ -106,7 +106,7 @@ export default function BottomNavigation() {
                 fill={hasActiveSession || isActive('/timer') ? 'currentColor' : 'none'}
                 aria-hidden="true"
               />
-              <span className="text-sm font-medium">{hasActiveSession ? 'Active' : 'Record'}</span>
+              <span className="text-sm font-bold">{hasActiveSession ? 'Active' : 'Record'}</span>
             </div>
           </Link>
 
@@ -114,7 +114,7 @@ export default function BottomNavigation() {
           <Link
             href="/groups"
             className={`flex flex-col items-center justify-center space-y-1 px-4 py-1 transition-colors ${
-              isActive('/groups') ? 'text-[#0066CC]' : 'text-gray-500'
+              isActive('/groups') ? 'text-[#58CC02]' : 'text-[#AFAFAF]'
             }`}
             aria-label="View groups"
             aria-current={isActive('/groups') ? 'page' : undefined}
@@ -124,20 +124,20 @@ export default function BottomNavigation() {
               strokeWidth={isActive('/groups') ? 2.5 : 2}
               aria-hidden="true"
             />
-            <span className="text-sm font-medium">Groups</span>
+            <span className="text-sm font-bold">Groups</span>
           </Link>
 
           {/* You */}
           <Link
             href="/you"
             className={`flex flex-col items-center justify-center space-y-1 px-4 py-1 transition-colors ${
-              isActive('/you') ? 'text-[#0066CC]' : 'text-gray-500'
+              isActive('/you') ? 'text-[#58CC02]' : 'text-[#AFAFAF]'
             }`}
             aria-label="View your profile and progress"
             aria-current={isActive('/you') ? 'page' : undefined}
           >
             <User className="w-8 h-8" strokeWidth={isActive('/you') ? 2.5 : 2} aria-hidden="true" />
-            <span className="text-sm font-medium">You</span>
+            <span className="text-sm font-bold">You</span>
           </Link>
         </div>
       </nav>

@@ -7,18 +7,18 @@ type Props = {
 
 // Static metadata - group-specific metadata is handled client-side
 export const metadata: Metadata = {
-  title: 'Join Group on Ambira',
-  description: 'Join Ambira to track your productivity with friends',
+  title: 'Join Group on Focumo',
+  description: 'Join Focumo to track your productivity with friends',
   openGraph: {
-    title: 'Join Group on Ambira',
-    description: 'Join Ambira to track your productivity with friends',
-    siteName: 'Ambira',
+    title: 'Join Group on Focumo',
+    description: 'Join Focumo to track your productivity with friends',
+    siteName: 'Focumo',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Join Group on Ambira',
-    description: 'Join Ambira to track your productivity with friends',
+    title: 'Join Group on Focumo',
+    description: 'Join Focumo to track your productivity with friends',
   },
 }
 

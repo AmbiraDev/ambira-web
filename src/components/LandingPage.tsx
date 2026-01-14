@@ -8,6 +8,7 @@ import { SignupCredentials } from '@/types'
 import { firebaseUserApi } from '@/lib/api'
 import Header from './HeaderComponent'
 import PWAInstallPrompt from './PWAInstallPrompt'
+import Footer from './Footer'
 
 export const LandingPage: React.FC = () => {
   const { login, signup, signInWithGoogle } = useAuth()
@@ -269,45 +270,37 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hide header on mobile */}
-      <div className="hidden md:block">
-        <Header />
-      </div>
+      <Header />
 
       {/* Hero Section - Full screen on mobile, with header space on desktop */}
       <main className="min-h-screen md:h-[calc(100vh-56px)] flex flex-col md:items-center md:justify-center px-4 md:px-8 py-8 md:pt-0">
         {/* Mobile View - Compact version similar to desktop */}
         {!showLogin && !showSignup && (
           <div className="md:hidden w-full max-w-md mx-auto flex flex-col justify-center min-h-[calc(100vh-4rem)]">
-            {/* Logo and Welcome */}
+            {/* Welcome Text - No Logo */}
             <div className="text-center mb-6">
-              <div className="w-32 h-32 flex items-center justify-center mx-auto mb-4">
-                <Image src="/logo.svg" alt="Ambira Logo" width={128} height={128} priority={true} />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome to Ambira</h1>
-              <p className="text-base text-gray-600">Study, work, and build with your friends.</p>
+              <h1 className="text-2xl font-extrabold text-[#3C3C3C] mb-1">Welcome to Focumo</h1>
+              <p className="text-base text-[#777777]">Study, work, and build with your friends.</p>
             </div>
 
             {/* Already a Member Header */}
-            <div className="text-center mb-4">
-              <p className="text-lg text-gray-600">
-                Already a Member?{' '}
-                <button
-                  onClick={() => setShowLogin(true)}
-                  className="text-[#0066CC] font-semibold hover:text-[#0056D6] transition-colors"
-                >
-                  Log In
-                </button>
-              </p>
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <span className="text-lg text-[#777777]">Already a Member?</span>
+              <button
+                onClick={() => setShowLogin(true)}
+                className="px-5 py-2 bg-[#58CC02] text-white hover:brightness-105 rounded-2xl transition-all font-bold text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58CC02] focus-visible:ring-offset-2 border-2 border-b-4 border-[#45A000] active:border-b-2 active:translate-y-[2px]"
+              >
+                Log In
+              </button>
             </div>
 
-            {/* CTA Buttons */}
+            {/* CTA Buttons - Duolingo Style */}
             <div className="space-y-3">
-              {/* Google Sign Up Button */}
+              {/* Google Sign Up Button - Outline Duolingo Style */}
               <button
                 onClick={handleGoogleSignIn}
                 disabled={isLoading}
-                className="w-full flex items-center justify-center px-4 py-3 border-2 border-gray-300 text-gray-900 font-semibold rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center px-5 py-3 bg-white text-[#3C3C3C] font-bold rounded-2xl border-2 border-b-4 border-[#DADADA] hover:bg-[#F7F7F7] active:border-b-2 active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path
@@ -330,11 +323,11 @@ export const LandingPage: React.FC = () => {
                 Sign Up With Google
               </button>
 
-              {/* Email Sign Up Button */}
+              {/* Email Sign Up Button - Green Duolingo Style */}
               <button
                 onClick={handleSignupWithEmail}
                 disabled={isLoading}
-                className="w-full flex items-center justify-center px-4 py-3 bg-[#0066CC] text-white font-semibold rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center px-5 py-3 bg-[#58CC02] text-white font-bold rounded-2xl border-2 border-b-4 border-[#45A000] hover:brightness-105 active:border-b-2 active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] "
               >
                 {isLoading ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -345,13 +338,13 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Legal Text */}
-            <p className="text-sm text-gray-600 text-center mt-6">
+            <p className="text-sm text-[#777777] text-center mt-6">
               By continuing, you are agreeing to our{' '}
-              <Link href="/terms" className="text-[#0066CC]">
+              <Link href="/terms" className="text-[#58CC02] hover:text-[#45A000]">
                 Terms of Service
               </Link>{' '}
               and{' '}
-              <Link href="/privacy" className="text-[#0066CC]">
+              <Link href="/privacy" className="text-[#58CC02] hover:text-[#45A000]">
                 Privacy Policy
               </Link>
               .
@@ -381,8 +374,8 @@ export const LandingPage: React.FC = () => {
                   />
                 </svg>
               </button>
-              <h1 className="text-2xl font-bold text-gray-900 pt-2">
-                {showLogin ? 'Log In to Ambira' : 'Create Your Account'}
+              <h1 className="text-2xl font-extrabold text-[#3C3C3C] pt-2">
+                {showLogin ? 'Log In to Focumo' : 'Create Your Account'}
               </h1>
             </div>
 
@@ -390,12 +383,12 @@ export const LandingPage: React.FC = () => {
             <div className="flex-1">
               {showLogin ? (
                 <form onSubmit={handleLoginSubmit} className="space-y-3">
-                  {/* OAuth Buttons */}
+                  {/* OAuth Buttons - Duolingo Outline Style */}
                   <button
                     onClick={handleGoogleSignIn}
                     type="button"
                     disabled={isLoading}
-                    className="w-full flex items-center justify-center py-3 border-2 border-gray-300 text-gray-900 rounded-lg font-medium text-sm hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center px-5 py-3 bg-white text-[#3C3C3C] font-bold rounded-2xl border-2 border-b-4 border-[#DADADA] hover:bg-[#F7F7F7] active:border-b-2 active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
                   >
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                       <path
@@ -437,7 +430,7 @@ export const LandingPage: React.FC = () => {
                       type="email"
                       value={loginData.email}
                       onChange={handleLoginChange}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
+                      className="w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 border-[#E5E5E5] rounded-xl text-[#3C3C3C] font-semibold focus:border-[#58CC02] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF]"
                       placeholder="Email"
                     />
                   </div>
@@ -454,26 +447,26 @@ export const LandingPage: React.FC = () => {
                       type="password"
                       value={loginData.password}
                       onChange={handleLoginChange}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
+                      className="w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 border-[#E5E5E5] rounded-xl text-[#3C3C3C] font-semibold focus:border-[#58CC02] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF]"
                       placeholder="Password"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-4 bg-[#0066CC] text-white font-semibold rounded-lg hover:bg-[#0051D5] transition-colors min-h-[44px]"
+                    className="w-full flex items-center justify-center px-5 py-3 bg-[#58CC02] text-white font-bold rounded-2xl border-2 border-b-4 border-[#45A000] hover:brightness-105 active:border-b-2 active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] "
                   >
                     {isLoading ? 'Logging in...' : 'Log In'}
                   </button>
                 </form>
               ) : (
                 <form onSubmit={handleSignupSubmit} className="space-y-3">
-                  {/* Google Button */}
+                  {/* Google Button - Duolingo Outline Style */}
                   <button
                     onClick={handleGoogleSignIn}
                     type="button"
                     disabled={isLoading}
-                    className="w-full flex items-center justify-center py-3 border-2 border-gray-300 text-gray-900 rounded-lg font-medium hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                    className="w-full flex items-center justify-center px-5 py-3 bg-white text-[#3C3C3C] font-bold rounded-2xl border-2 border-b-4 border-[#DADADA] hover:bg-[#F7F7F7] active:border-b-2 active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
                   >
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                       <path
@@ -518,7 +511,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="name"
                       value={signupData.name}
                       onChange={handleSignupChange}
-                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
+                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58CC02] focus-visible:ring-offset-2 ${
                         signupErrors.name ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Enter your full name"
@@ -537,7 +530,7 @@ export const LandingPage: React.FC = () => {
                         autoComplete="username"
                         value={signupData.username}
                         onChange={handleSignupChange}
-                        className={`w-full px-4 py-3 pr-10 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
+                        className={`w-full px-4 py-3 pr-10 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58CC02] focus-visible:ring-offset-2 ${
                           signupErrors.username
                             ? 'border-red-300'
                             : usernameAvailable === true
@@ -550,7 +543,7 @@ export const LandingPage: React.FC = () => {
                       />
                       {usernameCheckLoading && (
                         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#58CC02]"></div>
                         </div>
                       )}
                       {!usernameCheckLoading &&
@@ -610,7 +603,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="email"
                       value={signupData.email}
                       onChange={handleSignupChange}
-                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
+                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58CC02] focus-visible:ring-offset-2 ${
                         signupErrors.email ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Enter your email"
@@ -628,7 +621,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="new-password"
                       value={signupData.password}
                       onChange={handleSignupChange}
-                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
+                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58CC02] focus-visible:ring-offset-2 ${
                         signupErrors.password ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Create a password"
@@ -648,7 +641,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="new-password"
                       value={confirmPassword}
                       onChange={handleSignupChange}
-                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
+                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58CC02] focus-visible:ring-offset-2 ${
                         signupErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Confirm your password"
@@ -661,7 +654,7 @@ export const LandingPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-4 bg-[#0066CC] text-white font-semibold text-lg rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                    className="w-full flex items-center justify-center px-5 py-3 bg-[#58CC02] text-white font-bold rounded-2xl border-2 border-b-4 border-[#45A000] hover:brightness-105 active:border-b-2 active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] "
                   >
                     {isLoading ? (
                       <div className="flex items-center justify-center">
@@ -677,13 +670,13 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Legal Text */}
-            <p className="text-sm text-gray-600 text-center mt-6">
+            <p className="text-sm text-[#777777] text-center mt-6">
               By continuing, you are agreeing to our{' '}
-              <Link href="/terms" className="text-[#0066CC]">
+              <Link href="/terms" className="text-[#58CC02] hover:text-[#45A000]">
                 Terms of Service
               </Link>{' '}
               and{' '}
-              <Link href="/privacy" className="text-[#0066CC]">
+              <Link href="/privacy" className="text-[#58CC02] hover:text-[#45A000]">
                 Privacy Policy
               </Link>
               .
@@ -693,58 +686,41 @@ export const LandingPage: React.FC = () => {
 
         {/* Desktop View */}
         <div className="hidden md:block max-w-md w-full">
-          {/* Logo and Welcome - Hide when login form is active */}
+          {/* Welcome Text - No Logo */}
           {!showLogin && !showSignup && (
             <>
               <div className="text-center mb-8">
-                <div className="w-48 h-48 flex items-center justify-center mx-auto mb-6">
-                  <Image
-                    src="/logo.svg"
-                    alt="Ambira Logo"
-                    width={192}
-                    height={192}
-                    priority={true}
-                  />
-                </div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome to Ambira</h1>
-                <p className="text-lg text-gray-600">Study, work, and build with your friends.</p>
+                <h1 className="text-4xl font-extrabold text-[#3C3C3C] mb-2">Welcome to Focumo</h1>
+                <p className="text-lg text-[#777777]">Study, work, and build with your friends.</p>
               </div>
 
               {/* Already a Member Header */}
-              <div className="text-center mb-6">
-                <p className="text-2xl text-gray-600">
-                  Already a Member?{' '}
-                  <button
-                    onClick={() => setShowLogin(true)}
-                    className="text-[#0066CC] font-semibold hover:text-[#0056D6] transition-colors"
-                  >
-                    Log In
-                  </button>
-                </p>
+              <div className="flex items-center justify-center gap-3 mb-6">
+                <span className="text-2xl text-[#777777]">Already a Member?</span>
+                <button
+                  onClick={() => setShowLogin(true)}
+                  className="px-6 py-2 bg-[#58CC02] text-white hover:brightness-105 rounded-2xl transition-all font-bold text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58CC02] focus-visible:ring-offset-2 border-2 border-b-4 border-[#45A000] active:border-b-2 active:translate-y-[2px]"
+                >
+                  Log In
+                </button>
               </div>
             </>
           )}
 
-          {/* Login Form Header - Show when login form is active */}
+          {/* Login Form Header - No Logo */}
           {showLogin && (
             <div className="text-center mb-8">
-              <div className="w-48 h-48 flex items-center justify-center mx-auto mb-6">
-                <Image src="/logo.svg" alt="Ambira Logo" width={192} height={192} priority={true} />
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-              <p className="text-lg text-gray-600">Sign in to your account</p>
+              <h1 className="text-3xl font-extrabold text-[#3C3C3C] mb-2">Welcome Back</h1>
+              <p className="text-lg text-[#777777]">Sign in to your account</p>
             </div>
           )}
 
-          {/* Signup Form Header - Show when signup form is active */}
+          {/* Signup Form Header - No Logo */}
           {showSignup && (
             <div className="text-center mb-8">
-              <div className="w-48 h-48 flex items-center justify-center mx-auto mb-6">
-                <Image src="/logo.svg" alt="Ambira Logo" width={192} height={192} priority={true} />
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Your Account</h1>
-              <p className="text-lg text-gray-600">
-                Join Ambira and start tracking your productivity
+              <h1 className="text-3xl font-extrabold text-[#3C3C3C] mb-2">Create Your Account</h1>
+              <p className="text-lg text-[#777777]">
+                Join Focumo and start tracking your productivity
               </p>
             </div>
           )}
@@ -753,13 +729,13 @@ export const LandingPage: React.FC = () => {
           <div className="p-8 mb-6">
             {!showSignup && !showLogin ? (
               <>
-                {/* Sign-in Options - Only show when not in login or signup mode */}
+                {/* Sign-in Options - Duolingo Style */}
                 <div className="space-y-4">
-                  {/* Google Sign Up Button */}
+                  {/* Google Sign Up Button - Duolingo Outline Style */}
                   <button
                     onClick={handleGoogleSignIn}
                     disabled={isLoading}
-                    className="w-full flex items-center justify-center px-6 py-4 border-2 border-gray-300 text-gray-900 font-semibold text-lg rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center px-5 py-3 bg-white text-[#3C3C3C] font-bold rounded-2xl border-2 border-b-4 border-[#DADADA] hover:bg-[#F7F7F7] active:border-b-2 active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
                   >
                     <svg className="w-6 h-6 mr-3" viewBox="0 0 24 24">
                       <path
@@ -782,11 +758,11 @@ export const LandingPage: React.FC = () => {
                     Sign Up With Google
                   </button>
 
-                  {/* Email Sign Up Button */}
+                  {/* Email Sign Up Button - Duolingo Green Style */}
                   <button
                     onClick={handleSignupWithEmail}
                     disabled={isLoading}
-                    className="w-full flex items-center justify-center px-6 py-4 bg-[#0066CC] text-white font-semibold text-lg rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center px-5 py-3 bg-[#58CC02] text-white font-bold rounded-2xl border-2 border-b-4 border-[#45A000] hover:brightness-105 active:border-b-2 active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] "
                   >
                     {isLoading ? (
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
@@ -817,12 +793,12 @@ export const LandingPage: React.FC = () => {
                   </button>
                 </div>
                 <form onSubmit={handleLoginSubmit} className="space-y-6">
-                  {/* Google Sign-In Button */}
+                  {/* Google Sign-In Button - Duolingo Outline Style */}
                   <button
                     onClick={handleGoogleSignIn}
                     type="button"
                     disabled={isLoading}
-                    className="w-full flex items-center justify-center px-6 py-4 border-2 border-gray-300 text-gray-900 font-semibold text-lg rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center px-5 py-3 bg-white text-[#3C3C3C] font-bold rounded-2xl border-2 border-b-4 border-[#DADADA] hover:bg-[#F7F7F7] active:border-b-2 active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
                   >
                     <svg className="w-6 h-6 mr-3" viewBox="0 0 24 24">
                       <path
@@ -865,7 +841,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="email"
                       value={loginData.email}
                       onChange={handleLoginChange}
-                      className={`w-full px-4 py-4 text-lg border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${loginErrors.email ? 'border-red-300' : 'border-gray-300'}`}
+                      className={`w-full px-4 py-4 text-lg border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58CC02] focus-visible:ring-offset-2 ${loginErrors.email ? 'border-red-300' : 'border-gray-300'}`}
                       placeholder="Enter your email"
                     />
                     {loginErrors.email && (
@@ -886,7 +862,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="current-password"
                       value={loginData.password}
                       onChange={handleLoginChange}
-                      className={`w-full px-4 py-4 text-lg border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${loginErrors.password ? 'border-red-300' : 'border-gray-300'}`}
+                      className={`w-full px-4 py-4 text-lg border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58CC02] focus-visible:ring-offset-2 ${loginErrors.password ? 'border-red-300' : 'border-gray-300'}`}
                       placeholder="Enter your password"
                     />
                     {loginErrors.password && (
@@ -904,7 +880,7 @@ export const LandingPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full flex justify-center py-4 px-4 rounded-lg text-lg font-semibold text-white bg-[#0066CC] hover:bg-[#0051D5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0066CC] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center px-5 py-3 bg-[#58CC02] text-white font-bold rounded-2xl border-2 border-b-4 border-[#45A000] hover:brightness-105 active:border-b-2 active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] "
                   >
                     {isLoading ? 'Signing in...' : 'Sign In'}
                   </button>
@@ -943,7 +919,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="name"
                       value={signupData.name}
                       onChange={handleSignupChange}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58CC02] focus-visible:ring-offset-2 ${
                         signupErrors.name ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Enter your full name"
@@ -968,7 +944,7 @@ export const LandingPage: React.FC = () => {
                         autoComplete="username"
                         value={signupData.username}
                         onChange={handleSignupChange}
-                        className={`w-full px-3 py-2 pr-10 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
+                        className={`w-full px-3 py-2 pr-10 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58CC02] focus-visible:ring-offset-2 ${
                           signupErrors.username
                             ? 'border-red-300'
                             : usernameAvailable === true
@@ -981,7 +957,7 @@ export const LandingPage: React.FC = () => {
                       />
                       {usernameCheckLoading && (
                         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#58CC02]"></div>
                         </div>
                       )}
                       {!usernameCheckLoading &&
@@ -1042,7 +1018,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="email"
                       value={signupData.email}
                       onChange={handleSignupChange}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58CC02] focus-visible:ring-offset-2 ${
                         signupErrors.email ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Enter your email"
@@ -1066,7 +1042,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="new-password"
                       value={signupData.password}
                       onChange={handleSignupChange}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58CC02] focus-visible:ring-offset-2 ${
                         signupErrors.password ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Create a password"
@@ -1090,7 +1066,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="new-password"
                       value={confirmPassword}
                       onChange={handleSignupChange}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58CC02] focus-visible:ring-offset-2 ${
                         signupErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Confirm your password"
@@ -1103,7 +1079,7 @@ export const LandingPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#0066CC] hover:bg-[#0051D5] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0066CC] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center px-5 py-3 bg-[#58CC02] text-white font-bold rounded-2xl border-2 border-b-4 border-[#45A000] hover:brightness-105 active:border-b-2 active:translate-y-[2px] transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] "
                   >
                     {isLoading ? (
                       <div className="flex items-center">
@@ -1120,13 +1096,13 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* Legal Text */}
-          <p className="text-sm text-gray-900 text-center">
+          <p className="text-sm text-[#777777] text-center">
             By continuing, you are agreeing to our{' '}
-            <Link href="/terms" className="text-[#0066CC] hover:underline">
+            <Link href="/terms" className="text-[#58CC02] hover:text-[#45A000]">
               Terms of Service
             </Link>{' '}
             and{' '}
-            <Link href="/privacy" className="text-[#0066CC] hover:underline">
+            <Link href="/privacy" className="text-[#58CC02] hover:text-[#45A000]">
               Privacy Policy
             </Link>
             .
@@ -1134,169 +1110,11 @@ export const LandingPage: React.FC = () => {
         </div>
       </main>
 
-      {/* Footer */}
+      {/* Footer - Use the minimalist Footer component */}
       {/* Hide footer on mobile when in login/signup mode */}
-      <footer
-        className={`bg-white border-t border-gray-200 py-12 ${showLogin || showSignup ? 'hidden md:block' : ''}`}
-      >
-        <div className="max-w-6xl mx-auto px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Brand */}
-            <div className="md:col-span-1">
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 flex items-center justify-center">
-                  <Image src="/logo.svg" alt="Ambira Logo" width={32} height={32} />
-                </div>
-                <span className="text-xl font-bold text-[#0066CC]">Ambira</span>
-              </div>
-              <p className="text-sm text-gray-600 max-w-xs mb-4">
-                Track focus sessions, hit goals, and share progress with friends.
-              </p>
-              {/* Discord Button */}
-              <a
-                href="https://discord.gg/wFMeNmCpdQ"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold rounded-lg transition-colors"
-              >
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 71 55"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <g clipPath="url(#clip0)">
-                    <path
-                      d="M60.1045 4.8978C55.5792 2.8214 50.7265 1.2916 45.6527 0.41542C45.5603 0.39851 45.468 0.440769 45.4204 0.525289C44.7963 1.6353 44.105 3.0834 43.6209 4.2216C38.1637 3.4046 32.7345 3.4046 27.3892 4.2216C26.905 3.0581 26.1886 1.6353 25.5617 0.525289C25.5141 0.443589 25.4218 0.40133 25.3294 0.41542C20.2584 1.2888 15.4057 2.8186 10.8776 4.8978C10.8384 4.9147 10.8048 4.9429 10.7825 4.9795C1.57795 18.7309 -0.943561 32.1443 0.293408 45.3914C0.299005 45.4562 0.335386 45.5182 0.385761 45.5576C6.45866 50.0174 12.3413 52.7249 18.1147 54.5195C18.2071 54.5477 18.305 54.5139 18.3638 54.4378C19.7295 52.5728 20.9469 50.6063 21.9907 48.5383C22.0523 48.4172 21.9935 48.2735 21.8676 48.2256C19.9366 47.4931 18.0979 46.6 16.3292 45.5858C16.1893 45.5041 16.1781 45.304 16.3068 45.2082C16.679 44.9293 17.0513 44.6391 17.4067 44.3461C17.471 44.2926 17.5606 44.2813 17.6362 44.3151C29.2558 49.6202 41.8354 49.6202 53.3179 44.3151C53.3935 44.2785 53.4831 44.2898 53.5502 44.3433C53.9057 44.6363 54.2779 44.9293 54.6529 45.2082C54.7816 45.304 54.7732 45.5041 54.6333 45.5858C52.8646 46.6197 51.0259 47.4931 49.0921 48.2228C48.9662 48.2707 48.9102 48.4172 48.9718 48.5383C50.038 50.6034 51.2554 52.5699 52.5959 54.435C52.6519 54.5139 52.7526 54.5477 52.845 54.5195C58.6464 52.7249 64.529 50.0174 70.6019 45.5576C70.6551 45.5182 70.6887 45.459 70.6943 45.3942C72.1747 30.0791 68.2147 16.7757 60.1968 4.9823C60.1772 4.9429 60.1437 4.9147 60.1045 4.8978ZM23.7259 37.3253C20.2276 37.3253 17.3451 34.1136 17.3451 30.1693C17.3451 26.225 20.1717 23.0133 23.7259 23.0133C27.308 23.0133 30.1626 26.2532 30.1066 30.1693C30.1066 34.1136 27.28 37.3253 23.7259 37.3253ZM47.3178 37.3253C43.8196 37.3253 40.9371 34.1136 40.9371 30.1693C40.9371 26.225 43.7636 23.0133 47.3178 23.0133C50.9 23.0133 53.7545 26.2532 53.6986 30.1693C53.6986 34.1136 50.9 37.3253 47.3178 37.3253Z"
-                      fill="currentColor"
-                    />
-                  </g>
-                  <defs>
-                    <clipPath id="clip0">
-                      <rect width="71" height="55" fill="white" />
-                    </clipPath>
-                  </defs>
-                </svg>
-                Community
-              </a>
-            </div>
-
-            {/* Link Columns */}
-            <div className="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Product</h3>
-                <ul className="space-y-2 text-sm">
-                  <li>
-                    <Link href="/features" className="text-gray-600 hover:text-[#0066CC]">
-                      Features
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/activities" className="text-gray-600 hover:text-[#0066CC]">
-                      Activities
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/groups" className="text-gray-600 hover:text-[#0066CC]">
-                      Groups
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/challenges" className="text-gray-600 hover:text-[#0066CC]">
-                      Challenges
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Resources</h3>
-                <ul className="space-y-2 text-sm">
-                  <li>
-                    <Link href="/about" className="text-gray-600 hover:text-[#0066CC]">
-                      About
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/feed" className="text-gray-600 hover:text-[#0066CC]">
-                      Community
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/sessions" className="text-gray-600 hover:text-[#0066CC]">
-                      Sessions
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/tasks" className="text-gray-600 hover:text-[#0066CC]">
-                      Tasks
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Support</h3>
-                <ul className="space-y-2 text-sm">
-                  <li>
-                    <Link href="/help" className="text-gray-600 hover:text-[#0066CC]">
-                      Help Center
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/contact" className="text-gray-600 hover:text-[#0066CC]">
-                      Contact
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/status" className="text-gray-600 hover:text-[#0066CC]">
-                      Status
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Legal</h3>
-                <ul className="space-y-2 text-sm">
-                  <li>
-                    <Link href="/privacy" className="text-gray-600 hover:text-[#0066CC]">
-                      Privacy
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/terms" className="text-gray-600 hover:text-[#0066CC]">
-                      Terms
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/cookies" className="text-gray-600 hover:text-[#0066CC]">
-                      Cookie Policy
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom row */}
-          <div className="mt-10 pt-6 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between text-sm text-gray-500">
-            <span>© {new Date().getFullYear()} Ambira, Inc.</span>
-            <div className="space-x-4 mt-2 md:mt-0">
-              <Link href="/privacy" className="hover:text-[#0066CC]">
-                Privacy
-              </Link>
-              <Link href="/terms" className="hover:text-[#0066CC]">
-                Terms
-              </Link>
-              <Link href="/contact" className="hover:text-[#0066CC]">
-                Contact
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <div className={showLogin || showSignup ? 'hidden md:block' : ''}>
+        <Footer />
+      </div>
 
       {/* PWA Install Prompt - Always show on mobile when in login/signup mode */}
       <PWAInstallPrompt alwaysShowOnMobile={showLogin || showSignup} />

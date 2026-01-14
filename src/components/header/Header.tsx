@@ -11,9 +11,10 @@ import TimerStatus from './TimerStatus'
 import ProfileMenu from './ProfileMenu'
 import MobileMenu from './MobileMenu'
 import AuthButtons from './AuthButtons'
+import type { HeaderProps } from './header.types'
 
 /**
- * Header Component
+ * Header Component - Duolingo Style
  *
  * Main application header with responsive design.
  * Orchestrates all header sub-components without managing their internal state.
@@ -27,28 +28,9 @@ import AuthButtons from './AuthButtons'
  * - Mobile menu for responsive design
  * - Authentication buttons for non-authenticated users
  * - Notifications
- *
- * This refactored version follows:
- * - Single Responsibility Principle: Orchestrates child components only
- * - Open/Closed Principle: New features added via new child components
- * - Composition over inheritance
- * - Airbnb React style guidelines
- *
- * @example
- * ```tsx
- * import Header from '@/components/header/Header';
- *
- * export default function Layout({ children }) {
- *   return (
- *     <>
- *       <Header />
- *       <main>{children}</main>
- *     </>
- *   );
- * }
- * ```
+ * - Landing page scroll-aware auth buttons
  */
-export default function Header() {
+export default function Header({ isLandingPage = false, showHeaderAuth = true }: HeaderProps) {
   const pathname = usePathname()
   const { user } = useAuth()
 
@@ -60,10 +42,10 @@ export default function Header() {
     <header
       role="banner"
       aria-label="Site header"
-      className="sticky top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm"
+      className="sticky top-0 left-0 right-0 z-50 bg-white border-b-2 border-[#E5E5E5]"
     >
       <div className="max-w-[1400px] mx-auto px-4">
-        <div className="flex items-center justify-between h-14">
+        <div className="flex items-center justify-between h-16">
           {/* Left side: Logo + Search + Navigation */}
           <div className="flex items-center space-x-4 ml-8">
             <Logo />
@@ -79,15 +61,18 @@ export default function Header() {
 
           {/* Right side: Actions */}
           <div className="flex items-center space-x-3">
-            {/* Auth Buttons - Only show when NOT authenticated */}
-            {!user && <AuthButtons />}
+            {/* Auth Buttons - Only show when NOT authenticated and NOT on /auth page */}
+            {/* On landing page: hide when hero visible, show "Focus Now" when scrolled */}
+            {!user && pathname !== '/auth' && (!isLandingPage || showHeaderAuth) && (
+              <AuthButtons showFocusNow={isLandingPage && showHeaderAuth} />
+            )}
 
             {/* Session Actions / Timer Status - Only show when authenticated */}
             {user && <TimerStatus pathname={pathname} />}
 
             {/* Notifications - Only show when authenticated */}
             {user && (
-              <NotificationIcon className="hidden md:flex p-2 text-gray-600 hover:text-[#0066CC] transition-colors" />
+              <NotificationIcon className="hidden md:flex p-2 text-[#AFAFAF] hover:text-[#58CC02] transition-colors" />
             )}
 
             {/* Profile Menu - Only show when authenticated */}

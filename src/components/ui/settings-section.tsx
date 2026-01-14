@@ -51,7 +51,7 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({ children, clas
   return <div className={cn('space-y-6', className)}>{children}</div>
 }
 
-// Page header with icon and description
+// Page header with icon and description - Duolingo style (light)
 export const SettingsHeader: React.FC<SettingsHeaderProps> = ({
   icon: Icon,
   title,
@@ -60,25 +60,31 @@ export const SettingsHeader: React.FC<SettingsHeaderProps> = ({
 }) => {
   return (
     <div className={cn('mb-8', className)}>
-      <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2 mb-2">
-        {Icon && <Icon className="w-6 h-6 text-[#0066CC]" />}
+      <h2 className="text-2xl font-extrabold text-[#3C3C3C] flex items-center gap-3 mb-2">
+        {Icon && (
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#58CC02] to-[#45A000] flex items-center justify-center">
+            <Icon className="w-6 h-6 text-white" />
+          </div>
+        )}
         {title}
       </h2>
-      {description && <p className="text-gray-600 text-sm">{description}</p>}
+      {description && <p className="text-[#777777] text-sm ml-13">{description}</p>}
     </div>
   )
 }
 
-// Card container for grouped settings
+// Card container for grouped settings - Duolingo style (light)
 export const SettingsCard: React.FC<SettingsCardProps> = ({ children, className }) => {
   return (
-    <div className={cn('bg-white rounded-lg border border-gray-200 overflow-hidden', className)}>
+    <div
+      className={cn('bg-white rounded-2xl border-2 border-[#E5E5E5] overflow-hidden', className)}
+    >
       {children}
     </div>
   )
 }
 
-// Card header with title and description
+// Card header with title and description - Duolingo style (light)
 export const SettingsCardHeader: React.FC<SettingsCardHeaderProps> = ({
   icon: Icon,
   title,
@@ -86,12 +92,16 @@ export const SettingsCardHeader: React.FC<SettingsCardHeaderProps> = ({
   className,
 }) => {
   return (
-    <div className={cn('px-6 py-4 border-b border-gray-200', className)}>
-      <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-        {Icon && <Icon className="w-5 h-5 text-[#0066CC]" />}
+    <div className={cn('px-6 py-4 border-b-2 border-[#E5E5E5]', className)}>
+      <h3 className="text-base font-bold text-[#3C3C3C] flex items-center gap-2">
+        {Icon && (
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1CB0F6] to-[#0088CC] flex items-center justify-center">
+            <Icon className="w-5 h-5 text-white" />
+          </div>
+        )}
         {title}
       </h3>
-      {description && <p className="text-sm text-gray-600 mt-1">{description}</p>}
+      {description && <p className="text-sm text-[#777777] mt-1 ml-10">{description}</p>}
     </div>
   )
 }
@@ -104,7 +114,7 @@ export const SettingsCardContent: React.FC<SettingsCardContentProps> = ({
   return <div className={cn('px-6 py-4', className)}>{children}</div>
 }
 
-// Individual field with label and input
+// Individual field with label and input - Duolingo style (light)
 export const SettingsField: React.FC<SettingsFieldProps> = ({
   icon: Icon,
   label,
@@ -114,17 +124,17 @@ export const SettingsField: React.FC<SettingsFieldProps> = ({
 }) => {
   return (
     <div className={cn('space-y-2', className)}>
-      <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-        {Icon && <Icon className="w-4 h-4 text-gray-500" />}
+      <label className="flex items-center gap-2 text-sm font-bold text-[#3C3C3C]">
+        {Icon && <Icon className="w-4 h-4 text-[#AFAFAF]" />}
         {label}
       </label>
       {children}
-      {description && <p className="text-xs text-gray-500">{description}</p>}
+      {description && <p className="text-xs text-[#AFAFAF]">{description}</p>}
     </div>
   )
 }
 
-// Row layout for settings with toggle/checkbox on right
+// Row layout for settings with toggle/checkbox on right - Duolingo style (light)
 export const SettingsRow: React.FC<SettingsRowProps> = ({
   label,
   description,
@@ -134,13 +144,13 @@ export const SettingsRow: React.FC<SettingsRowProps> = ({
   return (
     <div
       className={cn(
-        'flex items-start justify-between py-3 border-b border-gray-200 last:border-0',
+        'flex items-start justify-between py-4 border-b-2 border-[#E5E5E5] last:border-0',
         className
       )}
     >
       <div className="flex-1 pr-4">
-        <div className="text-sm font-medium text-gray-900">{label}</div>
-        {description && <p className="text-xs text-gray-500 mt-0.5">{description}</p>}
+        <div className="text-sm font-bold text-[#3C3C3C]">{label}</div>
+        {description && <p className="text-xs text-[#AFAFAF] mt-0.5">{description}</p>}
       </div>
       <div className="flex-shrink-0">{children}</div>
     </div>

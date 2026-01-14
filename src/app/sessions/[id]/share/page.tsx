@@ -193,8 +193,8 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
       if (navigator.share && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: session?.title || 'My Ambira Session',
-          text: `Check out my productivity session on Ambira!`,
+          title: session?.title || 'My Focumo Session',
+          text: `Check out my productivity session on Focumo!`,
         })
       } else {
         await handleExport()

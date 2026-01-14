@@ -1,5 +1,5 @@
 /**
- * Constants for Header components
+ * Constants for Header components - Duolingo Style
  * Centralizes all magic values, timing, and configuration
  */
 
@@ -26,25 +26,41 @@ export const DIMENSIONS = {
   /** Maximum container width */
   MAX_CONTAINER_WIDTH: 1400,
   /** Header height */
-  HEADER_HEIGHT: 56, // h-14 = 3.5rem = 56px
+  HEADER_HEIGHT: 64, // h-16 = 4rem = 64px
 } as const
 
 /**
- * Color constants (using Tailwind classes and hex values)
+ * Color constants - Duolingo palette (Light Mode)
  */
 export const COLORS = {
-  /** Primary brand color */
-  PRIMARY: '#0066CC',
+  /** Primary brand color - Duolingo Green */
+  PRIMARY: '#58CC02',
   /** Primary hover state */
-  PRIMARY_HOVER: '#0051D5',
+  PRIMARY_HOVER: '#7ED321',
+  /** Primary dark for borders */
+  PRIMARY_DARK: '#45A000',
+  /** Secondary - Duolingo Blue */
+  SECONDARY: '#1CB0F6',
+  /** Secondary dark */
+  SECONDARY_DARK: '#0088CC',
   /** Discord brand color */
   DISCORD: '#5865F2',
   /** Discord hover state */
   DISCORD_HOVER: '#4752C4',
   /** Success green for active sessions */
-  SUCCESS: '#34C759',
-  /** Success green hover */
-  SUCCESS_HOVER: 'rgb(22, 163, 74)', // green-700
+  SUCCESS: '#58CC02',
+  /** Gold for achievements */
+  GOLD: '#FFD900',
+  /** Background */
+  BACKGROUND: '#F7F7F7',
+  /** Card background */
+  CARD_BACKGROUND: '#FFFFFF',
+  /** Border color */
+  BORDER: '#E5E5E5',
+  /** Text primary */
+  TEXT_PRIMARY: '#3C3C3C',
+  /** Text muted */
+  TEXT_MUTED: '#AFAFAF',
 } as const
 
 /**
@@ -98,20 +114,21 @@ export const ROUTES = {
 } as const
 
 /**
- * CSS class name patterns
+ * CSS class name patterns - Duolingo Style (Light Mode)
  */
 export const CLASS_NAMES = {
   /** Active nav link styles */
-  NAV_LINK_ACTIVE: 'text-gray-900',
+  NAV_LINK_ACTIVE: 'text-[#58CC02]',
   /** Inactive nav link styles */
-  NAV_LINK_INACTIVE: 'text-gray-600 hover:text-[#0066CC]',
+  NAV_LINK_INACTIVE: 'text-[#AFAFAF] hover:text-[#58CC02]',
   /** Active nav indicator */
-  NAV_INDICATOR: 'absolute bottom-0 left-0 right-0 h-0.5 bg-[#0066CC]',
+  NAV_INDICATOR: 'absolute bottom-0 left-0 right-0 h-1 bg-[#58CC02] rounded-full',
   /** Dropdown menu base */
-  DROPDOWN_MENU: 'absolute right-0 top-full mt-2 z-20 bg-white border border-gray-300 shadow-lg',
-  /** Button base styles */
+  DROPDOWN_MENU:
+    'absolute right-0 top-full mt-2 z-20 bg-white border-2 border-[#E5E5E5] shadow-lg rounded-2xl',
+  /** Button base styles - Duolingo style */
   BUTTON_PRIMARY:
-    'flex items-center gap-2 px-4 py-2 bg-[#0066CC] text-white hover:bg-[#0051D5] rounded-md transition-colors whitespace-nowrap font-semibold text-sm',
+    'flex items-center gap-2 px-5 py-3 bg-[#58CC02] text-white hover:brightness-105 rounded-2xl transition-all whitespace-nowrap font-bold text-sm border-2 border-b-4 border-[#45A000] active:border-b-2 active:translate-y-[2px]',
   BUTTON_SECONDARY:
-    'flex items-center gap-2 px-4 py-2 bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 rounded-md transition-colors whitespace-nowrap font-semibold text-sm',
+    'flex items-center gap-2 px-5 py-3 bg-[#1CB0F6] text-white hover:brightness-105 rounded-2xl transition-all whitespace-nowrap font-bold text-sm border-2 border-b-4 border-[#0088CC] active:border-b-2 active:translate-y-[2px]',
 } as const

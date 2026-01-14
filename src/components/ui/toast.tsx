@@ -109,13 +109,13 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
   const getIcon = () => {
     switch (toast.type) {
       case 'success':
-        return <CheckCircle className="w-5 h-5 flex-shrink-0" />
+        return <CheckCircle className="w-6 h-6 flex-shrink-0" />
       case 'error':
-        return <AlertCircle className="w-5 h-5 flex-shrink-0" />
+        return <AlertCircle className="w-6 h-6 flex-shrink-0" />
       case 'warning':
-        return <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+        return <AlertTriangle className="w-6 h-6 flex-shrink-0" />
       case 'info':
-        return <Info className="w-5 h-5 flex-shrink-0" />
+        return <Info className="w-6 h-6 flex-shrink-0" />
       default:
         return null
     }
@@ -124,30 +124,30 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
   const getStyles = () => {
     switch (toast.type) {
       case 'success':
-        return 'bg-white border-[#34C759] text-gray-900'
+        return 'bg-white border-[#58CC02]'
       case 'error':
-        return 'bg-white border-[#EF4444] text-gray-900'
+        return 'bg-white border-[#FF4B4B]'
       case 'warning':
-        return 'bg-white border-[#F59E0B] text-gray-900'
+        return 'bg-white border-[#FF9600]'
       case 'info':
-        return 'bg-white border-[#0066CC] text-gray-900'
+        return 'bg-white border-[#1CB0F6]'
       default:
-        return 'bg-white border-gray-300 text-gray-900'
+        return 'bg-white border-[#E5E5E5]'
     }
   }
 
   const getIconColor = () => {
     switch (toast.type) {
       case 'success':
-        return 'text-[#34C759]'
+        return 'text-[#58CC02]'
       case 'error':
-        return 'text-[#EF4444]'
+        return 'text-[#FF4B4B]'
       case 'warning':
-        return 'text-[#F59E0B]'
+        return 'text-[#FF9600]'
       case 'info':
-        return 'text-[#0066CC]'
+        return 'text-[#1CB0F6]'
       default:
-        return 'text-gray-500'
+        return 'text-[#AFAFAF]'
     }
   }
 
@@ -159,8 +159,8 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
         min-w-[320px] max-w-md
         pointer-events-auto
         flex items-start gap-3
-        px-4 py-3
-        rounded-lg border-l-4 shadow-lg
+        px-5 py-4
+        rounded-2xl border-2 border-l-4 shadow-lg
         ${getStyles()}
         transition-all duration-300 ease-in-out
         ${isExiting ? 'opacity-0 translate-x-8 scale-95' : 'opacity-100 translate-x-0 scale-100'}
@@ -171,11 +171,11 @@ function ToastItem({ toast, onClose }: ToastItemProps) {
     >
       <div className={getIconColor()}>{getIcon()}</div>
 
-      <p className="flex-1 text-sm font-medium leading-snug">{toast.message}</p>
+      <p className="flex-1 text-sm font-bold leading-snug text-[#3C3C3C]">{toast.message}</p>
 
       <button
         onClick={handleClose}
-        className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0 p-0.5 -mr-1"
+        className="text-[#AFAFAF] hover:text-[#3C3C3C] transition-colors flex-shrink-0 p-0.5 -mr-1"
         aria-label="Close notification"
       >
         <X className="w-5 h-5" />

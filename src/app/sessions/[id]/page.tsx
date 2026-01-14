@@ -88,7 +88,7 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
 
       if (navigator.share) {
         await navigator.share({
-          title: session?.title || 'Check out this session on Ambira',
+          title: session?.title || 'Check out this session on Focumo',
           text: session?.description || 'Look at this productive session!',
           url: sessionUrl,
         })
@@ -121,9 +121,9 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
   React.useEffect(() => {
     if (session) {
       const title = session.title || 'Session'
-      document.title = `${title} by ${session.user?.name || 'User'} - Ambira`
+      document.title = `${title} by ${session.user?.name || 'User'} - Focumo`
 
-      const description = session.description || `Check out this productive session on Ambira`
+      const description = session.description || `Check out this productive session on Focumo`
 
       let metaDescription = document.querySelector('meta[name="description"]')
       if (!metaDescription) {
@@ -140,7 +140,7 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
         ogTitle.setAttribute('property', 'og:title')
         document.head.appendChild(ogTitle)
       }
-      ogTitle.setAttribute('content', `${title} - Ambira`)
+      ogTitle.setAttribute('content', `${title} - Focumo`)
 
       let ogDescription = document.querySelector('meta[property="og:description"]')
       if (!ogDescription) {
@@ -173,7 +173,7 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
         twitterTitle.setAttribute('name', 'twitter:title')
         document.head.appendChild(twitterTitle)
       }
-      twitterTitle.setAttribute('content', `${title} - Ambira`)
+      twitterTitle.setAttribute('content', `${title} - Focumo`)
 
       let twitterDescription = document.querySelector('meta[name="twitter:description"]')
       if (!twitterDescription) {
