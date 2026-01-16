@@ -24,7 +24,7 @@ import {
   useDeleteNotification,
   useClearAllNotifications,
 } from '@/hooks/useNotifications'
-import Header from '@/components/HeaderComponent'
+import LeftSidebar from '@/components/LeftSidebar'
 import BottomNavigation from '@/components/BottomNavigation'
 import { Notification } from '@/types'
 import { formatDistanceToNow } from 'date-fns'
@@ -263,13 +263,8 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Desktop Header */}
-      <div className="hidden md:block">
-        <Header />
-      </div>
-
       {/* Mobile Header */}
-      <div className="md:hidden bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="lg:hidden bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="flex items-center justify-between px-4 py-3">
           <button
             onClick={() => router.back()}
@@ -282,135 +277,149 @@ export default function NotificationsPage() {
         </div>
       </div>
 
-      {/* Desktop content wrapper */}
-      <div className="hidden md:flex flex-1 items-start justify-center pt-24 pb-8">
-        <div className="w-full max-w-2xl px-4">
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {unreadCount > 0
-                      ? `${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}`
-                      : 'All caught up!'}
-                  </p>
-                </div>
-                {notifications.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    {unreadCount > 0 && (
-                      <button
-                        onClick={handleMarkAllRead}
-                        disabled={markAllAsReadMutation.isPending}
-                        className="px-4 py-2 text-sm font-semibold text-[#0066CC] hover:text-[#0051D5] hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
-                        data-testid="mark-all-read-button-desktop"
-                        aria-label="Mark all notifications as read"
-                        aria-busy={markAllAsReadMutation.isPending}
-                      >
-                        Mark all read
-                      </button>
-                    )}
-                    <button
-                      onClick={handleClearAllClick}
-                      disabled={clearAllNotificationsMutation.isPending}
-                      className="px-4 py-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                      data-testid="clear-all-button-desktop"
-                      aria-label="Clear all notifications"
-                      aria-busy={clearAllNotificationsMutation.isPending}
-                    >
-                      Clear all
-                    </button>
+      {/* Main Content Area */}
+      <div className="flex-1">
+        <div className="flex justify-center">
+          {/* Left Sidebar - Fixed, hidden on mobile */}
+          <div className="hidden lg:block flex-shrink-0">
+            <LeftSidebar />
+          </div>
+
+          {/* Content Area - with left margin on desktop for fixed sidebar */}
+          <div className="flex-1 lg:ml-[256px]">
+            {/* Desktop content wrapper */}
+            <div className="hidden lg:flex flex-1 items-start justify-center pt-8 pb-8">
+              <div className="w-full max-w-2xl px-4">
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div className="p-6 border-b border-gray-200">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {unreadCount > 0
+                            ? `${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}`
+                            : 'All caught up!'}
+                        </p>
+                      </div>
+                      {notifications.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          {unreadCount > 0 && (
+                            <button
+                              onClick={handleMarkAllRead}
+                              disabled={markAllAsReadMutation.isPending}
+                              className="px-4 py-2 text-sm font-semibold text-[#0066CC] hover:text-[#0051D5] hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                              data-testid="mark-all-read-button-desktop"
+                              aria-label="Mark all notifications as read"
+                              aria-busy={markAllAsReadMutation.isPending}
+                            >
+                              Mark all read
+                            </button>
+                          )}
+                          <button
+                            onClick={handleClearAllClick}
+                            disabled={clearAllNotificationsMutation.isPending}
+                            className="px-4 py-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                            data-testid="clear-all-button-desktop"
+                            aria-label="Clear all notifications"
+                            aria-busy={clearAllNotificationsMutation.isPending}
+                          >
+                            Clear all
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
+
+                  {/* Desktop notifications list */}
+                  <div className="divide-y divide-gray-200">
+                    {notifications.length === 0 ? (
+                      <div className="p-12 text-center">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <span className="text-3xl">🔔</span>
+                        </div>
+                        <p className="text-gray-600">No notifications yet</p>
+                      </div>
+                    ) : (
+                      notifications.map((notification) => (
+                        <SwipeableNotificationItem
+                          key={notification.id}
+                          notification={notification}
+                          onDelete={handleDelete}
+                          onClick={handleNotificationClick}
+                        />
+                      ))
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Desktop notifications list */}
-            <div className="divide-y divide-gray-200">
+            {/* Action Buttons - Sticky at top on mobile */}
+            {notifications.length > 0 && (
+              <div className="lg:hidden bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-[57px] z-10">
+                <span className="text-sm text-gray-600">
+                  {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up!'}
+                </span>
+                <div className="flex items-center gap-3">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={handleMarkAllRead}
+                      disabled={markAllAsReadMutation.isPending}
+                      className="text-[#0066CC] font-semibold text-sm hover:text-[#0051D5] transition-colors disabled:opacity-50"
+                      data-testid="mark-all-read-button-mobile"
+                      aria-label="Mark all notifications as read"
+                      aria-busy={markAllAsReadMutation.isPending}
+                    >
+                      Mark all read
+                    </button>
+                  )}
+                  <button
+                    onClick={handleClearAllClick}
+                    disabled={clearAllNotificationsMutation.isPending}
+                    className="text-red-600 font-semibold text-sm hover:text-red-700 transition-colors disabled:opacity-50"
+                    data-testid="clear-all-button-mobile"
+                    aria-label="Clear all notifications"
+                    aria-busy={clearAllNotificationsMutation.isPending}
+                  >
+                    Clear all
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Mobile Notifications List */}
+            <div className="lg:hidden flex-1 overflow-y-auto">
               {notifications.length === 0 ? (
-                <div className="p-12 text-center">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-3xl">🔔</span>
+                <div className="flex flex-col items-center justify-center py-20 px-4">
+                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <span className="text-4xl">🔔</span>
                   </div>
-                  <p className="text-gray-600">No notifications yet</p>
+                  <p className="text-lg font-semibold text-gray-900 mb-2">No notifications</p>
+                  <p className="text-gray-600 text-center">
+                    When you get notifications, they'll show up here
+                  </p>
                 </div>
               ) : (
-                notifications.map((notification) => (
-                  <SwipeableNotificationItem
-                    key={notification.id}
-                    notification={notification}
-                    onDelete={handleDelete}
-                    onClick={handleNotificationClick}
-                  />
-                ))
+                <div>
+                  {notifications.map((notification) => (
+                    <SwipeableNotificationItem
+                      key={notification.id}
+                      notification={notification}
+                      onDelete={handleDelete}
+                      onClick={handleNotificationClick}
+                    />
+                  ))}
+                </div>
               )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Action Buttons - Sticky at top on mobile */}
-      {notifications.length > 0 && (
-        <div className="md:hidden bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-[57px] z-10">
-          <span className="text-sm text-gray-600">
-            {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up!'}
-          </span>
-          <div className="flex items-center gap-3">
-            {unreadCount > 0 && (
-              <button
-                onClick={handleMarkAllRead}
-                disabled={markAllAsReadMutation.isPending}
-                className="text-[#0066CC] font-semibold text-sm hover:text-[#0051D5] transition-colors disabled:opacity-50"
-                data-testid="mark-all-read-button-mobile"
-                aria-label="Mark all notifications as read"
-                aria-busy={markAllAsReadMutation.isPending}
-              >
-                Mark all read
-              </button>
-            )}
-            <button
-              onClick={handleClearAllClick}
-              disabled={clearAllNotificationsMutation.isPending}
-              className="text-red-600 font-semibold text-sm hover:text-red-700 transition-colors disabled:opacity-50"
-              data-testid="clear-all-button-mobile"
-              aria-label="Clear all notifications"
-              aria-busy={clearAllNotificationsMutation.isPending}
-            >
-              Clear all
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Mobile Notifications List */}
-      <div className="md:hidden flex-1 overflow-y-auto">
-        {notifications.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 px-4">
-            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <span className="text-4xl">🔔</span>
-            </div>
-            <p className="text-lg font-semibold text-gray-900 mb-2">No notifications</p>
-            <p className="text-gray-600 text-center">
-              When you get notifications, they'll show up here
-            </p>
-          </div>
-        ) : (
-          <div>
-            {notifications.map((notification) => (
-              <SwipeableNotificationItem
-                key={notification.id}
-                notification={notification}
-                onDelete={handleDelete}
-                onClick={handleNotificationClick}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
       {/* Bottom padding for mobile navigation */}
-      <div className="h-20 md:hidden" />
+      <div className="h-20 lg:hidden" />
 
+      {/* Mobile Bottom Navigation */}
       <BottomNavigation />
 
       {/* Clear All Confirmation Dialog */}

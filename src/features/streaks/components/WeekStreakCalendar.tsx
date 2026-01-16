@@ -65,11 +65,12 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
 
   if (isLoading) {
     return (
-      <div className="flex justify-between gap-0.5 animate-pulse">
+      <div className="flex justify-between gap-1 animate-pulse">
         {[...Array(7)].map((_, i) => (
           <div key={i} className="flex flex-col items-center flex-1">
-            <div className="h-3 bg-gray-200 rounded mb-1.5 w-4"></div>
-            <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
+            <div className="h-3 bg-[#E5E5E5] rounded mb-1 w-4"></div>
+            <div className="h-7 w-7 bg-[#E5E5E5] rounded-full"></div>
+            <div className="h-3 bg-[#E5E5E5] rounded mt-1 w-4"></div>
           </div>
         ))}
       </div>
@@ -120,38 +121,41 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
   const weekDays = getWeekDays()
 
   return (
-    <div className="flex justify-between gap-0.5">
+    <div className="flex justify-between gap-1">
       {weekDays.map((day, index) => (
         <div key={index} className="flex flex-col items-center flex-1">
+          {/* Day letter - Duolingo style bold */}
           <div
-            className={`text-xs font-medium mb-1.5 ${day.isToday ? 'text-[#0066CC] font-bold' : 'text-gray-400'}`}
+            className={`text-xs font-bold mb-1 tracking-wide ${day.isToday ? 'text-[#1CB0F6]' : 'text-[#AFAFAF]'}`}
           >
             {day.dayOfWeek}
           </div>
-          <div className="h-6 w-6 flex items-center justify-center">
+          {/* Circle indicator */}
+          <div className="h-7 w-7 flex items-center justify-center">
             {day.hasActivity ? (
               // Completed day - orange circle with white checkmark
               <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center bg-orange-400 ${
-                  day.isToday ? 'ring-2 ring-[#0066CC] ring-offset-1' : ''
+                className={`w-7 h-7 rounded-full flex items-center justify-center bg-[#FF9600] ${
+                  day.isToday ? 'ring-2 ring-[#1CB0F6] ring-offset-2' : ''
                 }`}
               >
-                <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
+                <Check className="w-4 h-4 text-white stroke-[3]" />
               </div>
             ) : day.isToday ? (
-              // Today (not completed) - Electric Blue ring with grey circle and white checkmark
-              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-gray-300 ring-2 ring-[#0066CC] ring-offset-1">
-                <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
+              // Today (not completed) - Blue ring with light grey circle and checkmark
+              <div className="w-7 h-7 rounded-full flex items-center justify-center bg-[#E5E5E5] ring-2 ring-[#1CB0F6] ring-offset-2">
+                <Check className="w-4 h-4 text-white stroke-[3]" />
               </div>
             ) : (
               // Past incomplete day - light grey circle with grey checkmark
-              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-gray-100">
-                <Check className="w-3.5 h-3.5 text-gray-300 stroke-[3]" />
+              <div className="w-7 h-7 rounded-full flex items-center justify-center bg-[#F7F7F7]">
+                <Check className="w-4 h-4 text-[#E5E5E5] stroke-[3]" />
               </div>
             )}
           </div>
+          {/* Day number - Duolingo style bold */}
           <div
-            className={`text-[10px] font-medium mt-0.5 ${day.isToday ? 'text-[#0066CC] font-bold' : 'text-gray-500'}`}
+            className={`text-[11px] font-bold mt-1 ${day.isToday ? 'text-[#1CB0F6]' : 'text-[#AFAFAF]'}`}
           >
             {day.dayNumber}
           </div>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookOpen, Timer, Trophy, Zap, Users, User, Settings, Play } from 'lucide-react'
+import { BookOpen, Timer, Zap, Users, User, Settings, Play } from 'lucide-react'
 
 interface NavItem {
   href: string
@@ -14,7 +14,6 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: '/', label: 'Learn', icon: BookOpen, color: '#58CC02' },
   { href: '/timer', label: 'Record', icon: Timer, color: '#1CB0F6' },
-  { href: '/challenges', label: 'Leaderboards', icon: Trophy, color: '#FFC800' },
   { href: '/analytics', label: 'Quests', icon: Zap, color: '#FF9600' },
   { href: '/groups', label: 'Groups', icon: Users, color: '#CE82FF' },
 ]
@@ -40,7 +39,7 @@ function LeftSidebar() {
       <div className="flex flex-col h-full">
         {/* Logo - Matching header height (h-16 = 64px) */}
         <Link href="/" className="flex items-center h-16 px-6 border-b-2 border-[#E5E5E5]">
-          <h1 className="text-[#58CC02] text-2xl font-extrabold tracking-tight">focumo</h1>
+          <h1 className="text-[#58CC02] text-3xl font-black tracking-tight ml-2">focumo</h1>
         </Link>
 
         {/* Focus Now Button */}

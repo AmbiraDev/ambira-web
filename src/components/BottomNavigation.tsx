@@ -4,8 +4,20 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useTimer } from '@/features/timer/hooks'
-import { Home, Play, Users, User } from 'lucide-react'
+import { BookOpen, Play, Users, User, Zap } from 'lucide-react'
 import { useState, useEffect } from 'react'
+
+// Nav items with Duolingo-style colors matching the sidebar
+// Order: 2 left, Start center, 2 right
+const leftNavItems = [
+  { href: '/', label: 'Feed', icon: BookOpen, color: '#58CC02' },
+  { href: '/analytics', label: 'Quests', icon: Zap, color: '#FF9600' },
+]
+
+const rightNavItems = [
+  { href: '/groups', label: 'Groups', icon: Users, color: '#CE82FF' },
+  { href: '/you', label: 'Profile', icon: User, color: '#FF4B4B' },
+]
 
 export default function BottomNavigation() {
   const pathname = usePathname()
@@ -48,99 +60,94 @@ export default function BottomNavigation() {
 
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/'
-    if (path === '/search') return pathname.startsWith('/search')
+    if (path === '/analytics') return pathname.startsWith('/analytics')
     if (path === '/groups') return pathname.startsWith('/groups')
     if (path === '/you') {
-      // Highlight "You" tab when on /you or on the user's own profile
       return (
         pathname.startsWith('/you') ||
         pathname === '/profile' ||
         (user?.username && pathname === `/profile/${user.username}`)
       )
     }
+    if (path === '/timer') return pathname.startsWith('/timer')
     return pathname === path
   }
 
   const hasActiveSession =
     timerState.currentProject && (timerState.isRunning || timerState.pausedDuration > 0)
 
-  return (
-    <>
-      <nav
-        role="navigation"
-        aria-label="Main navigation"
-        className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-[#E5E5E5] md:hidden transition-transform duration-200 ${isKeyboardOpen ? 'translate-y-full' : 'translate-y-0'}`}
+  const renderNavItem = (item: (typeof leftNavItems)[0]) => {
+    const Icon = item.icon
+    const active = isActive(item.href)
+
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className={`flex flex-col items-center justify-center gap-2 px-5 py-3 rounded-2xl transition-all ${
+          active ? 'bg-[#DDF4FF]' : ''
+        }`}
+        aria-label={item.label}
+        aria-current={active ? 'page' : undefined}
       >
-        <div
-          className="flex items-center justify-around h-[6.5rem] px-2 pb-8 pt-1.5"
-          style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}
+        <Icon
+          className="w-11 h-11"
+          style={{ color: item.color }}
+          fill={item.color}
+          aria-hidden="true"
+        />
+        <span className={`text-base font-bold ${active ? 'text-[#1CB0F6]' : 'text-[#4B4B4B]'}`}>
+          {item.label}
+        </span>
+      </Link>
+    )
+  }
+
+  const timerActive = isActive('/timer')
+
+  return (
+    <nav
+      role="navigation"
+      aria-label="Main navigation"
+      className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-[#E5E5E5] lg:hidden transition-transform duration-200 ${isKeyboardOpen ? 'translate-y-full' : 'translate-y-0'}`}
+    >
+      <div
+        className="flex items-end justify-around h-32 px-4 pb-3"
+        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+      >
+        {/* Left nav items */}
+        {leftNavItems.map(renderNavItem)}
+
+        {/* Center Start button - larger and elevated */}
+        <Link
+          href="/timer"
+          className="flex flex-col items-center justify-center gap-2 -mt-6"
+          aria-label={hasActiveSession ? 'View active session' : 'Start session'}
+          aria-current={timerActive ? 'page' : undefined}
         >
-          {/* Feed */}
-          <Link
-            href="/"
-            className={`flex flex-col items-center justify-center space-y-1 px-4 py-1 transition-colors ${
-              isActive('/') ? 'text-[#58CC02]' : 'text-[#AFAFAF]'
+          <div
+            className={`w-20 h-20 rounded-full flex items-center justify-center shadow-lg ${
+              hasActiveSession
+                ? 'bg-[#58CC02] border-4 border-[#45A000]'
+                : timerActive
+                  ? 'bg-[#58CC02] border-4 border-[#45A000]'
+                  : 'bg-[#58CC02] border-4 border-b-[6px] border-[#45A000]'
             }`}
-            aria-label="View feed"
-            aria-current={isActive('/') ? 'page' : undefined}
           >
-            <Home className="w-8 h-8" strokeWidth={isActive('/') ? 2.5 : 2} aria-hidden="true" />
-            <span className="text-sm font-bold">Home</span>
-          </Link>
+            <Play className="w-10 h-10 text-white ml-1" fill="white" aria-hidden="true" />
+          </div>
+          <span
+            className={`text-base font-bold ${
+              hasActiveSession || timerActive ? 'text-[#58CC02]' : 'text-[#4B4B4B]'
+            }`}
+          >
+            {hasActiveSession ? 'Active' : 'Start'}
+          </span>
+        </Link>
 
-          {/* Record Button */}
-          <Link
-            href="/timer"
-            className={`flex flex-col items-center justify-center px-4 py-1 transition-colors ${
-              hasActiveSession ? '' : isActive('/timer') ? 'text-[#58CC02]' : 'text-[#AFAFAF]'
-            }`}
-            aria-label={hasActiveSession ? 'View active session' : 'Start session timer'}
-            aria-current={isActive('/timer') ? 'page' : undefined}
-          >
-            <div
-              className={`flex flex-col items-center justify-center space-y-1 ${hasActiveSession ? 'bg-[#58CC02] rounded-2xl px-4 py-2 text-white border-2 border-b-4 border-[#45A000]' : ''}`}
-            >
-              <Play
-                className="w-8 h-8"
-                strokeWidth={hasActiveSession || isActive('/timer') ? 2.5 : 2}
-                fill={hasActiveSession || isActive('/timer') ? 'currentColor' : 'none'}
-                aria-hidden="true"
-              />
-              <span className="text-sm font-bold">{hasActiveSession ? 'Active' : 'Record'}</span>
-            </div>
-          </Link>
-
-          {/* Groups */}
-          <Link
-            href="/groups"
-            className={`flex flex-col items-center justify-center space-y-1 px-4 py-1 transition-colors ${
-              isActive('/groups') ? 'text-[#58CC02]' : 'text-[#AFAFAF]'
-            }`}
-            aria-label="View groups"
-            aria-current={isActive('/groups') ? 'page' : undefined}
-          >
-            <Users
-              className="w-8 h-8"
-              strokeWidth={isActive('/groups') ? 2.5 : 2}
-              aria-hidden="true"
-            />
-            <span className="text-sm font-bold">Groups</span>
-          </Link>
-
-          {/* You */}
-          <Link
-            href="/you"
-            className={`flex flex-col items-center justify-center space-y-1 px-4 py-1 transition-colors ${
-              isActive('/you') ? 'text-[#58CC02]' : 'text-[#AFAFAF]'
-            }`}
-            aria-label="View your profile and progress"
-            aria-current={isActive('/you') ? 'page' : undefined}
-          >
-            <User className="w-8 h-8" strokeWidth={isActive('/you') ? 2.5 : 2} aria-hidden="true" />
-            <span className="text-sm font-bold">You</span>
-          </Link>
-        </div>
-      </nav>
-    </>
+        {/* Right nav items */}
+        {rightNavItems.map(renderNavItem)}
+      </div>
+    </nav>
   )
 }

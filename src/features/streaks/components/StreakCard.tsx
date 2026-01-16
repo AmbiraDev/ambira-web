@@ -135,33 +135,25 @@ export const StreakCard: React.FC<StreakCardProps> = ({
 
   if (variant === 'compact') {
     return (
-      <Link href="/analytics" className="block">
-        <div className="p-3 hover:bg-gray-50 rounded-xl transition-all cursor-pointer">
-          {/* Header */}
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">Your streak</h3>
-
-          {/* Flame icon and week calendar side by side */}
-          <div className="flex items-center gap-3">
-            {/* Left side - Flame with day count */}
-            <div className="flex flex-col items-center flex-shrink-0">
-              <div className={`${getFlameColor()} relative`}>
-                <Flame className="w-10 h-10" fill="currentColor" />
-              </div>
-              <div className="text-sm font-medium text-gray-900 mt-0.5">
-                {streakStats.currentStreak}
-              </div>
-              <div className="text-xs text-gray-500">
-                Day{streakStats.currentStreak !== 1 ? 's' : ''}
-              </div>
-            </div>
-
-            {/* Right side - Week calendar */}
-            <div className="flex-1">
-              <WeekStreakCalendar userId={userId} />
-            </div>
+      <div className="flex items-center gap-4">
+        {/* Left side - Flame with day count (Duolingo style) */}
+        <div className="flex flex-col items-center flex-shrink-0">
+          <div className="text-[#FF9600] relative">
+            <Flame className="w-12 h-12" fill="currentColor" />
+          </div>
+          <div className="text-xl font-extrabold text-[#4B4B4B] mt-0.5 tracking-tight">
+            {streakStats.currentStreak}
+          </div>
+          <div className="text-xs font-bold text-[#AFAFAF] uppercase tracking-wide">
+            Day{streakStats.currentStreak !== 1 ? 's' : ''}
           </div>
         </div>
-      </Link>
+
+        {/* Right side - Week calendar */}
+        <div className="flex-1">
+          <WeekStreakCalendar userId={userId} />
+        </div>
+      </div>
     )
   }
 

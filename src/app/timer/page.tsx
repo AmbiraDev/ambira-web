@@ -8,8 +8,6 @@
 import { Metadata } from 'next'
 import React from 'react'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
-import Header from '@/components/HeaderComponent'
-import BottomNavigation from '@/components/BottomNavigation'
 import TimerPageContent from './page-content'
 
 export const metadata: Metadata = {
@@ -28,20 +26,7 @@ export default function TimerPage() {
         Skip to timer
       </a>
 
-      <div className="min-h-screen bg-white">
-        {/* Header - hidden on mobile */}
-        <header className="hidden md:block">
-          <Header />
-        </header>
-
-        {/* Timer Content */}
-        <TimerPageContent />
-
-        {/* Bottom Navigation - only on desktop */}
-        <div className="hidden md:block">
-          <BottomNavigation />
-        </div>
-      </div>
+      <TimerPageContent />
     </ProtectedRoute>
   )
 }

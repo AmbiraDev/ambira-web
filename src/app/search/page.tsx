@@ -3,7 +3,7 @@
 import { useSearchParams } from 'next/navigation'
 import { useState, Suspense, useMemo, useCallback } from 'react'
 import Link from 'next/link'
-import Header from '@/components/HeaderComponent'
+import LeftSidebar from '@/components/LeftSidebar'
 import BottomNavigation from '@/components/BottomNavigation'
 import GroupAvatar from '@/features/groups/components/GroupAvatar'
 import { useAuth } from '@/hooks/useAuth'
@@ -253,14 +253,9 @@ function SearchContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header - only show on desktop */}
-      <div className="hidden md:block">
-        <Header />
-      </div>
-
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Mobile search header */}
-      <div className="md:hidden bg-white border-b border-gray-200 sticky top-0 z-40">
+      <div className="lg:hidden bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="flex items-center justify-between px-4 h-14">
           {/* Back button */}
           <button
@@ -320,395 +315,415 @@ function SearchContent() {
         </div>
       </div>
 
-      {/* Desktop centered container */}
-      <div className="hidden md:flex md:justify-center md:pt-8 md:pb-16 md:px-8">
-        <div className="w-full max-w-2xl">
-          {/* Desktop Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">
-              {initialQuery ? `Search Results for "${initialQuery}"` : 'Discover'}
-            </h1>
-
-            {/* Desktop Filter Tabs */}
-            <div className="flex border-b border-gray-200 mb-6">
-              <button
-                type="button"
-                onClick={() =>
-                  (window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=people`)
-                }
-                className={`relative py-3 px-6 text-base font-medium transition-colors ${
-                  type === 'people' ? 'text-[#0066CC]' : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                People
-                {type === 'people' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0066CC]" />
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  (window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=groups`)
-                }
-                className={`relative py-3 px-6 text-base font-medium transition-colors ${
-                  type === 'groups' ? 'text-[#0066CC]' : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Groups
-                {type === 'groups' && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0066CC]" />
-                )}
-              </button>
-            </div>
-
-            {/* Desktop Search Form */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault()
-                if (query.trim())
-                  window.location.href = `/search?q=${encodeURIComponent(query.trim())}&type=${type}`
-              }}
-            >
-              <div className="relative">
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={`Search ${type}...`}
-                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent text-base"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-[#0066CC] transition-colors"
-                >
-                  <Search className="w-5 h-5" />
-                </button>
-              </div>
-            </form>
+      {/* Main Content Area */}
+      <div className="flex-1">
+        <div className="flex justify-center">
+          {/* Left Sidebar - Fixed, hidden on mobile */}
+          <div className="hidden lg:block flex-shrink-0">
+            <LeftSidebar />
           </div>
 
-          {/* Desktop Results */}
-          {!hasSearchQuery ? (
-            isLoading ? (
-              <SuggestionsLoadingSkeleton />
-            ) : (
-              <div className="space-y-6">
-                {/* Suggested People - only show on People tab */}
-                {type === 'people' && (
-                  <>
-                    {enhancedSuggestedUsers.length > 0 ? (
-                      <div>
-                        <div className="flex items-center justify-between mb-3 px-1">
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            People you might like
-                          </h3>
-                        </div>
-                        <div className="space-y-1">
-                          {enhancedSuggestedUsers.map((suggestedUser) => (
-                            <div
-                              key={suggestedUser.id}
-                              className="bg-white rounded-lg overflow-hidden"
-                            >
-                              <UserCardCompact
-                                user={suggestedUser}
-                                variant="search"
-                                onFollowChange={handleFollowChange}
-                              />
+          {/* Content Area - with left margin on desktop for fixed sidebar */}
+          <div className="flex-1 lg:ml-[256px]">
+            {/* Desktop centered container */}
+            <div className="hidden lg:flex lg:justify-center lg:pt-8 lg:pb-16 lg:px-8">
+              <div className="w-full max-w-2xl">
+                {/* Desktop Header */}
+                <div className="mb-8">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-6">
+                    {initialQuery ? `Search Results for "${initialQuery}"` : 'Discover'}
+                  </h1>
+
+                  {/* Desktop Filter Tabs */}
+                  <div className="flex border-b border-gray-200 mb-6">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        (window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=people`)
+                      }
+                      className={`relative py-3 px-6 text-base font-medium transition-colors ${
+                        type === 'people' ? 'text-[#0066CC]' : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      People
+                      {type === 'people' && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0066CC]" />
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        (window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=groups`)
+                      }
+                      className={`relative py-3 px-6 text-base font-medium transition-colors ${
+                        type === 'groups' ? 'text-[#0066CC]' : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      Groups
+                      {type === 'groups' && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0066CC]" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Desktop Search Form */}
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      if (query.trim())
+                        window.location.href = `/search?q=${encodeURIComponent(query.trim())}&type=${type}`
+                    }}
+                  >
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder={`Search ${type}...`}
+                        className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent text-base"
+                      />
+                      <button
+                        type="submit"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-[#0066CC] transition-colors"
+                      >
+                        <Search className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Desktop Results */}
+                {!hasSearchQuery ? (
+                  isLoading ? (
+                    <SuggestionsLoadingSkeleton />
+                  ) : (
+                    <div className="space-y-6">
+                      {/* Suggested People - only show on People tab */}
+                      {type === 'people' && (
+                        <>
+                          {enhancedSuggestedUsers.length > 0 ? (
+                            <div>
+                              <div className="flex items-center justify-between mb-3 px-1">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                  People you might like
+                                </h3>
+                              </div>
+                              <div className="space-y-1">
+                                {enhancedSuggestedUsers.map((suggestedUser) => (
+                                  <div
+                                    key={suggestedUser.id}
+                                    className="bg-white rounded-lg overflow-hidden"
+                                  >
+                                    <UserCardCompact
+                                      user={suggestedUser}
+                                      variant="search"
+                                      onFollowChange={handleFollowChange}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="p-12 text-center">
-                        <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                          <Users className="w-8 h-8 text-gray-400" />
-                        </div>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">
-                          No people to suggest
-                        </h3>
-                        <p className="text-gray-600 text-sm">
-                          There are no people available at the moment. Check back later!
+                          ) : (
+                            <div className="p-12 text-center">
+                              <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <Users className="w-8 h-8 text-gray-400" />
+                              </div>
+                              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                No people to suggest
+                              </h3>
+                              <p className="text-gray-600 text-sm">
+                                There are no people available at the moment. Check back later!
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {/* Suggested Groups - only show on Groups tab */}
+                      {type === 'groups' && (
+                        <>
+                          {suggestedGroups.length > 0 ? (
+                            <div>
+                              <div className="flex items-center justify-between mb-3 px-1">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                  Suggested Groups
+                                </h3>
+                              </div>
+                              <div className="space-y-1">
+                                {suggestedGroups.slice(0, 5).map((group) => (
+                                  <div
+                                    key={group.id}
+                                    className="bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors"
+                                  >
+                                    {renderGroupResult(group)}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="p-12 text-center">
+                              <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <Users className="w-8 h-8 text-gray-400" />
+                              </div>
+                              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                No groups to suggest
+                              </h3>
+                              <p className="text-gray-600 text-sm">
+                                There are no groups available at the moment. Check back later!
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )
+                ) : isLoading ? (
+                  <SearchLoadingSkeleton type={type} count={5} />
+                ) : (
+                  <>
+                    {type === 'people' && enhancedUsers.length === 0 && (
+                      <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+                        <Search className="w-20 h-20 mx-auto text-gray-300" />
+                        <h3 className="mt-4 text-lg font-medium text-gray-900">No results found</h3>
+                        <p className="text-gray-600 mt-2">
+                          No {type} found matching "{debouncedQuery}"
+                        </p>
+                        <p className="text-gray-500 text-sm mt-1">
+                          Try a different search term or filter
                         </p>
                       </div>
                     )}
-                  </>
-                )}
 
-                {/* Suggested Groups - only show on Groups tab */}
-                {type === 'groups' && (
-                  <>
-                    {suggestedGroups.length > 0 ? (
+                    {type === 'groups' && searchGroups.length === 0 && (
+                      <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+                        <Search className="w-20 h-20 mx-auto text-gray-300" />
+                        <h3 className="mt-4 text-lg font-medium text-gray-900">No results found</h3>
+                        <p className="text-gray-600 mt-2">
+                          No {type} found matching "{debouncedQuery}"
+                        </p>
+                        <p className="text-gray-500 text-sm mt-1">
+                          Try a different search term or filter
+                        </p>
+                      </div>
+                    )}
+
+                    {type === 'people' && enhancedUsers.length > 0 && (
                       <div>
-                        <div className="flex items-center justify-between mb-3 px-1">
-                          <h3 className="text-lg font-semibold text-gray-900">Suggested Groups</h3>
+                        <div className="mb-2">
+                          <p className="text-sm text-gray-600">
+                            Found {enhancedUsers.length}{' '}
+                            {enhancedUsers.length === 1 ? 'result' : 'results'}
+                          </p>
                         </div>
-                        <div className="space-y-1">
-                          {suggestedGroups.slice(0, 5).map((group) => (
-                            <div
-                              key={group.id}
-                              className="bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors"
-                            >
-                              {renderGroupResult(group)}
-                            </div>
-                          ))}
+                        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                          {enhancedUsers.map(renderUserResult)}
                         </div>
                       </div>
-                    ) : (
-                      <div className="p-12 text-center">
-                        <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                          <Users className="w-8 h-8 text-gray-400" />
+                    )}
+
+                    {type === 'groups' && searchGroups.length > 0 && (
+                      <div>
+                        <div className="mb-2">
+                          <p className="text-sm text-gray-600">
+                            Found {searchGroups.length}{' '}
+                            {searchGroups.length === 1 ? 'result' : 'results'}
+                          </p>
                         </div>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">
-                          No groups to suggest
-                        </h3>
-                        <p className="text-gray-600 text-sm">
-                          There are no groups available at the moment. Check back later!
-                        </p>
+                        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                          {searchGroups.map(renderGroupResult)}
+                        </div>
                       </div>
                     )}
                   </>
                 )}
               </div>
-            )
-          ) : isLoading ? (
-            <SearchLoadingSkeleton type={type} count={5} />
-          ) : (
-            <>
-              {type === 'people' && enhancedUsers.length === 0 && (
-                <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-                  <Search className="w-20 h-20 mx-auto text-gray-300" />
-                  <h3 className="mt-4 text-lg font-medium text-gray-900">No results found</h3>
-                  <p className="text-gray-600 mt-2">
-                    No {type} found matching "{debouncedQuery}"
-                  </p>
-                  <p className="text-gray-500 text-sm mt-1">
-                    Try a different search term or filter
-                  </p>
-                </div>
-              )}
-
-              {type === 'groups' && searchGroups.length === 0 && (
-                <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-                  <Search className="w-20 h-20 mx-auto text-gray-300" />
-                  <h3 className="mt-4 text-lg font-medium text-gray-900">No results found</h3>
-                  <p className="text-gray-600 mt-2">
-                    No {type} found matching "{debouncedQuery}"
-                  </p>
-                  <p className="text-gray-500 text-sm mt-1">
-                    Try a different search term or filter
-                  </p>
-                </div>
-              )}
-
-              {type === 'people' && enhancedUsers.length > 0 && (
-                <div>
-                  <div className="mb-2">
-                    <p className="text-sm text-gray-600">
-                      Found {enhancedUsers.length}{' '}
-                      {enhancedUsers.length === 1 ? 'result' : 'results'}
-                    </p>
-                  </div>
-                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    {enhancedUsers.map(renderUserResult)}
-                  </div>
-                </div>
-              )}
-
-              {type === 'groups' && searchGroups.length > 0 && (
-                <div>
-                  <div className="mb-2">
-                    <p className="text-sm text-gray-600">
-                      Found {searchGroups.length} {searchGroups.length === 1 ? 'result' : 'results'}
-                    </p>
-                  </div>
-                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    {searchGroups.map(renderGroupResult)}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Mobile container */}
-      <div className="md:hidden pt-6 pb-4 min-h-[calc(100vh-3.5rem)]">
-        {/* Mobile Search Form */}
-        <div className="mb-6 px-4">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              if (query.trim())
-                window.location.href = `/search?q=${encodeURIComponent(query.trim())}&type=${type}`
-            }}
-          >
-            {/* Search Input */}
-            <div className="relative">
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={`Search ${type}...`}
-                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:border-transparent text-base"
-              />
-              <button
-                type="submit"
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-[#FC4C02] transition-colors"
-              >
-                <Search className="w-5 h-5" />
-              </button>
             </div>
-          </form>
-        </div>
 
-        {/* Mobile Results */}
-        <div className="px-4">
-          {!hasSearchQuery ? (
-            isLoading ? (
-              <SuggestionsLoadingSkeleton />
-            ) : (
-              <div className="space-y-6">
-                {/* Suggested People - only show on People tab */}
-                {type === 'people' && (
-                  <>
-                    {enhancedSuggestedUsers.length > 0 ? (
-                      <div>
-                        <div className="flex items-center justify-between mb-3 px-1">
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            People you might like
-                          </h3>
-                        </div>
-                        <div className="space-y-1">
-                          {enhancedSuggestedUsers.map((suggestedUser) => (
-                            <div
-                              key={suggestedUser.id}
-                              className="bg-white rounded-lg overflow-hidden"
-                            >
-                              <UserCardCompact
-                                user={suggestedUser}
-                                variant="search"
-                                onFollowChange={handleFollowChange}
-                              />
+            {/* Mobile container */}
+            <div className="lg:hidden pt-6 pb-4 min-h-[calc(100vh-3.5rem)]">
+              {/* Mobile Search Form */}
+              <div className="mb-6 px-4">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    if (query.trim())
+                      window.location.href = `/search?q=${encodeURIComponent(query.trim())}&type=${type}`
+                  }}
+                >
+                  {/* Search Input */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder={`Search ${type}...`}
+                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:border-transparent text-base"
+                    />
+                    <button
+                      type="submit"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-[#FC4C02] transition-colors"
+                    >
+                      <Search className="w-5 h-5" />
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Mobile Results */}
+              <div className="px-4">
+                {!hasSearchQuery ? (
+                  isLoading ? (
+                    <SuggestionsLoadingSkeleton />
+                  ) : (
+                    <div className="space-y-6">
+                      {/* Suggested People - only show on People tab */}
+                      {type === 'people' && (
+                        <>
+                          {enhancedSuggestedUsers.length > 0 ? (
+                            <div>
+                              <div className="flex items-center justify-between mb-3 px-1">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                  People you might like
+                                </h3>
+                              </div>
+                              <div className="space-y-1">
+                                {enhancedSuggestedUsers.map((suggestedUser) => (
+                                  <div
+                                    key={suggestedUser.id}
+                                    className="bg-white rounded-lg overflow-hidden"
+                                  >
+                                    <UserCardCompact
+                                      user={suggestedUser}
+                                      variant="search"
+                                      onFollowChange={handleFollowChange}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="p-12 text-center">
-                        <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                          <Users className="w-8 h-8 text-gray-400" />
-                        </div>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">
-                          No people to suggest
-                        </h3>
-                        <p className="text-gray-600 text-sm">
-                          There are no people available at the moment. Check back later!
+                          ) : (
+                            <div className="p-12 text-center">
+                              <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <Users className="w-8 h-8 text-gray-400" />
+                              </div>
+                              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                No people to suggest
+                              </h3>
+                              <p className="text-gray-600 text-sm">
+                                There are no people available at the moment. Check back later!
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {/* Suggested Groups - only show on Groups tab */}
+                      {type === 'groups' && (
+                        <>
+                          {suggestedGroups.length > 0 ? (
+                            <div>
+                              <div className="flex items-center justify-between mb-3 px-1">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                  Suggested Groups
+                                </h3>
+                              </div>
+                              <div className="space-y-1">
+                                {suggestedGroups.slice(0, 5).map((group) => (
+                                  <div
+                                    key={group.id}
+                                    className="bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors"
+                                  >
+                                    {renderGroupResult(group)}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="p-12 text-center">
+                              <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <Users className="w-8 h-8 text-gray-400" />
+                              </div>
+                              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                No groups to suggest
+                              </h3>
+                              <p className="text-gray-600 text-sm">
+                                There are no groups available at the moment. Check back later!
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )
+                ) : isLoading ? (
+                  <SearchLoadingSkeleton type={type} count={5} />
+                ) : (
+                  <>
+                    {type === 'people' && enhancedUsers.length === 0 && (
+                      <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+                        <Search className="w-20 h-20 mx-auto text-gray-300" />
+                        <h3 className="mt-4 text-lg font-medium text-gray-900">No results found</h3>
+                        <p className="text-gray-600 mt-2">
+                          No {type} found matching "{debouncedQuery}"
+                        </p>
+                        <p className="text-gray-500 text-sm mt-1">
+                          Try a different search term or filter
                         </p>
                       </div>
                     )}
-                  </>
-                )}
 
-                {/* Suggested Groups - only show on Groups tab */}
-                {type === 'groups' && (
-                  <>
-                    {suggestedGroups.length > 0 ? (
+                    {type === 'groups' && searchGroups.length === 0 && (
+                      <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
+                        <Search className="w-20 h-20 mx-auto text-gray-300" />
+                        <h3 className="mt-4 text-lg font-medium text-gray-900">No results found</h3>
+                        <p className="text-gray-600 mt-2">
+                          No {type} found matching "{debouncedQuery}"
+                        </p>
+                        <p className="text-gray-500 text-sm mt-1">
+                          Try a different search term or filter
+                        </p>
+                      </div>
+                    )}
+
+                    {type === 'people' && enhancedUsers.length > 0 && (
                       <div>
-                        <div className="flex items-center justify-between mb-3 px-1">
-                          <h3 className="text-lg font-semibold text-gray-900">Suggested Groups</h3>
+                        <div className="mb-2">
+                          <p className="text-sm text-gray-600">
+                            Found {enhancedUsers.length}{' '}
+                            {enhancedUsers.length === 1 ? 'result' : 'results'}
+                          </p>
                         </div>
-                        <div className="space-y-1">
-                          {suggestedGroups.slice(0, 5).map((group) => (
-                            <div
-                              key={group.id}
-                              className="bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors"
-                            >
-                              {renderGroupResult(group)}
-                            </div>
-                          ))}
+                        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                          {enhancedUsers.map(renderUserResult)}
                         </div>
                       </div>
-                    ) : (
-                      <div className="p-12 text-center">
-                        <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                          <Users className="w-8 h-8 text-gray-400" />
+                    )}
+
+                    {type === 'groups' && searchGroups.length > 0 && (
+                      <div>
+                        <div className="mb-2">
+                          <p className="text-sm text-gray-600">
+                            Found {searchGroups.length}{' '}
+                            {searchGroups.length === 1 ? 'result' : 'results'}
+                          </p>
                         </div>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">
-                          No groups to suggest
-                        </h3>
-                        <p className="text-gray-600 text-sm">
-                          There are no groups available at the moment. Check back later!
-                        </p>
+                        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                          {searchGroups.map(renderGroupResult)}
+                        </div>
                       </div>
                     )}
                   </>
                 )}
               </div>
-            )
-          ) : isLoading ? (
-            <SearchLoadingSkeleton type={type} count={5} />
-          ) : (
-            <>
-              {type === 'people' && enhancedUsers.length === 0 && (
-                <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-                  <Search className="w-20 h-20 mx-auto text-gray-300" />
-                  <h3 className="mt-4 text-lg font-medium text-gray-900">No results found</h3>
-                  <p className="text-gray-600 mt-2">
-                    No {type} found matching "{debouncedQuery}"
-                  </p>
-                  <p className="text-gray-500 text-sm mt-1">
-                    Try a different search term or filter
-                  </p>
-                </div>
-              )}
-
-              {type === 'groups' && searchGroups.length === 0 && (
-                <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-                  <Search className="w-20 h-20 mx-auto text-gray-300" />
-                  <h3 className="mt-4 text-lg font-medium text-gray-900">No results found</h3>
-                  <p className="text-gray-600 mt-2">
-                    No {type} found matching "{debouncedQuery}"
-                  </p>
-                  <p className="text-gray-500 text-sm mt-1">
-                    Try a different search term or filter
-                  </p>
-                </div>
-              )}
-
-              {type === 'people' && enhancedUsers.length > 0 && (
-                <div>
-                  <div className="mb-2">
-                    <p className="text-sm text-gray-600">
-                      Found {enhancedUsers.length}{' '}
-                      {enhancedUsers.length === 1 ? 'result' : 'results'}
-                    </p>
-                  </div>
-                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    {enhancedUsers.map(renderUserResult)}
-                  </div>
-                </div>
-              )}
-
-              {type === 'groups' && searchGroups.length > 0 && (
-                <div>
-                  <div className="mb-2">
-                    <p className="text-sm text-gray-600">
-                      Found {searchGroups.length} {searchGroups.length === 1 ? 'result' : 'results'}
-                    </p>
-                  </div>
-                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    {searchGroups.map(renderGroupResult)}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Bottom padding for mobile navigation */}
-      <div className="h-20 md:hidden" />
+      <div className="h-20 lg:hidden" />
 
+      {/* Mobile Bottom Navigation */}
       <BottomNavigation />
     </div>
   )

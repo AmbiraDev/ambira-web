@@ -15,8 +15,8 @@
  */
 
 import { ProtectedRoute } from '@/components/ProtectedRoute'
-import Header from '@/components/HeaderComponent'
 import MobileHeader from '@/components/MobileHeader'
+import LeftSidebar from '@/components/LeftSidebar'
 import BottomNavigation from '@/components/BottomNavigation'
 import ProfilePageContent from './page-content'
 
@@ -29,24 +29,30 @@ export default async function ProfilePage(props: ProfilePageProps) {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-white md:bg-gray-50">
-        {/* Desktop Header */}
-        <div className="hidden md:block">
-          <Header />
-        </div>
-
+      <div className="min-h-screen flex flex-col bg-white md:bg-gray-50">
         {/* Mobile Header */}
-        <div className="md:hidden">
-          <MobileHeader title="Profile" />
+        <MobileHeader title="Profile" />
+
+        {/* Main Content Area */}
+        <div className="flex-1">
+          <div className="flex justify-center">
+            {/* Left Sidebar - Fixed, hidden on mobile */}
+            <div className="hidden lg:block flex-shrink-0">
+              <LeftSidebar />
+            </div>
+
+            {/* Profile Content - with left margin on desktop to account for fixed sidebar */}
+            <div className="flex-1 lg:ml-[256px]">
+              <ProfilePageContent username={params.username} />
+            </div>
+          </div>
         </div>
 
-        {/* Profile Content */}
-        <ProfilePageContent username={params.username} />
+        {/* Bottom padding for mobile navigation */}
+        <div className="h-20 lg:hidden" />
 
         {/* Mobile Bottom Navigation */}
-        <div className="md:hidden">
-          <BottomNavigation />
-        </div>
+        <BottomNavigation />
       </div>
     </ProtectedRoute>
   )

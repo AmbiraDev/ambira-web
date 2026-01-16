@@ -4,34 +4,21 @@
  * This component handles all settings presentation logic.
  * Extracted from the route file for better separation of concerns.
  *
- * Redesigned with modern two-column desktop layout:
- * - Mobile: Vertical expandable list (unchanged)
- * - Desktop: Left sidebar navigation + right content area
- * - Electric Blue primary color (#0066CC) for active states
- * - Smooth section transitions
+ * Duolingo-inspired design:
+ * - Vibrant colors with gradient icon boxes
+ * - Thick bottom borders on buttons and inputs
+ * - Rounded corners (2xl for cards, xl for inputs)
+ * - Light mode with white/gray backgrounds
  */
 
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import Header from '@/components/HeaderComponent'
 import MobileHeader from '@/components/MobileHeader'
+import LeftSidebar from '@/components/LeftSidebar'
 import BottomNavigation from '@/components/BottomNavigation'
 import Footer from '@/components/Footer'
-import {
-  User,
-  Shield,
-  Upload,
-  Link as LinkIcon,
-  Twitter,
-  Github,
-  Linkedin,
-  ChevronRight,
-  LogOut,
-  Trash2,
-  Globe,
-  Activity,
-} from 'lucide-react'
+import { User, Shield, Upload, ChevronRight, LogOut, Trash2, Activity } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import Image from 'next/image'
 import { firebaseUserApi } from '@/lib/api'
@@ -341,297 +328,391 @@ export function SettingsPageContent() {
   // Profile Form Component (reusable for both desktop and mobile)
   return (
     <>
-      <div className="min-h-screen bg-gray-50 pb-[6.5rem] md:pb-0">
-        {/* Desktop Header */}
-        <div className="hidden md:block">
-          <Header />
-        </div>
-
+      <div className="min-h-screen flex flex-col bg-white">
         {/* Mobile Header */}
-        <div className="md:hidden">
-          <MobileHeader title="Settings" showBackButton={true} />
-        </div>
+        <MobileHeader title="Settings" showBackButton={true} />
 
-        {/* Desktop Two-Column Layout */}
-        <div className="hidden md:block">
-          <div className="max-w-5xl mx-auto py-8 px-6">
-            {/* Page Header */}
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+        {/* Main Content Area */}
+        <div className="flex-1">
+          <div className="flex justify-center">
+            {/* Left Sidebar - Fixed, hidden on mobile */}
+            <div className="hidden lg:block flex-shrink-0">
+              <LeftSidebar />
             </div>
 
-            {/* Two-Column Layout */}
-            <div className="flex gap-8">
-              {/* Left Sidebar Navigation */}
-              <aside className="w-60 flex-shrink-0">
-                <nav
-                  className="bg-white rounded-lg border border-gray-200 shadow-sm sticky top-20"
-                  aria-label="Settings navigation"
-                >
-                  <button
-                    onClick={() => setActiveSection('profile')}
-                    aria-label="My Profile settings"
-                    aria-current={activeSection === 'profile' ? 'page' : undefined}
-                    className={`w-full px-4 py-3 flex items-center gap-3 text-left border-b border-gray-200 transition-colors ${
-                      activeSection === 'profile'
-                        ? 'bg-blue-50 border-l-4 border-l-[#0066CC] text-[#0066CC]'
-                        : 'hover:bg-gray-50 text-gray-700'
-                    }`}
-                  >
-                    <User className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
-                    <span className="text-sm font-medium">My Profile</span>
-                  </button>
+            {/* Content Area - with left margin on desktop for fixed sidebar */}
+            <div className="flex-1 lg:ml-[256px]">
+              {/* Desktop Two-Column Layout */}
+              <div className="hidden md:block">
+                <div className="max-w-4xl mx-auto py-8 px-6">
+                  {/* Page Header */}
+                  <div className="mb-8">
+                    <h1 className="text-3xl font-extrabold text-[#3C3C3C]">Settings</h1>
+                  </div>
 
-                  <button
-                    onClick={() => setActiveSection('privacy')}
-                    aria-label="Privacy Controls settings"
-                    aria-current={activeSection === 'privacy' ? 'page' : undefined}
-                    className={`w-full px-4 py-3 flex items-center gap-3 text-left border-b border-gray-200 transition-colors ${
-                      activeSection === 'privacy'
-                        ? 'bg-blue-50 border-l-4 border-l-[#0066CC] text-[#0066CC]'
-                        : 'hover:bg-gray-50 text-gray-700'
-                    }`}
-                  >
-                    <Shield className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
-                    <span className="text-sm font-medium">Privacy Controls</span>
-                  </button>
+                  {/* Two-Column Layout */}
+                  <div className="flex gap-6">
+                    {/* Left Sidebar Navigation */}
+                    <aside className="w-64 flex-shrink-0">
+                      <nav
+                        className="bg-white rounded-2xl border-2 border-[#E5E5E5] overflow-hidden sticky top-20"
+                        aria-label="Settings navigation"
+                      >
+                        <button
+                          onClick={() => setActiveSection('profile')}
+                          aria-label="My Profile settings"
+                          aria-current={activeSection === 'profile' ? 'page' : undefined}
+                          className={`w-full px-4 py-4 flex items-center gap-3 text-left border-b-2 border-[#E5E5E5] transition-all ${
+                            activeSection === 'profile' ? 'bg-[#DDF4FF]' : 'hover:bg-[#F7F7F7]'
+                          }`}
+                        >
+                          <div
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                              activeSection === 'profile'
+                                ? 'bg-gradient-to-br from-[#1CB0F6] to-[#0088CC]'
+                                : 'bg-[#E5E5E5]'
+                            }`}
+                          >
+                            <User
+                              className={`w-5 h-5 ${activeSection === 'profile' ? 'text-white' : 'text-[#777777]'}`}
+                              strokeWidth={2.5}
+                              aria-hidden="true"
+                            />
+                          </div>
+                          <span
+                            className={`text-sm font-bold ${activeSection === 'profile' ? 'text-[#1CB0F6]' : 'text-[#3C3C3C]'}`}
+                          >
+                            My Profile
+                          </span>
+                        </button>
 
-                  <a
-                    href="/settings/activities"
-                    aria-label="Activities settings"
-                    className="w-full px-4 py-3 flex items-center gap-3 text-left border-b border-gray-200 transition-colors hover:bg-gray-50 text-gray-700"
-                  >
-                    <Activity className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
-                    <span className="text-sm font-medium">Activities</span>
-                  </a>
+                        <button
+                          onClick={() => setActiveSection('privacy')}
+                          aria-label="Privacy Controls settings"
+                          aria-current={activeSection === 'privacy' ? 'page' : undefined}
+                          className={`w-full px-4 py-4 flex items-center gap-3 text-left border-b-2 border-[#E5E5E5] transition-all ${
+                            activeSection === 'privacy' ? 'bg-[#DDF4FF]' : 'hover:bg-[#F7F7F7]'
+                          }`}
+                        >
+                          <div
+                            className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                              activeSection === 'privacy'
+                                ? 'bg-gradient-to-br from-[#CE82FF] to-[#A855F7]'
+                                : 'bg-[#E5E5E5]'
+                            }`}
+                          >
+                            <Shield
+                              className={`w-5 h-5 ${activeSection === 'privacy' ? 'text-white' : 'text-[#777777]'}`}
+                              strokeWidth={2.5}
+                              aria-hidden="true"
+                            />
+                          </div>
+                          <span
+                            className={`text-sm font-bold ${activeSection === 'privacy' ? 'text-[#A855F7]' : 'text-[#3C3C3C]'}`}
+                          >
+                            Privacy Controls
+                          </span>
+                        </button>
 
+                        <a
+                          href="/settings/activities"
+                          aria-label="Activities settings"
+                          className="w-full px-4 py-4 flex items-center gap-3 text-left border-b-2 border-[#E5E5E5] transition-all hover:bg-[#F7F7F7]"
+                        >
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#E5E5E5]">
+                            <Activity
+                              className="w-5 h-5 text-[#777777]"
+                              strokeWidth={2.5}
+                              aria-hidden="true"
+                            />
+                          </div>
+                          <span className="text-sm font-bold text-[#3C3C3C]">Activities</span>
+                        </a>
+
+                        <button
+                          onClick={handleLogout}
+                          aria-label="Log out of your account"
+                          className="w-full px-4 py-4 flex items-center gap-3 text-left border-b-2 border-[#E5E5E5] hover:bg-[#F7F7F7] transition-all"
+                        >
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#E5E5E5]">
+                            <LogOut
+                              className="w-5 h-5 text-[#777777]"
+                              strokeWidth={2.5}
+                              aria-hidden="true"
+                            />
+                          </div>
+                          <span className="text-sm font-bold text-[#3C3C3C]">Log Out</span>
+                        </button>
+
+                        <button
+                          onClick={() => setShowDeleteConfirm(true)}
+                          aria-label="Delete your account permanently"
+                          className="w-full px-4 py-4 flex items-center gap-3 text-left hover:bg-red-50 transition-all"
+                        >
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#FFE5E5]">
+                            <Trash2
+                              className="w-5 h-5 text-[#FF4B4B]"
+                              strokeWidth={2.5}
+                              aria-hidden="true"
+                            />
+                          </div>
+                          <span className="text-sm font-bold text-[#FF4B4B]">Delete Account</span>
+                        </button>
+                      </nav>
+                    </aside>
+
+                    {/* Right Content Area */}
+                    <main className="flex-1 min-w-0">
+                      <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] p-8">
+                        {/* Profile Section */}
+                        {activeSection === 'profile' && (
+                          <div>
+                            <h2 className="text-2xl font-extrabold text-[#3C3C3C] mb-6">
+                              My Profile
+                            </h2>
+                            <ProfileFormSection
+                              idPrefix="-desktop"
+                              user={user}
+                              formData={formData}
+                              profilePictureUrl={profilePictureUrl}
+                              isUploadingPhoto={isUploadingPhoto}
+                              isSaving={isSaving}
+                              saved={saved}
+                              hasChanges={hasChanges}
+                              urlError={urlError}
+                              onSubmit={handleSubmit}
+                              onPhotoUpload={handlePhotoUpload}
+                              onNameChange={handleNameChange}
+                              onTaglineChange={handleTaglineChange}
+                              onPronounsChange={handlePronounsChange}
+                              onBioChange={handleBioChange}
+                              onLocationChange={handleLocationChange}
+                              onWebsiteChange={handleWebsiteChange}
+                              onWebsiteBlur={handleWebsiteBlur}
+                              onTwitterChange={handleTwitterChange}
+                              onGithubChange={handleGithubChange}
+                              onLinkedinChange={handleLinkedinChange}
+                            />
+                          </div>
+                        )}
+
+                        {/* Privacy Section */}
+                        {activeSection === 'privacy' && (
+                          <div>
+                            <h2 className="text-2xl font-extrabold text-[#3C3C3C] mb-6">
+                              Privacy Controls
+                            </h2>
+                            <PrivacyFormSection
+                              idPrefix="-desktop"
+                              profileVisibility={formData.profileVisibility}
+                              isSaving={isSaving}
+                              hasChanges={hasChanges}
+                              saved={saved}
+                              onVisibilityChange={handleProfileVisibilityChange}
+                              onReset={handlePrivacyReset}
+                              onSubmit={handlePrivacySubmit}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </main>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile Vertical List Layout */}
+              <div className="md:hidden max-w-2xl mx-auto py-6">
+                {/* Page Header */}
+                <div className="mb-6 px-4">
+                  <h1 className="text-2xl font-extrabold text-[#3C3C3C]">Settings</h1>
+                </div>
+
+                {/* Vertical Settings List */}
+                <div className="bg-white mx-4 rounded-2xl border-2 border-[#E5E5E5] overflow-hidden">
+                  {settingsItems.map((item) => {
+                    const Icon = item.icon
+                    const isExpanded = expandedSection === item.id
+                    const contentId = `${item.id}-content`
+
+                    // Get gradient colors based on item type
+                    const getGradient = (id: string, active: boolean) => {
+                      if (!active) return 'bg-[#E5E5E5]'
+                      switch (id) {
+                        case 'profile':
+                          return 'bg-gradient-to-br from-[#1CB0F6] to-[#0088CC]'
+                        case 'privacy':
+                          return 'bg-gradient-to-br from-[#CE82FF] to-[#A855F7]'
+                        case 'activities':
+                          return 'bg-gradient-to-br from-[#58CC02] to-[#45A000]'
+                        default:
+                          return 'bg-[#E5E5E5]'
+                      }
+                    }
+
+                    return (
+                      <div key={item.id}>
+                        {item.isLink ? (
+                          <a
+                            href={item.href}
+                            aria-label={`${item.label} settings`}
+                            className="w-full px-4 py-4 flex items-center justify-between border-b-2 border-[#E5E5E5] transition-all hover:bg-[#F7F7F7] active:bg-[#E5E5E5]"
+                          >
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div
+                                className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${getGradient(item.id, false)}`}
+                              >
+                                <Icon
+                                  className="w-5 h-5 text-[#777777]"
+                                  strokeWidth={2.5}
+                                  aria-hidden="true"
+                                />
+                              </div>
+                              <div className="flex-1 text-left min-w-0">
+                                <div className="text-sm font-bold text-[#3C3C3C]">{item.label}</div>
+                              </div>
+                            </div>
+                            <ChevronRight
+                              className="w-5 h-5 text-[#AFAFAF] flex-shrink-0"
+                              aria-hidden="true"
+                            />
+                          </a>
+                        ) : (
+                          <button
+                            onClick={() => item.navigable && handleSectionClick(item.id)}
+                            aria-expanded={item.navigable ? isExpanded : undefined}
+                            aria-controls={item.navigable ? contentId : undefined}
+                            aria-label={`${item.label} settings`}
+                            className={`w-full px-4 py-4 flex items-center justify-between border-b-2 border-[#E5E5E5] transition-all ${
+                              item.navigable
+                                ? 'hover:bg-[#F7F7F7] active:bg-[#E5E5E5]'
+                                : 'cursor-default'
+                            } ${isExpanded ? 'bg-[#F7F7F7]' : ''}`}
+                            disabled={!item.navigable}
+                          >
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div
+                                className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${getGradient(item.id, isExpanded)}`}
+                              >
+                                <Icon
+                                  className={`w-5 h-5 ${isExpanded ? 'text-white' : 'text-[#777777]'}`}
+                                  strokeWidth={2.5}
+                                  aria-hidden="true"
+                                />
+                              </div>
+                              <div className="flex-1 text-left min-w-0">
+                                <div
+                                  className={`text-sm font-bold ${isExpanded ? 'text-[#1CB0F6]' : 'text-[#3C3C3C]'}`}
+                                >
+                                  {item.label}
+                                </div>
+                              </div>
+                            </div>
+                            {item.navigable && (
+                              <ChevronRight
+                                className={`w-5 h-5 text-[#AFAFAF] flex-shrink-0 transition-transform ${
+                                  isExpanded ? 'rotate-90' : ''
+                                }`}
+                                aria-hidden="true"
+                              />
+                            )}
+                          </button>
+                        )}
+
+                        {/* Expanded Profile Content */}
+                        {isExpanded && item.id === 'profile' && (
+                          <div
+                            id={contentId}
+                            role="region"
+                            aria-labelledby={`${item.id}-button`}
+                            className="px-4 pt-4 pb-6 bg-[#F7F7F7] border-t-2 border-[#E5E5E5]"
+                          >
+                            <ProfileFormSection
+                              idPrefix="-mobile"
+                              user={user}
+                              formData={formData}
+                              profilePictureUrl={profilePictureUrl}
+                              isUploadingPhoto={isUploadingPhoto}
+                              isSaving={isSaving}
+                              saved={saved}
+                              hasChanges={hasChanges}
+                              urlError={urlError}
+                              onSubmit={handleSubmit}
+                              onPhotoUpload={handlePhotoUpload}
+                              onNameChange={handleNameChange}
+                              onTaglineChange={handleTaglineChange}
+                              onPronounsChange={handlePronounsChange}
+                              onBioChange={handleBioChange}
+                              onLocationChange={handleLocationChange}
+                              onWebsiteChange={handleWebsiteChange}
+                              onWebsiteBlur={handleWebsiteBlur}
+                              onTwitterChange={handleTwitterChange}
+                              onGithubChange={handleGithubChange}
+                              onLinkedinChange={handleLinkedinChange}
+                            />
+                          </div>
+                        )}
+
+                        {/* Expanded Privacy Content */}
+                        {isExpanded && item.id === 'privacy' && (
+                          <div
+                            id={contentId}
+                            role="region"
+                            aria-labelledby={`${item.id}-button`}
+                            className="px-4 pt-4 pb-6 bg-[#F7F7F7] border-t-2 border-[#E5E5E5]"
+                          >
+                            <PrivacyFormSection
+                              idPrefix="-mobile"
+                              profileVisibility={formData.profileVisibility}
+                              isSaving={isSaving}
+                              hasChanges={hasChanges}
+                              saved={saved}
+                              onVisibilityChange={handleProfileVisibilityChange}
+                              onReset={handlePrivacyReset}
+                              onSubmit={handlePrivacySubmit}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+
+                  {/* Account Actions */}
                   <button
                     onClick={handleLogout}
-                    aria-label="Log out of your account"
-                    className="w-full px-4 py-3 flex items-center gap-3 text-left border-b border-gray-200 hover:bg-gray-50 transition-colors text-gray-700"
+                    className="w-full px-4 py-4 flex items-center gap-3 text-left border-b-2 border-[#E5E5E5] hover:bg-[#F7F7F7] active:bg-[#E5E5E5] transition-all"
                   >
-                    <LogOut className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
-                    <span className="text-sm font-medium">Log Out</span>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#E5E5E5]">
+                      <LogOut className="w-5 h-5 text-[#777777]" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm font-bold text-[#3C3C3C]">Log Out</div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-[#AFAFAF] flex-shrink-0" />
                   </button>
 
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    aria-label="Delete your account permanently"
-                    className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-red-50 transition-colors text-red-600"
+                    className="w-full px-4 py-4 flex items-center gap-3 text-left hover:bg-red-50 active:bg-red-100 transition-all"
                   >
-                    <Trash2 className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
-                    <span className="text-sm font-medium">Delete Account</span>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#FFE5E5]">
+                      <Trash2 className="w-5 h-5 text-[#FF4B4B]" strokeWidth={2.5} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm font-bold text-[#FF4B4B]">Delete Account</div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-[#FF4B4B] flex-shrink-0" />
                   </button>
-                </nav>
-              </aside>
-
-              {/* Right Content Area */}
-              <main className="flex-1 min-w-0">
-                <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
-                  {/* Profile Section */}
-                  {activeSection === 'profile' && (
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">My Profile</h2>
-                      <ProfileFormSection
-                        idPrefix="-desktop"
-                        user={user}
-                        formData={formData}
-                        profilePictureUrl={profilePictureUrl}
-                        isUploadingPhoto={isUploadingPhoto}
-                        isSaving={isSaving}
-                        saved={saved}
-                        hasChanges={hasChanges}
-                        urlError={urlError}
-                        onSubmit={handleSubmit}
-                        onPhotoUpload={handlePhotoUpload}
-                        onNameChange={handleNameChange}
-                        onTaglineChange={handleTaglineChange}
-                        onPronounsChange={handlePronounsChange}
-                        onBioChange={handleBioChange}
-                        onLocationChange={handleLocationChange}
-                        onWebsiteChange={handleWebsiteChange}
-                        onWebsiteBlur={handleWebsiteBlur}
-                        onTwitterChange={handleTwitterChange}
-                        onGithubChange={handleGithubChange}
-                        onLinkedinChange={handleLinkedinChange}
-                      />
-                    </div>
-                  )}
-
-                  {/* Privacy Section */}
-                  {activeSection === 'privacy' && (
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-6">Privacy Controls</h2>
-                      <PrivacyFormSection
-                        idPrefix="-desktop"
-                        profileVisibility={formData.profileVisibility}
-                        isSaving={isSaving}
-                        hasChanges={hasChanges}
-                        saved={saved}
-                        onVisibilityChange={handleProfileVisibilityChange}
-                        onReset={handlePrivacyReset}
-                        onSubmit={handlePrivacySubmit}
-                      />
-                    </div>
-                  )}
                 </div>
-              </main>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Mobile Vertical List Layout */}
-        <div className="md:hidden max-w-2xl mx-auto py-6">
-          {/* Page Header */}
-          <div className="mb-6 px-4">
-            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-          </div>
-
-          {/* Vertical Settings List */}
-          <div className="bg-white">
-            {settingsItems.map((item) => {
-              const Icon = item.icon
-              const isExpanded = expandedSection === item.id
-              const contentId = `${item.id}-content`
-
-              return (
-                <div key={item.id}>
-                  {item.isLink ? (
-                    <a
-                      href={item.href}
-                      aria-label={`${item.label} settings`}
-                      className="w-full px-4 py-4 flex items-center justify-between border-b border-gray-200 transition-colors hover:bg-gray-50 active:bg-gray-100"
-                    >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="flex-shrink-0">
-                          <Icon className="w-5 h-5 text-gray-700" aria-hidden="true" />
-                        </div>
-                        <div className="flex-1 text-left min-w-0">
-                          <div className="text-sm font-semibold text-gray-900">{item.label}</div>
-                        </div>
-                      </div>
-                      <ChevronRight
-                        className="w-5 h-5 text-gray-400 flex-shrink-0"
-                        aria-hidden="true"
-                      />
-                    </a>
-                  ) : (
-                    <button
-                      onClick={() => item.navigable && handleSectionClick(item.id)}
-                      aria-expanded={item.navigable ? isExpanded : undefined}
-                      aria-controls={item.navigable ? contentId : undefined}
-                      aria-label={`${item.label} settings`}
-                      className={`w-full px-4 py-4 flex items-center justify-between border-b border-gray-200 transition-colors ${
-                        item.navigable ? 'hover:bg-gray-50 active:bg-gray-100' : 'cursor-default'
-                      }`}
-                      disabled={!item.navigable}
-                    >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="flex-shrink-0">
-                          <Icon className="w-5 h-5 text-gray-700" aria-hidden="true" />
-                        </div>
-                        <div className="flex-1 text-left min-w-0">
-                          <div className="text-sm font-semibold text-gray-900">{item.label}</div>
-                        </div>
-                      </div>
-                      {item.navigable && (
-                        <ChevronRight
-                          className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${
-                            isExpanded ? 'rotate-90' : ''
-                          }`}
-                          aria-hidden="true"
-                        />
-                      )}
-                    </button>
-                  )}
-
-                  {/* Expanded Profile Content */}
-                  {isExpanded && item.id === 'profile' && (
-                    <div
-                      id={contentId}
-                      role="region"
-                      aria-labelledby={`${item.id}-button`}
-                      className="px-4 pt-4 pb-6 bg-gray-50 border-t border-gray-200"
-                    >
-                      <ProfileFormSection
-                        idPrefix="-mobile"
-                        user={user}
-                        formData={formData}
-                        profilePictureUrl={profilePictureUrl}
-                        isUploadingPhoto={isUploadingPhoto}
-                        isSaving={isSaving}
-                        saved={saved}
-                        hasChanges={hasChanges}
-                        urlError={urlError}
-                        onSubmit={handleSubmit}
-                        onPhotoUpload={handlePhotoUpload}
-                        onNameChange={handleNameChange}
-                        onTaglineChange={handleTaglineChange}
-                        onPronounsChange={handlePronounsChange}
-                        onBioChange={handleBioChange}
-                        onLocationChange={handleLocationChange}
-                        onWebsiteChange={handleWebsiteChange}
-                        onWebsiteBlur={handleWebsiteBlur}
-                        onTwitterChange={handleTwitterChange}
-                        onGithubChange={handleGithubChange}
-                        onLinkedinChange={handleLinkedinChange}
-                      />
-                    </div>
-                  )}
-
-                  {/* Expanded Privacy Content */}
-                  {isExpanded && item.id === 'privacy' && (
-                    <div
-                      id={contentId}
-                      role="region"
-                      aria-labelledby={`${item.id}-button`}
-                      className="px-4 pt-4 pb-6 bg-gray-50 border-t border-gray-200"
-                    >
-                      <PrivacyFormSection
-                        idPrefix="-mobile"
-                        profileVisibility={formData.profileVisibility}
-                        isSaving={isSaving}
-                        hasChanges={hasChanges}
-                        saved={saved}
-                        onVisibilityChange={handleProfileVisibilityChange}
-                        onReset={handlePrivacyReset}
-                        onSubmit={handlePrivacySubmit}
-                      />
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-
-            {/* Account Actions */}
-            <button
-              onClick={handleLogout}
-              className="w-full px-4 py-4 flex items-center gap-3 text-left border-b border-gray-200 hover:bg-gray-50 active:bg-gray-100 transition-colors"
-            >
-              <LogOut className="w-5 h-5 text-gray-700" />
-              <div className="flex-1">
-                <div className="text-sm font-semibold text-gray-900">Log Out</div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
-            </button>
-
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="w-full px-4 py-4 flex items-center gap-3 text-left border-b border-gray-200 hover:bg-red-50 active:bg-red-100 transition-colors"
-            >
-              <Trash2 className="w-5 h-5 text-red-600" />
-              <div className="flex-1">
-                <div className="text-sm font-semibold text-red-600">Delete Account</div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-red-400 flex-shrink-0" />
-            </button>
-          </div>
-        </div>
+        {/* Bottom padding for mobile navigation */}
+        <div className="h-20 lg:hidden" />
 
         {/* Mobile Bottom Navigation */}
-        <div className="md:hidden">
-          <BottomNavigation />
-        </div>
+        <BottomNavigation />
 
         {/* Footer - Desktop only */}
         <Footer />
@@ -702,23 +783,26 @@ function ProfileFormSection({
 }: ProfileFormSectionProps) {
   return (
     <form onSubmit={onSubmit} className="space-y-6">
+      {/* Profile Picture */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">Profile Picture</label>
+        <label className="block text-xs font-extrabold text-[#AFAFAF] uppercase tracking-widest mb-3">
+          Profile Picture
+        </label>
         <div className="flex items-center gap-6">
           {profilePictureUrl || user?.profilePicture ? (
-            <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-white flex-shrink-0">
+            <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-[#E5E5E5] flex-shrink-0">
               <Image
                 src={profilePictureUrl || user?.profilePicture || ''}
                 alt="Profile"
-                width={96}
-                height={96}
+                width={80}
+                height={80}
                 quality={95}
                 priority
                 className="w-full h-full object-cover"
               />
             </div>
           ) : (
-            <div className="w-24 h-24 bg-gradient-to-br from-[#FC4C02] to-[#FF8800] rounded-full flex items-center justify-center text-white text-4xl font-bold flex-shrink-0">
+            <div className="w-20 h-20 bg-gradient-to-br from-[#58CC02] to-[#45A000] rounded-full flex items-center justify-center text-white text-3xl font-extrabold flex-shrink-0 ring-4 ring-[#E5E5E5]">
               {user?.name.charAt(0).toUpperCase() || 'N'}
             </div>
           )}
@@ -732,31 +816,31 @@ function ProfileFormSection({
             />
             <label
               htmlFor={`profile-photo-upload${idPrefix}`}
-              className={`inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer ${isUploadingPhoto ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`inline-flex items-center gap-2 px-5 py-3 bg-white text-[#3C3C3C] font-bold rounded-2xl border-2 border-b-4 border-[#E5E5E5] hover:bg-[#F7F7F7] active:border-b-2 active:translate-y-[2px] transition-all cursor-pointer ${isUploadingPhoto ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isUploadingPhoto ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-gray-300 border-t-[#0066CC] rounded-full animate-spin"></div>
-                  Uploading...
+                  <div className="w-4 h-4 border-2 border-[#E5E5E5] border-t-[#58CC02] rounded-full animate-spin"></div>
+                  <span>Uploading...</span>
                 </>
               ) : (
                 <>
-                  <Upload className="w-4 h-4" />
-                  Upload Photo
+                  <Upload className="w-5 h-5" strokeWidth={2.5} />
+                  <span>Upload Photo</span>
                 </>
               )}
             </label>
-            <p className="text-sm text-gray-500 mt-2">JPG, PNG, GIF or WebP. Max 5MB.</p>
+            <p className="text-sm text-[#AFAFAF] mt-2">JPG, PNG, GIF or WebP. Max 5MB.</p>
           </div>
         </div>
       </div>
 
+      {/* Name */}
       <div>
         <label
           htmlFor={`name${idPrefix}`}
-          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+          className="block text-xs font-extrabold text-[#AFAFAF] uppercase tracking-widest mb-2"
         >
-          <User className="w-4 h-4" />
           Name
         </label>
         <input
@@ -764,37 +848,40 @@ function ProfileFormSection({
           id={`name${idPrefix}`}
           value={formData.name}
           onChange={onNameChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+          className="w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 border-[#E5E5E5] rounded-xl text-[#3C3C3C] font-semibold focus:border-[#1CB0F6] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] transition-all"
         />
       </div>
 
+      {/* Username */}
       <div>
         <label
           htmlFor={`username${idPrefix}`}
-          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+          className="block text-xs font-extrabold text-[#AFAFAF] uppercase tracking-widest mb-2"
         >
-          <User className="w-4 h-4" />
           Username
         </label>
         <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#AFAFAF] font-semibold">
+            @
+          </span>
           <input
             type="text"
             id={`username${idPrefix}`}
             value={user?.username || ''}
             disabled
-            className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+            className="w-full pl-8 pr-4 py-3 bg-[#E5E5E5] border-2 border-[#DADADA] rounded-xl text-[#777777] font-semibold cursor-not-allowed"
           />
         </div>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-[#AFAFAF] mt-2 font-semibold">
           Username cannot be changed - it&apos;s your unique identifier
         </p>
       </div>
 
+      {/* Tagline */}
       <div>
         <label
           htmlFor={`tagline${idPrefix}`}
-          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+          className="block text-xs font-extrabold text-[#AFAFAF] uppercase tracking-widest mb-2"
         >
           Tagline
         </label>
@@ -805,17 +892,18 @@ function ProfileFormSection({
           onChange={onTaglineChange}
           maxLength={60}
           placeholder="Your headline or current status..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+          className="w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 border-[#E5E5E5] rounded-xl text-[#3C3C3C] font-semibold focus:border-[#1CB0F6] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] transition-all"
         />
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-xs text-[#AFAFAF] mt-2 font-semibold">
           {formData.tagline.length}/60 • Appears below your name on your profile
         </p>
       </div>
 
+      {/* Pronouns */}
       <div>
         <label
           htmlFor={`pronouns${idPrefix}`}
-          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+          className="block text-xs font-extrabold text-[#AFAFAF] uppercase tracking-widest mb-2"
         >
           Pronouns
         </label>
@@ -826,14 +914,15 @@ function ProfileFormSection({
           onChange={onPronounsChange}
           maxLength={20}
           placeholder="e.g., she/her, he/him, they/them"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+          className="w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 border-[#E5E5E5] rounded-xl text-[#3C3C3C] font-semibold focus:border-[#1CB0F6] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] transition-all"
         />
       </div>
 
+      {/* Bio */}
       <div>
         <label
           htmlFor={`bio${idPrefix}`}
-          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+          className="block text-xs font-extrabold text-[#AFAFAF] uppercase tracking-widest mb-2"
         >
           Bio
         </label>
@@ -844,17 +933,17 @@ function ProfileFormSection({
           rows={4}
           maxLength={160}
           placeholder="Tell us about yourself..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none resize-none"
+          className="w-full px-4 py-3 bg-[#F7F7F7] border-2 border-[#E5E5E5] rounded-xl text-[#3C3C3C] font-semibold focus:border-[#1CB0F6] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] resize-none transition-all"
         />
-        <p className="text-sm text-gray-500 mt-1">{formData.bio.length}/160</p>
+        <p className="text-xs text-[#AFAFAF] mt-2 font-semibold">{formData.bio.length}/160</p>
       </div>
 
+      {/* Location */}
       <div>
         <label
           htmlFor={`location${idPrefix}`}
-          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+          className="block text-xs font-extrabold text-[#AFAFAF] uppercase tracking-widest mb-2"
         >
-          <Globe className="w-4 h-4" />
           Location
         </label>
         <input
@@ -863,19 +952,20 @@ function ProfileFormSection({
           value={formData.location}
           onChange={onLocationChange}
           placeholder="City, Country"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+          className="w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 border-[#E5E5E5] rounded-xl text-[#3C3C3C] font-semibold focus:border-[#1CB0F6] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] transition-all"
         />
       </div>
 
-      <div className="pt-4 border-t border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Links</h3>
+      {/* Links Section */}
+      <div className="pt-6 border-t-2 border-[#E5E5E5]">
+        <h3 className="text-lg font-extrabold text-[#3C3C3C] mb-4">Links</h3>
 
+        {/* Website */}
         <div className="mb-4">
           <label
             htmlFor={`website${idPrefix}`}
-            className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+            className="block text-xs font-extrabold text-[#AFAFAF] uppercase tracking-widest mb-2"
           >
-            <LinkIcon className="w-4 h-4" />
             Website
           </label>
           <input
@@ -888,45 +978,52 @@ function ProfileFormSection({
             pattern="https?://.*"
             aria-invalid={urlError ? 'true' : 'false'}
             aria-describedby={urlError ? `website-error${idPrefix}` : undefined}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none ${
-              urlError ? 'border-red-500' : 'border-gray-300'
+            className={`w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 rounded-xl text-[#3C3C3C] font-semibold focus:border-[#1CB0F6] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] transition-all ${
+              urlError ? 'border-[#FF4B4B]' : 'border-[#E5E5E5]'
             }`}
           />
           {urlError && (
-            <p id={`website-error${idPrefix}`} className="text-sm text-red-600 mt-1" role="alert">
+            <p
+              id={`website-error${idPrefix}`}
+              className="text-sm text-[#FF4B4B] mt-2 font-semibold"
+              role="alert"
+            >
               {urlError}
             </p>
           )}
         </div>
 
+        {/* Social Links */}
         <div className="space-y-4">
+          {/* Twitter/X */}
           <div>
             <label
               htmlFor={`twitter${idPrefix}`}
-              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+              className="block text-xs font-extrabold text-[#AFAFAF] uppercase tracking-widest mb-2"
             >
-              <Twitter className="w-4 h-4" />
               Twitter/X
             </label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#AFAFAF] font-semibold">
+                @
+              </span>
               <input
                 type="text"
                 id={`twitter${idPrefix}`}
                 value={formData.twitter}
                 onChange={onTwitterChange}
                 placeholder="username"
-                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+                className="w-full pl-8 pr-4 py-3 bg-[#F7F7F7] border-2 border-b-4 border-[#E5E5E5] rounded-xl text-[#3C3C3C] font-semibold focus:border-[#1CB0F6] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] transition-all"
               />
             </div>
           </div>
 
+          {/* GitHub */}
           <div>
             <label
               htmlFor={`github${idPrefix}`}
-              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+              className="block text-xs font-extrabold text-[#AFAFAF] uppercase tracking-widest mb-2"
             >
-              <Github className="w-4 h-4" />
               GitHub
             </label>
             <input
@@ -935,16 +1032,16 @@ function ProfileFormSection({
               value={formData.github}
               onChange={onGithubChange}
               placeholder="username"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+              className="w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 border-[#E5E5E5] rounded-xl text-[#3C3C3C] font-semibold focus:border-[#1CB0F6] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] transition-all"
             />
           </div>
 
+          {/* LinkedIn */}
           <div>
             <label
               htmlFor={`linkedin${idPrefix}`}
-              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+              className="block text-xs font-extrabold text-[#AFAFAF] uppercase tracking-widest mb-2"
             >
-              <Linkedin className="w-4 h-4" />
               LinkedIn
             </label>
             <input
@@ -953,31 +1050,32 @@ function ProfileFormSection({
               value={formData.linkedin}
               onChange={onLinkedinChange}
               placeholder="username"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+              className="w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 border-[#E5E5E5] rounded-xl text-[#3C3C3C] font-semibold focus:border-[#1CB0F6] focus:bg-white focus:outline-none placeholder:text-[#AFAFAF] transition-all"
             />
           </div>
         </div>
       </div>
 
-      <div className="flex gap-3 pt-4">
+      {/* Action Buttons */}
+      <div className="flex gap-3 pt-6">
         <a
           href={user ? `/profile/${user.username}` : '/'}
-          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center"
+          className="px-5 py-3 bg-white text-[#3C3C3C] font-bold rounded-2xl border-2 border-b-4 border-[#E5E5E5] hover:bg-[#F7F7F7] active:border-b-2 active:translate-y-[2px] transition-all text-center"
         >
           Cancel
         </a>
         <button
           type="submit"
           disabled={isSaving || !hasChanges}
-          className={`px-6 py-2 rounded-lg transition-colors text-white ${
+          className={`px-5 py-3 font-bold rounded-2xl border-2 border-b-4 active:border-b-2 active:translate-y-[2px] transition-all text-white ${
             isSaving || !hasChanges
-              ? 'bg-gray-400 cursor-not-allowed'
+              ? 'bg-[#E5E5E5] border-[#DADADA] text-[#AFAFAF] cursor-not-allowed active:translate-y-0 active:border-b-4'
               : saved
-                ? 'bg-[#34C759] hover:bg-[#34C759]'
-                : 'bg-[#0066CC] hover:bg-[#0051D5]'
+                ? 'bg-[#58CC02] border-[#45A000] hover:brightness-105'
+                : 'bg-[#58CC02] border-[#45A000] hover:brightness-105'
           }`}
         >
-          {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
+          {isSaving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
         </button>
       </div>
     </form>
@@ -1010,7 +1108,7 @@ function PrivacyFormSection({
       <div>
         <label
           htmlFor={`profileVisibility${idPrefix}`}
-          className="text-sm font-medium text-gray-700 mb-2 block"
+          className="block text-xs font-extrabold text-[#AFAFAF] uppercase tracking-widest mb-2"
         >
           Profile Visibility
         </label>
@@ -1018,7 +1116,7 @@ function PrivacyFormSection({
           id={`profileVisibility${idPrefix}`}
           value={profileVisibility}
           onChange={onVisibilityChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+          className="w-full px-4 py-3 bg-[#F7F7F7] border-2 border-b-4 border-[#E5E5E5] rounded-xl text-[#3C3C3C] font-semibold focus:border-[#1CB0F6] focus:bg-white focus:outline-none cursor-pointer transition-all"
         >
           <option value="everyone">
             Everyone - Your profile and sessions are visible to all users
@@ -1030,7 +1128,7 @@ function PrivacyFormSection({
             Only You - Your profile and sessions are completely private
           </option>
         </select>
-        <p className="text-sm text-gray-500 mt-2">
+        <p className="text-sm text-[#777777] mt-3 font-semibold">
           {profileVisibility === 'everyone' &&
             'Your profile, sessions, and stats are visible to everyone.'}
           {profileVisibility === 'followers' &&
@@ -1040,11 +1138,11 @@ function PrivacyFormSection({
         </p>
       </div>
 
-      <div className="flex gap-3 pt-4">
+      <div className="flex gap-3 pt-6">
         <button
           type="button"
           onClick={onReset}
-          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          className="px-5 py-3 bg-white text-[#3C3C3C] font-bold rounded-2xl border-2 border-b-4 border-[#E5E5E5] hover:bg-[#F7F7F7] active:border-b-2 active:translate-y-[2px] transition-all"
         >
           Cancel
         </button>
@@ -1052,15 +1150,15 @@ function PrivacyFormSection({
           type="button"
           onClick={onSubmit}
           disabled={isSaving || !hasChanges}
-          className={`px-6 py-2 rounded-lg transition-colors text-white ${
+          className={`px-5 py-3 font-bold rounded-2xl border-2 border-b-4 active:border-b-2 active:translate-y-[2px] transition-all text-white ${
             isSaving || !hasChanges
-              ? 'bg-gray-400 cursor-not-allowed'
+              ? 'bg-[#E5E5E5] border-[#DADADA] text-[#AFAFAF] cursor-not-allowed active:translate-y-0 active:border-b-4'
               : saved
-                ? 'bg-[#34C759] hover:bg-[#34C759]'
-                : 'bg-[#0066CC] hover:bg-[#0051D5]'
+                ? 'bg-[#58CC02] border-[#45A000] hover:brightness-105'
+                : 'bg-[#58CC02] border-[#45A000] hover:brightness-105'
           }`}
         >
-          {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
+          {isSaving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
         </button>
       </div>
     </div>

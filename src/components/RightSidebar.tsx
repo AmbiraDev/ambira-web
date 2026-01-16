@@ -14,8 +14,7 @@ import { useSuggestedGroups } from '@/features/search/hooks'
 import { useJoinGroup } from '@/features/groups/hooks/useGroupMutations'
 import { GROUP_DISPLAY_CONFIG } from '@/lib/constants/groupDisplay'
 import { StreakCard } from '@/features/streaks/components/StreakCard'
-import DailyGoals from './DailyGoals'
-import { Flame, Trophy, Zap } from 'lucide-react'
+import { Flame, Trophy } from 'lucide-react'
 
 interface SuggestedUser {
   id: string
@@ -153,27 +152,6 @@ function RightSidebar() {
             </div>
           </div>
         )}
-
-        {/* Daily Quests - Duolingo Style */}
-        <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] overflow-hidden hover:border-[#DDF4FF] transition-colors">
-          <div className="flex items-center justify-between px-5 py-4">
-            <div className="flex items-center gap-3">
-              <Zap className="w-6 h-6 text-[#1CB0F6]" fill="#1CB0F6" />
-              <span className="font-extrabold text-[#4B4B4B] text-lg tracking-tight">
-                Daily Quests
-              </span>
-            </div>
-            <Link
-              href="/settings/activities"
-              className="text-xs font-bold text-[#1CB0F6] hover:text-[#0088CC] uppercase tracking-widest hover:bg-[#DDF4FF] px-3 py-1.5 rounded-lg transition-colors"
-            >
-              View All
-            </Link>
-          </div>
-          <div className="px-2 pb-2">
-            <DailyGoals />
-          </div>
-        </div>
 
         {/* Suggested Friends - Duolingo Style */}
         <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] overflow-hidden hover:border-[#DDF4FF] transition-colors">
@@ -361,24 +339,6 @@ function RightSidebar() {
                 ))}
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Footer Links */}
-        <div className="text-center pt-4 pb-8">
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-xs text-[#AFAFAF] font-bold tracking-wide">
-            <Link href="/about" className="hover:text-[#777777] transition-colors">
-              ABOUT
-            </Link>
-            <Link href="/help" className="hover:text-[#777777] transition-colors">
-              HELP
-            </Link>
-            <Link href="/privacy" className="hover:text-[#777777] transition-colors">
-              PRIVACY
-            </Link>
-            <Link href="/terms" className="hover:text-[#777777] transition-colors">
-              TERMS
-            </Link>
           </div>
         </div>
       </div>
