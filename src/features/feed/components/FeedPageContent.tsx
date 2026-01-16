@@ -9,17 +9,16 @@
 
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import MobileHeader from '@/components/MobileHeader'
+import MobileFeedHeader from '@/components/MobileFeedHeader'
 import LeftSidebar from '@/components/LeftSidebar'
 import RightSidebar from '@/components/RightSidebar'
 import BottomNavigation from '@/components/BottomNavigation'
 import Footer from '@/components/Footer'
 import Feed from '@/features/feed/components/Feed'
-import { StreakCard } from '@/features/streaks/components/StreakCard'
 import React, { Suspense } from 'react'
 
 export function FeedPageContent() {
-  const { isAuthenticated, isLoading, user } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
 
   // Show loading spinner while checking authentication
@@ -43,8 +42,8 @@ export function FeedPageContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Mobile header - only visible on mobile */}
-      <MobileHeader title="Home" showNotifications={true} />
+      {/* Mobile Duolingo-style header - only visible on mobile */}
+      <MobileFeedHeader />
 
       {/* Main Content Area - No top header on desktop (Duolingo style) */}
       <div className="flex-1 lg:ml-[256px]">
@@ -57,15 +56,8 @@ export function FeedPageContent() {
             <main
               id="main-feed"
               role="main"
-              className="flex-1 min-w-0 max-w-[600px] mx-auto lg:pt-6"
+              className="flex-1 min-w-0 w-full px-7 lg:px-0 lg:max-w-[600px] lg:mx-auto lg:pt-6"
             >
-              {/* Streak Card - Mobile Only */}
-              {user && (
-                <div className="md:hidden px-4 mb-4">
-                  <StreakCard userId={user.id} variant="compact" showProgress={false} />
-                </div>
-              )}
-
               {/* Feed */}
               <Suspense
                 fallback={

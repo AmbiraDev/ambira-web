@@ -14,6 +14,7 @@ import { useSuggestedGroups } from '@/features/search/hooks'
 import { useJoinGroup } from '@/features/groups/hooks/useGroupMutations'
 import { GROUP_DISPLAY_CONFIG } from '@/lib/constants/groupDisplay'
 import { StreakCard } from '@/features/streaks/components/StreakCard'
+import LevelCard from '@/components/LevelCard'
 import { Flame, Trophy } from 'lucide-react'
 
 interface SuggestedUser {
@@ -132,6 +133,9 @@ function RightSidebar() {
       aria-label="Suggestions and goals sidebar"
     >
       <div className="sticky top-0 pt-8 space-y-6 pb-6 max-h-screen overflow-y-auto no-scrollbar">
+        {/* Level Card - Duolingo Style */}
+        <LevelCard />
+
         {/* Streak Card - Duolingo Style */}
         {user && (
           <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] overflow-hidden hover:border-[#DDF4FF] transition-colors">

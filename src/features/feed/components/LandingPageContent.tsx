@@ -25,7 +25,9 @@ export function LandingPageContent() {
     const observer = new IntersectionObserver(
       ([entry]) => {
         // Hero is visible if it's intersecting the viewport
-        setIsHeroVisible(entry.isIntersecting)
+        if (entry) {
+          setIsHeroVisible(entry.isIntersecting)
+        }
       },
       {
         // Trigger when hero is less than 10% visible
@@ -48,14 +50,14 @@ export function LandingPageContent() {
         {/* Hero Section */}
         <section ref={heroRef} id="hero-section" className="max-w-6xl mx-auto px-4 py-20 md:py-32">
           <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-[#3C3C3C] mb-6">
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-extrabold text-[#3C3C3C] mb-6">
               Make productivity <span className="text-[#58CC02]">social.</span>
             </h1>
-            <p className="text-xl text-[#777777] mb-10 font-semibold">
+            <p className="text-xl md:text-2xl text-[#777777] mb-10 font-semibold">
               Studying shouldn't be done alone. Join your friends, share your progress, and achieve
               better results together.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4">
               <Link
                 href="/auth"
                 className="inline-block px-8 py-4 bg-[#58CC02] text-white font-bold rounded-2xl hover:brightness-105 transition-all text-lg border-2 border-b-4 border-[#45A000] active:border-b-2 active:translate-y-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#58CC02] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
@@ -75,17 +77,17 @@ export function LandingPageContent() {
         {/* Features Section */}
         <section className="max-w-6xl mx-auto px-4 py-12 space-y-16 md:space-y-24">
           {/* Feature 1: Share Your Sessions */}
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-12">
-            <div className="flex-1 space-y-4 md:pt-8 text-center md:text-left">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-[#3C3C3C]">
+          <div className="flex flex-col items-center gap-8">
+            <div className="max-w-2xl space-y-4 text-center">
+              <h2 className="text-4xl md:text-5xl font-extrabold text-[#3C3C3C]">
                 Share Your Work
               </h2>
-              <p className="text-lg md:text-xl text-[#777777] font-semibold">
+              <p className="text-xl md:text-2xl text-[#777777] font-semibold">
                 Track your study and work sessions, then share them with friends. Get encouragement
                 and support as you make progress on your goals.
               </p>
             </div>
-            <div className="flex-1">
+            <div className="w-full max-w-lg">
               {/* Session Card Preview - Light Mode */}
               <div className="bg-white rounded-2xl p-6 border-2 border-[#E5E5E5] shadow-sm">
                 <div className="flex items-center gap-3 mb-4">
@@ -141,17 +143,17 @@ export function LandingPageContent() {
           </div>
 
           {/* Feature 2: Join Groups */}
-          <div className="flex flex-col md:flex-row-reverse items-center md:items-start gap-12">
-            <div className="flex-1 space-y-4 md:pt-8 text-center md:text-left">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-[#3C3C3C]">
+          <div className="flex flex-col items-center gap-8">
+            <div className="max-w-2xl space-y-4 text-center">
+              <h2 className="text-4xl md:text-5xl font-extrabold text-[#3C3C3C]">
                 Study With Groups
               </h2>
-              <p className="text-lg md:text-xl text-[#777777] font-semibold">
+              <p className="text-xl md:text-2xl text-[#777777] font-semibold">
                 Better results happen with groups. Join communities of students and professionals
                 working toward similar goals, and stay accountable together.
               </p>
             </div>
-            <div className="flex-1">
+            <div className="w-full max-w-lg">
               {/* Group Card Preview - Light Mode */}
               <div className="bg-white rounded-2xl p-6 border-2 border-[#E5E5E5] shadow-sm">
                 <div className="flex items-center gap-3 mb-4">
@@ -191,17 +193,17 @@ export function LandingPageContent() {
           </div>
 
           {/* Feature 3: Analytics */}
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-12">
-            <div className="flex-1 space-y-4 md:pt-8 text-center md:text-left">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-[#3C3C3C]">
+          <div className="flex flex-col items-center gap-8">
+            <div className="max-w-2xl space-y-4 text-center">
+              <h2 className="text-4xl md:text-5xl font-extrabold text-[#3C3C3C]">
                 Understand Your Habits
               </h2>
-              <p className="text-lg md:text-xl text-[#777777] font-semibold">
+              <p className="text-xl md:text-2xl text-[#777777] font-semibold">
                 See detailed insights into your productivity patterns. Track your progress over time
                 and discover when you work best.
               </p>
             </div>
-            <div className="flex-1">
+            <div className="w-full max-w-lg">
               {/* Stats Card Preview - Light Mode */}
               <div className="bg-white rounded-2xl p-6 border-2 border-[#E5E5E5] shadow-sm">
                 <div className="grid grid-cols-2 gap-4">
@@ -257,7 +259,7 @@ export function LandingPageContent() {
 
         {/* Footer CTA */}
         <section className="max-w-6xl mx-auto px-4 py-20 text-center">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-[#3C3C3C] mb-6">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-[#3C3C3C] mb-6">
             Ready to focus together?
           </h2>
           <Link

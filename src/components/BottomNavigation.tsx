@@ -11,12 +11,12 @@ import { useState, useEffect } from 'react'
 // Order: 2 left, Start center, 2 right
 const leftNavItems = [
   { href: '/', label: 'Feed', icon: BookOpen, color: '#58CC02' },
-  { href: '/analytics', label: 'Quests', icon: Zap, color: '#FF9600' },
+  { href: '/quests', label: 'Quests', icon: Zap, color: '#FF9600' },
 ]
 
 const rightNavItems = [
   { href: '/groups', label: 'Groups', icon: Users, color: '#CE82FF' },
-  { href: '/you', label: 'Profile', icon: User, color: '#FF4B4B' },
+  { href: '/profile', label: 'Profile', icon: User, color: '#FF4B4B' },
 ]
 
 export default function BottomNavigation() {
@@ -60,12 +60,12 @@ export default function BottomNavigation() {
 
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/'
-    if (path === '/analytics') return pathname.startsWith('/analytics')
+    if (path === '/quests') return pathname.startsWith('/quests')
     if (path === '/groups') return pathname.startsWith('/groups')
-    if (path === '/you') {
+    if (path === '/profile') {
       return (
-        pathname.startsWith('/you') ||
         pathname === '/profile' ||
+        pathname.startsWith('/you') ||
         (user?.username && pathname === `/profile/${user.username}`)
       )
     }
@@ -91,12 +91,12 @@ export default function BottomNavigation() {
         aria-current={active ? 'page' : undefined}
       >
         <Icon
-          className="w-11 h-11"
+          className="w-12 h-12"
           style={{ color: item.color }}
           fill={item.color}
           aria-hidden="true"
         />
-        <span className={`text-base font-bold ${active ? 'text-[#1CB0F6]' : 'text-[#4B4B4B]'}`}>
+        <span className={`text-lg font-bold ${active ? 'text-[#1CB0F6]' : 'text-[#4B4B4B]'}`}>
           {item.label}
         </span>
       </Link>
@@ -112,8 +112,8 @@ export default function BottomNavigation() {
       className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-[#E5E5E5] lg:hidden transition-transform duration-200 ${isKeyboardOpen ? 'translate-y-full' : 'translate-y-0'}`}
     >
       <div
-        className="flex items-end justify-around h-32 px-4 pb-3"
-        style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+        className="flex items-end justify-around h-36 px-4 pb-4"
+        style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
       >
         {/* Left nav items */}
         {leftNavItems.map(renderNavItem)}
@@ -121,12 +121,12 @@ export default function BottomNavigation() {
         {/* Center Start button - larger and elevated */}
         <Link
           href="/timer"
-          className="flex flex-col items-center justify-center gap-2 -mt-6"
+          className="flex flex-col items-center justify-center gap-2 -mt-8"
           aria-label={hasActiveSession ? 'View active session' : 'Start session'}
           aria-current={timerActive ? 'page' : undefined}
         >
           <div
-            className={`w-20 h-20 rounded-full flex items-center justify-center shadow-lg ${
+            className={`w-24 h-24 rounded-full flex items-center justify-center shadow-lg ${
               hasActiveSession
                 ? 'bg-[#58CC02] border-4 border-[#45A000]'
                 : timerActive
@@ -134,10 +134,10 @@ export default function BottomNavigation() {
                   : 'bg-[#58CC02] border-4 border-b-[6px] border-[#45A000]'
             }`}
           >
-            <Play className="w-10 h-10 text-white ml-1" fill="white" aria-hidden="true" />
+            <Play className="w-12 h-12 text-white ml-1" fill="white" aria-hidden="true" />
           </div>
           <span
-            className={`text-base font-bold ${
+            className={`text-lg font-bold ${
               hasActiveSession || timerActive ? 'text-[#58CC02]' : 'text-[#4B4B4B]'
             }`}
           >

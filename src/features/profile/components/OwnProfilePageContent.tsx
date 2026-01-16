@@ -9,7 +9,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import MobileHeader from '@/components/MobileHeader'
 import LeftSidebar from '@/components/LeftSidebar'
 import BottomNavigation from '@/components/BottomNavigation'
 import Footer from '@/components/Footer'
@@ -30,9 +29,17 @@ import {
   TrendingUp,
   BarChart3,
   ChevronDown,
-  MapPin,
   Check,
+  Star,
+  Flame,
+  Clock,
+  Users,
+  UserPlus,
+  BookOpen,
+  Play,
 } from 'lucide-react'
+import { useUserLevel } from '@/hooks/useUserLevel'
+import { getLevelTitle } from '@/lib/utils/levelCalculator'
 import {
   XAxis,
   YAxis,
@@ -101,8 +108,9 @@ export function OwnProfilePageContent() {
   const { data: activities = [] } = useActivitiesWithSessions(user?.id, {
     enabled: !!user?.id,
   })
+  const { levelInfo, isLoading: levelLoading } = useUserLevel(user?.id)
 
-  const isLoading = sessionsLoading || statsLoading
+  const isLoading = sessionsLoading || statsLoading || levelLoading
 
   useEffect(() => {
     if (
@@ -393,65 +401,13 @@ export function OwnProfilePageContent() {
     return chartData.map((d) => ({ name: d.name, value: d.avgDuration }))
   }, [chartData])
 
-  // Helper to render percentage change
-  const renderPercentageChange = (change: number | null) => {
-    if (change === null) return null
-
-    const isPositive = change >= 0
-    const formattedChange = Math.abs(change).toFixed(0)
-
-    return (
-      <div className={`text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-        {isPositive ? '↑' : '↓'} {formattedChange}%
-      </div>
-    )
-  }
-
-  // Custom tooltip formatter
-  interface TooltipPayloadEntry {
-    color?: string
-    name?: string
-    value?: number | string
-  }
-
-  interface CustomTooltipProps {
-    active?: boolean
-    payload?: TooltipPayloadEntry[]
-    label?: string
-  }
-
-  const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
-          <p className="text-sm font-medium text-gray-900 mb-2">{label}</p>
-          {payload.map((entry, index: number) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              <span className="font-semibold">{entry.name}</span>: {entry.value}
-            </p>
-          ))}
-        </div>
-      )
-    }
-    return null
-  }
-
   if (!user) return null
 
   console.log('RENDER: OwnProfilePageContent')
 
   return (
     <>
-      <div className="min-h-screen flex flex-col bg-white md:bg-gray-50">
-        {/* Mobile Header */}
-        <MobileHeader
-          title="My Profile"
-          showBackButton={true}
-          showSettings={true}
-          settingsExpanded={showSettingsMenu}
-          onSettingsClick={() => setShowSettingsMenu(!showSettingsMenu)}
-        />
-
+      <div className="min-h-screen flex flex-col bg-[#F7F7F7] lg:bg-gray-50">
         {/* Main Content Area */}
         <div className="flex-1">
           <div className="flex justify-center">
@@ -461,228 +417,470 @@ export function OwnProfilePageContent() {
             </div>
 
             {/* Content - with left margin on desktop to account for fixed sidebar */}
-            <div className="flex-1 lg:ml-[256px] pb-32 md:pb-8">
-              <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
-                <div className="max-w-4xl mx-auto">
-                  {/* Profile Card */}
-                  <div className="bg-white md:rounded-xl md:border border-gray-200 p-3 md:p-6 mb-4 md:mb-6 relative">
-                    {/* Settings Icon - Desktop only */}
-                    <div className="hidden md:block absolute top-3 md:top-4 right-3 md:right-4 z-10">
-                      <div className="relative">
-                        <button
-                          onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-                          className="p-1.5 md:p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2"
-                          aria-label="Open settings menu"
-                          aria-expanded={showSettingsMenu}
-                          aria-haspopup="true"
-                        >
-                          <Settings className="w-4 h-4 md:w-5 md:h-5" />
-                        </button>
+            <div className="flex-1 lg:ml-[256px] pb-32 lg:pb-8">
+              {/* Mobile: edge-to-edge, Desktop: padded with max-width */}
+              <div className="lg:max-w-7xl lg:mx-auto lg:px-6 lg:py-6">
+                <div className="lg:max-w-4xl lg:mx-auto">
+                  {/* Duolingo-Style Profile Header */}
+                  <div className="bg-white lg:rounded-2xl lg:border-2 lg:border-[#E5E5E5] overflow-hidden mb-0 lg:mb-6 relative">
+                    {/* Gradient Header Background - taller on mobile for app feel */}
+                    <div className="bg-gradient-to-br from-[#1CB0F6] to-[#0088CC] pt-6 lg:pt-8 pb-14 lg:pb-16 px-4 relative">
+                      {/* Settings Icon */}
+                      <div className="absolute top-3 right-3 z-10">
+                        <div className="relative">
+                          <button
+                            onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+                            className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-[#1CB0F6]"
+                            aria-label="Open settings menu"
+                            aria-expanded={showSettingsMenu}
+                            aria-haspopup="true"
+                          >
+                            <Settings className="w-5 h-5" />
+                          </button>
 
-                        {/* Settings Dropdown */}
-                        {showSettingsMenu && (
-                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
-                            <Link
-                              href="/settings"
-                              className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 transition-colors"
-                              onClick={() => setShowSettingsMenu(false)}
-                            >
-                              Settings
-                            </Link>
-                            <hr className="my-2 border-gray-200" />
-                            <button
-                              onClick={() => {
-                                setShowSettingsMenu(false)
-                                logout()
-                              }}
-                              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
-                            >
-                              <LogOut className="w-4 h-4" />
-                              Log Out
-                            </button>
-                          </div>
-                        )}
+                          {/* Settings Dropdown */}
+                          {showSettingsMenu && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border-2 border-[#E5E5E5] py-2 z-10">
+                              <Link
+                                href="/settings"
+                                className="block px-4 py-2.5 text-sm font-bold text-[#3C3C3C] hover:bg-[#F7F7F7] transition-colors"
+                                onClick={() => setShowSettingsMenu(false)}
+                              >
+                                Settings
+                              </Link>
+                              <hr className="my-2 border-[#E5E5E5]" />
+                              <button
+                                onClick={() => {
+                                  setShowSettingsMenu(false)
+                                  logout()
+                                }}
+                                className="w-full text-left px-4 py-2.5 text-sm font-bold text-[#FF4B4B] hover:bg-red-50 transition-colors flex items-center gap-2"
+                              >
+                                <LogOut className="w-4 h-4" />
+                                Log Out
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Responsive Layout - Stacks on mobile, side-by-side on desktop */}
-                    <div className="flex flex-col md:flex-row md:gap-8">
-                      {/* Left Column - Profile Info */}
-                      <div className="flex-1">
-                        {/* Profile Picture */}
-                        {user.profilePicture || userProfile?.profilePicture ? (
-                          <div className="w-20 h-20 md:w-32 md:h-32 rounded-full overflow-hidden ring-4 ring-white shadow-md mb-3 md:mb-4">
-                            <Image
-                              src={userProfile?.profilePicture || user.profilePicture || ''}
-                              alt={user.name}
-                              width={128}
-                              height={128}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-20 h-20 md:w-32 md:h-32 bg-[#FC4C02] rounded-full flex items-center justify-center ring-4 ring-white shadow-md mb-3 md:mb-4">
-                            <span className="text-white font-bold text-2xl md:text-4xl">
-                              {user.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Name and Username */}
-                        <h1 className="text-lg md:text-2xl font-bold text-gray-900">{user.name}</h1>
-                        <p className="text-gray-600 text-sm md:text-base mb-2 md:mb-3">
-                          @{user.username}
-                        </p>
-
-                        {/* Bio */}
-                        {(userProfile?.bio || user.bio) && (
-                          <p className="text-gray-700 mb-2 md:mb-3 text-sm md:text-base leading-snug">
-                            {userProfile?.bio || user.bio}
-                          </p>
-                        )}
-
-                        {/* Location */}
-                        {(userProfile?.location || user.location) && (
-                          <p className="text-gray-500 text-xs md:text-sm mb-3 md:mb-4 flex items-center gap-1">
-                            <MapPin className="w-3 h-3 md:w-4 md:h-4" aria-hidden="true" />
-                            {userProfile?.location || user.location}
-                          </p>
-                        )}
-
-                        {/* Follower/Following Counts */}
-                        <div className="flex gap-4 md:gap-6 mb-3 md:mb-4">
-                          <div>
-                            <span className="font-bold text-gray-900 text-sm md:text-base">
-                              {followers.length}
-                            </span>{' '}
-                            <span className="text-gray-600 text-xs md:text-sm">Followers</span>
-                          </div>
-                          <div>
-                            <span className="font-bold text-gray-900 text-sm md:text-base">
-                              {following.length}
-                            </span>{' '}
-                            <span className="text-gray-600 text-xs md:text-sm">Following</span>
+                    {/* Profile Content - Overlaps gradient */}
+                    <div className="px-4 lg:px-6 -mt-10 lg:-mt-12 pb-5 lg:pb-6">
+                      {/* Avatar with Level Badge */}
+                      <div className="flex flex-col items-center text-center mb-3 lg:mb-4">
+                        <div className="relative mb-2 lg:mb-3">
+                          {user.profilePicture || userProfile?.profilePicture ? (
+                            <div className="w-20 h-20 lg:w-28 lg:h-28 rounded-full overflow-hidden ring-4 ring-white shadow-lg">
+                              <Image
+                                src={userProfile?.profilePicture || user.profilePicture || ''}
+                                alt={user.name}
+                                width={112}
+                                height={112}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-20 h-20 lg:w-28 lg:h-28 bg-[#1CB0F6] rounded-full flex items-center justify-center ring-4 ring-white shadow-lg">
+                              <span className="text-white font-extrabold text-2xl lg:text-4xl">
+                                {user.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                          {/* Level Badge */}
+                          <div className="absolute -bottom-0.5 -right-0.5 lg:-bottom-1 lg:-right-1 bg-[#FFD900] text-[#3C3C3C] text-xs lg:text-sm font-extrabold px-2 lg:px-2.5 py-0.5 lg:py-1 rounded-full border-2 border-white shadow-sm">
+                            {levelInfo?.level ?? 1}
                           </div>
                         </div>
 
-                        {/* Edit Profile Button */}
-                        <Link
-                          href="/settings"
-                          className="inline-flex items-center gap-2 mb-4 md:mb-0 px-4 md:px-4 py-2.5 md:py-2.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors font-semibold text-sm md:text-sm"
-                        >
-                          <Edit className="w-4 h-4 md:w-4 md:h-4" />
-                          <span className="md:hidden">Edit</span>
-                          <span className="hidden md:inline">Edit Profile</span>
-                        </Link>
+                        {/* Name */}
+                        <h1 className="text-lg lg:text-2xl font-extrabold text-[#3C3C3C] mb-0.5 lg:mb-1">
+                          {user.name}
+                        </h1>
+
+                        {/* Username and Join Date */}
+                        <p className="text-xs lg:text-sm font-bold text-[#AFAFAF] uppercase tracking-wide mb-3 lg:mb-4">
+                          @{user.username.toUpperCase()} · JOINED{' '}
+                          {user.createdAt
+                            ? new Date(user.createdAt).getFullYear()
+                            : new Date().getFullYear()}
+                        </p>
+
+                        {/* Stats Row */}
+                        <div className="flex items-center justify-center gap-6 lg:gap-8 mb-3 lg:mb-4">
+                          <div className="text-center">
+                            <div className="text-xl lg:text-2xl font-extrabold text-[#3C3C3C]">
+                              {following.length}
+                            </div>
+                            <div className="text-[10px] lg:text-xs font-bold text-[#AFAFAF] uppercase tracking-wide">
+                              Following
+                            </div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-xl lg:text-2xl font-extrabold text-[#3C3C3C]">
+                              {followers.length}
+                            </div>
+                            <div className="text-[10px] lg:text-xs font-bold text-[#AFAFAF] uppercase tracking-wide">
+                              Followers
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-2 lg:gap-3">
+                          <Link
+                            href="/search"
+                            className="flex items-center gap-1.5 lg:gap-2 px-4 lg:px-6 py-2.5 lg:py-3 bg-white border-2 border-[#E5E5E5] text-[#3C3C3C] hover:bg-[#F7F7F7] rounded-xl transition-colors font-extrabold text-xs lg:text-sm"
+                          >
+                            <UserPlus className="w-4 h-4 lg:w-5 lg:h-5" />
+                            ADD FRIENDS
+                          </Link>
+                          <Link
+                            href="/settings"
+                            className="p-2.5 lg:p-3 bg-white border-2 border-[#E5E5E5] text-[#3C3C3C] hover:bg-[#F7F7F7] rounded-xl transition-colors"
+                            aria-label="Edit Profile"
+                          >
+                            <Edit className="w-4 h-4 lg:w-5 lg:h-5" />
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Tabs */}
-                  <div className="bg-white md:bg-gray-50 -mx-4 md:mx-0">
-                    <div className="bg-white md:bg-gray-50 border-b border-gray-200">
-                      <div
-                        className="flex md:gap-8 px-4 md:px-0 overflow-x-auto scrollbar-hide"
-                        role="tablist"
-                        aria-label="Profile sections"
-                      >
-                        <button
-                          onClick={() => {
-                            setActiveTab('progress')
-                            router.push('/profile?tab=progress')
-                          }}
-                          className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 ${
-                            activeTab === 'progress'
-                              ? 'border-[#0066CC] text-[#0066CC]'
-                              : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
-                          }`}
-                          role="tab"
-                          aria-selected={activeTab === 'progress'}
-                          aria-controls="progress-panel"
-                          id="progress-tab"
-                        >
-                          Progress
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            setActiveTab('sessions')
-                            router.push('/profile?tab=sessions')
-                          }}
-                          className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 ${
-                            activeTab === 'sessions'
-                              ? 'border-[#0066CC] text-[#0066CC]'
-                              : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
-                          }`}
-                          role="tab"
-                          aria-selected={activeTab === 'sessions'}
-                          aria-controls="sessions-panel"
-                          id="sessions-tab"
-                        >
-                          Sessions
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            setActiveTab('followers')
-                            router.push('/profile?tab=followers')
-                          }}
-                          className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 ${
-                            activeTab === 'followers'
-                              ? 'border-[#0066CC] text-[#0066CC]'
-                              : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
-                          }`}
-                          role="tab"
-                          aria-selected={activeTab === 'followers'}
-                          aria-controls="followers-panel"
-                          id="followers-tab"
-                        >
-                          Followers
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            setActiveTab('following')
-                            router.push('/profile?tab=following')
-                          }}
-                          className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 ${
-                            activeTab === 'following'
-                              ? 'border-[#0066CC] text-[#0066CC]'
-                              : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
-                          }`}
-                          role="tab"
-                          aria-selected={activeTab === 'following'}
-                          aria-controls="following-panel"
-                          id="following-tab"
-                        >
-                          Following
-                        </button>
+                  {/* Overview Section - Mobile: 2x2 grid with larger elements, Desktop: cards */}
+                  <div className="px-4 lg:px-0 py-3 lg:py-0 lg:mb-6">
+                    <h2 className="text-xs lg:text-xs font-bold text-[#AFAFAF] uppercase tracking-widest mb-3 lg:mb-3">
+                      Overview
+                    </h2>
+                    {/* Mobile: 2x2 Duolingo-style grid with larger icons */}
+                    <div className="lg:hidden grid grid-cols-2 gap-3">
+                      {/* Streak Card */}
+                      <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] p-4">
+                        <div className="w-12 h-12 mb-2 bg-gradient-to-br from-[#FF9600] to-[#FF6B00] rounded-xl flex items-center justify-center shadow-sm">
+                          <Flame className="w-7 h-7 text-white" fill="white" />
+                        </div>
+                        <div className="text-2xl font-extrabold text-[#3C3C3C]">
+                          {stats?.currentStreak ?? 0}
+                        </div>
+                        <div className="text-[10px] font-bold text-[#AFAFAF] uppercase tracking-wide">
+                          Day Streak
+                        </div>
                       </div>
+                      {/* Level Card */}
+                      <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] p-4">
+                        <div className="w-12 h-12 mb-2 bg-gradient-to-br from-[#FFD900] to-[#FFAA00] rounded-xl flex items-center justify-center shadow-sm">
+                          <Star className="w-7 h-7 text-white" fill="white" />
+                        </div>
+                        <div className="text-2xl font-extrabold text-[#3C3C3C]">
+                          Level {levelInfo?.level ?? 1}
+                        </div>
+                        <div className="text-[10px] font-bold text-[#AFAFAF] uppercase tracking-wide">
+                          {getLevelTitle(levelInfo?.level ?? 1)}
+                        </div>
+                      </div>
+                      {/* Hours Card */}
+                      <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] p-4">
+                        <div className="w-12 h-12 mb-2 bg-gradient-to-br from-[#1CB0F6] to-[#0088CC] rounded-xl flex items-center justify-center shadow-sm">
+                          <Clock className="w-7 h-7 text-white" />
+                        </div>
+                        <div className="text-2xl font-extrabold text-[#3C3C3C]">
+                          {levelInfo?.totalHours ?? 0}h
+                        </div>
+                        <div className="text-[10px] font-bold text-[#AFAFAF] uppercase tracking-wide">
+                          Total Hours
+                        </div>
+                      </div>
+                      {/* Sessions Card */}
+                      <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] p-4">
+                        <div className="w-12 h-12 mb-2 bg-gradient-to-br from-[#58CC02] to-[#45A000] rounded-xl flex items-center justify-center shadow-sm">
+                          <BookOpen className="w-7 h-7 text-white" />
+                        </div>
+                        <div className="text-2xl font-extrabold text-[#3C3C3C]">
+                          {sessions.length}
+                        </div>
+                        <div className="text-[10px] font-bold text-[#AFAFAF] uppercase tracking-wide">
+                          Sessions
+                        </div>
+                      </div>
+                    </div>
+                    {/* Desktop: 4-column card grid */}
+                    <div className="hidden lg:grid grid-cols-4 gap-3">
+                      {/* Streak Card */}
+                      <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] p-4 hover:border-[#DDF4FF] transition-colors">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-10 h-10 bg-gradient-to-br from-[#FF9600] to-[#FF7700] rounded-xl flex items-center justify-center">
+                            <Flame className="w-6 h-6 text-white" fill="white" />
+                          </div>
+                        </div>
+                        <div className="text-2xl font-extrabold text-[#3C3C3C]">
+                          {stats?.currentStreak ?? 0}
+                        </div>
+                        <div className="text-xs font-bold text-[#AFAFAF] uppercase tracking-wide">
+                          Day Streak
+                        </div>
+                      </div>
+
+                      {/* Level Card */}
+                      <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] p-4 hover:border-[#DDF4FF] transition-colors">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-10 h-10 bg-gradient-to-br from-[#FFD900] to-[#E5B400] rounded-xl flex items-center justify-center">
+                            <Star className="w-6 h-6 text-white" fill="white" />
+                          </div>
+                        </div>
+                        <div className="text-2xl font-extrabold text-[#3C3C3C]">
+                          Level {levelInfo?.level ?? 1}
+                        </div>
+                        <div className="text-xs font-bold text-[#AFAFAF] uppercase tracking-wide">
+                          {getLevelTitle(levelInfo?.level ?? 1)}
+                        </div>
+                      </div>
+
+                      {/* Total Hours Card */}
+                      <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] p-4 hover:border-[#DDF4FF] transition-colors">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-10 h-10 bg-gradient-to-br from-[#1CB0F6] to-[#0088CC] rounded-xl flex items-center justify-center">
+                            <Clock className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
+                        <div className="text-2xl font-extrabold text-[#3C3C3C]">
+                          {levelInfo?.totalHours ?? 0}h
+                        </div>
+                        <div className="text-xs font-bold text-[#AFAFAF] uppercase tracking-wide">
+                          Total Time
+                        </div>
+                      </div>
+
+                      {/* Sessions Card */}
+                      <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] p-4 hover:border-[#DDF4FF] transition-colors">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-10 h-10 bg-gradient-to-br from-[#58CC02] to-[#45A000] rounded-xl flex items-center justify-center">
+                            <BookOpen className="w-6 h-6 text-white" />
+                          </div>
+                        </div>
+                        <div className="text-2xl font-extrabold text-[#3C3C3C]">
+                          {sessions.length}
+                        </div>
+                        <div className="text-xs font-bold text-[#AFAFAF] uppercase tracking-wide">
+                          Sessions
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Level Progress Section - Mobile Only */}
+                  <div className="lg:hidden px-4 py-3">
+                    <div className="bg-white rounded-2xl border-2 border-[#E5E5E5] p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-[#FFD900] text-[#3C3C3C] text-sm font-extrabold px-3 py-1 rounded-full border-2 border-[#E5B400]">
+                            Lv.{levelInfo?.level ?? 1}
+                          </div>
+                          <span className="text-sm font-bold text-[#777777]">
+                            {getLevelTitle(levelInfo?.level ?? 1)}
+                          </span>
+                        </div>
+                        <span className="text-xs font-bold text-[#AFAFAF]">
+                          {((levelInfo?.xpForNextLevel ?? 5) - (levelInfo?.currentXP ?? 0)).toFixed(
+                            1
+                          )}
+                          h to next level
+                        </span>
+                      </div>
+                      {/* Progress bar */}
+                      <div className="w-full h-4 bg-[#E5E5E5] rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-[#FFD900] to-[#FFAA00] rounded-full transition-all duration-500"
+                          style={{ width: `${levelInfo?.progressPercent ?? 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Last 7 Days Chart Section - Hide on mobile when no data */}
+                  <div
+                    className={`bg-white lg:rounded-2xl lg:border-2 lg:border-[#E5E5E5] px-4 py-4 lg:p-6 mb-0 lg:mb-6 lg:hover:border-[#DDF4FF] transition-colors ${sessions.length === 0 ? 'hidden lg:block' : ''}`}
+                  >
+                    <div className="flex items-center gap-2 lg:gap-3 mb-3 lg:mb-4">
+                      <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-[#CE82FF] to-[#A855F7] rounded-lg lg:rounded-xl flex items-center justify-center">
+                        <BarChart3 className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+                      </div>
+                      <h2 className="text-base lg:text-lg font-extrabold text-[#3C3C3C]">
+                        Last 7 Days
+                      </h2>
+                    </div>
+                    <div className="h-40 lg:h-48">
+                      {isLoading ? (
+                        <div className="h-full bg-[#F7F7F7] rounded-xl animate-pulse" />
+                      ) : chartData.slice(-7).every((d) => d.hours === 0) ? (
+                        <div className="h-full flex flex-col items-center justify-center text-center bg-[#F7F7F7] rounded-xl px-4">
+                          <div className="w-10 h-10 bg-[#E5E5E5] rounded-xl flex items-center justify-center mb-2">
+                            <BarChart3 className="w-5 h-5 text-[#AFAFAF]" />
+                          </div>
+                          <p className="text-sm font-bold text-[#777777]">
+                            No activity in the last 7 days
+                          </p>
+                          <Link
+                            href="/timer"
+                            className="text-xs font-bold text-[#1CB0F6] hover:underline mt-1"
+                          >
+                            Start a session →
+                          </Link>
+                        </div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart
+                            data={chartData.slice(-7)}
+                            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                          >
+                            <defs>
+                              <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#58CC02" />
+                                <stop offset="100%" stopColor="#45A000" />
+                              </linearGradient>
+                            </defs>
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 11, fill: '#AFAFAF', fontWeight: 700 }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis hide />
+                            <Tooltip
+                              content={({ active, payload, label }) => {
+                                if (active && payload && payload.length) {
+                                  return (
+                                    <div className="bg-white rounded-xl border-2 border-[#E5E5E5] shadow-lg p-3">
+                                      <p className="text-sm font-extrabold text-[#3C3C3C] mb-1">
+                                        {label}
+                                      </p>
+                                      <p className="text-sm font-bold text-[#58CC02]">
+                                        {payload[0].value}h worked
+                                      </p>
+                                    </div>
+                                  )
+                                }
+                                return null
+                              }}
+                            />
+                            <Bar
+                              dataKey="hours"
+                              fill="url(#barGradient)"
+                              radius={[8, 8, 8, 8]}
+                              name="Hours"
+                            />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Duolingo-Style Tabs - Mobile: larger touch targets, Desktop: cards */}
+                  <div className="bg-white lg:rounded-2xl lg:border-2 lg:border-[#E5E5E5] px-4 lg:p-3 py-3 mb-0 lg:mb-4">
+                    <div
+                      className="flex gap-2 lg:gap-3 overflow-x-auto scrollbar-hide"
+                      role="tablist"
+                      aria-label="Profile sections"
+                    >
+                      <button
+                        onClick={() => {
+                          setActiveTab('progress')
+                          router.push('/profile?tab=progress')
+                        }}
+                        className={`flex items-center gap-2 px-4 lg:px-5 py-3 lg:py-3 min-h-[44px] rounded-xl text-sm font-extrabold transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#1CB0F6] focus:ring-offset-2 ${
+                          activeTab === 'progress'
+                            ? 'bg-[#DDF4FF] text-[#1CB0F6] border-2 border-b-4 border-[#1CB0F6] active:border-b-2 active:translate-y-[2px]'
+                            : 'text-[#AFAFAF] hover:bg-[#F7F7F7] border-2 border-transparent'
+                        }`}
+                        role="tab"
+                        aria-selected={activeTab === 'progress'}
+                        aria-controls="progress-panel"
+                        id="progress-tab"
+                      >
+                        <TrendingUp className="w-5 h-5" />
+                        Progress
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setActiveTab('sessions')
+                          router.push('/profile?tab=sessions')
+                        }}
+                        className={`flex items-center gap-2 px-4 lg:px-5 py-3 lg:py-3 min-h-[44px] rounded-xl text-sm font-extrabold transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#1CB0F6] focus:ring-offset-2 ${
+                          activeTab === 'sessions'
+                            ? 'bg-[#DDF4FF] text-[#1CB0F6] border-2 border-b-4 border-[#1CB0F6] active:border-b-2 active:translate-y-[2px]'
+                            : 'text-[#AFAFAF] hover:bg-[#F7F7F7] border-2 border-transparent'
+                        }`}
+                        role="tab"
+                        aria-selected={activeTab === 'sessions'}
+                        aria-controls="sessions-panel"
+                        id="sessions-tab"
+                      >
+                        <BookOpen className="w-5 h-5" />
+                        Sessions
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setActiveTab('followers')
+                          router.push('/profile?tab=followers')
+                        }}
+                        className={`flex items-center gap-2 px-4 lg:px-5 py-3 lg:py-3 min-h-[44px] rounded-xl text-sm font-extrabold transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#1CB0F6] focus:ring-offset-2 ${
+                          activeTab === 'followers'
+                            ? 'bg-[#DDF4FF] text-[#1CB0F6] border-2 border-b-4 border-[#1CB0F6] active:border-b-2 active:translate-y-[2px]'
+                            : 'text-[#AFAFAF] hover:bg-[#F7F7F7] border-2 border-transparent'
+                        }`}
+                        role="tab"
+                        aria-selected={activeTab === 'followers'}
+                        aria-controls="followers-panel"
+                        id="followers-tab"
+                      >
+                        <Users className="w-5 h-5" />
+                        Followers
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setActiveTab('following')
+                          router.push('/profile?tab=following')
+                        }}
+                        className={`flex items-center gap-2 px-4 lg:px-5 py-3 lg:py-3 min-h-[44px] rounded-xl text-sm font-extrabold transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#1CB0F6] focus:ring-offset-2 ${
+                          activeTab === 'following'
+                            ? 'bg-[#DDF4FF] text-[#1CB0F6] border-2 border-b-4 border-[#1CB0F6] active:border-b-2 active:translate-y-[2px]'
+                            : 'text-[#AFAFAF] hover:bg-[#F7F7F7] border-2 border-transparent'
+                        }`}
+                        role="tab"
+                        aria-selected={activeTab === 'following'}
+                        aria-controls="following-panel"
+                        id="following-tab"
+                      >
+                        <UserPlus className="w-5 h-5" />
+                        Following
+                      </button>
                     </div>
                   </div>
 
                   {/* Tab Content */}
-                  <div className="mt-6">
+                  <div className="mt-2 lg:mt-6 px-0 lg:px-0">
                     {activeTab === 'progress' && (
                       <div
-                        className="max-w-4xl mx-auto space-y-4 md:space-y-6"
+                        className="lg:max-w-4xl lg:mx-auto space-y-0 lg:space-y-6"
                         id="progress-panel"
                         role="tabpanel"
                         aria-labelledby="progress-tab"
                       >
-                        {/* Header with Time Period Selector and Chart Type */}
-                        <div className="flex items-center justify-between gap-2 py-2 -mx-4 px-4 md:mx-0 md:px-0">
+                        {/* Header with Time Period Selector and Chart Type - Duolingo Style */}
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 px-4 lg:px-0 py-2">
                           {/* Activity Filter Dropdown */}
                           <div className="relative flex-shrink-0">
                             <button
                               onClick={() => setShowActivityDropdown(!showActivityDropdown)}
-                              className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 min-h-[44px] min-w-[120px]"
+                              className="flex items-center gap-2 px-4 py-2.5 text-sm font-extrabold text-[#3C3C3C] bg-white border-2 border-[#E5E5E5] rounded-xl hover:bg-[#F7F7F7] transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#1CB0F6] focus:ring-offset-2 min-h-[44px]"
                               aria-label="Filter by activity"
                               aria-expanded={showActivityDropdown}
                               aria-haspopup="listbox"
                             >
                               {selectedActivityId === 'all' ? (
-                                <span className="font-medium">All Activities</span>
+                                <span>All Activities</span>
                               ) : (
                                 <>
                                   <IconRenderer
@@ -690,40 +888,37 @@ export function OwnProfilePageContent() {
                                       activities.find((a) => a.id === selectedActivityId)?.icon ||
                                       ''
                                     }
-                                    className="w-4 h-4 flex-shrink-0"
+                                    className="w-5 h-5 flex-shrink-0"
                                   />
-                                  <span className="font-medium">
+                                  <span>
                                     {activities.find((a) => a.id === selectedActivityId)?.name ||
                                       'All'}
                                   </span>
                                 </>
                               )}
-                              <ChevronDown className="w-3.5 h-3.5" />
+                              <ChevronDown className="w-4 h-4" />
                             </button>
 
                             {/* Activity Dropdown Menu */}
                             {showActivityDropdown && (
                               <>
-                                {/* Backdrop to close dropdown */}
                                 <div
                                   className="fixed inset-0 z-40"
                                   onClick={() => setShowActivityDropdown(false)}
                                 />
-                                <div className="absolute left-0 top-full mt-2 w-56 md:w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
+                                <div className="absolute left-0 top-full mt-2 w-56 lg:w-64 bg-white rounded-xl shadow-lg border-2 border-[#E5E5E5] py-2 z-50 max-h-64 overflow-y-auto">
                                   <button
                                     onClick={() => {
                                       setSelectedActivityId('all')
                                       setShowActivityDropdown(false)
                                     }}
-                                    className={`w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 transition-colors flex items-center gap-3 ${
-                                      selectedActivityId === 'all' ? 'bg-blue-50' : ''
+                                    className={`w-full text-left px-4 py-2.5 text-sm font-bold hover:bg-[#F7F7F7] transition-colors flex items-center gap-3 ${
+                                      selectedActivityId === 'all' ? 'bg-[#DDF4FF]' : ''
                                     }`}
                                   >
-                                    <span className="flex-1 font-medium text-gray-900">
-                                      All Activities
-                                    </span>
+                                    <span className="flex-1 text-[#3C3C3C]">All Activities</span>
                                     {selectedActivityId === 'all' && (
-                                      <Check className="w-4 h-4 text-blue-500" />
+                                      <Check className="w-4 h-4 text-[#1CB0F6]" />
                                     )}
                                   </button>
                                   {activities.map((activity) => (
@@ -733,19 +928,17 @@ export function OwnProfilePageContent() {
                                         setSelectedActivityId(activity.id)
                                         setShowActivityDropdown(false)
                                       }}
-                                      className={`w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 transition-colors flex items-center gap-3 ${
-                                        selectedActivityId === activity.id ? 'bg-blue-50' : ''
+                                      className={`w-full text-left px-4 py-2.5 text-sm font-bold hover:bg-[#F7F7F7] transition-colors flex items-center gap-3 ${
+                                        selectedActivityId === activity.id ? 'bg-[#DDF4FF]' : ''
                                       }`}
                                     >
                                       <IconRenderer
                                         iconName={activity.icon}
-                                        className="w-5 h-5 text-gray-700 flex-shrink-0"
+                                        className="w-5 h-5 text-[#3C3C3C] flex-shrink-0"
                                       />
-                                      <span className="flex-1 font-medium text-gray-900">
-                                        {activity.name}
-                                      </span>
+                                      <span className="flex-1 text-[#3C3C3C]">{activity.name}</span>
                                       {selectedActivityId === activity.id && (
-                                        <Check className="w-4 h-4 text-blue-500" />
+                                        <Check className="w-4 h-4 text-[#1CB0F6]" />
                                       )}
                                     </button>
                                   ))}
@@ -754,17 +947,17 @@ export function OwnProfilePageContent() {
                             )}
                           </div>
 
-                          {/* Time Period Buttons - Scrollable on mobile */}
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <div className="overflow-x-auto flex items-center gap-1.5 md:gap-2 flex-1 scrollbar-hide">
+                          {/* Time Period Buttons */}
+                          <div className="flex items-center gap-2 flex-1 min-w-0 justify-start lg:justify-end">
+                            <div className="overflow-x-auto flex items-center gap-2 scrollbar-hide">
                               {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
                                 <button
                                   key={period}
                                   onClick={() => setTimePeriod(period)}
-                                  className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full transition-colors whitespace-nowrap flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 min-h-[44px] ${
+                                  className={`px-4 py-2.5 text-sm font-extrabold rounded-xl transition-all whitespace-nowrap flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-[#1CB0F6] focus:ring-offset-2 min-h-[44px] min-w-[44px] ${
                                     timePeriod === period
-                                      ? 'bg-gray-900 text-white'
-                                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                      ? 'bg-[#1CB0F6] text-white border-2 border-b-4 border-[#0088CC] active:border-b-2 active:translate-y-[2px]'
+                                      : 'bg-white text-[#AFAFAF] border-2 border-[#E5E5E5] hover:bg-[#F7F7F7]'
                                   }`}
                                   aria-label={`Show ${period} time period`}
                                   aria-pressed={timePeriod === period}
@@ -778,50 +971,39 @@ export function OwnProfilePageContent() {
                             <div className="relative flex-shrink-0">
                               <button
                                 onClick={() => setShowChartTypeDropdown(!showChartTypeDropdown)}
-                                className="flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 min-h-[44px]"
+                                className="flex items-center gap-2 px-3 py-2.5 text-sm font-extrabold text-[#3C3C3C] bg-white border-2 border-[#E5E5E5] rounded-xl hover:bg-[#F7F7F7] transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#1CB0F6] focus:ring-offset-2 min-h-[44px]"
                                 aria-label={`Chart type: ${chartType}`}
                                 aria-expanded={showChartTypeDropdown}
                                 aria-haspopup="listbox"
                               >
                                 {chartType === 'bar' ? (
-                                  <BarChart3
-                                    className="w-3.5 h-3.5 md:w-4 md:h-4"
-                                    aria-hidden="true"
-                                  />
+                                  <BarChart3 className="w-5 h-5" aria-hidden="true" />
                                 ) : (
-                                  <TrendingUp
-                                    className="w-3.5 h-3.5 md:w-4 md:h-4"
-                                    aria-hidden="true"
-                                  />
+                                  <TrendingUp className="w-5 h-5" aria-hidden="true" />
                                 )}
-                                <span className="capitalize hidden sm:inline">{chartType}</span>
-                                <ChevronDown className="w-3 h-3" aria-hidden="true" />
+                                <ChevronDown className="w-4 h-4" aria-hidden="true" />
                               </button>
 
                               {/* Chart Type Dropdown */}
                               {showChartTypeDropdown && (
                                 <>
-                                  {/* Backdrop to close dropdown */}
                                   <div
                                     className="fixed inset-0 z-40"
                                     onClick={() => setShowChartTypeDropdown(false)}
                                   />
-                                  <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                                  <div className="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-lg border-2 border-[#E5E5E5] py-2 z-50">
                                     <button
                                       onClick={() => {
                                         setChartType('bar')
                                         setShowChartTypeDropdown(false)
                                       }}
-                                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                      className={`w-full text-left px-4 py-2.5 text-sm font-bold hover:bg-[#F7F7F7] transition-colors flex items-center gap-3 ${
                                         chartType === 'bar'
-                                          ? 'text-[#0066CC] font-medium'
-                                          : 'text-gray-700'
+                                          ? 'text-[#1CB0F6] bg-[#DDF4FF]'
+                                          : 'text-[#3C3C3C]'
                                       }`}
                                     >
-                                      {chartType === 'bar' && (
-                                        <span className="text-[#0066CC]">✓</span>
-                                      )}
-                                      <BarChart3 className="w-4 h-4" />
+                                      <BarChart3 className="w-5 h-5" />
                                       Bar
                                     </button>
                                     <button
@@ -829,16 +1011,13 @@ export function OwnProfilePageContent() {
                                         setChartType('line')
                                         setShowChartTypeDropdown(false)
                                       }}
-                                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                      className={`w-full text-left px-4 py-2.5 text-sm font-bold hover:bg-[#F7F7F7] transition-colors flex items-center gap-3 ${
                                         chartType === 'line'
-                                          ? 'text-[#0066CC] font-medium'
-                                          : 'text-gray-700'
+                                          ? 'text-[#1CB0F6] bg-[#DDF4FF]'
+                                          : 'text-[#3C3C3C]'
                                       }`}
                                     >
-                                      {chartType === 'line' && (
-                                        <span className="text-[#0066CC]">✓</span>
-                                      )}
-                                      <TrendingUp className="w-4 h-4" />
+                                      <TrendingUp className="w-5 h-5" />
                                       Line
                                     </button>
                                   </div>
@@ -848,80 +1027,159 @@ export function OwnProfilePageContent() {
                           </div>
                         </div>
 
-                        {/* Main Chart */}
-                        <div className="bg-white border border-gray-200 rounded-xl p-6">
-                          <div className="mb-4">
-                            <h3 className="font-semibold text-gray-900">Hours completed</h3>
+                        {/* Main Chart - Duolingo Style */}
+                        <div className="bg-white lg:rounded-2xl lg:border-2 lg:border-[#E5E5E5] px-4 py-4 lg:p-6 lg:hover:border-[#DDF4FF] transition-colors border-t border-b border-[#E5E5E5] lg:border-t-0 lg:border-b-0">
+                          <div className="flex items-center gap-2 lg:gap-3 mb-3 lg:mb-4">
+                            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-[#1CB0F6] to-[#0088CC] rounded-lg lg:rounded-xl flex items-center justify-center">
+                              <Clock className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
+                            </div>
+                            <h3 className="text-base lg:text-lg font-extrabold text-[#3C3C3C]">
+                              Hours Completed
+                            </h3>
                           </div>
-                          <div className="h-72">
+                          <div className="h-56 lg:h-72">
                             {isLoading ? (
-                              <div className="h-full bg-gray-50 rounded animate-pulse" />
+                              <div className="h-full bg-[#F7F7F7] rounded-xl animate-pulse" />
+                            ) : sessions.length === 0 ? (
+                              <div className="h-full flex flex-col items-center justify-center text-center px-4">
+                                <div className="w-16 h-16 lg:w-20 lg:h-20 bg-gradient-to-br from-[#58CC02] to-[#45A000] rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                                  <Play
+                                    className="w-8 h-8 lg:w-10 lg:h-10 text-white ml-1"
+                                    fill="white"
+                                  />
+                                </div>
+                                <h4 className="text-lg font-extrabold text-[#3C3C3C] mb-2">
+                                  Start your first session!
+                                </h4>
+                                <p className="text-sm text-[#777777] mb-4 max-w-xs">
+                                  Track your work sessions to see your progress and build streaks.
+                                </p>
+                                <Link
+                                  href="/timer"
+                                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#58CC02] text-white font-extrabold text-sm rounded-xl border-2 border-b-4 border-[#45A000] hover:brightness-105 transition-all active:border-b-2 active:translate-y-[2px] uppercase tracking-wide"
+                                >
+                                  <Play className="w-4 h-4" fill="white" />
+                                  Start Session
+                                </Link>
+                              </div>
+                            ) : chartData.every((d) => d.hours === 0) ? (
+                              <div className="h-full flex flex-col items-center justify-center text-center bg-[#F7F7F7] rounded-xl px-4">
+                                <div className="w-12 h-12 bg-[#E5E5E5] rounded-xl flex items-center justify-center mb-3">
+                                  <BarChart3 className="w-6 h-6 text-[#AFAFAF]" />
+                                </div>
+                                <h4 className="text-base font-extrabold text-[#3C3C3C] mb-1">
+                                  No activity this period
+                                </h4>
+                                <p className="text-sm text-[#777777] mb-3">
+                                  Log sessions to see your progress!
+                                </p>
+                                <Link
+                                  href="/timer"
+                                  className="text-sm font-bold text-[#1CB0F6] hover:underline"
+                                >
+                                  Start a session →
+                                </Link>
+                              </div>
                             ) : (
                               <ResponsiveContainer width="100%" height="100%">
                                 {chartType === 'bar' ? (
                                   <BarChart
                                     data={chartData}
-                                    margin={{
-                                      top: 10,
-                                      right: 10,
-                                      left: -20,
-                                      bottom: 0,
-                                    }}
+                                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                                   >
+                                    <defs>
+                                      <linearGradient
+                                        id="hoursBarGradient"
+                                        x1="0"
+                                        y1="0"
+                                        x2="0"
+                                        y2="1"
+                                      >
+                                        <stop offset="0%" stopColor="#1CB0F6" />
+                                        <stop offset="100%" stopColor="#0088CC" />
+                                      </linearGradient>
+                                    </defs>
                                     <XAxis
                                       dataKey="name"
-                                      tick={{ fontSize: 12, fill: '#666' }}
+                                      tick={{ fontSize: 11, fill: '#AFAFAF', fontWeight: 700 }}
                                       axisLine={false}
                                       tickLine={false}
                                     />
                                     <YAxis
-                                      tick={{ fontSize: 12, fill: '#666' }}
+                                      tick={{ fontSize: 11, fill: '#AFAFAF', fontWeight: 700 }}
                                       axisLine={false}
                                       tickLine={false}
                                       width={40}
                                     />
-                                    <Tooltip content={<CustomTooltip />} />
+                                    <Tooltip
+                                      content={({ active, payload, label }) => {
+                                        if (active && payload && payload.length) {
+                                          return (
+                                            <div className="bg-white rounded-xl border-2 border-[#E5E5E5] shadow-lg p-3">
+                                              <p className="text-sm font-extrabold text-[#3C3C3C] mb-1">
+                                                {label}
+                                              </p>
+                                              <p className="text-sm font-bold text-[#1CB0F6]">
+                                                {payload[0].value}h worked
+                                              </p>
+                                            </div>
+                                          )
+                                        }
+                                        return null
+                                      }}
+                                    />
                                     <Bar
                                       dataKey="hours"
-                                      fill="#0066CC"
-                                      radius={[4, 4, 0, 0]}
+                                      fill="url(#hoursBarGradient)"
+                                      radius={[8, 8, 8, 8]}
                                       name="Hours"
                                     />
                                   </BarChart>
                                 ) : (
                                   <ComposedChart
                                     data={chartData}
-                                    margin={{
-                                      top: 10,
-                                      right: 10,
-                                      left: -20,
-                                      bottom: 0,
-                                    }}
+                                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                                   >
                                     <defs>
                                       <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#0066CC" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#0066CC" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#1CB0F6" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#1CB0F6" stopOpacity={0} />
                                       </linearGradient>
                                     </defs>
                                     <XAxis
                                       dataKey="name"
-                                      tick={{ fontSize: 12, fill: '#666' }}
+                                      tick={{ fontSize: 11, fill: '#AFAFAF', fontWeight: 700 }}
                                       axisLine={false}
                                       tickLine={false}
                                     />
                                     <YAxis
-                                      tick={{ fontSize: 12, fill: '#666' }}
+                                      tick={{ fontSize: 11, fill: '#AFAFAF', fontWeight: 700 }}
                                       axisLine={false}
                                       tickLine={false}
                                       width={40}
                                     />
-                                    <Tooltip content={<CustomTooltip />} />
+                                    <Tooltip
+                                      content={({ active, payload, label }) => {
+                                        if (active && payload && payload.length) {
+                                          return (
+                                            <div className="bg-white rounded-xl border-2 border-[#E5E5E5] shadow-lg p-3">
+                                              <p className="text-sm font-extrabold text-[#3C3C3C] mb-1">
+                                                {label}
+                                              </p>
+                                              <p className="text-sm font-bold text-[#1CB0F6]">
+                                                {payload[0].value}h worked
+                                              </p>
+                                            </div>
+                                          )
+                                        }
+                                        return null
+                                      }}
+                                    />
                                     <Area
                                       type="monotone"
                                       dataKey="hours"
-                                      stroke="#0066CC"
-                                      strokeWidth={2}
+                                      stroke="#1CB0F6"
+                                      strokeWidth={3}
                                       fill="url(#colorHours)"
                                       name="Hours"
                                     />
@@ -932,55 +1190,74 @@ export function OwnProfilePageContent() {
                           </div>
                         </div>
 
-                        {/* Second Row - Two Charts */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {/* Second Row - Two Charts - Hide on mobile when no data */}
+                        <div
+                          className={`grid grid-cols-1 lg:grid-cols-2 gap-0 lg:gap-4 mt-0 lg:mt-4 ${sessions.length === 0 ? 'hidden lg:grid' : ''}`}
+                        >
                           {/* Average Session Duration */}
-                          <div className="bg-white border border-gray-200 rounded-xl p-6">
-                            <div className="mb-4">
-                              <h3 className="font-semibold text-gray-900">
-                                Average session duration
+                          <div className="bg-white lg:rounded-2xl lg:border-2 lg:border-[#E5E5E5] px-4 py-4 lg:p-6 lg:hover:border-[#DDF4FF] transition-colors border-b border-[#E5E5E5] lg:border-b-0">
+                            <div className="flex items-center gap-2 lg:gap-3 mb-3 lg:mb-4">
+                              <div className="w-7 h-7 lg:w-8 lg:h-8 bg-gradient-to-br from-[#58CC02] to-[#45A000] rounded-lg flex items-center justify-center">
+                                <TrendingUp className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+                              </div>
+                              <h3 className="text-sm lg:text-base font-extrabold text-[#3C3C3C]">
+                                Avg Session Duration
                               </h3>
                             </div>
-                            <div className="h-48">
+                            <div className="h-40 lg:h-48">
                               <ResponsiveContainer width="100%" height="100%">
                                 {chartType === 'bar' ? (
                                   <BarChart
                                     data={avgDurationData}
-                                    margin={{
-                                      top: 5,
-                                      right: 5,
-                                      left: -30,
-                                      bottom: 0,
-                                    }}
+                                    margin={{ top: 5, right: 5, left: -30, bottom: 0 }}
                                   >
+                                    <defs>
+                                      <linearGradient
+                                        id="durationBarGradient"
+                                        x1="0"
+                                        y1="0"
+                                        x2="0"
+                                        y2="1"
+                                      >
+                                        <stop offset="0%" stopColor="#58CC02" />
+                                        <stop offset="100%" stopColor="#45A000" />
+                                      </linearGradient>
+                                    </defs>
                                     <XAxis
                                       dataKey="name"
-                                      tick={{ fontSize: 11, fill: '#666' }}
+                                      tick={{ fontSize: 10, fill: '#AFAFAF', fontWeight: 700 }}
                                       axisLine={false}
                                       tickLine={false}
                                     />
-                                    <YAxis
-                                      tick={{ fontSize: 11, fill: '#666' }}
-                                      axisLine={false}
-                                      tickLine={false}
+                                    <YAxis hide />
+                                    <Tooltip
+                                      content={({ active, payload, label }) => {
+                                        if (active && payload && payload.length) {
+                                          return (
+                                            <div className="bg-white rounded-xl border-2 border-[#E5E5E5] shadow-lg p-3">
+                                              <p className="text-sm font-extrabold text-[#3C3C3C] mb-1">
+                                                {label}
+                                              </p>
+                                              <p className="text-sm font-bold text-[#58CC02]">
+                                                {payload[0].value}m avg
+                                              </p>
+                                            </div>
+                                          )
+                                        }
+                                        return null
+                                      }}
                                     />
-                                    <Tooltip content={<CustomTooltip />} />
                                     <Bar
                                       dataKey="value"
-                                      fill="#34C759"
-                                      radius={[4, 4, 0, 0]}
+                                      fill="url(#durationBarGradient)"
+                                      radius={[6, 6, 6, 6]}
                                       name="Minutes"
                                     />
                                   </BarChart>
                                 ) : (
                                   <ComposedChart
                                     data={avgDurationData}
-                                    margin={{
-                                      top: 5,
-                                      right: 5,
-                                      left: -30,
-                                      bottom: 0,
-                                    }}
+                                    margin={{ top: 5, right: 5, left: -30, bottom: 0 }}
                                   >
                                     <defs>
                                       <linearGradient
@@ -990,27 +1267,39 @@ export function OwnProfilePageContent() {
                                         x2="0"
                                         y2="1"
                                       >
-                                        <stop offset="5%" stopColor="#34C759" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#34C759" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#58CC02" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#58CC02" stopOpacity={0} />
                                       </linearGradient>
                                     </defs>
                                     <XAxis
                                       dataKey="name"
-                                      tick={{ fontSize: 11, fill: '#666' }}
+                                      tick={{ fontSize: 10, fill: '#AFAFAF', fontWeight: 700 }}
                                       axisLine={false}
                                       tickLine={false}
                                     />
-                                    <YAxis
-                                      tick={{ fontSize: 11, fill: '#666' }}
-                                      axisLine={false}
-                                      tickLine={false}
+                                    <YAxis hide />
+                                    <Tooltip
+                                      content={({ active, payload, label }) => {
+                                        if (active && payload && payload.length) {
+                                          return (
+                                            <div className="bg-white rounded-xl border-2 border-[#E5E5E5] shadow-lg p-3">
+                                              <p className="text-sm font-extrabold text-[#3C3C3C] mb-1">
+                                                {label}
+                                              </p>
+                                              <p className="text-sm font-bold text-[#58CC02]">
+                                                {payload[0].value}m avg
+                                              </p>
+                                            </div>
+                                          )
+                                        }
+                                        return null
+                                      }}
                                     />
-                                    <Tooltip content={<CustomTooltip />} />
                                     <Area
                                       type="monotone"
                                       dataKey="value"
-                                      stroke="#34C759"
-                                      strokeWidth={2}
+                                      stroke="#58CC02"
+                                      strokeWidth={3}
                                       fill="url(#colorAvgDuration)"
                                       name="Minutes"
                                     />
@@ -1021,50 +1310,69 @@ export function OwnProfilePageContent() {
                           </div>
 
                           {/* Sessions */}
-                          <div className="bg-white border border-gray-200 rounded-xl p-6">
-                            <div className="mb-4">
-                              <h3 className="font-semibold text-gray-900">Sessions completed</h3>
+                          <div className="bg-white lg:rounded-2xl lg:border-2 lg:border-[#E5E5E5] px-4 py-4 lg:p-6 lg:hover:border-[#DDF4FF] transition-colors border-b border-[#E5E5E5] lg:border-b-0">
+                            <div className="flex items-center gap-2 lg:gap-3 mb-3 lg:mb-4">
+                              <div className="w-7 h-7 lg:w-8 lg:h-8 bg-gradient-to-br from-[#CE82FF] to-[#A855F7] rounded-lg flex items-center justify-center">
+                                <BookOpen className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+                              </div>
+                              <h3 className="text-sm lg:text-base font-extrabold text-[#3C3C3C]">
+                                Sessions Completed
+                              </h3>
                             </div>
-                            <div className="h-48">
+                            <div className="h-40 lg:h-48">
                               <ResponsiveContainer width="100%" height="100%">
                                 {chartType === 'bar' ? (
                                   <BarChart
                                     data={chartData}
-                                    margin={{
-                                      top: 5,
-                                      right: 5,
-                                      left: -30,
-                                      bottom: 0,
-                                    }}
+                                    margin={{ top: 5, right: 5, left: -30, bottom: 0 }}
                                   >
+                                    <defs>
+                                      <linearGradient
+                                        id="sessionsBarGradient"
+                                        x1="0"
+                                        y1="0"
+                                        x2="0"
+                                        y2="1"
+                                      >
+                                        <stop offset="0%" stopColor="#CE82FF" />
+                                        <stop offset="100%" stopColor="#A855F7" />
+                                      </linearGradient>
+                                    </defs>
                                     <XAxis
                                       dataKey="name"
-                                      tick={{ fontSize: 11, fill: '#666' }}
+                                      tick={{ fontSize: 10, fill: '#AFAFAF', fontWeight: 700 }}
                                       axisLine={false}
                                       tickLine={false}
                                     />
-                                    <YAxis
-                                      tick={{ fontSize: 11, fill: '#666' }}
-                                      axisLine={false}
-                                      tickLine={false}
+                                    <YAxis hide />
+                                    <Tooltip
+                                      content={({ active, payload, label }) => {
+                                        if (active && payload && payload.length) {
+                                          return (
+                                            <div className="bg-white rounded-xl border-2 border-[#E5E5E5] shadow-lg p-3">
+                                              <p className="text-sm font-extrabold text-[#3C3C3C] mb-1">
+                                                {label}
+                                              </p>
+                                              <p className="text-sm font-bold text-[#CE82FF]">
+                                                {payload[0].value} sessions
+                                              </p>
+                                            </div>
+                                          )
+                                        }
+                                        return null
+                                      }}
                                     />
-                                    <Tooltip content={<CustomTooltip />} />
                                     <Bar
                                       dataKey="sessions"
-                                      fill="#34C759"
-                                      radius={[4, 4, 0, 0]}
+                                      fill="url(#sessionsBarGradient)"
+                                      radius={[6, 6, 6, 6]}
                                       name="Sessions"
                                     />
                                   </BarChart>
                                 ) : (
                                   <ComposedChart
                                     data={chartData}
-                                    margin={{
-                                      top: 5,
-                                      right: 5,
-                                      left: -30,
-                                      bottom: 0,
-                                    }}
+                                    margin={{ top: 5, right: 5, left: -30, bottom: 0 }}
                                   >
                                     <defs>
                                       <linearGradient
@@ -1074,27 +1382,39 @@ export function OwnProfilePageContent() {
                                         x2="0"
                                         y2="1"
                                       >
-                                        <stop offset="5%" stopColor="#34C759" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#34C759" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#CE82FF" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#CE82FF" stopOpacity={0} />
                                       </linearGradient>
                                     </defs>
                                     <XAxis
                                       dataKey="name"
-                                      tick={{ fontSize: 11, fill: '#666' }}
+                                      tick={{ fontSize: 10, fill: '#AFAFAF', fontWeight: 700 }}
                                       axisLine={false}
                                       tickLine={false}
                                     />
-                                    <YAxis
-                                      tick={{ fontSize: 11, fill: '#666' }}
-                                      axisLine={false}
-                                      tickLine={false}
+                                    <YAxis hide />
+                                    <Tooltip
+                                      content={({ active, payload, label }) => {
+                                        if (active && payload && payload.length) {
+                                          return (
+                                            <div className="bg-white rounded-xl border-2 border-[#E5E5E5] shadow-lg p-3">
+                                              <p className="text-sm font-extrabold text-[#3C3C3C] mb-1">
+                                                {label}
+                                              </p>
+                                              <p className="text-sm font-bold text-[#CE82FF]">
+                                                {payload[0].value} sessions
+                                              </p>
+                                            </div>
+                                          )
+                                        }
+                                        return null
+                                      }}
                                     />
-                                    <Tooltip content={<CustomTooltip />} />
                                     <Area
                                       type="monotone"
                                       dataKey="sessions"
-                                      stroke="#34C759"
-                                      strokeWidth={2}
+                                      stroke="#CE82FF"
+                                      strokeWidth={3}
                                       fill="url(#colorSessionsSmall)"
                                       name="Sessions"
                                     />
@@ -1105,79 +1425,88 @@ export function OwnProfilePageContent() {
                           </div>
                         </div>
 
-                        {/* Stats Grid - 5 columns */}
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                          <div className="bg-white border border-gray-200 rounded-xl p-4">
-                            <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                              Total Hours
+                        {/* Period Stats - Duolingo Style */}
+                        <div className="bg-white lg:rounded-2xl lg:border-2 lg:border-[#E5E5E5] px-4 py-4 lg:p-6 lg:hover:border-[#DDF4FF] transition-colors mt-0 lg:mt-4">
+                          <h3 className="text-[10px] lg:text-xs font-bold text-[#AFAFAF] uppercase tracking-widest mb-3 lg:mb-4">
+                            This Period&apos;s Stats
+                          </h3>
+                          <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 lg:gap-4">
+                            <div className="text-center">
+                              <div className="text-xl lg:text-2xl font-extrabold text-[#3C3C3C]">
+                                {calculatedStats.totalHours.toFixed(1)}h
+                              </div>
+                              <div className="text-[10px] lg:text-xs font-bold text-[#AFAFAF] uppercase">
+                                Hours
+                              </div>
+                              {calculatedStats.hoursChange !== null && (
+                                <div
+                                  className={`text-[10px] lg:text-xs font-bold mt-1 ${calculatedStats.hoursChange >= 0 ? 'text-[#58CC02]' : 'text-[#FF4B4B]'}`}
+                                >
+                                  {calculatedStats.hoursChange >= 0 ? '↑' : '↓'}{' '}
+                                  {Math.abs(calculatedStats.hoursChange).toFixed(0)}%
+                                </div>
+                              )}
                             </div>
-                            <div className="text-2xl font-bold mb-1">
-                              {calculatedStats.totalHours.toFixed(1)}
-                            </div>
-                            {renderPercentageChange(calculatedStats.hoursChange)}
-                          </div>
 
-                          <div className="bg-white border border-gray-200 rounded-xl p-4">
-                            <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                              Avg Duration
+                            <div className="text-center">
+                              <div className="text-xl lg:text-2xl font-extrabold text-[#3C3C3C]">
+                                {calculatedStats.avgDuration}m
+                              </div>
+                              <div className="text-[10px] lg:text-xs font-bold text-[#AFAFAF] uppercase">
+                                Avg Duration
+                              </div>
+                              {calculatedStats.avgDurationChange !== null && (
+                                <div
+                                  className={`text-[10px] lg:text-xs font-bold mt-1 ${calculatedStats.avgDurationChange >= 0 ? 'text-[#58CC02]' : 'text-[#FF4B4B]'}`}
+                                >
+                                  {calculatedStats.avgDurationChange >= 0 ? '↑' : '↓'}{' '}
+                                  {Math.abs(calculatedStats.avgDurationChange).toFixed(0)}%
+                                </div>
+                              )}
                             </div>
-                            <div className="text-2xl font-bold mb-1">
-                              {calculatedStats.avgDuration}m
-                            </div>
-                            {renderPercentageChange(calculatedStats.avgDurationChange)}
-                          </div>
 
-                          <div className="bg-white border border-gray-200 rounded-xl p-4">
-                            <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                              Sessions
+                            <div className="text-center">
+                              <div className="text-xl lg:text-2xl font-extrabold text-[#3C3C3C]">
+                                {calculatedStats.sessions}
+                              </div>
+                              <div className="text-[10px] lg:text-xs font-bold text-[#AFAFAF] uppercase">
+                                Sessions
+                              </div>
+                              {calculatedStats.sessionsChange !== null && (
+                                <div
+                                  className={`text-[10px] lg:text-xs font-bold mt-1 ${calculatedStats.sessionsChange >= 0 ? 'text-[#58CC02]' : 'text-[#FF4B4B]'}`}
+                                >
+                                  {calculatedStats.sessionsChange >= 0 ? '↑' : '↓'}{' '}
+                                  {Math.abs(calculatedStats.sessionsChange).toFixed(0)}%
+                                </div>
+                              )}
                             </div>
-                            <div className="text-2xl font-bold mb-1">
-                              {calculatedStats.sessions}
-                            </div>
-                            {renderPercentageChange(calculatedStats.sessionsChange)}
-                          </div>
 
-                          <div className="bg-white border border-gray-200 rounded-xl p-4">
-                            <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                              Active Days
+                            <div className="text-center">
+                              <div className="text-xl lg:text-2xl font-extrabold text-[#3C3C3C]">
+                                {calculatedStats.activeDays}
+                              </div>
+                              <div className="text-[10px] lg:text-xs font-bold text-[#AFAFAF] uppercase">
+                                Active Days
+                              </div>
+                              {calculatedStats.activeDaysChange !== null && (
+                                <div
+                                  className={`text-[10px] lg:text-xs font-bold mt-1 ${calculatedStats.activeDaysChange >= 0 ? 'text-[#58CC02]' : 'text-[#FF4B4B]'}`}
+                                >
+                                  {calculatedStats.activeDaysChange >= 0 ? '↑' : '↓'}{' '}
+                                  {Math.abs(calculatedStats.activeDaysChange).toFixed(0)}%
+                                </div>
+                              )}
                             </div>
-                            <div className="text-2xl font-bold mb-1">
-                              {calculatedStats.activeDays}
-                            </div>
-                            {renderPercentageChange(calculatedStats.activeDaysChange)}
-                          </div>
 
-                          <div className="bg-white border border-gray-200 rounded-xl p-4">
-                            <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                              Activities
+                            <div className="text-center col-span-2 lg:col-span-1">
+                              <div className="text-xl lg:text-2xl font-extrabold text-[#3C3C3C]">
+                                {calculatedStats.activities}
+                              </div>
+                              <div className="text-[10px] lg:text-xs font-bold text-[#AFAFAF] uppercase">
+                                Activities
+                              </div>
                             </div>
-                            <div className="text-2xl font-bold mb-1">
-                              {calculatedStats.activities}
-                            </div>
-                            {renderPercentageChange(calculatedStats.activitiesChange)}
-                          </div>
-                        </div>
-
-                        {/* Secondary Stats Grid - Streaks */}
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                          <div className="bg-white border border-gray-200 rounded-xl p-4">
-                            <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                              Current Streak
-                            </div>
-                            <div className="text-2xl font-bold mb-1">
-                              {calculatedStats.currentStreak}
-                            </div>
-                            {renderPercentageChange(calculatedStats.streakChange)}
-                          </div>
-
-                          <div className="bg-white border border-gray-200 rounded-xl p-4">
-                            <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                              Longest Streak
-                            </div>
-                            <div className="text-2xl font-bold mb-1">
-                              {calculatedStats.longestStreak}
-                            </div>
-                            {renderPercentageChange(calculatedStats.streakChange)}
                           </div>
                         </div>
                       </div>

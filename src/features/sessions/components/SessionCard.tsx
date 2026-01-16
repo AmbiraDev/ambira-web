@@ -167,21 +167,21 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   return (
     <article className={cn('bg-white mb-4', className)}>
       {/* Session Header */}
-      <div className="flex items-center justify-between px-5 pt-4 pb-3">
+      <div className="flex items-center justify-between lg:px-5 pt-5 pb-4">
         <PrefetchLink
           href={`/profile/${session.user.username}`}
           prefetchProfile={session.user.username}
           prefetchUserId={session.user.id}
-          className="flex items-center gap-3 md:gap-4 min-w-0 flex-1 group"
+          className="flex items-center gap-4 md:gap-4 min-w-0 flex-1 group"
         >
           {/* User Avatar - Duolingo style with gradient ring */}
           {session.user.profilePicture ? (
-            <div className="w-12 h-12 min-w-[3rem] aspect-square rounded-full overflow-hidden flex-shrink-0 p-0.5 bg-gradient-to-br from-[#58CC02] to-[#45A000] group-hover:scale-105 transition-transform">
+            <div className="w-14 h-14 min-w-[3.5rem] aspect-square rounded-full overflow-hidden flex-shrink-0 p-0.5 bg-gradient-to-br from-[#58CC02] to-[#45A000] group-hover:scale-105 transition-transform">
               <Image
                 src={session.user.profilePicture}
                 alt={session.user.name}
-                width={48}
-                height={48}
+                width={56}
+                height={56}
                 quality={90}
                 className="w-full h-full object-cover rounded-full border-2 border-white"
                 priority={isAboveFold || priority}
@@ -189,9 +189,9 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               />
             </div>
           ) : (
-            <div className="w-12 h-12 min-w-[3rem] aspect-square rounded-full flex items-center justify-center flex-shrink-0 p-0.5 bg-gradient-to-br from-[#58CC02] to-[#45A000] group-hover:scale-105 transition-transform">
+            <div className="w-14 h-14 min-w-[3.5rem] aspect-square rounded-full flex items-center justify-center flex-shrink-0 p-0.5 bg-gradient-to-br from-[#58CC02] to-[#45A000] group-hover:scale-105 transition-transform">
               <div className="w-full h-full bg-white rounded-full flex items-center justify-center border-2 border-white">
-                <span className="text-[#3C3C3C] font-bold text-sm">
+                <span className="text-[#3C3C3C] font-bold text-base">
                   {getUserInitials(session.user.name)}
                 </span>
               </div>
@@ -201,7 +201,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           {/* User Info */}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-[#4B4B4B] text-base md:text-lg hover:text-[#58CC02] transition-colors truncate tracking-tight">
+              <span className="font-extrabold text-[#4B4B4B] text-lg md:text-xl hover:text-[#58CC02] transition-colors truncate tracking-tight">
                 {session.user.name}
               </span>
               {/* Follow button - Mobile only when showGroupInfo is true */}
@@ -210,7 +210,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   onClick={handleFollowToggle}
                   disabled={isFollowLoading}
                   className={cn(
-                    'md:hidden text-xs font-extrabold transition-colors duration-200 whitespace-nowrap flex-shrink-0 uppercase tracking-wide px-2 py-1 rounded-lg',
+                    'md:hidden text-sm font-extrabold transition-colors duration-200 whitespace-nowrap flex-shrink-0 uppercase tracking-wide px-2.5 py-1.5 rounded-lg',
                     isFollowing ? 'text-[#AFAFAF] bg-[#F7F7F7]' : 'text-[#1CB0F6] bg-[#DDF4FF]'
                   )}
                 >
@@ -218,7 +218,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                 </button>
               )}
             </div>
-            <div className="text-xs text-[#AFAFAF] font-bold uppercase tracking-wide">
+            <div className="text-sm text-[#AFAFAF] font-bold uppercase tracking-wide">
               {formatSessionDate(session.createdAt)}
             </div>
           </div>
@@ -272,15 +272,15 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       </div>
 
       {/* Title and Description */}
-      <Link href={`/sessions/${session.id}`} className="px-5 pb-4 block cursor-pointer group">
-        <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-[#4B4B4B] mb-2 leading-tight group-hover:text-[#1CB0F6] transition-colors duration-200">
+      <Link href={`/sessions/${session.id}`} className="lg:px-5 pb-5 block cursor-pointer group">
+        <h3 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#4B4B4B] mb-3 leading-tight group-hover:text-[#1CB0F6] transition-colors duration-200">
           {session.title || 'Focus Session'}
         </h3>
         {session.description && (
           <div>
             <p
               className={cn(
-                'text-[#777777] text-base md:text-lg whitespace-pre-wrap break-words font-medium leading-relaxed',
+                'text-[#777777] text-lg md:text-xl whitespace-pre-wrap break-words font-medium leading-relaxed',
                 !isExpanded && session.description.length > 280 && 'line-clamp-3 sm:line-clamp-4'
               )}
             >
@@ -294,7 +294,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   e.preventDefault()
                   setIsExpanded(!isExpanded)
                 }}
-                className="text-[#AFAFAF] text-sm font-bold mt-2 hover:text-[#777777] transition-colors duration-200 flex items-center uppercase tracking-wide"
+                className="text-[#AFAFAF] text-base font-bold mt-2 hover:text-[#777777] transition-colors duration-200 flex items-center uppercase tracking-wide"
                 aria-expanded={isExpanded}
                 aria-label={isExpanded ? 'Show less description' : 'Show more description'}
               >
@@ -306,24 +306,27 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       </Link>
 
       {/* Stats - Landing page style with colored icons */}
-      <Link href={`/sessions/${session.id}`} className="px-5 pb-4 block cursor-pointer">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-[#F7F7F7] rounded-xl p-3 border border-[#E5E5E5]">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#1CB0F6] to-[#0088CC] rounded-lg flex items-center justify-center">
-                <Clock className="w-5 h-5 text-white" strokeWidth={2.5} />
+      <Link href={`/sessions/${session.id}`} className="lg:px-5 pb-5 block cursor-pointer">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-[#F7F7F7] rounded-xl p-4 border border-[#E5E5E5]">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#1CB0F6] to-[#0088CC] rounded-lg flex items-center justify-center">
+                <Clock className="w-6 h-6 text-white" strokeWidth={2.5} />
               </div>
-              <span className="text-[#3C3C3C] font-extrabold">
+              <span className="text-[#3C3C3C] font-extrabold text-lg">
                 {formatDuration(session.duration)}
               </span>
             </div>
           </div>
-          <div className="bg-[#F7F7F7] rounded-xl p-3 border border-[#E5E5E5]">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#58CC02] to-[#45A000] rounded-lg flex items-center justify-center">
-                <Target className="w-5 h-5 text-white" strokeWidth={2.5} />
+          <div className="bg-[#F7F7F7] rounded-xl p-4 border border-[#E5E5E5]">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#58CC02] to-[#45A000] rounded-lg flex items-center justify-center">
+                <Target className="w-6 h-6 text-white" strokeWidth={2.5} />
               </div>
-              <span className="text-[#3C3C3C] font-extrabold truncate" title={activityDisplayName}>
+              <span
+                className="text-[#3C3C3C] font-extrabold text-lg truncate"
+                title={activityDisplayName}
+              >
                 {activityDisplayName}
               </span>
             </div>
@@ -332,7 +335,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       </Link>
 
       {/* Interactions */}
-      <div className="px-5 py-2">
+      <div className="lg:px-5 py-2">
         <SessionInteractions
           sessionId={session.id}
           supportCount={session.supportCount}
@@ -350,7 +353,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       </div>
 
       {/* Top Comments Section */}
-      <div ref={commentSectionRef} className="px-5">
+      <div ref={commentSectionRef} className="lg:px-5">
         <TopComments
           sessionId={session.id}
           totalCommentCount={localCommentCount}

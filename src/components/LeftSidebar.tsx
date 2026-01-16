@@ -12,9 +12,9 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { href: '/', label: 'Learn', icon: BookOpen, color: '#58CC02' },
-  { href: '/timer', label: 'Record', icon: Timer, color: '#1CB0F6' },
-  { href: '/analytics', label: 'Quests', icon: Zap, color: '#FF9600' },
+  { href: '/', label: 'Feed', icon: BookOpen, color: '#58CC02' },
+  { href: '/timer', label: 'Focus', icon: Timer, color: '#1CB0F6' },
+  { href: '/quests', label: 'Quests', icon: Zap, color: '#FF9600' },
   { href: '/groups', label: 'Groups', icon: Users, color: '#CE82FF' },
 ]
 

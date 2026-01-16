@@ -10,16 +10,138 @@ import { useSupportSession, useDeleteSession } from '@/features/sessions/hooks'
 import { useAuth } from '@/hooks/useAuth'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { useQueryClient } from '@tanstack/react-query'
-import { AlertTriangle, ChevronUp, Timer } from 'lucide-react'
+import {
+  AlertTriangle,
+  Users,
+  Search,
+  ChevronUp,
+  Clock,
+  Target,
+  Heart,
+  MessageCircle,
+} from 'lucide-react'
 import {
   getLastViewedFeedTime,
   updateLastViewedFeedTime,
   countNewSessions,
 } from '@/lib/hooks/useFeedViewedState'
 
+// Sample Session Card Component for Empty State
+interface SampleSession {
+  id: string
+  userName: string
+  initials: string
+  timeAgo: string
+  title: string
+  description?: string
+  duration: string
+  activity: string
+  supportCount: number
+  commentCount: number
+}
+
+const sampleSessions: SampleSession[] = [
+  {
+    id: '1',
+    userName: 'Alex Chen',
+    initials: 'AC',
+    timeAgo: '2 hours ago',
+    title: 'Deep Work on Project Features',
+    description:
+      'Finally cracked that tricky algorithm! Feeling accomplished after a solid focused session.',
+    duration: '2h 45m',
+    activity: 'Coding',
+    supportCount: 24,
+    commentCount: 5,
+  },
+  {
+    id: '2',
+    userName: 'Sarah Johnson',
+    initials: 'SJ',
+    timeAgo: '4 hours ago',
+    title: 'Morning Study Session',
+    description: 'Preparing for finals. Made great progress on the organic chemistry chapter!',
+    duration: '1h 30m',
+    activity: 'Study',
+    supportCount: 18,
+    commentCount: 3,
+  },
+  {
+    id: '3',
+    userName: 'Mike Rivera',
+    initials: 'MR',
+    timeAgo: '6 hours ago',
+    title: 'Writing Sprint',
+    description: 'Got 2,000 words down on my novel draft. The story is really coming together now.',
+    duration: '3h 15m',
+    activity: 'Writing',
+    supportCount: 31,
+    commentCount: 8,
+  },
+]
+
+const SampleSessionCard: React.FC<{ session: SampleSession }> = ({ session }) => (
+  <article className="bg-white py-5 lg:px-6 border-b border-[#E5E5E5] lg:border lg:rounded-2xl lg:mb-4">
+    {/* Session Header */}
+    <div className="flex items-center gap-4 mb-5">
+      {/* User Avatar - Matching landing page style */}
+      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#58CC02] to-[#45A000] p-0.5">
+        <div className="w-full h-full bg-white rounded-full flex items-center justify-center">
+          <span className="text-[#3C3C3C] font-bold text-base">{session.initials}</span>
+        </div>
+      </div>
+      {/* User Info */}
+      <div>
+        <p className="text-[#3C3C3C] font-extrabold text-lg">{session.userName}</p>
+        <p className="text-[#AFAFAF] text-sm font-bold">{session.timeAgo}</p>
+      </div>
+    </div>
+
+    {/* Title */}
+    <h3 className="text-[#3C3C3C] text-2xl font-extrabold mb-3">{session.title}</h3>
+
+    {/* Description */}
+    {session.description && (
+      <p className="text-[#777777] text-base leading-relaxed mb-5">{session.description}</p>
+    )}
+
+    {/* Stats - Matching landing page card style */}
+    <div className="grid grid-cols-2 gap-3 mb-5">
+      <div className="bg-[#F7F7F7] rounded-xl p-4 border border-[#E5E5E5]">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-[#1CB0F6] to-[#0088CC] rounded-xl flex items-center justify-center">
+            <Clock className="w-6 h-6 text-white" strokeWidth={2.5} />
+          </div>
+          <span className="text-[#3C3C3C] font-extrabold text-lg">{session.duration}</span>
+        </div>
+      </div>
+      <div className="bg-[#F7F7F7] rounded-xl p-4 border border-[#E5E5E5]">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-[#58CC02] to-[#45A000] rounded-xl flex items-center justify-center">
+            <Target className="w-6 h-6 text-white" strokeWidth={2.5} />
+          </div>
+          <span className="text-[#3C3C3C] font-extrabold text-lg">{session.activity}</span>
+        </div>
+      </div>
+    </div>
+
+    {/* Interactions */}
+    <div className="flex items-center gap-5 text-[#AFAFAF]">
+      <div className="flex items-center gap-2">
+        <Heart className="w-6 h-6" />
+        <span className="font-bold text-base">{session.supportCount}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <MessageCircle className="w-6 h-6" />
+        <span className="font-bold text-base">{session.commentCount}</span>
+      </div>
+    </div>
+  </article>
+)
+
 // Session Card Skeleton Component
 const SessionCardSkeleton: React.FC = () => (
-  <div className="bg-white border-b md:border md:border-gray-200 md:rounded-lg p-4 animate-pulse">
+  <div className="bg-white border-b lg:border lg:border-gray-200 lg:rounded-lg p-3 lg:p-4 animate-pulse">
     {/* Header - User Info */}
     <div className="flex items-center space-x-3 mb-4">
       <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0"></div>
@@ -367,10 +489,11 @@ export const Feed: React.FC<FeedProps> = ({
     const feedType = filters?.type || 'all'
 
     let emptyStateContent = {
-      title: 'No sessions yet',
-      message: 'Start tracking your productive sessions to see them here!',
-      buttonText: 'Start a Session',
-      buttonAction: () => router.push('/timer'),
+      title: 'Your feed is empty',
+      message:
+        'Follow people to see their productive sessions in your feed and get inspired by their work!',
+      buttonText: 'Find People to Follow',
+      buttonAction: () => router.push('/discover/people'),
     }
 
     if (feedType === 'group-members-unfollowed') {
@@ -387,15 +510,23 @@ export const Feed: React.FC<FeedProps> = ({
         buttonText: 'Start a Session',
         buttonAction: () => router.push('/timer'),
       }
+    } else if (feedType === 'following') {
+      emptyStateContent = {
+        title: 'Your feed is empty',
+        message:
+          'Follow people to see their productive sessions in your feed and get inspired by their work!',
+        buttonText: 'Find People to Follow',
+        buttonAction: () => router.push('/discover/people'),
+      }
     }
 
     return (
       <div className={className}>
-        {/* Header with CTA */}
-        <div className="text-center py-8 px-4">
+        {/* Header with CTA - Hidden on mobile, only show on lg+ screens */}
+        <div className="hidden lg:block text-center py-8 px-4">
           <div className="max-w-md mx-auto">
             <div className="mb-6">
-              <Timer className="w-16 h-16 mx-auto mb-3 text-[#AFAFAF]" />
+              <Users className="w-16 h-16 mx-auto mb-3 text-[#AFAFAF]" />
               <h3 className="font-extrabold text-xl text-[#3C3C3C] mb-2">
                 {emptyStateContent.title}
               </h3>
@@ -407,13 +538,30 @@ export const Feed: React.FC<FeedProps> = ({
             {/* Action Button */}
             <button
               onClick={emptyStateContent.buttonAction}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#58CC02] text-white rounded-2xl hover:brightness-105 transition-all font-bold text-base border-2 border-b-4 border-[#45A000] active:border-b-2 active:translate-y-[2px]"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#1CB0F6] text-white rounded-2xl hover:brightness-105 transition-all font-bold text-base border-2 border-b-4 border-[#0088CC] active:border-b-2 active:translate-y-[2px]"
             >
-              <Timer className="w-5 h-5" />
+              <Search className="w-5 h-5" />
               {emptyStateContent.buttonText}
             </button>
           </div>
         </div>
+
+        {/* Sample Posts Section - Only show when this is the last feed (showEndMessage=true) */}
+        {showEndMessage && (
+          <div className="lg:pt-6">
+            {/* "See what others are sharing" - Hidden on mobile */}
+            <div className="hidden lg:block text-center mb-4">
+              <p className="text-sm font-bold text-[#AFAFAF] uppercase tracking-wide">
+                See what others are sharing
+              </p>
+            </div>
+            <div>
+              {sampleSessions.map((session) => (
+                <SampleSessionCard key={session.id} session={session} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     )
   }
@@ -438,7 +586,7 @@ export const Feed: React.FC<FeedProps> = ({
       )}
 
       {/* Sessions */}
-      <ul aria-label="Activity sessions" role="feed" className="space-y-0 md:space-y-0">
+      <ul aria-label="Activity sessions" role="feed" className="space-y-0 lg:space-y-0">
         {allSessions.map((session, index) => {
           const isOwnSession = user && session.userId === user.id
           // First 2 sessions are above the fold on most screens
