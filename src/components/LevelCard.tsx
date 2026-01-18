@@ -59,7 +59,7 @@ export default function LevelCard() {
               </div>
             )}
             {/* Level Badge */}
-            <div className="absolute -bottom-0.5 -right-0.5 bg-[#FFD900] text-[#3C3C3C] text-[10px] font-extrabold w-5 h-5 rounded-full border-2 border-white flex items-center justify-center">
+            <div className="absolute -bottom-0.5 -right-0.5 bg-[#1CB0F6] text-white text-[10px] font-extrabold w-5 h-5 rounded-full border-2 border-white flex items-center justify-center">
               {levelInfo?.level ?? 1}
             </div>
           </Link>

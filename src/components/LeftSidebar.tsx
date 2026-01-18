@@ -38,7 +38,7 @@ function LeftSidebar() {
     >
       <div className="flex flex-col h-full">
         {/* Logo - Matching header height (h-16 = 64px) */}
-        <Link href="/" className="flex items-center h-16 px-6 border-b-2 border-[#E5E5E5]">
+        <Link href="/" className="flex items-center h-16 px-6">
           <h1 className="text-[#58CC02] text-3xl font-black tracking-tight ml-2">focumo</h1>
         </Link>
 

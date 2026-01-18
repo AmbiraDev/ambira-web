@@ -10,16 +10,7 @@ import { useSupportSession, useDeleteSession } from '@/features/sessions/hooks'
 import { useAuth } from '@/hooks/useAuth'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { useQueryClient } from '@tanstack/react-query'
-import {
-  AlertTriangle,
-  Users,
-  Search,
-  ChevronUp,
-  Clock,
-  Target,
-  Heart,
-  MessageCircle,
-} from 'lucide-react'
+import { AlertTriangle, ChevronUp, Clock, Target, Heart, MessageCircle } from 'lucide-react'
 import {
   getLastViewedFeedTime,
   updateLastViewedFeedTime,
@@ -522,44 +513,12 @@ export const Feed: React.FC<FeedProps> = ({
 
     return (
       <div className={className}>
-        {/* Header with CTA - Hidden on mobile, only show on lg+ screens */}
-        <div className="hidden lg:block text-center py-8 px-4">
-          <div className="max-w-md mx-auto">
-            <div className="mb-6">
-              <Users className="w-16 h-16 mx-auto mb-3 text-[#AFAFAF]" />
-              <h3 className="font-extrabold text-xl text-[#3C3C3C] mb-2">
-                {emptyStateContent.title}
-              </h3>
-              <p className="text-base text-[#777777] leading-relaxed">
-                {emptyStateContent.message}
-              </p>
-            </div>
-
-            {/* Action Button */}
-            <button
-              onClick={emptyStateContent.buttonAction}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#1CB0F6] text-white rounded-2xl hover:brightness-105 transition-all font-bold text-base border-2 border-b-4 border-[#0088CC] active:border-b-2 active:translate-y-[2px]"
-            >
-              <Search className="w-5 h-5" />
-              {emptyStateContent.buttonText}
-            </button>
-          </div>
-        </div>
-
         {/* Sample Posts Section - Only show when this is the last feed (showEndMessage=true) */}
         {showEndMessage && (
-          <div className="lg:pt-6">
-            {/* "See what others are sharing" - Hidden on mobile */}
-            <div className="hidden lg:block text-center mb-4">
-              <p className="text-sm font-bold text-[#AFAFAF] uppercase tracking-wide">
-                See what others are sharing
-              </p>
-            </div>
-            <div>
-              {sampleSessions.map((session) => (
-                <SampleSessionCard key={session.id} session={session} />
-              ))}
-            </div>
+          <div>
+            {sampleSessions.map((session) => (
+              <SampleSessionCard key={session.id} session={session} />
+            ))}
           </div>
         )}
       </div>
